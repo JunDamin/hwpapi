@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Core Classes for HwpApi">
+
+<title>HwpApi - core</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="HwpApi - core">
+<meta property="og:description" content="Core Classes for HwpApi">
+<meta property="og:site-name" content="HwpApi">
+<meta name="twitter:title" content="HwpApi - core">
+<meta name="twitter:description" content="Core Classes for HwpApi">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">HwpApi</span>
+    </a>
+  </div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">core</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">HwpApi</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./core.html" class="sidebar-item-text sidebar-link active">core</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./variables.html" class="sidebar-item-text sidebar-link">actions</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./methods.html" class="sidebar-item-text sidebar-link">methods</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./fnctions.html" class="sidebar-item-text sidebar-link">functions</a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#gencache-error-해결" id="toc-gencache-error-해결" class="nav-link active" data-scroll-target="#gencache-error-해결">gencache error 해결</a></li>
+  <li><a href="#필요한-패키지는-아래와-같습니다." id="toc-필요한-패키지는-아래와-같습니다." class="nav-link" data-scroll-target="#필요한-패키지는-아래와-같습니다.">필요한 패키지는 아래와 같습니다.</a></li>
+  <li><a href="#app" id="toc-app" class="nav-link" data-scroll-target="#app">App</a></li>
+  <li><a href="#app.set_visible" id="toc-app.set_visible" class="nav-link" data-scroll-target="#app.set_visible">App.set_visible</a></li>
+  <li><a href="#app.get_filepath" id="toc-app.get_filepath" class="nav-link" data-scroll-target="#app.get_filepath">App.get_filepath</a></li>
+  <li><a href="#app.open" id="toc-app.open" class="nav-link" data-scroll-target="#app.open">App.open</a></li>
+  <li><a href="#app.save" id="toc-app.save" class="nav-link" data-scroll-target="#app.save">App.save</a></li>
+  <li><a href="#app.close" id="toc-app.close" class="nav-link" data-scroll-target="#app.close">App.close</a></li>
+  <li><a href="#app.quit" id="toc-app.quit" class="nav-link" data-scroll-target="#app.quit">App.quit</a></li>
+  <li><a href="#app.create_action" id="toc-app.create_action" class="nav-link" data-scroll-target="#app.create_action">App.create_action</a></li>
+  <li><a href="#app.create_parameterset" id="toc-app.create_parameterset" class="nav-link" data-scroll-target="#app.create_parameterset">App.create_parameterset</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/HwpApi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block">core</h1>
+</div>
+
+<div>
+  <div class="description">
+    Core Classes for HwpApi
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<p>nbdev 한글 문제 해결을 위해서는 encoding을 바꾸어야 합니다.</p>
+<ol type="1">
+<li>doclinks.py에서 49번째 줄 p.read_text()를 p.read_text(encoding=‘utf-8’)으로 바꾸면 됩니다.(총 3가지가 있어서 찾아바꾸기가 좋은 것 같습니다.)</li>
+<li>serve.py 파일에서도 25번째 줄에 p.read_text()를 p.read_text(encoding=’utf-8)</li>
+<li>setup에 있는 read 도 바꾸어야 합니다.</li>
+</ol>
+<section id="gencache-error-해결" class="level3">
+<h3 class="anchored" data-anchor-id="gencache-error-해결">gencache error 해결</h3>
+<p>캐시가 충돌하는 문제를 해결하기 위해서 장치를 마련했습니다. 오류가 나는지 확인은 필요할 것으로 보입니다.</p>
+</section>
+<section id="필요한-패키지는-아래와-같습니다." class="level3">
+<h3 class="anchored" data-anchor-id="필요한-패키지는-아래와-같습니다.">필요한 패키지는 아래와 같습니다.</h3>
+<p>액션을 좀더 쓰기 편하게 하기 위해서 구성하였습니다.</p>
+<p>App은 기존 hwpali를 wrapping 하여 보다 사용하기 쉽게 만드는 것을 목적으로 하고 있는 클래스 입니다. 한글 컨트롤과 동등한 기능입니다. 기본 메소드를 보다 쓰기 쉽게 만들고자 합니다. 앞으로 추가할 기능은 화면 크기 조정 등이 있습니다. api 메소드를 통해 win32com의 방식으로 모두 사용할 수 있어 다양하게 사용할 수 있습니다.</p>
+<p>기본적으로는 <a href="https://JunDamin.github.io/HwpApi/core.html#app"><code>App</code></a> 클래스와 <a href="https://JunDamin.github.io/HwpApi/core.html#_action"><code>_Action</code></a>클래스가 있습니다. <a href="https://JunDamin.github.io/HwpApi/core.html#_action"><code>_Action</code></a> 클래스는 <a href="https://JunDamin.github.io/HwpApi/core.html#app"><code>App</code></a>로만 생성되어야 하기 때문에 언더바로 시작합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L35" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app" class="level3">
+<h3 class="anchored" data-anchor-id="app">App</h3>
+<blockquote class="blockquote">
+<pre><code> App (api=None)</code></pre>
+</blockquote>
+<p>App 클래스는 한컴오피스의 한/글 프로그램과 상호작용하기 위한 인터페이스를 제공합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L55" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.set_visible" class="level3">
+<h3 class="anchored" data-anchor-id="app.set_visible">App.set_visible</h3>
+<blockquote class="blockquote">
+<pre><code> App.set_visible (app:__main__.App, is_visible=True, window_i=0)</code></pre>
+</blockquote>
+<p><code>set_visible()</code> 함수는 한/글 프로그램의 창을 화면에 보이거나 숨기기 위해 호출됩니다. <code>is_visible</code> 인자가 <code>True</code>일 경우 창이 화면에 보이고, <code>False</code>일 경우 숨깁니다. <code>window_i</code> 인자는 창의 인덱스를 지정합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L64" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.get_filepath" class="level3">
+<h3 class="anchored" data-anchor-id="app.get_filepath">App.get_filepath</h3>
+<blockquote class="blockquote">
+<pre><code> App.get_filepath (app:__main__.App)</code></pre>
+</blockquote>
+<p><code>get_filepath()</code> 함수는 현재 열려있는 한/글 문서의 경로를 반환합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L71" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.open" class="level3">
+<h3 class="anchored" data-anchor-id="app.open">App.open</h3>
+<blockquote class="blockquote">
+<pre><code> App.open (app:__main__.App, path:str)</code></pre>
+</blockquote>
+<p><code>open()</code> 함수는 파일 경로를 인자로 받아 해당 파일을 한/글 프로그램에서 엽니다. <code>get_absolute_path()</code> 함수를 호출하여 절대 경로로 변환한 후, <code>api.Open()</code> 함수를 호출하여 파일을 엽니다. 열린 파일의 경로를 반환합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L81" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.save" class="level3">
+<h3 class="anchored" data-anchor-id="app.save">App.save</h3>
+<blockquote class="blockquote">
+<pre><code> App.save (app:__main__.App, path=None)</code></pre>
+</blockquote>
+<p><code>save()</code> 함수는 현재 열려있는 문서를 저장하거나 다른 이름으로 저장합니다. <code>path</code> 인자가 주어지지 않은 경우 현재 문서를 덮어쓰기로 저장하고, 저장된 파일의 경로를 반환합니다. <code>path</code> 인자가 주어진 경우, <code>Path</code> 모듈을 이용하여 파일 확장자를 추출한 후, 해당 확장자에 맞게 문서를 저장합니다. 저장된 파일의 경로를 반환합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L99" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.close" class="level3">
+<h3 class="anchored" data-anchor-id="app.close">App.close</h3>
+<blockquote class="blockquote">
+<pre><code> App.close (app:__main__.App)</code></pre>
+</blockquote>
+<p><code>close()</code> 함수는 현재 열려있는 문서를 닫습니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L105" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.quit" class="level3">
+<h3 class="anchored" data-anchor-id="app.quit">App.quit</h3>
+<blockquote class="blockquote">
+<pre><code> App.quit (app:__main__.App)</code></pre>
+</blockquote>
+<p><code>quit()</code> 함수는 한/글 프로그램을 종료합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L111" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.create_action" class="level3">
+<h3 class="anchored" data-anchor-id="app.create_action">App.create_action</h3>
+<blockquote class="blockquote">
+<pre><code> App.create_action (app:__main__.App, action_key:str)</code></pre>
+</blockquote>
+<p><code>create_action()</code> 함수는 <a href="https://JunDamin.github.io/HwpApi/core.html#_action"><code>_Action</code></a> 클래스의 객체를 생성하여 반환합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L117" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.create_parameterset" class="level3">
+<h3 class="anchored" data-anchor-id="app.create_parameterset">App.create_parameterset</h3>
+<blockquote class="blockquote">
+<pre><code> App.create_parameterset (app:__main__.App, action_key:str)</code></pre>
+</blockquote>
+<p><code>create_parameterset()</code> 함수는 특정 액션의 파라미터셋을 반환합니다. <code>_action_info</code> 딕셔너리에서 액션에 대한 정보를 찾아서 파라미터셋의 키 값을 가져옵니다. 파라미터셋 객체를 반환합니다.</p>
+<p><a href="https://JunDamin.github.io/HwpApi/core.html#_action"><code>_Action</code></a>은 한글 문서 작업을 할 때 사용자의 각종 입력이라고 보시면 되며 연속된 액션을 통해 한글 문서 자동화가 진행되게 됩니다.</p>
+<p>한글 문서 사용은 다음과 같이 할 수 있습니다. 먼저 App 객체를 생성합니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="bu">dir</span>(app.api)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>['Application',
+ 'ArcType',
+ 'AutoNumType',
+ 'BorderShape',
+ 'BreakWordLatin',
+ 'BrushType',
+ 'CLSID',
+ 'Canonical',
+ 'CellApply',
+ 'CellShape',
+ 'CharShadowType',
+ 'CharShape',
+ 'CheckXObject',
+ 'Clear',
+ 'ColDefType',
+ 'ColLayoutType',
+ 'ConvertPUAHangulToUnicode',
+ 'CreateAction',
+ 'CreateField',
+ 'CreateID',
+ 'CreateMode',
+ 'CreatePageImage',
+ 'CreateSet',
+ 'CrookedSlash',
+ 'CurFieldState',
+ 'CurMetatagState',
+ 'CurSelectedCtrl',
+ 'DSMark',
+ 'DbfCodeType',
+ 'DeleteCtrl',
+ 'Delimiter',
+ 'DrawAspect',
+ 'DrawFillImage',
+ 'DrawShadowType',
+ 'EditMode',
+ 'Encrypt',
+ 'EndSize',
+ 'EndStyle',
+ 'EngineProperties',
+ 'ExportStyle',
+ 'FieldExist',
+ 'FileTranslate',
+ 'FillAreaType',
+ 'FindCtrl',
+ 'FindDir',
+ 'FindPrivateInfo',
+ 'FontType',
+ 'GetBinDataPath',
+ 'GetCurFieldName',
+ 'GetCurMetatagName',
+ 'GetFieldList',
+ 'GetFieldText',
+ 'GetFileInfo',
+ 'GetFontList',
+ 'GetHeadingString',
+ 'GetMessageBoxMode',
+ 'GetMetatagList',
+ 'GetMetatagNameText',
+ 'GetMousePos',
+ 'GetPageText',
+ 'GetPos',
+ 'GetPosBySet',
+ 'GetScriptSource',
+ 'GetSelectedPos',
+ 'GetSelectedPosBySet',
+ 'GetText',
+ 'GetTextFile',
+ 'GetTranslateLangList',
+ 'GetUserInfo',
+ 'Gradation',
+ 'GridMethod',
+ 'GridViewLine',
+ 'GutterMethod',
+ 'HAction',
+ 'HAlign',
+ 'HParameterSet',
+ 'Handler',
+ 'Hash',
+ 'HatchStyle',
+ 'HeadCtrl',
+ 'HeadType',
+ 'HeightRel',
+ 'Hiding',
+ 'HorzRel',
+ 'HwpLineType',
+ 'HwpLineWidth',
+ 'HwpOutlineStyle',
+ 'HwpOutlineType',
+ 'HwpUnderlineShape',
+ 'HwpUnderlineType',
+ 'HwpZoomType',
+ 'ImageFormat',
+ 'ImportStyle',
+ 'InitHParameterSet',
+ 'InitScan',
+ 'Insert',
+ 'InsertBackgroundPicture',
+ 'InsertCtrl',
+ 'InsertPicture',
+ 'IsActionEnable',
+ 'IsCommandLock',
+ 'IsEmpty',
+ 'IsModified',
+ 'IsPrivateInfoProtected',
+ 'IsTrackChange',
+ 'IsTrackChangePassword',
+ 'KeyIndicator',
+ 'LastCtrl',
+ 'LineSpacingMethod',
+ 'LineWrapType',
+ 'LockCommand',
+ 'LunarToSolar',
+ 'LunarToSolarBySet',
+ 'MacroState',
+ 'MailType',
+ 'MetatagExist',
+ 'MiliToHwpUnit',
+ 'ModifyFieldProperties',
+ 'ModifyMetatagProperties',
+ 'MovePos',
+ 'MoveToField',
+ 'MoveToMetatag',
+ 'NumberFormat',
+ 'Numbering',
+ 'Open',
+ 'PageCount',
+ 'PageNumPosition',
+ 'PageType',
+ 'ParaHeadAlign',
+ 'ParaShape',
+ 'ParentCtrl',
+ 'Path',
+ 'PicEffect',
+ 'PlacementType',
+ 'PointToHwpUnit',
+ 'PresentEffect',
+ 'PrintDevice',
+ 'PrintPaper',
+ 'PrintRange',
+ 'PrintType',
+ 'ProtectPrivateInfo',
+ 'PutFieldText',
+ 'PutMetatagNameText',
+ 'Quit',
+ 'RGBColor',
+ 'RegisterModule',
+ 'RegisterPrivateInfoPattern',
+ 'ReleaseAction',
+ 'ReleaseScan',
+ 'RenameField',
+ 'RenameMetatag',
+ 'ReplaceAction',
+ 'ReplaceFont',
+ 'Revision',
+ 'Run',
+ 'RunScriptMacro',
+ 'Save',
+ 'SaveAs',
+ 'ScanFont',
+ 'SelectText',
+ 'SelectionMode',
+ 'SetBarCodeImage',
+ 'SetCurFieldName',
+ 'SetCurMetatagName',
+ 'SetDRMAuthority',
+ 'SetFieldViewOption',
+ 'SetMessageBoxMode',
+ 'SetPos',
+ 'SetPosBySet',
+ 'SetPrivateInfoPassword',
+ 'SetTextFile',
+ 'SetTitleName',
+ 'SetUserInfo',
+ 'SideType',
+ 'Signature',
+ 'Slash',
+ 'SolarToLunar',
+ 'SolarToLunarBySet',
+ 'SortDelimiter',
+ 'StrikeOut',
+ 'StyleType',
+ 'SubtPos',
+ 'TableBreak',
+ 'TableFormat',
+ 'TableSwapType',
+ 'TableTarget',
+ 'TextAlign',
+ 'TextArtAlign',
+ 'TextDir',
+ 'TextFlowType',
+ 'TextWrapType',
+ 'UnSelectCtrl',
+ 'VAlign',
+ 'Version',
+ 'VertRel',
+ 'ViewFlag',
+ 'ViewProperties',
+ 'WatermarkBrush',
+ 'WidthRel',
+ 'XHwpDocuments',
+ 'XHwpMessageBox',
+ 'XHwpODBC',
+ 'XHwpWindows',
+ '_ApplyTypes_',
+ '__class__',
+ '__delattr__',
+ '__dict__',
+ '__dir__',
+ '__doc__',
+ '__eq__',
+ '__format__',
+ '__ge__',
+ '__getattr__',
+ '__getattribute__',
+ '__gt__',
+ '__hash__',
+ '__init__',
+ '__init_subclass__',
+ '__iter__',
+ '__le__',
+ '__lt__',
+ '__module__',
+ '__ne__',
+ '__new__',
+ '__reduce__',
+ '__reduce_ex__',
+ '__repr__',
+ '__setattr__',
+ '__sizeof__',
+ '__str__',
+ '__subclasshook__',
+ '__weakref__',
+ '_get_good_object_',
+ '_get_good_single_object_',
+ '_oleobj_',
+ '_prop_map_get_',
+ '_prop_map_put_',
+ 'coclass_clsid']</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="bu">dir</span>(app.api.XHwpDocuments.Active_XHwpDocument)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>['Application',
+ 'CLSID',
+ 'Clear',
+ 'Close',
+ 'Document',
+ 'DocumentID',
+ 'EditMode',
+ 'Format',
+ 'FullName',
+ 'Modified',
+ 'Open',
+ 'Password',
+ 'Path',
+ 'Redo',
+ 'Save',
+ 'SaveAs',
+ 'SendBrowser',
+ 'SetActive_XHwpDocument',
+ 'Undo',
+ 'XHwpCharacterShape',
+ 'XHwpDocumentInfo',
+ 'XHwpFind',
+ 'XHwpFormCheckButtons',
+ 'XHwpFormComboBoxs',
+ 'XHwpFormEdits',
+ 'XHwpFormPushButtons',
+ 'XHwpFormRadioButtons',
+ 'XHwpParagraphShape',
+ 'XHwpPrint',
+ 'XHwpRange',
+ 'XHwpSelection',
+ 'XHwpSendMail',
+ 'XHwpSummaryInfo',
+ '_ApplyTypes_',
+ '__class__',
+ '__delattr__',
+ '__dict__',
+ '__dir__',
+ '__doc__',
+ '__eq__',
+ '__format__',
+ '__ge__',
+ '__getattr__',
+ '__getattribute__',
+ '__gt__',
+ '__hash__',
+ '__init__',
+ '__init_subclass__',
+ '__iter__',
+ '__le__',
+ '__lt__',
+ '__module__',
+ '__ne__',
+ '__new__',
+ '__reduce__',
+ '__reduce_ex__',
+ '__repr__',
+ '__setattr__',
+ '__sizeof__',
+ '__str__',
+ '__subclasshook__',
+ '__weakref__',
+ '_get_good_object_',
+ '_get_good_single_object_',
+ '_oleobj_',
+ '_prop_map_get_',
+ '_prop_map_put_',
+ 'coclass_clsid',
+ 'frame']</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>app.<span class="bu">open</span>(<span class="vs">r"C:\Users\freed\Downloads\일반관리비 관리 자료 작성\1. Template6_일반관리비template_0309_1730(수정).hwp"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>'C:/Users/freed/Downloads/일반관리비 관리 자료 작성/1. Template6_일반관리비template_0309_1730(수정).hwp'</code></pre>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
