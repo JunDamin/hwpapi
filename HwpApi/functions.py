@@ -68,4 +68,4 @@ def get_value(dict_, key):
     try:
         return dict_[key]
     except KeyError:
-        raise KeyError(f"해당하는 키를 찾을 수 없습니다. 키는 {', '.join(dict_.keys())} 중에 있어야 합니다.")
+        raise KeyError(f"{key}를 해당하는 키 중 찾을 수 없습니다. 키는 {', '.join(dict_.keys())} 중에 있어야 합니다.")

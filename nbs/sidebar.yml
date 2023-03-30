@@ -3,6 +3,5 @@ website:
     contents:
       - index.ipynb
       - 00_core.ipynb
-      - 01_action_list.ipynb
-      - 02_methods.ipynb
+      - 01_actions.ipynb
       - 03_functions.ipynb

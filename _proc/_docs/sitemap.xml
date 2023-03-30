@@ -2,15 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://JunDamin.github.io/HwpApi/core.html</loc>
-    <lastmod>2023-03-20T21:51:19.960Z</lastmod>
+    <lastmod>2023-03-30T12:43:44.029Z</lastmod>
   </url>
   <url>
     <loc>https://JunDamin.github.io/HwpApi/variables.html</loc>
-    <lastmod>2023-03-20T21:35:11.129Z</lastmod>
+    <lastmod>2023-03-30T12:43:34.908Z</lastmod>
   </url>
   <url>
     <loc>https://JunDamin.github.io/HwpApi/fnctions.html</loc>
-    <lastmod>2023-03-20T21:49:26.307Z</lastmod>
+    <lastmod>2023-03-30T12:56:56.481Z</lastmod>
   </url>
   <url>
     <loc>https://JunDamin.github.io/HwpApi/methods.html</loc>
@@ -19,5 +19,9 @@
   <url>
     <loc>https://JunDamin.github.io/HwpApi/Untitled.html</loc>
     <lastmod>2023-03-20T21:49:27.425Z</lastmod>
+  </url>
+  <url>
+    <loc>https://JunDamin.github.io/HwpApi/index.html</loc>
+    <lastmod>2023-03-30T12:43:15.183Z</lastmod>
   </url>
 </urlset>
