@@ -4,4 +4,4 @@ website:
       - index.ipynb
       - 00_core.ipynb
       - 01_actions.ipynb
-      - 03_functions.ipynb
+      - 02_functions.ipynb

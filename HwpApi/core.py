@@ -2,43 +2,18 @@
 
 # %% auto 0
 __all__ = ['mask_options', 'scan_spos_keys', 'scan_epos_keys', 'scan_directions', 'move_ids', 'size_options', 'effects',
-           'directions', 'dispatch', 'App']
+           'directions', 'App']
 
 # %% ../nbs/00_core.ipynb 6
-import os
-import shutil
-from contextlib import contextmanager
-
-def dispatch(app_name:str):
-    try:
-        from win32com import client
-        app = client.gencache.EnsureDispatch(app_name)
-    except AttributeError:
-        # Corner case dependencies.
-        import os
-        import re
-        import sys
-        import shutil
-        # Remove cache and try again.
-        MODULE_LIST = [m.__name__ for m in sys.modules.values()]
-        for module in MODULE_LIST:
-            if re.match(r'win32com\.gen_py\..+', module):
-                del sys.modules[module]
-        shutil.rmtree(os.path.join(os.environ.get('LOCALAPPDATA'), 'Temp', 'gen_py'))
-        from win32com import client
-        app = client.gencache.EnsureDispatch(app_name)
-    return app
-
-# %% ../nbs/00_core.ipynb 8
-from win32com import client as wc
 from pathlib import Path
 from fastcore.basics import patch
+from contextlib import contextmanager
 
-# %% ../nbs/00_core.ipynb 9
+# %% ../nbs/00_core.ipynb 7
 from .actions import _Actions, _Action
-from .functions import get_absolute_path, check_dll, get_value, set_charshape
+from .functions import dispatch, get_absolute_path, check_dll, get_value, set_charshape
 
-# %% ../nbs/00_core.ipynb 13
+# %% ../nbs/00_core.ipynb 10
 class App:
     ''' App 클래스는 한컴오피스의 한/글 프로그램과 상호작용하기 위한 인터페이스를 제공합니다.'''
     def __init__(self, api=None):
@@ -57,7 +32,7 @@ class App:
     def __str__(self): return f"<Hwp App: {self.get_filepath()}>"
     __repr__ = __str__
 
-# %% ../nbs/00_core.ipynb 14
+# %% ../nbs/00_core.ipynb 11
 @patch
 def set_visible(app:App, is_visible=True, window_i=0):
     '''`set_visible()` 함수는 한/글 프로그램의 창을 화면에 보이거나 숨기기 위해 호출됩니다. 
@@ -66,14 +41,14 @@ def set_visible(app:App, is_visible=True, window_i=0):
 
     app.api.XHwpWindows.Item(window_i).Visible = is_visible
 
-# %% ../nbs/00_core.ipynb 15
+# %% ../nbs/00_core.ipynb 12
 @patch
 def get_filepath(app:App):
     '''`get_filepath()` 함수는 현재 열려있는 한/글 문서의 경로를 반환합니다.'''
     doc = app.api.XHwpDocuments.Active_XHwpDocument
     return doc.FullName
 
-# %% ../nbs/00_core.ipynb 17
+# %% ../nbs/00_core.ipynb 14
 @patch
 def open(app:App, path:str):
     '''`open()` 함수는 파일 경로를 인자로 받아 해당 파일을 한/글 프로그램에서 엽니다. 
@@ -83,7 +58,7 @@ def open(app:App, path:str):
     app.api.Open(name)
     return name
 
-# %% ../nbs/00_core.ipynb 19
+# %% ../nbs/00_core.ipynb 16
 @patch
 def save(app:App, path=None):
     '''`save()` 함수는 현재 열려있는 문서를 저장하거나 다른 이름으로 저장합니다. 
@@ -101,25 +76,25 @@ def save(app:App, path=None):
     app.api.SaveAs(name, format_)
     return name
 
-# %% ../nbs/00_core.ipynb 20
+# %% ../nbs/00_core.ipynb 17
 @patch
 def close(app:App):
     '''`close()` 함수는 현재 열려있는 문서를 닫습니다.'''
     app.api.Run("FileClose")
 
-# %% ../nbs/00_core.ipynb 21
+# %% ../nbs/00_core.ipynb 18
 @patch
 def quit(app:App):
     '''`quit()` 함수는 한/글 프로그램을 종료합니다.'''
     app.api.Run("FileQuit")
 
-# %% ../nbs/00_core.ipynb 22
+# %% ../nbs/00_core.ipynb 19
 @patch        
 def create_action(app:App, action_key:str):
     '''`create_action()` 함수는 `_Action` 클래스의 객체를 생성하여 반환합니다.'''
     return _Action(app, action_key)
 
-# %% ../nbs/00_core.ipynb 23
+# %% ../nbs/00_core.ipynb 20
 @patch    
 def create_parameterset(app:App, action_key:str):
     '''`create_parameterset()` 함수는 특정 액션의 파라미터셋을 반환합니다.
@@ -130,7 +105,7 @@ def create_parameterset(app:App, action_key:str):
     return getattr(app.api.HParameterSet, f"H{pset_key}")
 
 
-# %% ../nbs/00_core.ipynb 24
+# %% ../nbs/00_core.ipynb 21
 @patch
 def insert_text(app:App, text:str):
     '''`text를 입력합니다.'''
@@ -139,7 +114,7 @@ def insert_text(app:App, text:str):
     p.Text = text
     return action.run()
 
-# %% ../nbs/00_core.ipynb 26
+# %% ../nbs/00_core.ipynb 23
 @patch
 def find_files(app:App):
     '''`text를 입력합니다.'''
@@ -148,7 +123,7 @@ def find_files(app:App):
     p.Text = text
     return action.run()
 
-# %% ../nbs/00_core.ipynb 27
+# %% ../nbs/00_core.ipynb 24
 mask_options = {
     "Normal": 0x00,         # "본문을 대상으로 검색한다.(서브리스트를 검색하지 않는다.)"
     "Char": 0x01,           # "char 타입 컨트롤 마스크를 대상으로 한다.(강제줄나눔, 문단 끝, 하이픈, 묶움빈칸, 고정폭빈칸, 등...)"
@@ -211,7 +186,7 @@ def scan(app:App, option="All", selection=False, scan_spos="Document", scan_epos
     yield _get_text(app)   
     app.api.ReleaseScan()
 
-# %% ../nbs/00_core.ipynb 28
+# %% ../nbs/00_core.ipynb 25
 move_ids = {
     "Main": 0,    # 루트 리스트의 특정 위치.(para pos로 위치 지정)
     "CurList": 1,    # 현재 리스트의 특정 위치.(para pos로 위치 지정)
@@ -261,7 +236,7 @@ def move(app:App, move_key="ScanPos", para=None, pos=None):
     return app.api.MovePos(moveID=move_id, Para=para, pos=pos)
     
 
-# %% ../nbs/00_core.ipynb 32
+# %% ../nbs/00_core.ipynb 29
 size_options = {
     "realSize": 0,   # 이미지를 원래의 크기로 삽입한다.
     "specificSize": 1,    # width와 height에 지정한 크기로 그림을 삽입한다.
@@ -276,7 +251,16 @@ effects = {
 }
 
 @patch
-def insert_picture(app:App, fpath, width=None, height=None, size_option="realSize", reverse=False, watermark=False, effect="RealPicture"):
+def insert_picture(
+    app:App,    # app
+    fpath,     # 그림 위치
+    width=None,     # 넓이
+    height=None,     # 높이
+    size_option="realSize",    # 사이즈 옵션 
+    reverse=False,     # 이미지 반전 여부
+    watermark=False,     # 워커마크 여부
+    effect="RealPicture"    # 화면 효과
+):
     """
     사이즈를 지정하여 사진 삽입
     """
@@ -293,7 +277,7 @@ def insert_picture(app:App, fpath, width=None, height=None, size_option="realSiz
         effect=effect
     )
 
-# %% ../nbs/00_core.ipynb 33
+# %% ../nbs/00_core.ipynb 30
 @patch
 def get_selected_text(app:App):
     """
@@ -304,7 +288,7 @@ def get_selected_text(app:App):
     return text
 
 
-# %% ../nbs/00_core.ipynb 34
+# %% ../nbs/00_core.ipynb 31
 directions = {
     "Forward": 0,
     "Backward": 1, 
@@ -337,20 +321,20 @@ def replace_all(app:App,
                 new_strike_out=None,  # 바꿀 취소선
                 ignore_message=True,  # 메시지 무시 여부
                 direction="All",   # 찾을 방향
-                match_case=False,  # 글자 
-                all_word_forms=False,  # 
-                several_words=False,
-                use_wild_cards=False,
-                whole_word_only=False,
-                auto_spell=True,
-                replace_mode=True,
-                ignore_find_string=False,
-                ignore_replace_string=False,
-                find_style="",
-                replace_style="",
-                find_jaso=False,
-                find_reg_exp=False,
-                find_type=True,
+                match_case=False,  # 대소문자 구분
+                all_word_forms=False,  # 문자열 결합
+                several_words=False,    #  여러 단어 찾기
+                use_wild_cards=False,    # 아무개 문자
+                whole_word_only=False,    # 온전한 낱말
+                auto_spell=True,   # 토시 자동 교정
+                replace_mode=True,    # 찾아 바꾸기 모드
+                ignore_find_string=False,    # 찾을 문자열 무시
+                ignore_replace_string=False,    # 바꿀 문자열 무시
+                find_style="",    # 찾을 스타일
+                replace_style="",    # 바꿀 스타일
+                find_jaso=False,    # 자소로 찾기
+                find_reg_exp=False,    # 정규표현식으로 찾기
+                find_type=True,    # 다시 찾기를 할 때 마지막으로 실한 찾기를 할 경우 True, 찾아가기를 할경우 False
                ):
     
     action = app.actions.AllReplace()
@@ -383,7 +367,7 @@ def replace_all(app:App,
     return action.run()
     
 
-# %% ../nbs/00_core.ipynb 38
+# %% ../nbs/00_core.ipynb 34
 @patch
 def insert_file(app:App, fpath, keep_charshape=False, keep_parashape=False, keep_section=False, keep_style=False):
     """

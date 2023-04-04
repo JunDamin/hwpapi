@@ -172,9 +172,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#install" id="toc-install" class="nav-link active" data-scroll-target="#install">Install</a></li>
-  <li><a href="#how-to-use" id="toc-how-to-use" class="nav-link" data-scroll-target="#how-to-use">How to use</a></li>
-  <li><a href="#왜-hwpapi를-만들었나요" id="toc-왜-hwpapi를-만들었나요" class="nav-link" data-scroll-target="#왜-hwpapi를-만들었나요">왜 HwpApi를 만들었나요?</a></li>
+  <li><a href="#how-to-use" id="toc-how-to-use" class="nav-link" data-scroll-target="#how-to-use">How to use</a>
+  <ul class="collapse">
   <li><a href="#기존-코드와-연동성-비교하기" id="toc-기존-코드와-연동성-비교하기" class="nav-link" data-scroll-target="#기존-코드와-연동성-비교하기">기존 코드와 연동성 비교하기</a></li>
+  </ul></li>
+  <li><a href="#왜-hwpapi를-만들었나요" id="toc-왜-hwpapi를-만들었나요" class="nav-link" data-scroll-target="#왜-hwpapi를-만들었나요">왜 HwpApi를 만들었나요?</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/HwpApi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
@@ -207,23 +209,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This file will become your README and also the index of your documentation.</p>
 <section id="install" class="level2">
 <h2 class="anchored" data-anchor-id="install">Install</h2>
+<p>이 패키지는 win32com을 통해 좀더 쉽게 한글 자동화를 하기 위한 패키지 입니다. 따라서, 한글 오피스가 설치된 Windows에서만 작동합니다. 리눅스나 한컴 오피스가 설치된 Mac OS에서는 작동하지 않습니다.</p>
+<p>다른 일반적인 패키지와 같이 아래 명령어를 입력하면 설치할 수 있습니다.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install HwpApi</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="how-to-use" class="level2">
 <h2 class="anchored" data-anchor-id="how-to-use">How to use</h2>
-<p>Fill me in please! Don’t forget code examples:</p>
-</section>
-<section id="왜-hwpapi를-만들었나요" class="level2">
-<h2 class="anchored" data-anchor-id="왜-hwpapi를-만들었나요">왜 HwpApi를 만들었나요?</h2>
-<p>가장 큰 이유는 스스로 사용하기 위해서 입니다. 직장인으로 많은 한글 문서를 편집하고 작성하곤 하는데 단순 반복업무가 너무 많다는 것이 불만이었습니다. 이런 문제를 해결하는 방법으로 한글 자동화에 대한 이야기를 파이콘에서 보게 되었습니다. 특히 ‘회사원 코딩’ 님의 블로그와 영상이 많은 참조가 되었습니다.</p>
-<p>다만 그 과정에서 설명자료가 부족하기도 하고 예전에 작성했던 코드들을 자꾸 찾아보게 되면서 아래아 한글 용 파이썬 패키지가 있으면 좋겠다는 생각을 했습니다. 특히 업무를 하면서 엑셀 자동화를 위해 xlwings를 사용해 보면서 파이썬으로 사용하기 쉽게 만든 라이브러리가 코딩 작업 효율을 엄청 올린다는 것을 깨닫게 되었습니다.</p>
-<p>제출 마감까지 해야 할 일들을 빠르게 하기 위해서 빠르게 한글 자동화가 된다면 좋겠다는 생각으로 만들게 되었습니다.</p>
-<p>기본적인 철학은 xlwings을 따라하고 있습니다. 기본적으로는 자주 쓰이는 항목들을 사용하기 쉽게 정리한 메소드 등으로 구현하고, 부족한 부분은 <code>App.api</code>형태로 <code>win32com</code>으로 하는 것과 동일한 작업이 가능하게 하여 한글 api의 모든 기능을 사용할 수 있도록 구현하였습니다.</p>
-<p>메소드로 만드는 것에는 아직 고민이 있습니다. chain과 같은 형태로 여러가지 콤비네이션을 사전에 세팅을 해야 하나 싶은 부분도 있고 실제로 유용하게 사용할 수 있는 여러가지 아이템 등도 있어서 어떤 부분까지 이 패키지에 구현할지는 고민하고 있습니다.</p>
-<p>다만 이런 형태의 작업을 통해서 어쩌면 hwp api wrapper가 활성화 되어서 단순 작업을 자동화 할 수 있기를 바라고 있습니다.</p>
-</section>
-<section id="기존-코드와-연동성-비교하기" class="level2">
-<h2 class="anchored" data-anchor-id="기존-코드와-연동성-비교하기">기존 코드와 연동성 비교하기</h2>
+<p>기본적으로는 wi32com을 통한 한컴 오피스 자동화를 보다 쉽게 사용하기 위해 개발한 패키지 입니다.</p>
+<p>기존의 연동성을 최대한 유지하면서도 파이써닉하게 코드를 짤 수 있도록 개선하고자 하였습니다.</p>
+<section id="기존-코드와-연동성-비교하기" class="level3">
+<h3 class="anchored" data-anchor-id="기존-코드와-연동성-비교하기">기존 코드와 연동성 비교하기</h3>
 <p><a href="https://employeecoding.tistory.com/72">회사원 코딩</a>에 가보시면 아래와 같이 자동화 코드가 있습니다.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> win32com.client <span class="im">as</span> win32</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>hwp <span class="op">=</span> win32.gencache.EnsureDispatch(<span class="st">"HWPFrame.HwpObject"</span>)</span>
@@ -233,7 +228,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>pset <span class="op">=</span> act.CreateSet()</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>pset.SetItem(<span class="st">"Text"</span>, <span class="st">"Hello</span><span class="ch">\r\n</span><span class="st">World!"</span>)</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>act.Execute(pset)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>이 코드는 기본적으로 verbose라고 볼 만한 상황입니다. 이 코드를 <code>HwpApi</code>를 사용하면 아래와 같이 간결하게 정리가 됨을 볼 수 있습니다.</p>
+<p>이 코드는 기본적으로 장황하다고 볼 만한 상황입니다. 이 코드를 <code>HwpApi</code>를 사용하면 아래와 같이 간결하게 정리가 됨을 볼 수 있습니다.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> HwpApi.core <span class="im">import</span> App</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -246,8 +241,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>True</code></pre>
 </div>
 </div>
-<p>vim 맵핑은 상당히 편리한 기능으로 보입니다. 특히 이게 편리한 이유는 여러가지가 있겠지만, 가장 큰 이유는 코드를 편집하거나 할 때 유용한 기능을 제공하기 때문인 것으로 보입니다. ESC키를 쓰는 건 습관을 만들면 될 것 같기도 합니다. 특히 Jupyter lab이나 아마도 Jupyter notebook에서도 유사하게 동작할 것으로 보입니다만, 각 셀에서 vim 나가기 기능을 통해서 셀 선택 기능으로 나갈 수 있고 이는 상당히 큰 메리트가 됩니다. 모든 작업을 키보드로만 가능하게 해주는 기능으로 보입니다.</p>
-<p>이렇게 되면 키 맵핑을 해서 많은 작업을 자동화 할 수 있을 것으로 보입니다. 특히 Caps Lock은 거의 쓰이지 않음에도 위치가 아주 좋은 점을 고려할 때 Key Mapping을 바꾸고 자주 쓰이는 ESC키를 쓰는 건 유용한 것으로 판단됩니다.</p>
+<p>코드를 보시면 hwp를 세팅하는 부분이 간략해졌습니다. 또한 파라미터 설정이 파이썬 객체처럼 설정할 수 있게 변경 되어 있는 것을 볼 수 있습니다.</p>
+<p>이런 식으로 파이썬에서 사용하기 쉽게 만들었습니다.</p>
+</section>
+</section>
+<section id="왜-hwpapi를-만들었나요" class="level2">
+<h2 class="anchored" data-anchor-id="왜-hwpapi를-만들었나요">왜 HwpApi를 만들었나요?</h2>
+<p>가장 큰 이유는 스스로 사용하기 위해서 입니다. 직장인으로 많은 한글 문서를 편집하고 작성하곤 하는데 단순 반복업무가 너무 많다는 것이 불만이었습니다. 이런 문제를 해결하는 방법으로 한글 자동화에 대한 이야기를 파이콘에서 보게 되었습니다. 특히 ‘회사원 코딩’ 님의 블로그와 영상이 많은 참조가 되었습니다.</p>
+<p>다만 그 과정에서 설명자료가 부족하기도 하고 예전에 작성했던 코드들을 자꾸 찾아보게 되면서 아래아 한글 용 파이썬 패키지가 있으면 좋겠다는 생각을 했습니다. 특히 업무를 하면서 엑셀 자동화를 위해 xlwings를 사용해 보면서 파이썬으로 사용하기 쉽게 만든 라이브러리가 코딩 작업 효율을 엄청 올린다는 것을 깨닫게 되었습니다.</p>
+<p>제출 마감까지 해야 할 일들을 빠르게 하기 위해서 빠르게 한글 자동화가 된다면 좋겠다는 생각으로 만들게 되었습니다.</p>
+<p>기본적인 철학은 xlwings을 따라하고 있습니다. 기본적으로는 자주 쓰이는 항목들을 사용하기 쉽게 정리한 메소드 등으로 구현하고, 부족한 부분은 <code>App.api</code>형태로 <code>win32com</code>으로 하는 것과 동일한 작업이 가능하게 하여 한글 api의 모든 기능을 사용할 수 있도록 구현하였습니다.</p>
+<p>메소드로 만드는 것에는 아직 고민이 있습니다. chain과 같은 형태로 여러가지 콤비네이션을 사전에 세팅을 해야 하나 싶은 부분도 있고 실제로 유용하게 사용할 수 있는 여러가지 아이템 등도 있어서 어떤 부분까지 이 패키지에 구현할지는 고민하고 있습니다.</p>
+<p>다만 이런 형태의 작업을 통해서 어쩌면 hwp api wrapper가 활성화 되어서 단순 작업을 자동화 할 수 있기를 바라고 있습니다.</p>
 
 
 </section>
