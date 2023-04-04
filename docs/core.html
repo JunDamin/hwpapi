@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.296">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Core Classes for HwpApi">
+
+<title>HwpApi - core</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="HwpApi - core">
+<meta property="og:description" content="Core Classes for HwpApi">
+<meta property="og:site-name" content="HwpApi">
+<meta name="twitter:title" content="HwpApi - core">
+<meta name="twitter:description" content="Core Classes for HwpApi">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">HwpApi</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools ms-auto">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./core.html">core</a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">HwpApi</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./core.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">core</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./variables.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">actions</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./fnctions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">functions</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#gencache-error-해결" id="toc-gencache-error-해결" class="nav-link active" data-scroll-target="#gencache-error-해결">gencache error 해결</a></li>
+  <li><a href="#필요한-패키지는" id="toc-필요한-패키지는" class="nav-link" data-scroll-target="#필요한-패키지는">필요한 패키지는</a></li>
+  <li><a href="#app" id="toc-app" class="nav-link" data-scroll-target="#app">App</a></li>
+  <li><a href="#app.set_visible" id="toc-app.set_visible" class="nav-link" data-scroll-target="#app.set_visible">App.set_visible</a></li>
+  <li><a href="#app.get_filepath" id="toc-app.get_filepath" class="nav-link" data-scroll-target="#app.get_filepath">App.get_filepath</a></li>
+  <li><a href="#app.open" id="toc-app.open" class="nav-link" data-scroll-target="#app.open">App.open</a></li>
+  <li><a href="#app.save" id="toc-app.save" class="nav-link" data-scroll-target="#app.save">App.save</a></li>
+  <li><a href="#app.close" id="toc-app.close" class="nav-link" data-scroll-target="#app.close">App.close</a></li>
+  <li><a href="#app.quit" id="toc-app.quit" class="nav-link" data-scroll-target="#app.quit">App.quit</a></li>
+  <li><a href="#app.create_action" id="toc-app.create_action" class="nav-link" data-scroll-target="#app.create_action">App.create_action</a></li>
+  <li><a href="#app.create_parameterset" id="toc-app.create_parameterset" class="nav-link" data-scroll-target="#app.create_parameterset">App.create_parameterset</a></li>
+  <li><a href="#app.insert_text" id="toc-app.insert_text" class="nav-link" data-scroll-target="#app.insert_text">App.insert_text</a></li>
+  <li><a href="#app.find_files" id="toc-app.find_files" class="nav-link" data-scroll-target="#app.find_files">App.find_files</a></li>
+  <li><a href="#scan" id="toc-scan" class="nav-link" data-scroll-target="#scan">scan</a></li>
+  <li><a href="#app.move" id="toc-app.move" class="nav-link" data-scroll-target="#app.move">App.move</a></li>
+  <li><a href="#app.insert_picture" id="toc-app.insert_picture" class="nav-link" data-scroll-target="#app.insert_picture">App.insert_picture</a></li>
+  <li><a href="#app.get_selected_text" id="toc-app.get_selected_text" class="nav-link" data-scroll-target="#app.get_selected_text">App.get_selected_text</a></li>
+  <li><a href="#app.replace_all" id="toc-app.replace_all" class="nav-link" data-scroll-target="#app.replace_all">App.replace_all</a></li>
+  <li><a href="#app.insert_file" id="toc-app.insert_file" class="nav-link" data-scroll-target="#app.insert_file">App.insert_file</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/HwpApi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">core</h1>
+</div>
+
+<div>
+  <div class="description">
+    Core Classes for HwpApi
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<section id="gencache-error-해결" class="level3">
+<h3 class="anchored" data-anchor-id="gencache-error-해결">gencache error 해결</h3>
+<p>캐시가 충돌하는 문제를 해결하기 위해서 장치를 마련했습니다. 오류가 나는지 확인은 필요할 것으로 보입니다.</p>
+</section>
+<section id="필요한-패키지는" class="level3">
+<h3 class="anchored" data-anchor-id="필요한-패키지는">필요한 패키지는</h3>
+<p>App은 기존 hwpapi를 wrapping 하여 보다 사용하기 쉽게 만드는 것을 목적으로 하고 있는 클래스 입니다.</p>
+<p>제가 만든 기능을 사용할 수 있을 뿐만 아니라 <code>HwpApi</code> 한글 컨트롤과 동등한 기능을 부여하고자 하였으며 api 메소드를 통해 win32com의 방식으로 모두 사용할 수 있어 다양하게 사용할 수 있습니다. 기본 메소드를 보다 쓰기 쉽게 만들고자 합니다. 앞으로 추가할 기능은 화면 크기 조정 등이 있습니다.</p>
+<p>기본적으로는 <a href="https://JunDamin.github.io/HwpApi/core.html#app"><code>App</code></a> 클래스와 <a href="https://JunDamin.github.io/HwpApi/actions.html#_action"><code>_Action</code></a>클래스가 있습니다. <a href="https://JunDamin.github.io/HwpApi/actions.html#_action"><code>_Action</code></a> 클래스는 <a href="https://JunDamin.github.io/HwpApi/core.html#app"><code>App</code></a>로만 생성되어야 하기 때문에 언더바로 시작합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L17" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app" class="level3">
+<h3 class="anchored" data-anchor-id="app">App</h3>
+<blockquote class="blockquote">
+<pre><code> App (api=None)</code></pre>
+</blockquote>
+<p>App 클래스는 한컴오피스의 한/글 프로그램과 상호작용하기 위한 인터페이스를 제공합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L37" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.set_visible" class="level3">
+<h3 class="anchored" data-anchor-id="app.set_visible">App.set_visible</h3>
+<blockquote class="blockquote">
+<pre><code> App.set_visible (app:__main__.App, is_visible=True, window_i=0)</code></pre>
+</blockquote>
+<p><code>set_visible()</code> 함수는 한/글 프로그램의 창을 화면에 보이거나 숨기기 위해 호출됩니다. <code>is_visible</code> 인자가 <code>True</code>일 경우 창이 화면에 보이고, <code>False</code>일 경우 숨깁니다. <code>window_i</code> 인자는 창의 인덱스를 지정합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L46" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.get_filepath" class="level3">
+<h3 class="anchored" data-anchor-id="app.get_filepath">App.get_filepath</h3>
+<blockquote class="blockquote">
+<pre><code> App.get_filepath (app:__main__.App)</code></pre>
+</blockquote>
+<p><code>get_filepath()</code> 함수는 현재 열려있는 한/글 문서의 경로를 반환합니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pywintypes</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    app <span class="op">=</span> App(app.api)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">NameError</span>:</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    app <span class="op">=</span> App()</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> pywintypes.com_error:</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    app <span class="op">=</span> App()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L53" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.open" class="level3">
+<h3 class="anchored" data-anchor-id="app.open">App.open</h3>
+<blockquote class="blockquote">
+<pre><code> App.open (app:__main__.App, path:str)</code></pre>
+</blockquote>
+<p><code>open()</code> 함수는 파일 경로를 인자로 받아 해당 파일을 한/글 프로그램에서 엽니다. <code>get_absolute_path()</code> 함수를 호출하여 절대 경로로 변환한 후, <code>api.Open()</code> 함수를 호출하여 파일을 엽니다. 열린 파일의 경로를 반환합니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>app.<span class="bu">open</span>(<span class="vs">r"C:\Users\freed\Downloads\일반관리비 관리 자료 작성\1. Template6_일반관리비template_0309_1730(수정).hwp"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>'C:/Users/freed/Downloads/일반관리비 관리 자료 작성/1. Template6_일반관리비template_0309_1730(수정).hwp'</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L63" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.save" class="level3">
+<h3 class="anchored" data-anchor-id="app.save">App.save</h3>
+<blockquote class="blockquote">
+<pre><code> App.save (app:__main__.App, path=None)</code></pre>
+</blockquote>
+<p><code>save()</code> 함수는 현재 열려있는 문서를 저장하거나 다른 이름으로 저장합니다. <code>path</code> 인자가 주어지지 않은 경우 현재 문서를 덮어쓰기로 저장하고, 저장된 파일의 경로를 반환합니다. <code>path</code> 인자가 주어진 경우, <code>Path</code> 모듈을 이용하여 파일 확장자를 추출한 후, 해당 확장자에 맞게 문서를 저장합니다. 저장된 파일의 경로를 반환합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L81" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.close" class="level3">
+<h3 class="anchored" data-anchor-id="app.close">App.close</h3>
+<blockquote class="blockquote">
+<pre><code> App.close (app:__main__.App)</code></pre>
+</blockquote>
+<p><code>close()</code> 함수는 현재 열려있는 문서를 닫습니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L87" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.quit" class="level3">
+<h3 class="anchored" data-anchor-id="app.quit">App.quit</h3>
+<blockquote class="blockquote">
+<pre><code> App.quit (app:__main__.App)</code></pre>
+</blockquote>
+<p><code>quit()</code> 함수는 한/글 프로그램을 종료합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L93" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.create_action" class="level3">
+<h3 class="anchored" data-anchor-id="app.create_action">App.create_action</h3>
+<blockquote class="blockquote">
+<pre><code> App.create_action (app:__main__.App, action_key:str)</code></pre>
+</blockquote>
+<p><code>create_action()</code> 함수는 <a href="https://JunDamin.github.io/HwpApi/actions.html#_action"><code>_Action</code></a> 클래스의 객체를 생성하여 반환합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L99" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.create_parameterset" class="level3">
+<h3 class="anchored" data-anchor-id="app.create_parameterset">App.create_parameterset</h3>
+<blockquote class="blockquote">
+<pre><code> App.create_parameterset (app:__main__.App, action_key:str)</code></pre>
+</blockquote>
+<p><code>create_parameterset()</code> 함수는 특정 액션의 파라미터셋을 반환합니다. <code>_action_info</code> 딕셔너리에서 액션에 대한 정보를 찾아서 파라미터셋의 키 값을 가져옵니다. 파라미터셋 객체를 반환합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/methods.py#L12" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.insert_text" class="level3">
+<h3 class="anchored" data-anchor-id="app.insert_text">App.insert_text</h3>
+<blockquote class="blockquote">
+<pre><code> App.insert_text (app:__main__.App, text:str)</code></pre>
+</blockquote>
+<p>`text를 입력합니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>app.insert_text(<span class="st">"test"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L119" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.find_files" class="level3">
+<h3 class="anchored" data-anchor-id="app.find_files">App.find_files</h3>
+<blockquote class="blockquote">
+<pre><code> App.find_files (app:__main__.App)</code></pre>
+</blockquote>
+<p>`text를 입력합니다.</p>
+<hr>
+</section>
+<section id="scan" class="level3">
+<h3 class="anchored" data-anchor-id="scan">scan</h3>
+<blockquote class="blockquote">
+<pre><code> scan (app:__main__.App, option='All', selection=False,
+       scan_spos='Document', scan_epos='Document', spara=None, spos=None,
+       epara=None, epos=None, scan_direction='Forward')</code></pre>
+</blockquote>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L232" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.move" class="level3">
+<h3 class="anchored" data-anchor-id="app.move">App.move</h3>
+<blockquote class="blockquote">
+<pre><code> App.move (app:__main__.App, move_key='ScanPos', para=None, pos=None)</code></pre>
+</blockquote>
+<p>키워드를 바탕으로 캐럿 위치를 이동시킵니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>get_value(move_ids, <span class="st">"ScanPos"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>201</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> app.scan() <span class="im">as</span> scan:</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> text <span class="kw">in</span> scan:</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(text)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="st">"청년인턴"</span> <span class="kw">in</span> text:</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>            app.move()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+
+
+
+(6) 일반관리비 관리 지표의 점수계산을 위한 Template(2)_준정부기관
+
+ 준정부기관은 이 양식을 사용하는 것을 원칙으로 하며, 자체수익사업 등이 있는 기관의 경우에는 양식 (5)를 사용할 수 있음. 
+
+
+
+
+구분
+
+2022
+
+2021
+
+2020
+
+1. 사업비(직접사업비와 사업비성 경비)와 판관비(또는 경비)
+
+　
+
+　
+
+　
+
+  a. 손익계산서 등의 직접사업비&lt;주1&gt;
+
+968,356,150,820 
+
+844,717,571,019 
+
+743,960,305,518 
+
+  b. 손익계산서 등의 사업비성 경비&lt;주1&gt;
+
+- 
+
+- 
+
+- 
+
+  c. 손익계산서상의 판관비(또는 경비)
+
+52,823,138,260 
+
+45,739,033,709 
+
+44,912,084,147 
+
+ 사업비와 판관비 계: (A)=a+b+c
+
+1,021,179,289,080 
+
+890,456,604,728 
+
+788,872,389,665 
+
+2. 사업비 중 제외항목 &lt;주2&gt;
+
+　
+
+　
+
+　
+
+  d. 직접사업비  
+
+938,474,753,330 
+
+820,516,672,451 
+
+708,180,239,253 
+
+  e. 사업비성 경비 
+
+8,976,588,028 
+
+6,289,073,570 
+
+10,647,673,873 
+
+제외항목 총계: (B)=d+e 
+
+947,451,341,358 
+
+826,805,746,021 
+
+718,827,913,126 
+
+3. 비정규직 인건비 등 &lt;주3&gt;
+
+　
+
+　
+
+　
+
+
+  f. 비정규직 인건비 등 총계
+
+19,442,425,086 
+
+17,243,943,642 
+
+19,856,530,881 
+
+
+  g. 비정규직 특수건강진단비
+
+- 
+
+- 
+
+- 
+
+
+차감 비정규직 인건비 등: (C) = f-g
+
+19,442,425,086 
+
+17,243,943,642 
+
+19,856,530,881 
+
+4. 비상임이사 인건비(D)&lt;주4&gt;
+
+61,300,000 
+
+76,549,990 
+
+63,850,000 
+
+5. 인상률 제외 인건비 중 기타 제외 인건비(E) &lt;주5&gt;
+
+　
+
+- 
+
+- 
+
+6. 사내근로복지기금출연금(F) &lt;주6&gt;
+
+　
+
+- 
+
+- 
+
+7. 감가상각비
+
+　
+
+　
+
+　
+
+  h. 사업비로 처리된 유형자산 감가상각비
+
+439,207,413 
+
+496,001,763 
+
+509,099,787 
+
+  i. 사업비로 처리된 무형자산 감가상각비
+
+- 
+
+- 
+
+- 
+
+  j. 판관비로 처리된 유형자산 감가상각비
+
+8,563,565,655 
+
+8,245,421,190 
+
+8,453,899,310 
+
+  k. 판관비로 처리된 무형자산 감가상각비
+
+2,937,462,955 
+
+2,721,623,724 
+
+2,551,321,675 
+
+감가상각비 총계: (G) = h+i+j+k
+
+11,940,236,023 
+
+11,463,046,677 
+
+11,514,320,772 
+
+8. 교육훈련비 &lt;주7&gt; 
+
+　
+
+　
+
+　
+
+  l. 사업비로 처리된 교육훈련비
+
+1,430,893 
+
+38,828,940 
+
+60,983,811 
+
+  m. 판관비로 처리된 교육훈련비
+
+1,450,057,354 
+
+1,360,002,485 
+
+1,263,153,190 
+
+교육훈련비 총계: (H) =l+m
+
+1,451,488,247 
+
+1,398,831,425 
+
+1,324,137,001 
+
+9. 연구비 및 경상개발비 &lt;주7&gt; 
+
+　
+
+　
+
+　
+
+  n. 사업비로 처리된 연구비 및 경상개발비
+
+- 
+
+- 
+
+- 
+
+  o. 판관비로 처리된 연구비 및 경상개발비
+
+373,155,890 
+
+323,413,809 
+
+122,238,417 
+
+연구비 및 경상개발비 총계: (I) = n+o
+
+373,155,890 
+
+323,413,809 
+
+122,238,417 
+
+10. 세금과공과 &lt;주7, 8&gt; 
+
+　
+
+　
+
+　
+
+  p. 사업비로 처리된 세금과공과
+
+- 
+
+- 
+
+- 
+
+  q. 판관비로 처리된 세금과공과
+
+721,630,836 
+
+647,281,606 
+
+542,776,456 
+
+세금과공과 총계: (J) = p+q
+
+721,630,836 
+
+647,281,606 
+
+542,776,456 
+
+11. 수선유지비 &lt;주7, 9&gt; 
+
+　
+
+　
+
+　
+
+  r. 사업비로 처리된 수선유지비
+
+　
+
+　
+
+　
+
+  s. 판관비로 처리된 수선유지비
+
+　
+
+　
+
+　
+
+세금과공과 총계: (K) = r+s
+
+- 
+
+- 
+
+- 
+
+
+일반관리비: 
+
+(L)=(A)-(B)+(C)+(D)+(E)+(F)-(G)-(H)-(I)-(J)-(K)
+
+78,745,161,812 
+
+67,138,778,822 
+
+76,461,384,774 
+
+매출액: (M)
+
+1,082,748,153,681 
+
+943,261,080,451 
+
+842,716,245,593 
+
+일반관리비 관리 지표 = (L)/(M)
+
+7.273%
+
+7.118%
+
+9.073test%
+
+
+
+
+
+* 청년인턴이 무기계약직으로 전환된 경우 비교가능성 등 동질성이 유지되도록 전년도 일반관리비 계산 시 당년도에 전환된 무기계약직 인건비 발생액을 전년도 일반관리비에 가산하여 기준치를 조정한 후 일반관리비 관리 점수계산을 할 수 있음
+
+</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="at">@patch</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> setup_page(</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    app:App,   <span class="co"># app</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    top<span class="op">=</span><span class="dv">20</span>,     <span class="co"># 윗 여백</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    bottom<span class="op">=</span><span class="dv">10</span>,     <span class="co"># 아래 여백</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    right<span class="op">=</span><span class="dv">20</span>,     <span class="co"># 오른쪽 여백</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    left<span class="op">=</span><span class="dv">20</span>,     <span class="co"># 왼쪽 여백</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    header<span class="op">=</span><span class="dv">15</span>,     <span class="co"># 머릿말</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    footer<span class="op">=</span><span class="dv">5</span>,     <span class="co"># 꼬릿말</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    gutter<span class="op">=</span><span class="dv">0</span>):    <span class="co"># 제본</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="co">    페이지를 설정합니다.</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    action <span class="op">=</span> app.actions.PageSetup()</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> action.pset</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>    p.PageDef.TopMargin <span class="op">=</span> app.api.MiliToHwpUnit(top)</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>    p.PageDef.HeaderLen <span class="op">=</span> app.api.MiliToHwpUnit(header)</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>    p.PageDef.RightMargin <span class="op">=</span> app.api.MiliToHwpUnit(right)</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>    p.PageDef.BottomMargin <span class="op">=</span> app.api.MiliToHwpUnit(bottom)</span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>    p.PageDef.FooterLen <span class="op">=</span> app.api.MiliToHwpUnit(footer)</span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>    p.PageDef.LeftMargin <span class="op">=</span> app.api.MiliToHwpUnit(left)</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>    p.PageDef.GutterLen <span class="op">=</span> app.api.MiliToHwpUnit(gutter)</span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> action.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L254" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.insert_picture" class="level3">
+<h3 class="anchored" data-anchor-id="app.insert_picture">App.insert_picture</h3>
+<blockquote class="blockquote">
+<pre><code> App.insert_picture (app:__main__.App, fpath, width=None, height=None,
+                     size_option='realSize', reverse=False,
+                     watermark=False, effect='RealPicture')</code></pre>
+</blockquote>
+<p>사이즈를 지정하여 사진 삽입</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>app</td>
+<td>App</td>
+<td></td>
+<td>app</td>
+</tr>
+<tr class="even">
+<td>fpath</td>
+<td></td>
+<td></td>
+<td>그림 위치</td>
+</tr>
+<tr class="odd">
+<td>width</td>
+<td>NoneType</td>
+<td>None</td>
+<td>넓이</td>
+</tr>
+<tr class="even">
+<td>height</td>
+<td>NoneType</td>
+<td>None</td>
+<td>높이</td>
+</tr>
+<tr class="odd">
+<td>size_option</td>
+<td>str</td>
+<td>realSize</td>
+<td>사이즈 옵션</td>
+</tr>
+<tr class="even">
+<td>reverse</td>
+<td>bool</td>
+<td>False</td>
+<td>이미지 반전 여부</td>
+</tr>
+<tr class="odd">
+<td>watermark</td>
+<td>bool</td>
+<td>False</td>
+<td>워커마크 여부</td>
+</tr>
+<tr class="even">
+<td>effect</td>
+<td>str</td>
+<td>RealPicture</td>
+<td>화면 효과</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L282" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.get_selected_text" class="level3">
+<h3 class="anchored" data-anchor-id="app.get_selected_text">App.get_selected_text</h3>
+<blockquote class="blockquote">
+<pre><code> App.get_selected_text (app:__main__.App)</code></pre>
+</blockquote>
+<p>선택된 영역의 텍스트를 불러온다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L299" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.replace_all" class="level3">
+<h3 class="anchored" data-anchor-id="app.replace_all">App.replace_all</h3>
+<blockquote class="blockquote">
+<pre><code> App.replace_all (app:__main__.App, old='', new='', old_fontcolor=None,
+                  new_fontcolor=None, old_fontsize=None,
+                  new_fontsize=None, old_fontname='', old_fonttype=1,
+                  new_fontname='', new_fonttype=1, old_fontratio=None,
+                  new_fontratio=None, old_spacing=None, new_spacing=None,
+                  old_bold=None, new_bold=None, old_italic=None,
+                  new_italic=None, old_underline=None, new_underline=None,
+                  old_strike_out=None, new_strike_out=None,
+                  ignore_message=True, direction='All', match_case=False,
+                  all_word_forms=False, several_words=False,
+                  use_wild_cards=False, whole_word_only=False,
+                  auto_spell=True, replace_mode=True,
+                  ignore_find_string=False, ignore_replace_string=False,
+                  find_style='', replace_style='', find_jaso=False,
+                  find_reg_exp=False, find_type=True)</code></pre>
+</blockquote>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>app</td>
+<td>App</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>old</td>
+<td>str</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>new</td>
+<td>str</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>old_fontcolor</td>
+<td>NoneType</td>
+<td>None</td>
+<td>찾을 폰트 색</td>
+</tr>
+<tr class="odd">
+<td>new_fontcolor</td>
+<td>NoneType</td>
+<td>None</td>
+<td>바꿀 폰트 색</td>
+</tr>
+<tr class="even">
+<td>old_fontsize</td>
+<td>NoneType</td>
+<td>None</td>
+<td>찾을 폰트 크기(height)</td>
+</tr>
+<tr class="odd">
+<td>new_fontsize</td>
+<td>NoneType</td>
+<td>None</td>
+<td>바꿀 폰트 크기(height)</td>
+</tr>
+<tr class="even">
+<td>old_fontname</td>
+<td>str</td>
+<td></td>
+<td>찾을 글꼴</td>
+</tr>
+<tr class="odd">
+<td>old_fonttype</td>
+<td>int</td>
+<td>1</td>
+<td>찾을 글꼴 타입 TTF = 1, HTF = 2</td>
+</tr>
+<tr class="even">
+<td>new_fontname</td>
+<td>str</td>
+<td></td>
+<td>바꿀 글꼴</td>
+</tr>
+<tr class="odd">
+<td>new_fonttype</td>
+<td>int</td>
+<td>1</td>
+<td>바꿀 글꼴 타입 TTF = 1, HTF = 2</td>
+</tr>
+<tr class="even">
+<td>old_fontratio</td>
+<td>NoneType</td>
+<td>None</td>
+<td>찾을 장평</td>
+</tr>
+<tr class="odd">
+<td>new_fontratio</td>
+<td>NoneType</td>
+<td>None</td>
+<td>바꿀 장평</td>
+</tr>
+<tr class="even">
+<td>old_spacing</td>
+<td>NoneType</td>
+<td>None</td>
+<td>찾을 자간</td>
+</tr>
+<tr class="odd">
+<td>new_spacing</td>
+<td>NoneType</td>
+<td>None</td>
+<td>바꿀 자간</td>
+</tr>
+<tr class="even">
+<td>old_bold</td>
+<td>NoneType</td>
+<td>None</td>
+<td>찾을 볼드</td>
+</tr>
+<tr class="odd">
+<td>new_bold</td>
+<td>NoneType</td>
+<td>None</td>
+<td>바꿀 볼드</td>
+</tr>
+<tr class="even">
+<td>old_italic</td>
+<td>NoneType</td>
+<td>None</td>
+<td>찾을 이텔릭</td>
+</tr>
+<tr class="odd">
+<td>new_italic</td>
+<td>NoneType</td>
+<td>None</td>
+<td>바꿀 이텔릭</td>
+</tr>
+<tr class="even">
+<td>old_underline</td>
+<td>NoneType</td>
+<td>None</td>
+<td>찾을 밑줄</td>
+</tr>
+<tr class="odd">
+<td>new_underline</td>
+<td>NoneType</td>
+<td>None</td>
+<td>바꿀 밑줄</td>
+</tr>
+<tr class="even">
+<td>old_strike_out</td>
+<td>NoneType</td>
+<td>None</td>
+<td>찾을 취소선</td>
+</tr>
+<tr class="odd">
+<td>new_strike_out</td>
+<td>NoneType</td>
+<td>None</td>
+<td>바꿀 취소선</td>
+</tr>
+<tr class="even">
+<td>ignore_message</td>
+<td>bool</td>
+<td>True</td>
+<td>메시지 무시 여부</td>
+</tr>
+<tr class="odd">
+<td>direction</td>
+<td>str</td>
+<td>All</td>
+<td>찾을 방향</td>
+</tr>
+<tr class="even">
+<td>match_case</td>
+<td>bool</td>
+<td>False</td>
+<td>대소문자 구분</td>
+</tr>
+<tr class="odd">
+<td>all_word_forms</td>
+<td>bool</td>
+<td>False</td>
+<td>문자열 결합</td>
+</tr>
+<tr class="even">
+<td>several_words</td>
+<td>bool</td>
+<td>False</td>
+<td>여러 단어 찾기</td>
+</tr>
+<tr class="odd">
+<td>use_wild_cards</td>
+<td>bool</td>
+<td>False</td>
+<td>아무개 문자</td>
+</tr>
+<tr class="even">
+<td>whole_word_only</td>
+<td>bool</td>
+<td>False</td>
+<td>온전한 낱말</td>
+</tr>
+<tr class="odd">
+<td>auto_spell</td>
+<td>bool</td>
+<td>True</td>
+<td>토시 자동 교정</td>
+</tr>
+<tr class="even">
+<td>replace_mode</td>
+<td>bool</td>
+<td>True</td>
+<td>찾아 바꾸기 모드</td>
+</tr>
+<tr class="odd">
+<td>ignore_find_string</td>
+<td>bool</td>
+<td>False</td>
+<td>찾을 문자열 무시</td>
+</tr>
+<tr class="even">
+<td>ignore_replace_string</td>
+<td>bool</td>
+<td>False</td>
+<td>바꿀 문자열 무시</td>
+</tr>
+<tr class="odd">
+<td>find_style</td>
+<td>str</td>
+<td></td>
+<td>찾을 스타일</td>
+</tr>
+<tr class="even">
+<td>replace_style</td>
+<td>str</td>
+<td></td>
+<td>바꿀 스타일</td>
+</tr>
+<tr class="odd">
+<td>find_jaso</td>
+<td>bool</td>
+<td>False</td>
+<td>자소로 찾기</td>
+</tr>
+<tr class="even">
+<td>find_reg_exp</td>
+<td>bool</td>
+<td>False</td>
+<td>정규표현식으로 찾기</td>
+</tr>
+<tr class="odd">
+<td>find_type</td>
+<td>bool</td>
+<td>True</td>
+<td>다시 찾기를 할 때 마지막으로 실한 찾기를 할 경우 True, 찾아가기를 할경우 False</td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>app.replace_all(<span class="st">"t"</span>, <span class="st">"txt"</span>, new_fontname<span class="op">=</span><span class="st">"가는안상수체"</span>, new_fontsize<span class="op">=</span><span class="dv">21</span>, new_fonttype<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>False</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>app.replace_all(<span class="st">""</span>, <span class="st">""</span>, old_fontname<span class="op">=</span><span class="st">"바탕체"</span>, new_fontname<span class="op">=</span><span class="st">"바탕체"</span>, ignore_find_string<span class="op">=</span><span class="va">True</span>, ignore_replace_string<span class="op">=</span><span class="va">True</span>, new_fontsize<span class="op">=</span><span class="dv">11</span>, new_fonttype<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>False</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L372" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.insert_file" class="level3">
+<h3 class="anchored" data-anchor-id="app.insert_file">App.insert_file</h3>
+<blockquote class="blockquote">
+<pre><code> App.insert_file (app:__main__.App, fpath, keep_charshape=False,
+                  keep_parashape=False, keep_section=False,
+                  keep_style=False)</code></pre>
+</blockquote>
+<p>파일 끼워 넣기</p>
+<p>한글 문서 사용은 다음과 같이 할 수 있습니다. 먼저 App 객체를 생성합니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>app.get_selected_text()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>'연구비 및 경상개발비 총계: (I) = n+o\n'</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> app.actions.InsertFile().pset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="bu">dir</span>(p)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>['CLSID',
+ 'CreateItemArray',
+ 'FileArg',
+ 'FileFormat',
+ 'HSet',
+ 'KeepCharshape',
+ 'KeepParashape',
+ 'KeepSection',
+ 'KeepStyle',
+ '_ApplyTypes_',
+ '__class__',
+ '__delattr__',
+ '__dict__',
+ '__dir__',
+ '__doc__',
+ '__eq__',
+ '__format__',
+ '__ge__',
+ '__getattr__',
+ '__getattribute__',
+ '__gt__',
+ '__hash__',
+ '__init__',
+ '__init_subclass__',
+ '__iter__',
+ '__le__',
+ '__lt__',
+ '__module__',
+ '__ne__',
+ '__new__',
+ '__reduce__',
+ '__reduce_ex__',
+ '__repr__',
+ '__setattr__',
+ '__sizeof__',
+ '__str__',
+ '__subclasshook__',
+ '__weakref__',
+ '_get_good_object_',
+ '_get_good_single_object_',
+ '_oleobj_',
+ '_prop_map_get_',
+ '_prop_map_put_',
+ 'coclass_clsid',
+ 'filename']</code></pre>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
