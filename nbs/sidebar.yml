@@ -2,6 +2,11 @@ website:
   sidebar:
     contents:
       - index.ipynb
-      - 00_core.ipynb
-      - 01_actions.ipynb
-      - 02_functions.ipynb
+      - section: tutorials
+        contents:
+          - 01_tutorials\tutorial.ipynb
+      - section: api
+        contents:
+          - 02_api\00_core.ipynb
+          - 02_api\01_actions.ipynb
+          - 02_api\02_functions.ipynb

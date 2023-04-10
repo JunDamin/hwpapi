@@ -41,7 +41,7 @@ setuptools.setup(
     url = cfg['git_url'],
     packages = setuptools.find_packages(),
     package_data = {
-        "HwpApi": ["*.dll"],
+        "hwpapi": ["*.dll"],
     },
     include_package_data = True,
     install_requires = requirements,

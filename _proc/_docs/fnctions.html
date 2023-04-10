@@ -8,7 +8,7 @@
 
 <meta name="description" content="action list">
 
-<title>HwpApi - functions</title>
+<title>hwpapi - functions</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,6 +20,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -62,10 +96,10 @@ ul.task-list li input[type="checkbox"] {
 
 
 <link rel="stylesheet" href="styles.css">
-<meta property="og:title" content="HwpApi - functions">
+<meta property="og:title" content="hwpapi - functions">
 <meta property="og:description" content="action list">
-<meta property="og:site-name" content="HwpApi">
-<meta name="twitter:title" content="HwpApi - functions">
+<meta property="og:site-name" content="hwpapi">
+<meta name="twitter:title" content="hwpapi - functions">
 <meta name="twitter:description" content="action list">
 <meta name="twitter:card" content="summary">
 </head>
@@ -78,7 +112,7 @@ ul.task-list li input[type="checkbox"] {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">HwpApi</span>
+    <span class="navbar-title">hwpapi</span>
     </a>
   </div>
         <div class="quarto-navbar-tools ms-auto">
@@ -127,6 +161,23 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">functions</span></a>
   </div>
 </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text">tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">tutorial</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
     </ul>
     </div>
 </nav>
@@ -137,15 +188,16 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#get_absolute_path" id="toc-get_absolute_path" class="nav-link active" data-scroll-target="#get_absolute_path">get_absolute_path</a></li>
+  <li><a href="#dispatch" id="toc-dispatch" class="nav-link active" data-scroll-target="#dispatch">dispatch</a></li>
+  <li><a href="#get_absolute_path" id="toc-get_absolute_path" class="nav-link" data-scroll-target="#get_absolute_path">get_absolute_path</a></li>
   <li><a href="#get_dll_path" id="toc-get_dll_path" class="nav-link" data-scroll-target="#get_dll_path">get_dll_path</a></li>
-  <li><a href="#get_registry_value" id="toc-get_registry_value" class="nav-link" data-scroll-target="#get_registry_value">get_registry_value</a></li>
   <li><a href="#add_dll_to_registry" id="toc-add_dll_to_registry" class="nav-link" data-scroll-target="#add_dll_to_registry">add_dll_to_registry</a></li>
+  <li><a href="#get_registry_value" id="toc-get_registry_value" class="nav-link" data-scroll-target="#get_registry_value">get_registry_value</a></li>
   <li><a href="#check_dll" id="toc-check_dll" class="nav-link" data-scroll-target="#check_dll">check_dll</a></li>
   <li><a href="#get_value" id="toc-get_value" class="nav-link" data-scroll-target="#get_value">get_value</a></li>
   <li><a href="#set_charshape" id="toc-set_charshape" class="nav-link" data-scroll-target="#set_charshape">set_charshape</a></li>
   </ul>
-<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/HwpApi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -173,62 +225,95 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 <!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>The autoreload extension is already loaded. To reload it, use:
+  %reload_ext autoreload</code></pre>
+</div>
+</div>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/functions.py#L9" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L15" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<section id="dispatch" class="level3">
+<h3 class="anchored" data-anchor-id="dispatch">dispatch</h3>
+<blockquote class="blockquote">
+<pre><code> dispatch (app_name:str)</code></pre>
+</blockquote>
+<p>캐시가 충돌하는 문제를 해결하기 위해 실행합니다. 에러가 발생할 경우 기존 캐시를 삭제하고 다시 불러옵니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L37" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
 <section id="get_absolute_path" class="level3">
 <h3 class="anchored" data-anchor-id="get_absolute_path">get_absolute_path</h3>
 <blockquote class="blockquote">
 <pre><code> get_absolute_path (path)</code></pre>
 </blockquote>
+<p>파일 절대 경로를 반환합니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/functions.py#L16" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L43" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="get_dll_path" class="level3">
 <h3 class="anchored" data-anchor-id="get_dll_path">get_dll_path</h3>
 <blockquote class="blockquote">
 <pre><code> get_dll_path (package_name, dll_filename)</code></pre>
 </blockquote>
+<p>패키지에서 dll 경로를 확보합니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/functions.py#L44" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="get_registry_value" class="level3">
-<h3 class="anchored" data-anchor-id="get_registry_value">get_registry_value</h3>
-<blockquote class="blockquote">
-<pre><code> get_registry_value (key_path, value_name)</code></pre>
-</blockquote>
-<hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/functions.py#L29" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L53" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="add_dll_to_registry" class="level3">
 <h3 class="anchored" data-anchor-id="add_dll_to_registry">add_dll_to_registry</h3>
 <blockquote class="blockquote">
 <pre><code> add_dll_to_registry (dll_path, key_path)</code></pre>
 </blockquote>
+<p>레지스트리에 dll을 등록합니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/functions.py#L54" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L70" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="get_registry_value" class="level3">
+<h3 class="anchored" data-anchor-id="get_registry_value">get_registry_value</h3>
+<blockquote class="blockquote">
+<pre><code> get_registry_value (key_path, value_name)</code></pre>
+</blockquote>
+<p>레지스트리에 값이 있는지 확인해 봅니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L80" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="check_dll" class="level3">
 <h3 class="anchored" data-anchor-id="check_dll">check_dll</h3>
 <blockquote class="blockquote">
 <pre><code> check_dll ()</code></pre>
 </blockquote>
+<p>dll 모듈을 등록합니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/functions.py#L67" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L94" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="get_value" class="level3">
 <h3 class="anchored" data-anchor-id="get_value">get_value</h3>
 <blockquote class="blockquote">
 <pre><code> get_value (dict_, key)</code></pre>
 </blockquote>
+<p>딕셔너리에서 키를 찾아 값을 반환합니다. 반환할 값이 없으면 키에러와 함께 가능한 키를 알려줍니다.</p>
 <hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L102" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="set_charshape" class="level3">
 <h3 class="anchored" data-anchor-id="set_charshape">set_charshape</h3>
 <blockquote class="blockquote">
-<pre><code> set_charshape (charshape, fontname:str, font_type:int, fontcolor,
-                fontsize:int, bold:bool, intalic:bool, strike_out,
-                under_line, fontratio)</code></pre>
+<pre><code> set_charshape (charshape, face_name:str=None, font_type:int=None,
+                size:int=None, ratio:int=None, spacing:int=None,
+                offset:int=None, bold:bool=None, italic:bool=None,
+                small_caps:bool=None, emboss:bool=None,
+                super_script:bool=None, sub_script:bool=None,
+                underline_type:int=None, outline_type:int=None,
+                text_color=None, shade_color=None,
+                underline_shape:int=None, underline_color=None,
+                shadow_offset_x:int=None, shadow_offset_y:int=None,
+                shadow_color=None, strike_out_type=None,
+                diac_sym_mark=None, use_font_space=None, use_kerning=None,
+                height:int=None)</code></pre>
 </blockquote>
+<p>CharShape값을 입력하기 위한 함수입니다. <code>BorderFill</code>은 별도로 “BorderFill”타입을 사용하기 때문에 제외하였습니다.</p>
 
 
 </section>

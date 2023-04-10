@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="Core Classes for HwpApi">
+<meta name="description" content="Core Classes for hwpapi">
 
-<title>HwpApi - core</title>
+<title>hwpapi - core</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -96,11 +96,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <link rel="stylesheet" href="styles.css">
-<meta property="og:title" content="HwpApi - core">
-<meta property="og:description" content="Core Classes for HwpApi">
-<meta property="og:site-name" content="HwpApi">
-<meta name="twitter:title" content="HwpApi - core">
-<meta name="twitter:description" content="Core Classes for HwpApi">
+<meta property="og:title" content="hwpapi - core">
+<meta property="og:description" content="Core Classes for hwpapi">
+<meta property="og:site-name" content="hwpapi">
+<meta name="twitter:title" content="hwpapi - core">
+<meta name="twitter:description" content="Core Classes for hwpapi">
 <meta name="twitter:card" content="summary">
 </head>
 
@@ -112,7 +112,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">HwpApi</span>
+    <span class="navbar-title">hwpapi</span>
     </a>
   </div>
         <div class="quarto-navbar-tools ms-auto">
@@ -161,6 +161,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">functions</span></a>
   </div>
 </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text">tutorials</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tutorials/tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">tutorial</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
     </ul>
     </div>
 </nav>
@@ -191,7 +208,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#app.replace_all" id="toc-app.replace_all" class="nav-link" data-scroll-target="#app.replace_all">App.replace_all</a></li>
   <li><a href="#app.insert_file" id="toc-app.insert_file" class="nav-link" data-scroll-target="#app.insert_file">App.insert_file</a></li>
   </ul>
-<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/HwpApi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -203,7 +220,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <div>
   <div class="description">
-    Core Classes for HwpApi
+    Core Classes for hwpapi
   </div>
 </div>
 
@@ -226,10 +243,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="필요한-패키지는" class="level3">
 <h3 class="anchored" data-anchor-id="필요한-패키지는">필요한 패키지는</h3>
 <p>App은 기존 hwpapi를 wrapping 하여 보다 사용하기 쉽게 만드는 것을 목적으로 하고 있는 클래스 입니다.</p>
-<p>제가 만든 기능을 사용할 수 있을 뿐만 아니라 <code>HwpApi</code> 한글 컨트롤과 동등한 기능을 부여하고자 하였으며 api 메소드를 통해 win32com의 방식으로 모두 사용할 수 있어 다양하게 사용할 수 있습니다. 기본 메소드를 보다 쓰기 쉽게 만들고자 합니다. 앞으로 추가할 기능은 화면 크기 조정 등이 있습니다.</p>
-<p>기본적으로는 <a href="https://JunDamin.github.io/HwpApi/core.html#app"><code>App</code></a> 클래스와 <a href="https://JunDamin.github.io/HwpApi/actions.html#_action"><code>_Action</code></a>클래스가 있습니다. <a href="https://JunDamin.github.io/HwpApi/actions.html#_action"><code>_Action</code></a> 클래스는 <a href="https://JunDamin.github.io/HwpApi/core.html#app"><code>App</code></a>로만 생성되어야 하기 때문에 언더바로 시작합니다.</p>
+<p>제가 만든 기능을 사용할 수 있을 뿐만 아니라 <code>hwpapi</code> 한글 컨트롤과 동등한 기능을 부여하고자 하였으며 api 메소드를 통해 win32com의 방식으로 모두 사용할 수 있어 다양하게 사용할 수 있습니다. 기본 메소드를 보다 쓰기 쉽게 만들고자 합니다. 앞으로 추가할 기능은 화면 크기 조정 등이 있습니다.</p>
+<p>기본적으로는 <a href="https://JunDamin.github.io/hwpapi/core.html#app"><code>App</code></a> 클래스와 <a href="https://JunDamin.github.io/hwpapi/actions.html#_action"><code>_Action</code></a>클래스가 있습니다. <a href="https://JunDamin.github.io/hwpapi/actions.html#_action"><code>_Action</code></a> 클래스는 <a href="https://JunDamin.github.io/hwpapi/core.html#app"><code>App</code></a>로만 생성되어야 하기 때문에 언더바로 시작합니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L17" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L17" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app" class="level3">
 <h3 class="anchored" data-anchor-id="app">App</h3>
@@ -238,7 +255,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </blockquote>
 <p>App 클래스는 한컴오피스의 한/글 프로그램과 상호작용하기 위한 인터페이스를 제공합니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L37" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L38" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.set_visible" class="level3">
 <h3 class="anchored" data-anchor-id="app.set_visible">App.set_visible</h3>
@@ -247,7 +264,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </blockquote>
 <p><code>set_visible()</code> 함수는 한/글 프로그램의 창을 화면에 보이거나 숨기기 위해 호출됩니다. <code>is_visible</code> 인자가 <code>True</code>일 경우 창이 화면에 보이고, <code>False</code>일 경우 숨깁니다. <code>window_i</code> 인자는 창의 인덱스를 지정합니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L46" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L47" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.get_filepath" class="level3">
 <h3 class="anchored" data-anchor-id="app.get_filepath">App.get_filepath</h3>
@@ -266,7 +283,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    app <span class="op">=</span> App()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L53" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L54" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.open" class="level3">
 <h3 class="anchored" data-anchor-id="app.open">App.open</h3>
@@ -281,7 +298,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L63" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L64" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.save" class="level3">
 <h3 class="anchored" data-anchor-id="app.save">App.save</h3>
@@ -290,7 +307,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </blockquote>
 <p><code>save()</code> 함수는 현재 열려있는 문서를 저장하거나 다른 이름으로 저장합니다. <code>path</code> 인자가 주어지지 않은 경우 현재 문서를 덮어쓰기로 저장하고, 저장된 파일의 경로를 반환합니다. <code>path</code> 인자가 주어진 경우, <code>Path</code> 모듈을 이용하여 파일 확장자를 추출한 후, 해당 확장자에 맞게 문서를 저장합니다. 저장된 파일의 경로를 반환합니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L81" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L82" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.close" class="level3">
 <h3 class="anchored" data-anchor-id="app.close">App.close</h3>
@@ -299,7 +316,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </blockquote>
 <p><code>close()</code> 함수는 현재 열려있는 문서를 닫습니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L87" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L88" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.quit" class="level3">
 <h3 class="anchored" data-anchor-id="app.quit">App.quit</h3>
@@ -308,16 +325,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </blockquote>
 <p><code>quit()</code> 함수는 한/글 프로그램을 종료합니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L93" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L94" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.create_action" class="level3">
 <h3 class="anchored" data-anchor-id="app.create_action">App.create_action</h3>
 <blockquote class="blockquote">
 <pre><code> App.create_action (app:__main__.App, action_key:str)</code></pre>
 </blockquote>
-<p><code>create_action()</code> 함수는 <a href="https://JunDamin.github.io/HwpApi/actions.html#_action"><code>_Action</code></a> 클래스의 객체를 생성하여 반환합니다.</p>
+<p><code>create_action()</code> 함수는 <a href="https://JunDamin.github.io/hwpapi/actions.html#_action"><code>_Action</code></a> 클래스의 객체를 생성하여 반환합니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L99" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L100" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.create_parameterset" class="level3">
 <h3 class="anchored" data-anchor-id="app.create_parameterset">App.create_parameterset</h3>
@@ -326,7 +343,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </blockquote>
 <p><code>create_parameterset()</code> 함수는 특정 액션의 파라미터셋을 반환합니다. <code>_action_info</code> 딕셔너리에서 액션에 대한 정보를 찾아서 파라미터셋의 키 값을 가져옵니다. 파라미터셋 객체를 반환합니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/methods.py#L12" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/methods.py#L12" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.insert_text" class="level3">
 <h3 class="anchored" data-anchor-id="app.insert_text">App.insert_text</h3>
@@ -341,7 +358,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L119" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L120" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.find_files" class="level3">
 <h3 class="anchored" data-anchor-id="app.find_files">App.find_files</h3>
@@ -359,7 +376,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
        epara=None, epos=None, scan_direction='Forward')</code></pre>
 </blockquote>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L232" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L233" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.move" class="level3">
 <h3 class="anchored" data-anchor-id="app.move">App.move</h3>
@@ -770,7 +787,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> action.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L254" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L255" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.insert_picture" class="level3">
 <h3 class="anchored" data-anchor-id="app.insert_picture">App.insert_picture</h3>
@@ -841,7 +858,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L282" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L283" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.get_selected_text" class="level3">
 <h3 class="anchored" data-anchor-id="app.get_selected_text">App.get_selected_text</h3>
@@ -850,7 +867,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </blockquote>
 <p>선택된 영역의 텍스트를 불러온다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L299" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L300" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.replace_all" class="level3">
 <h3 class="anchored" data-anchor-id="app.replace_all">App.replace_all</h3>
@@ -1136,7 +1153,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <hr>
-<p><a href="https://github.com/JunDamin/HwpApi/blob/main/HwpApi/core.py#L372" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L373" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.insert_file" class="level3">
 <h3 class="anchored" data-anchor-id="app.insert_file">App.insert_file</h3>
