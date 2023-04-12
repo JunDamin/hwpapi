@@ -228,6 +228,60 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.core <span class="im">import</span> App</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p><a href="https://JunDamin.github.io/hwpapi/02_api/core.html#app"><code>App</code></a>은 기존 hwpapi를 wrapping 하여 보다 사용하기 쉽게 만드는 것을 목적으로 하고 있는 클래스 입니다.</p>
+<p><code>hwpapi</code>는 한글 컨트롤을 조합해서 자주사용했던 기능을 구현하였습니다. 또한, api 메소드를 통해 win32com의 방식으로 모두 사용할 수 있어 다양하게 사용할 수 있습니다.</p>
+<p>아래와 같이 App 객체를 생성하면 한글이 열립니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>한글을 조작할 때는 크게 <code>action</code>과 <code>hwpctrl method</code>로 나눌 수 있습니다. <code>action</code>은 파라미터를 설정하고 그것을 실행시켜서 작동하는 방식으로 사용자 단축키를 누르면 실행되는 명령에 가깝다면 <code>hwpctrl method</code>는 한글 자동화 모듈이 제공하는 것으로 사용자 입력에서는 신경쓰지 않아도 될 부분들을 처리하는 것이라고 보시면 됩니다.</p>
+<p><a href="https://www.hancom.com/board/devmanualList.do">공식 개발 매뉴얼</a>에 여러 <code>action</code>과 <code>parameter</code>, <code>method</code>의 설명을 제공하고 있습니다. 아쉽게도 문서가 잘 관리되고 있지는 않으며, <code>hwpctrl</code>의 <code>method</code>들을 보면 명시되어 있지 않은 기능들이 개발되어 있음을 알 수 있습니다.</p>
+<p>앞으로 개발해 나가면서 확인된 액션과 메소드 들을 정리해 나가고자 합니다.</p>
+<p><code>action</code>은 <code>app</code>에서 생성할 수 있습니다. 방식은 크게 2가지로 직접 <code>action key</code>를 입력하는 방법과 <code>actions</code>에 있는 <code>action</code> 객체를 생성하는 방법이 있습니다. 아래 두 방식은 동일한 <code>Action</code> 객체를 생성합니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>action1 <span class="op">=</span> app.create_action(<span class="st">"InsertText"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>action1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>&lt;Action InsertText: 텍스트 삽입&gt;</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>action2 <span class="op">=</span> app.actions.InsertText()</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>action2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>&lt;Action InsertText: 텍스트 삽입&gt;</code></pre>
+</div>
+</div>
+<p><code>Delete</code>(지우기), <code>BreakPara</code>(줄바꿈) 등 많은 <code>action</code>은 파라미터 세팅이 필요 없습니다. 하지만 위에서 생성한 <code>InsertText</code>객체는 입력할 텍스트 값을 넣어주어야 합니다. 이는 <code>parameter</code>를 통해 설정할 수 있습니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>action1.pset.Text <span class="op">=</span> <span class="st">"입력하기"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>파라미터를 설정한 후 다음과 같이 액션을 실행하면 텍스트가 입력되는 걸 볼 수 있습니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>action1.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>charshape <span class="op">=</span> app.actions.CharShape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>charshape.pset.Height <span class="op">=</span> app.api.PointToHwpUnit(<span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>charshape.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>action2.pset.Text <span class="op">=</span> <span class="st">"크게 입력하기"</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>action2.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
 
 
 

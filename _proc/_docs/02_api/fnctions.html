@@ -206,7 +206,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#get_registry_value" id="toc-get_registry_value" class="nav-link" data-scroll-target="#get_registry_value">get_registry_value</a></li>
   <li><a href="#check_dll" id="toc-check_dll" class="nav-link" data-scroll-target="#check_dll">check_dll</a></li>
   <li><a href="#get_value" id="toc-get_value" class="nav-link" data-scroll-target="#get_value">get_value</a></li>
-  <li><a href="#set_charshape" id="toc-set_charshape" class="nav-link" data-scroll-target="#set_charshape">set_charshape</a></li>
+  <li><a href="#set_charshape_pset" id="toc-set_charshape_pset" class="nav-link" data-scroll-target="#set_charshape_pset">set_charshape_pset</a></li>
+  <li><a href="#hex_to_rgb" id="toc-hex_to_rgb" class="nav-link" data-scroll-target="#hex_to_rgb">hex_to_rgb</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
@@ -308,23 +309,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L102" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
-<section id="set_charshape" class="level3">
-<h3 class="anchored" data-anchor-id="set_charshape">set_charshape</h3>
+<section id="set_charshape_pset" class="level3">
+<h3 class="anchored" data-anchor-id="set_charshape_pset">set_charshape_pset</h3>
 <blockquote class="blockquote">
-<pre><code> set_charshape (charshape, face_name:str=None, font_type:int=None,
-                size:int=None, ratio:int=None, spacing:int=None,
-                offset:int=None, bold:bool=None, italic:bool=None,
-                small_caps:bool=None, emboss:bool=None,
-                super_script:bool=None, sub_script:bool=None,
-                underline_type:int=None, outline_type:int=None,
-                text_color=None, shade_color=None,
-                underline_shape:int=None, underline_color=None,
-                shadow_offset_x:int=None, shadow_offset_y:int=None,
-                shadow_color=None, strike_out_type=None,
-                diac_sym_mark=None, use_font_space=None, use_kerning=None,
-                height:int=None)</code></pre>
+<pre><code> set_charshape_pset (charshape, face_name:str=None, font_type:int=None,
+                     size:int=None, ratio:int=None, spacing:int=None,
+                     offset:int=None, bold:bool=None, italic:bool=None,
+                     small_caps:bool=None, emboss:bool=None,
+                     super_script:bool=None, sub_script:bool=None,
+                     underline_type:int=None, outline_type:int=None,
+                     text_color=None, shade_color=None,
+                     underline_shape:int=None, underline_color=None,
+                     shadow_offset_x:int=None, shadow_offset_y:int=None,
+                     shadow_color=None, strike_out_type=None,
+                     diac_sym_mark=None, use_font_space=None,
+                     use_kerning=None, height:int=None)</code></pre>
 </blockquote>
 <p>CharShape값을 입력하기 위한 함수입니다. <code>BorderFill</code>은 별도로 “BorderFill”타입을 사용하기 때문에 제외하였습니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L178" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="hex_to_rgb" class="level3">
+<h3 class="anchored" data-anchor-id="hex_to_rgb">hex_to_rgb</h3>
+<blockquote class="blockquote">
+<pre><code> hex_to_rgb (hex_string)</code></pre>
+</blockquote>
 
 
 </section>

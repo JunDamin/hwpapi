@@ -4,7 +4,7 @@ website:
       - index.ipynb
       - section: tutorials
         contents:
-          - 01_tutorials\tutorial.ipynb
+          - 01_tutorials\01_app_basics.ipynb
       - section: api
         contents:
           - 02_api\00_core.ipynb
