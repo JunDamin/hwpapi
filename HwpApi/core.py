@@ -264,13 +264,13 @@ def set_parashape(app:App,
     
     # 유닛 조정
     mili_units = [border_offset_left, border_offset_right, border_offset_top, border_offset_bottom]
-    convert = lambda value : app.api.MiliToHwpUnit(value) if value else None
-    mili_units = list(map(convert, mili_units))
+    convert_mili = lambda value : app.api.MiliToHwpUnit(value) if value else None
+    mili_units = list(map(convert_mili, mili_units))
     border_offset_left, border_offset_right, border_offset_top, border_offset_bottom = mili_units
     
     point_units = [left_margin, right_margin] 
-    convert = lambda value : app.api.PointToHwpUnit(value)*2 if value else None
-    point_units = list(map(convert, point_units))
+    convert_point = lambda value : app.api.PointToHwpUnit(value)*2 if value else None
+    point_units = list(map(convert_point, point_units))
     left_margin, right_margin = point_units
     
     
@@ -441,7 +441,7 @@ def move(app:App, move_key="ScanPos", para=None, pos=None):
     return app.api.MovePos(moveID=move_id, Para=para, pos=pos)
     
 
-# %% ../nbs/02_api/00_core.ipynb 30
+# %% ../nbs/02_api/00_core.ipynb 29
 size_options = {
     "realSize": 0,   # 이미지를 원래의 크기로 삽입한다.
     "specificSize": 1,    # width와 height에 지정한 크기로 그림을 삽입한다.
@@ -482,7 +482,7 @@ def insert_picture(
         effect=effect
     )
 
-# %% ../nbs/02_api/00_core.ipynb 31
+# %% ../nbs/02_api/00_core.ipynb 30
 @patch
 def select_text(app:App, option:str="Line"):
     """
@@ -499,7 +499,7 @@ def select_text(app:App, option:str="Line"):
     
 
 
-# %% ../nbs/02_api/00_core.ipynb 34
+# %% ../nbs/02_api/00_core.ipynb 33
 @patch
 def get_selected_text(app:App):
     """
@@ -510,7 +510,7 @@ def get_selected_text(app:App):
     return text
 
 
-# %% ../nbs/02_api/00_core.ipynb 36
+# %% ../nbs/02_api/00_core.ipynb 35
 @patch
 def get_text(app:App, spos="Line", epos="Line"):
     """
@@ -521,14 +521,14 @@ def get_text(app:App, spos="Line", epos="Line"):
     return text
 
 
-# %% ../nbs/02_api/00_core.ipynb 38
+# %% ../nbs/02_api/00_core.ipynb 37
 directions = {
     "Forward": 0,
     "Backward": 1, 
     "All": 2
 }
 
-# %% ../nbs/02_api/00_core.ipynb 39
+# %% ../nbs/02_api/00_core.ipynb 38
 @patch
 def find_text(app:App, 
     text = "",
@@ -586,7 +586,7 @@ def find_text(app:App,
         
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 41
+# %% ../nbs/02_api/00_core.ipynb 40
 @patch
 def replace_all(app:App, 
                 old = "",
@@ -659,7 +659,7 @@ def replace_all(app:App,
     return action.run()
     
 
-# %% ../nbs/02_api/00_core.ipynb 44
+# %% ../nbs/02_api/00_core.ipynb 43
 @patch
 def insert_file(app:App, fpath, keep_charshape=False, keep_parashape=False, keep_section=False, keep_style=False):
     """
