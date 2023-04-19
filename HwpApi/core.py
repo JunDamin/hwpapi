@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['mask_options', 'scan_spos_keys', 'scan_epos_keys', 'scan_directions', 'move_ids', 'size_options', 'effects',
-           'directions', 'App']
+           'directions', 'App', 'move_to_line']
 
 # %% ../nbs/02_api/00_core.ipynb 4
 from pathlib import Path
@@ -11,7 +11,7 @@ from contextlib import contextmanager
 
 # %% ../nbs/02_api/00_core.ipynb 5
 from .actions import _Actions, _Action
-from .functions import dispatch, get_absolute_path, check_dll, get_value, set_charshape_pset, hex_to_rgb
+from .functions import dispatch, get_absolute_path, check_dll, get_value, set_charshape_pset, set_parashape_pset, hex_to_rgb
 
 # %% ../nbs/02_api/00_core.ipynb 6
 class App:
@@ -138,7 +138,8 @@ def set_charshape(app:App,
     '''`현재 위치의 글자 모양을 조정합니다.'''
     charshape = app.actions.CharShape()
     
-    height = app.api.PointToHwpUnit(height)
+    if height:
+        height = app.api.PointToHwpUnit(height)
     
     if text_color:
         text_color = app.api.RGBColor(*hex_to_rgb(text_color))
@@ -180,6 +181,135 @@ def set_charshape(app:App,
 
 # %% ../nbs/02_api/00_core.ipynb 18
 @patch
+def set_parashape(app:App,
+    left_margin:int=None,
+    right_margin:int=None,
+    indentation:int=None,
+    prev_spacing:int=None,
+    next_spacing:int=None,
+    line_spacing_type:str=None,
+    line_spacing:int=None,
+    align_type:str=None,
+    break_latin_word:str=None,
+    break_non_latin_word:bool=None,
+    snap_to_grid:bool=None,
+    condense:float=None,
+    widow_orphan:bool=None,
+    keep_with_next:bool=None,
+    page_break_before:bool=None,
+    text_alignment:str=None,
+    font_line_height:int=None,
+    heading_type:str=None,
+    level:int=None,
+    border_connect:bool=None,
+    border_text:bool=None,
+    border_offset_left:int=None,
+    border_offset_right:int=None,
+    border_offset_top:int=None,
+    border_offset_bottom:int=None,
+    tail_type:bool=None,
+    line_wrap:bool=None,
+    tab_def=None,
+    numbering=None,
+    bullet=None,
+    borderfill=None):
+    
+    parashape = app.actions.ParagraphShape()
+    
+    # enum 스타일
+    spacing_types = {
+        "Word": 0,
+        "Fixed": 1,
+        "Margin": 2,
+    }
+    if line_spacing_type:
+        line_spacing_type = get_value(spacing_types, line_spacing_type)
+    
+    align_types = {
+        "Both" : 0,
+        "Left": 1,
+        "Right": 2, 
+        "Center": 3,
+        "Distributed": 4,
+        "SpaceOnly": 5,
+    }
+    if align_type:
+        align_type = get_value(align_types, align_type)
+    
+    break_latin_words = {
+        "Word": 0,
+        "Hyphen":1,
+        "Letter":2,
+    }
+    if break_latin_word:
+        break_latin_word = get_value(break_latin_words, break_latin_word)
+    
+    text_alignments = {
+        "Font": 0,
+        "Upper": 1,
+        "Middle": 2,
+        "Lower": 3,
+    }
+    if text_alignment:
+        text_alignment = get_value(text_alignments, text_alignment)
+    
+    heading_types = {
+        "None": 0,
+        "Content": 1,
+        "Numbering": 2,
+        "Bullet": 3,
+    }
+    if heading_type:
+        heading_type = get_value(heading_types, heading_type)
+    
+    # 유닛 조정
+    mili_units = [border_offset_left, border_offset_right, border_offset_top, border_offset_bottom]
+    convert = lambda value : app.api.MiliToHwpUnit(value) if value else None
+    mili_units = list(map(convert, mili_units))
+    border_offset_left, border_offset_right, border_offset_top, border_offset_bottom = mili_units
+    
+    point_units = [left_margin, right_margin] 
+    convert = lambda value : app.api.PointToHwpUnit(value)*2 if value else None
+    point_units = list(map(convert, point_units))
+    left_margin, right_margin = point_units
+    
+    
+    set_parashape_pset(
+        parashape.pset,
+        left_margin=left_margin,
+        right_margin=right_margin,
+        indentation=indentation,
+        prev_spacing=prev_spacing,
+        next_spacing=next_spacing,
+        line_spacing_type=line_spacing_type,
+        line_spacing=line_spacing,
+        align_type=align_type,
+        break_latin_word=break_latin_word,
+        break_non_latin_word=break_non_latin_word,
+        snap_to_grid=snap_to_grid,
+        condense=condense,
+        widow_orphan=widow_orphan,
+        keep_with_next=keep_with_next,
+        page_break_before=page_break_before,
+        text_alignment=text_alignment,
+        font_line_height=font_line_height,
+        heading_type=heading_type,
+        level=level,
+        border_connect=border_connect,
+        border_text=border_text,
+        border_offset_left=border_offset_left,
+        border_offset_right=border_offset_right,
+        border_offset_top=border_offset_top,
+        border_offset_bottom=border_offset_bottom,
+        tail_type=tail_type,
+        line_wrap=line_wrap,
+    )
+    
+    return parashape.run()
+        
+
+# %% ../nbs/02_api/00_core.ipynb 19
+@patch
 def insert_text(app:App, text:str, fontname=None, font_type=1, bold=None, italic=None, strike_out_type=None, underline_type=None, ratio=None, height=None, text_color=None):
     '''`text를 입력합니다.'''
     app.set_charshape(fontname=fontname, font_type=font_type, bold=bold, italic=italic, strike_out_type=strike_out_type, underline_type=underline_type, ratio=ratio, height=height, text_color=text_color)
@@ -189,7 +319,7 @@ def insert_text(app:App, text:str, fontname=None, font_type=1, bold=None, italic
     insert_text.run()
     return 
 
-# %% ../nbs/02_api/00_core.ipynb 20
+# %% ../nbs/02_api/00_core.ipynb 24
 mask_options = {
     "Normal": 0x00,         # "본문을 대상으로 검색한다.(서브리스트를 검색하지 않는다.)"
     "Char": 0x01,           # "char 타입 컨트롤 마스크를 대상으로 한다.(강제줄나눔, 문단 끝, 하이픈, 묶움빈칸, 고정폭빈칸, 등...)"
@@ -252,7 +382,16 @@ def scan(app:App, option="All", selection=False, scan_spos="Document", scan_epos
     yield _get_text(app)   
     app.api.ReleaseScan()
 
-# %% ../nbs/02_api/00_core.ipynb 21
+# %% ../nbs/02_api/00_core.ipynb 25
+def move_to_line(app:App, text):
+    """인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다."""
+    with app.scan(scan_spos="Line") as scan:
+        for line in scan:
+            if text in line:
+                return app.move()
+    return False
+
+# %% ../nbs/02_api/00_core.ipynb 26
 move_ids = {
     "Main": 0,    # 루트 리스트의 특정 위치.(para pos로 위치 지정)
     "CurList": 1,    # 현재 리스트의 특정 위치.(para pos로 위치 지정)
@@ -302,7 +441,7 @@ def move(app:App, move_key="ScanPos", para=None, pos=None):
     return app.api.MovePos(moveID=move_id, Para=para, pos=pos)
     
 
-# %% ../nbs/02_api/00_core.ipynb 25
+# %% ../nbs/02_api/00_core.ipynb 30
 size_options = {
     "realSize": 0,   # 이미지를 원래의 크기로 삽입한다.
     "specificSize": 1,    # width와 height에 지정한 크기로 그림을 삽입한다.
@@ -343,7 +482,24 @@ def insert_picture(
         effect=effect
     )
 
-# %% ../nbs/02_api/00_core.ipynb 26
+# %% ../nbs/02_api/00_core.ipynb 31
+@patch
+def select_text(app:App, option:str="Line"):
+    """
+    한줄을 선택합니다.
+    """
+    select_options  = {
+        "Doc" : (app.actions.MoveDocBegin, app.actions.MoveSelDocEnd),
+        "Para" : (app.actions.MoveParaBegin, app.actions.MoveSelParaEnd),
+        "Line" : (app.actions.MoveLineBegin, app.actions.MoveSelLineEnd),
+        "Word" : (app.actions.MoveWordBegin, app.actions.MoveSelWordEnd),
+    }
+    begin, end = select_options.get(option)
+    return begin().run(), end().run()
+    
+
+
+# %% ../nbs/02_api/00_core.ipynb 34
 @patch
 def get_selected_text(app:App):
     """
@@ -354,14 +510,25 @@ def get_selected_text(app:App):
     return text
 
 
-# %% ../nbs/02_api/00_core.ipynb 27
+# %% ../nbs/02_api/00_core.ipynb 36
+@patch
+def get_text(app:App, spos="Line", epos="Line"):
+    """
+    텍스트를 가져옵니다. 기본은 현재 문장입니다.
+    """
+    with app.scan(scan_spos=spos, scan_epos=epos) as txts:
+        text = "".join(txts)
+    return text
+
+
+# %% ../nbs/02_api/00_core.ipynb 38
 directions = {
     "Forward": 0,
     "Backward": 1, 
     "All": 2
 }
 
-# %% ../nbs/02_api/00_core.ipynb 28
+# %% ../nbs/02_api/00_core.ipynb 39
 @patch
 def find_text(app:App, 
     text = "",
@@ -382,7 +549,6 @@ def find_text(app:App,
     several_words=False,    #  여러 단어 찾기
     use_wild_cards=False,    # 아무개 문자
     whole_word_only=False,    # 온전한 낱말
-    auto_spell=True,   # 토시 자동 교정
     replace_mode=False,    # 찾아 바꾸기 모드
     ignore_find_string=False,    # 찾을 문자열 무시
     ignore_replace_string=False,    # 바꿀 문자열 무시
@@ -394,7 +560,7 @@ def find_text(app:App,
     ):
     '''`text를 찾습니다.'''
     
-    action = app.actions.FindDlg()
+    action = app.actions.RepeatFind()
     p = action.pset
     
     # set options
@@ -406,7 +572,6 @@ def find_text(app:App,
     p.SeveralWords = several_words
     p.UseWildCards = use_wild_cards
     p.WholeWordOnly = whole_word_only
-    p.AutoSpell = auto_spell
     p.ReplaceMode = replace_mode
     p.IgnoreFindString = ignore_find_string
     p.IgnoreReplaceString = ignore_replace_string
@@ -421,7 +586,7 @@ def find_text(app:App,
         
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 31
+# %% ../nbs/02_api/00_core.ipynb 41
 @patch
 def replace_all(app:App, 
                 old = "",
@@ -494,7 +659,7 @@ def replace_all(app:App,
     return action.run()
     
 
-# %% ../nbs/02_api/00_core.ipynb 34
+# %% ../nbs/02_api/00_core.ipynb 44
 @patch
 def insert_file(app:App, fpath, keep_charshape=False, keep_parashape=False, keep_section=False, keep_style=False):
     """

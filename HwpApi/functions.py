@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['dispatch', 'get_absolute_path', 'get_dll_path', 'add_dll_to_registry', 'get_registry_value', 'check_dll', 'get_value',
-           'set_charshape_pset', 'hex_to_rgb']
+           'set_charshape_pset', 'set_parashape_pset', 'hex_to_rgb']
 
 # %% ../nbs/02_api/02_functions.ipynb 3
 import os
@@ -175,6 +175,75 @@ def set_charshape_pset(
 
 
 # %% ../nbs/02_api/02_functions.ipynb 12
+def set_parashape_pset(
+    parashape,
+    left_margin:int=None,
+    right_margin:int=None,
+    indentation:int=None,
+    prev_spacing:int=None,
+    next_spacing:int=None,
+    line_spacing_type:int=None,
+    line_spacing:int=None,
+    align_type:int=None,
+    break_latin_word:int=None,
+    break_non_latin_word:bool=None,
+    snap_to_grid:bool=None,
+    condense:float=None,
+    widow_orphan:bool=None,
+    keep_with_next:bool=None,
+    page_break_before:bool=None,
+    text_alignment:int=None,
+    font_line_height:int=None,
+    heading_type:int=None,
+    level:int=None,
+    border_connect:bool=None,
+    border_text:bool=None,
+    border_offset_left:int=None,
+    border_offset_right:int=None,
+    border_offset_top:int=None,
+    border_offset_bottom:int=None,
+    tail_type:bool=None,
+    line_wrap:bool=None,
+):
+    params = list(
+        filter(lambda x: x[1] is not None, 
+            [
+                ("LeftMargin", left_margin),
+                ("RightMargin", right_margin),
+                ("Indentation", indentation),
+                ("PrevSpacing", prev_spacing),
+                ("NextSpacing", next_spacing),
+                ("LineSpacingType", line_spacing_type),
+                ("LineSpacing", line_spacing),
+                ("AlignType", align_type),
+                ("BreakLatinWord", break_latin_word),
+                ("BreakNonLatinWord", break_non_latin_word),
+                ("SnapToGrid", snap_to_grid),
+                ("Condense", condense),
+                ("WidowOrphan", widow_orphan),
+                ("KeepWithNext", keep_with_next),
+                ("PageBreakBefore", page_break_before),
+                ("TextAlignment", text_alignment),
+                ("FontLineHeight", font_line_height),
+                ("HeadingType", heading_type),
+                ("Level", level),
+                ("BorderConnect", border_connect),
+                ("BorderText", border_text),
+                ("BorderOffsetLeft", border_offset_left),
+                ("BorderOffsetRight", border_offset_right),
+                ("BorderOffsetTop", border_offset_top),
+                ("BorderOffsetBottom", border_offset_bottom),
+                ("TailType", tail_type),
+                ("LineWrap", line_wrap),
+            ]
+        )
+    ) 
+    for key, value in params:
+        setattr(parashape, key, value)
+    
+    return parashape
+
+# %% ../nbs/02_api/02_functions.ipynb 13
 def hex_to_rgb(hex_string):
     # Remove the "#" symbol if it exists
     if hex_string.startswith("#"):
