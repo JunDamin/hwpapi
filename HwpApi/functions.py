@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['dispatch', 'get_absolute_path', 'get_dll_path', 'add_dll_to_registry', 'get_registry_value', 'check_dll', 'get_value',
-           'set_charshape_pset', 'set_parashape_pset', 'hex_to_rgb']
+           'set_charshape_pset', 'set_parashape_pset', 'hex_to_rgb', 'get_rgb_tuple']
 
 # %% ../nbs/02_api/02_functions.ipynb 3
 import os
@@ -256,4 +256,35 @@ def hex_to_rgb(hex_string):
 
     # Return the RGB tuple
     return (red, green, blue)
+
+def get_rgb_tuple(color):
+    # check if the input is already a tuple
+    if isinstance(color, tuple):
+        
+        # validate each color 
+        if len(color) > 3:
+            raise ValueError(f"colors should contains three compoents which represents RGB")
+        
+        for component in color:
+            if component > 255:
+                raise ValueError(f"number should be smaller than 255. the value is {color}")
+        return color
+
+    # if the input is a string, split it into a list of colors
+    elif isinstance(color, str):
+        
+        colors = {"red": (255, 0, 0), "green": (0, 255, 0), "blue": (0, 0, 255), "black": (0, 0, 0), "white": (255, 255, 255)}
+        
+        if color in colors.keys():
+            return colors.get(color)
+
+        # validate each color
+        if not (color.startswith('#') and len(color) == 7 and all(c in '0123456789abcdefABCDEF' for c in color[1:])):
+            raise ValueError(f"'{color}' is not a valid hexadecimal color.")
+
+        # convert the list to a tuple and return it
+        return hex_to_rgb(color)
+
+    else:
+        raise TypeError("Input must be a string or a tuple of colors.")
 
