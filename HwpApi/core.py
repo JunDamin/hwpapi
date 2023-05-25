@@ -12,14 +12,22 @@ from fastcore.basics import patch
 
 # %% ../nbs/02_api/00_core.ipynb 5
 from .actions import _Action, _Actions
+from .dataclasses import CharShape, ParaShape
 from hwpapi.functions import (
     check_dll,
     dispatch,
     get_absolute_path,
+    get_charshape_pset,
+    get_parashape_pset,
     get_rgb_tuple,
     get_value,
+    mili2unit,
+    point2unit,
     set_charshape_pset,
     set_parashape_pset,
+    set_pset,
+    unit2mili,
+    unit2point,
 )
 
 # %% ../nbs/02_api/00_core.ipynb 6
@@ -109,19 +117,19 @@ def close(app: App):
     """`close()` 함수는 현재 열려있는 문서를 닫습니다."""
     app.api.Run("FileClose")
 
-# %% ../nbs/02_api/00_core.ipynb 15
+# %% ../nbs/02_api/00_core.ipynb 16
 @patch
 def quit(app: App):
     """`quit()` 함수는 한/글 프로그램을 종료합니다."""
     app.api.Run("FileQuit")
 
-# %% ../nbs/02_api/00_core.ipynb 16
+# %% ../nbs/02_api/00_core.ipynb 17
 @patch
 def create_action(app: App, action_key: str):
     """`create_action()` 함수는 `_Action` 클래스의 객체를 생성하여 반환합니다."""
     return _Action(app, action_key)
 
-# %% ../nbs/02_api/00_core.ipynb 17
+# %% ../nbs/02_api/00_core.ipynb 18
 @patch
 def create_parameterset(app: App, action_key: str):
     """`create_parameterset()` 함수는 특정 액션의 파라미터셋을 반환합니다.
@@ -131,253 +139,52 @@ def create_parameterset(app: App, action_key: str):
         return None
     return getattr(app.api.HParameterSet, f"H{pset_key}")
 
-# %% ../nbs/02_api/00_core.ipynb 18
-@patch
-def set_charshape(
-    app: App,
-    fontname: str = None,
-    font_type: int = 1,
-    size: int = None,
-    ratio: int = None,
-    spacing: int = None,
-    offset: int = None,
-    bold: bool = None,
-    italic: bool = None,
-    small_caps: bool = None,
-    emboss: bool = None,
-    super_script: bool = None,
-    sub_script: bool = None,
-    underline_type: int = None,
-    outline_type: int = None,
-    text_color=None,
-    shade_color=None,
-    underline_shape: int = None,
-    underline_color=None,
-    shadow_offset_x: int = None,
-    shadow_offset_y: int = None,
-    shadow_color=None,
-    strike_out_type=None,
-    diac_sym_mark=None,
-    use_font_space=None,
-    use_kerning=None,
-    height: int = None,
-):
-    """`현재 위치의 글자 모양을 조정합니다."""
-    charshape = app.actions.CharShape()
-
-    if height:
-        height = app.api.PointToHwpUnit(height)
-
-    if text_color:
-        text_color = app.api.RGBColor(*get_rgb_tuple(text_color))
-    if shade_color:
-        shade_color = app.api.RGBColor(*get_rgb_tuple(shade_color))
-    if shadow_color:
-        shadow_color = app.api.RGBColor(*get_rgb_tuple(shadow_color))
-
-    set_charshape_pset(
-        charshape.pset,
-        face_name=fontname,
-        font_type=font_type,
-        size=size,
-        ratio=ratio,
-        spacing=spacing,
-        offset=offset,
-        bold=bold,
-        italic=italic,
-        small_caps=small_caps,
-        emboss=emboss,
-        super_script=super_script,
-        sub_script=sub_script,
-        underline_type=underline_type,
-        outline_type=outline_type,
-        text_color=text_color,
-        shade_color=shade_color,
-        underline_shape=underline_shape,
-        underline_color=underline_color,
-        shadow_offset_x=shadow_offset_x,
-        shadow_offset_y=shadow_offset_y,
-        shadow_color=shadow_color,
-        strike_out_type=strike_out_type,
-        diac_sym_mark=diac_sym_mark,
-        use_font_space=use_font_space,
-        use_kerning=use_kerning,
-        height=height,  # 포인트를 한글 유닛으로 변경합니다.
-    )
-    return charshape.run()
-
 # %% ../nbs/02_api/00_core.ipynb 19
 @patch
-def set_parashape(
-    app: App,
-    left_margin: int = None,
-    right_margin: int = None,
-    indentation: int = None,
-    prev_spacing: int = None,
-    next_spacing: int = None,
-    line_spacing_type: str = None,
-    line_spacing: int = None,
-    align_type: str = None,
-    break_latin_word: str = None,
-    break_non_latin_word: bool = None,
-    snap_to_grid: bool = None,
-    condense: float = None,
-    widow_orphan: bool = None,
-    keep_with_next: bool = None,
-    page_break_before: bool = None,
-    text_alignment: str = None,
-    font_line_height: int = None,
-    heading_type: str = None,
-    level: int = None,
-    border_connect: bool = None,
-    border_text: bool = None,
-    border_offset_left: int = None,
-    border_offset_right: int = None,
-    border_offset_top: int = None,
-    border_offset_bottom: int = None,
-    tail_type: bool = None,
-    line_wrap: bool = None,
-    tab_def=None,
-    numbering=None,
-    bullet=None,
-    borderfill=None,
-):
-    parashape = app.actions.ParagraphShape()
+def get_charshape(app: App):
+    action = app.actions.CharShape()
+    p = action.pset
+    return CharShape(p)
 
-    # enum 스타일
-    spacing_types = {
-        "Word": 0,
-        "Fixed": 1,
-        "Margin": 2,
-    }
-    if line_spacing_type:
-        line_spacing_type = get_value(spacing_types, line_spacing_type)
+# %% ../nbs/02_api/00_core.ipynb 21
+@patch
+def set_charshape(app: App, charshape: CharShape):
+    """`현재 위치의 글자 모양을 조정합니다."""
+    action = app.actions.CharShape()
+    set_pset(action.pset, charshape.todict())
+    return action.run()
 
-    align_types = {
-        "Both": 0,
-        "Left": 1,
-        "Right": 2,
-        "Center": 3,
-        "Distributed": 4,
-        "SpaceOnly": 5,
-    }
-    if align_type:
-        align_type = get_value(align_types, align_type)
+# %% ../nbs/02_api/00_core.ipynb 24
+@patch
+def get_parashape(app: App):
+    action = app.actions.ParagraphShape()
+    p = action.pset
 
-    break_latin_words = {
-        "Word": 0,
-        "Hyphen": 1,
-        "Letter": 2,
-    }
-    if break_latin_word:
-        break_latin_word = get_value(break_latin_words, break_latin_word)
+    return get_parashape_pset(p)
 
-    text_alignments = {
-        "Font": 0,
-        "Upper": 1,
-        "Middle": 2,
-        "Lower": 3,
-    }
-    if text_alignment:
-        text_alignment = get_value(text_alignments, text_alignment)
+# %% ../nbs/02_api/00_core.ipynb 26
+@patch
+def set_parashape(app: App, parashape: ParaShape):
+    action = app.actions.ParagraphShape()
+    set_pset(action.pset, parashape.todict())
+    return action.run()
 
-    heading_types = {
-        "None": 0,
-        "Content": 1,
-        "Numbering": 2,
-        "Bullet": 3,
-    }
-    if heading_type:
-        heading_type = get_value(heading_types, heading_type)
-
-    # 유닛 조정
-    mili_units = [
-        border_offset_left,
-        border_offset_right,
-        border_offset_top,
-        border_offset_bottom,
-    ]
-    convert_mili = lambda value: app.api.MiliToHwpUnit(value) if value else None
-    mili_units = list(map(convert_mili, mili_units))
-    (
-        border_offset_left,
-        border_offset_right,
-        border_offset_top,
-        border_offset_bottom,
-    ) = mili_units
-
-    point_units = [left_margin, right_margin]
-    convert_point = lambda value: app.api.PointToHwpUnit(value) * 2 if value else None
-    point_units = list(map(convert_point, point_units))
-    left_margin, right_margin = point_units
-
-    set_parashape_pset(
-        parashape.pset,
-        left_margin=left_margin,
-        right_margin=right_margin,
-        indentation=indentation,
-        prev_spacing=prev_spacing,
-        next_spacing=next_spacing,
-        line_spacing_type=line_spacing_type,
-        line_spacing=line_spacing,
-        align_type=align_type,
-        break_latin_word=break_latin_word,
-        break_non_latin_word=break_non_latin_word,
-        snap_to_grid=snap_to_grid,
-        condense=condense,
-        widow_orphan=widow_orphan,
-        keep_with_next=keep_with_next,
-        page_break_before=page_break_before,
-        text_alignment=text_alignment,
-        font_line_height=font_line_height,
-        heading_type=heading_type,
-        level=level,
-        border_connect=border_connect,
-        border_text=border_text,
-        border_offset_left=border_offset_left,
-        border_offset_right=border_offset_right,
-        border_offset_top=border_offset_top,
-        border_offset_bottom=border_offset_bottom,
-        tail_type=tail_type,
-        line_wrap=line_wrap,
-    )
-
-    return parashape.run()
-
-# %% ../nbs/02_api/00_core.ipynb 20
+# %% ../nbs/02_api/00_core.ipynb 28
 @patch
 def insert_text(
     app: App,
     text: str,
-    fontname=None,
-    font_type=1,
-    bold=None,
-    italic=None,
-    strike_out_type=None,
-    underline_type=None,
-    ratio=None,
-    height=None,
-    text_color=None,
+    charshape: CharShape,
 ):
     """`text를 입력합니다."""
-    app.set_charshape(
-        fontname=fontname,
-        font_type=font_type,
-        bold=bold,
-        italic=italic,
-        strike_out_type=strike_out_type,
-        underline_type=underline_type,
-        ratio=ratio,
-        height=height,
-        text_color=text_color,
-    )
+    app.set_charshape(charshape)
     insert_text = app.actions.InsertText()
     p = insert_text.pset
     p.Text = text
     insert_text.run()
     return
 
-# %% ../nbs/02_api/00_core.ipynb 25
+# %% ../nbs/02_api/00_core.ipynb 33
 mask_options = {
     "Normal": 0x00,  # "본문을 대상으로 검색한다.(서브리스트를 검색하지 않는다.)"
     "Char": 0x01,  # "char 타입 컨트롤 마스크를 대상으로 한다.(강제줄나눔, 문단 끝, 하이픈, 묶움빈칸, 고정폭빈칸, 등...)"
@@ -458,7 +265,7 @@ def scan(
     yield _get_text(app)
     app.api.ReleaseScan()
 
-# %% ../nbs/02_api/00_core.ipynb 26
+# %% ../nbs/02_api/00_core.ipynb 34
 def move_to_line(app: App, text):
     """인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다."""
     with app.scan(scan_spos="Line") as scan:
@@ -467,7 +274,7 @@ def move_to_line(app: App, text):
                 return app.move(key="ScanPos")
     return False
 
-# %% ../nbs/02_api/00_core.ipynb 27
+# %% ../nbs/02_api/00_core.ipynb 35
 move_ids = {
     "Main": 0,  # 루트 리스트의 특정 위치.(para pos로 위치 지정)
     "CurList": 1,  # 현재 리스트의 특정 위치.(para pos로 위치 지정)
@@ -517,7 +324,7 @@ def move(app: App, key="ScanPos", para=None, pos=None):
     move_id = get_value(move_ids, key)
     return app.api.MovePos(moveID=move_id, Para=para, pos=pos)
 
-# %% ../nbs/02_api/00_core.ipynb 30
+# %% ../nbs/02_api/00_core.ipynb 38
 size_options = {
     "realSize": 0,  # 이미지를 원래의 크기로 삽입한다.
     "specificSize": 1,  # width와 height에 지정한 크기로 그림을 삽입한다.
@@ -559,7 +366,7 @@ def insert_picture(
         effect=effect,
     )
 
-# %% ../nbs/02_api/00_core.ipynb 31
+# %% ../nbs/02_api/00_core.ipynb 39
 @patch
 def select_text(app: App, option: str = "Line"):
     """
@@ -574,7 +381,7 @@ def select_text(app: App, option: str = "Line"):
     begin, end = select_options.get(option)
     return begin().run(), end().run()
 
-# %% ../nbs/02_api/00_core.ipynb 34
+# %% ../nbs/02_api/00_core.ipynb 42
 @patch
 def get_selected_text(app: App):
     """
@@ -584,7 +391,7 @@ def get_selected_text(app: App):
         text = "\n".join(scan)
     return text
 
-# %% ../nbs/02_api/00_core.ipynb 36
+# %% ../nbs/02_api/00_core.ipynb 44
 @patch
 def get_text(app: App, spos="Line", epos="Line"):
     """
@@ -594,10 +401,10 @@ def get_text(app: App, spos="Line", epos="Line"):
         text = "".join(txts)
     return text
 
-# %% ../nbs/02_api/00_core.ipynb 38
+# %% ../nbs/02_api/00_core.ipynb 46
 directions = {"Forward": 0, "Backward": 1, "All": 2}
 
-# %% ../nbs/02_api/00_core.ipynb 39
+# %% ../nbs/02_api/00_core.ipynb 47
 @patch
 def find_text(
     app: App,
@@ -671,7 +478,7 @@ def find_text(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 41
+# %% ../nbs/02_api/00_core.ipynb 49
 @patch
 def replace_all(
     app: App,
@@ -738,6 +545,11 @@ def replace_all(
     p.FindType = find_type
 
     # set old charshape
+    old_charshape = {
+        "FaceNameHangul": old_fontname,
+        "TextColor": old_text_color,
+    }
+
     set_charshape_pset(
         p.FindCharShape,
         face_name=old_fontname,
@@ -765,7 +577,7 @@ def replace_all(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 44
+# %% ../nbs/02_api/00_core.ipynb 52
 @patch
 def insert_file(
     app: App,
@@ -789,7 +601,7 @@ def insert_file(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 45
+# %% ../nbs/02_api/00_core.ipynb 53
 @patch
 def set_cell_border(
     app: App,
@@ -865,7 +677,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 46
+# %% ../nbs/02_api/00_core.ipynb 54
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None
