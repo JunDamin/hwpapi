@@ -32,7 +32,22 @@ from hwpapi.functions import (
 
 # %% ../nbs/02_api/00_core.ipynb 6
 class App:
-    """App 클래스는 한컴오피스의 한/글 프로그램과 상호작용하기 위한 인터페이스를 제공합니다."""
+    """`App` 클래스는 한컴오피스의 한/글 프로그램과 상호작용하기 위한 인터페이스를 제공합니다.
+
+    메소드
+    ----------
+    __init__(api=None, is_visible=True) : None
+        `App` 클래스의 객체를 초기화합니다. 이 메소드에서는 `api` 객체를 인자로 받습니다.
+        만약 `api`가 제공되지 않았을 경우, `wc.gencache.EnsureDispatch("HWPFrame.HwpObject")`를 호출하여
+        기본값으로 한/글 프로그램의 COM 객체를 생성합니다. 그리고 `self.api` 속성에 이 객체를 할당합니다.
+        `_Actions` 클래스의 객체를 생성하여 `self.actions` 속성에 할당하고, `self.set_visible()` 함수를 호출합니다.
+
+    __str__() : str
+        `App` 클래스의 객체를 문자열로 변환하여 반환합니다. 반환되는 문자열은 `"<Hwp App: {self.get_filepath()}>"` 형식을 가집니다.
+
+    __repr__() : str
+        `__repr__` 메소드는 `__str__` 메소드와 동일한 기능을 수행합니다.
+    """
 
     def __init__(self, api=None, is_visible=True):
         """`__init__` 함수에서는 `api` 객체를 인자로 받습니다.
@@ -91,10 +106,22 @@ def open(app: App, path: str):
 # %% ../nbs/02_api/00_core.ipynb 13
 @patch
 def save(app: App, path=None):
-    """`save()` 함수는 현재 열려있는 문서를 저장하거나 다른 이름으로 저장합니다.
-    `path` 인자가 주어지지 않은 경우 현재 문서를 덮어쓰기로 저장하고, 저장된 파일의 경로를 반환합니다.
-    `path` 인자가 주어진 경우, `Path` 모듈을 이용하여 파일 확장자를 추출한 후, 해당 확장자에 맞게 문서를 저장합니다.
-    저장된 파일의 경로를 반환합니다."""
+    """
+    `create_action` 함수는 `_Action` 클래스의 인스턴스를 생성하고 반환합니다.
+
+    매개변수
+    ----------
+    app : App
+        액션을 생성할 애플리케이션 객체입니다.
+
+    action_key : str
+        생성할 액션의 키입니다.
+
+    반환
+    ------
+    _Action(app, action_key) : _Action object
+        입력받은 애플리케이션 객체와 액션 키를 사용하여 생성된 _Action 클래스의 인스턴스를 반환합니다.
+    """
 
     if not path:
         app.api.Save()
@@ -132,8 +159,26 @@ def create_action(app: App, action_key: str):
 # %% ../nbs/02_api/00_core.ipynb 18
 @patch
 def create_parameterset(app: App, action_key: str):
-    """`create_parameterset()` 함수는 특정 액션의 파라미터셋을 반환합니다.
-    `_action_info` 딕셔너리에서 액션에 대한 정보를 찾아서 파라미터셋의 키 값을 가져옵니다. 파라미터셋 객체를 반환합니다."""
+    """
+    `create_parameterset` 함수는 특정 액션에 대한 파라미터셋을 생성하고 반환합니다.
+
+    `_action_info` 딕셔너리를 사용하여 주어진 액션 키에 대한 파라미터셋 정보를 조회합니다.
+    파라미터셋 정보가 있으면 해당 파라미터셋 객체를 생성하고 반환합니다.
+
+    매개변수
+    ----------
+    app : App
+        파라미터셋을 생성할 애플리케이션 객체입니다.
+
+    action_key : str
+        파라미터셋을 생성할 액션의 키입니다.
+
+    반환
+    ------
+    getattr(app.api.HParameterSet, f"H{pset_key}") : HParameterSet object or None
+        해당 액션 키에 대한 파라미터셋 객체를 반환합니다.
+        만약 액션 키에 대한 파라미터셋 정보가 없으면 None를 반환합니다.
+    """
     pset_key, description = _action_info.get(action_key, None)
     if not pset_key:
         return None
@@ -142,14 +187,53 @@ def create_parameterset(app: App, action_key: str):
 # %% ../nbs/02_api/00_core.ipynb 19
 @patch
 def get_charshape(app: App):
+    """
+    `get_charshape` 메소드는 현재 애플리케이션에서 문자 모양을 가져오는 함수입니다.
+
+    매개변수
+    ----------
+    app : App
+        문자 모양을 가져올 애플리케이션 객체입니다.
+
+    반환
+    ------
+    CharShape
+        애플리케이션에서 가져온 문자 모양입니다.
+    """
     action = app.actions.CharShape()
     p = action.pset
     return CharShape(p)
 
 # %% ../nbs/02_api/00_core.ipynb 21
 @patch
-def set_charshape(app: App, charshape: CharShape):
-    """`현재 위치의 글자 모양을 조정합니다."""
+def set_charshape(app: App, charshape: CharShape = None, **kwargs):
+    """`set_charshape` 함수는 주어진 `CharShape`를 사용하여 애플리케이션의 현재 문단 모양을 설정합니다.
+
+    만약 `charshape`가 `None`인 경우, `CharShape`의 기본 인스턴스를 생성합니다.
+
+    이 함수는 추가로 `kwargs`를 인자로 받아, 이를 `parashape`의 속성에 할당합니다.
+    이렇게 수정된 `parashape`는 한/글 문서의 현재 문단 모양을 변경하는데 사용됩니다.
+
+    Parameters
+    ----------
+    app : App
+        `App` 객체입니다. 한/글 애플리케이션에 접근하는데 사용됩니다.
+    charshape : CharShape, optional
+        한/글 글자 모양을 설정하는데 사용될 `CharShape` 객체입니다. 기본값은 `None`입니다.
+    **kwargs :
+        `CharShape`의 속성에 할당될 추가 키워드 인자입니다.
+
+    Returns
+    -------
+    bool
+        `set_charshape` 작업의 성공 여부를 나타내는 부울 값입니다.
+    """
+    if charshape is None:
+        charshape = CharShape()
+
+    for key, value in kwargs.items():
+        setattr(charshape, key, value)
+
     action = app.actions.CharShape()
     set_pset(action.pset, charshape.todict())
     return action.run()
@@ -157,14 +241,54 @@ def set_charshape(app: App, charshape: CharShape):
 # %% ../nbs/02_api/00_core.ipynb 24
 @patch
 def get_parashape(app: App):
+    """
+    `get_parashape` 메소드는 현재 애플리케이션에서 문단 모양을 가져오는 함수입니다.
+
+    매개변수
+    ----------
+    app : App
+        문단 모양을 가져올 애플리케이션 객체입니다.
+
+    반환
+    ------
+    ParaShape
+        애플리케이션에서 가져온 문단 모양입니다.
+    """
     action = app.actions.ParagraphShape()
     p = action.pset
 
-    return get_parashape_pset(p)
+    return ParaShape(p)
 
 # %% ../nbs/02_api/00_core.ipynb 26
 @patch
-def set_parashape(app: App, parashape: ParaShape):
+def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
+    """`set_parashape` 함수는 주어진 `ParaShape`를 사용하여 애플리케이션의 현재 문단 모양을 설정합니다.
+
+    만약 `parashape`가 `None`인 경우, `ParaShape`의 기본 인스턴스를 생성합니다.
+
+    이 함수는 추가로 `kwargs`를 인자로 받아, 이를 `parashape`의 속성에 할당합니다.
+    이렇게 수정된 `parashape`는 한/글 문서의 현재 문단 모양을 변경하는데 사용됩니다.
+
+    Parameters
+    ----------
+    app : App
+        `App` 객체입니다. 한/글 애플리케이션에 접근하는데 사용됩니다.
+    parashape : ParaShape, optional
+        한/글 문단 모양을 설정하는데 사용될 `ParaShape` 객체입니다. 기본값은 `None`입니다.
+    **kwargs :
+        `ParaShape`의 속성에 할당될 추가 키워드 인자입니다.
+
+    Returns
+    -------
+    bool
+        `set_parashape` 작업의 성공 여부를 나타내는 부울 값입니다.
+    """
+    if parashape is None:
+        parashape = ParaShape()
+
+    for key, value in kwargs.items():
+        setattr(charshape, key, value)
+
     action = app.actions.ParagraphShape()
     set_pset(action.pset, parashape.todict())
     return action.run()
@@ -174,10 +298,11 @@ def set_parashape(app: App, parashape: ParaShape):
 def insert_text(
     app: App,
     text: str,
-    charshape: CharShape,
+    charshape: CharShape = None,
 ):
     """`text를 입력합니다."""
-    app.set_charshape(charshape)
+    if charshape:
+        app.set_charshape(charshape)
     insert_text = app.actions.InsertText()
     p = insert_text.pset
     p.Text = text
@@ -409,17 +534,7 @@ directions = {"Forward": 0, "Backward": 1, "All": 2}
 def find_text(
     app: App,
     text="",
-    text_fontcolor=None,  # 찾을 폰트 색
-    fontsize=None,  # 찾을 폰트 크기(height)
-    fontname="",  # 찾을 글꼴
-    fonttype=1,  # 찾을 글꼴 타입 TTF = 1, HTF = 2
-    fontratio=None,  # 찾을 장평
-    text_color=None,
-    spacing=None,  # 찾을 자간
-    bold=None,  # 찾을 볼드
-    italic=None,  # 찾을 이텔릭
-    underline=None,  # 찾을 밑줄
-    strike_out=None,  # 찾을 취소선
+    charshape: CharShape = None,
     ignore_message=True,  # 메시지 무시 여부
     direction="Forward",  # 찾을 방향
     match_case=False,  # 대소문자 구분
@@ -462,19 +577,9 @@ def find_text(
     p.FindRegExp = find_reg_exp
     p.FindType = find_type
 
-    # set old charshape
-    set_charshape_pset(
-        p.FindCharShape,
-        face_name=fontname,
-        font_type=fonttype,
-        text_color=text_color,
-        bold=bold,
-        italic=italic,
-        strike_out_type=strike_out,
-        underline_type=underline,
-        ratio=fontratio,
-        spacing=spacing,
-    )
+    # set charshape
+    if charshape:
+        set_pset(p.FindCharShape, charshape.todict())
 
     return action.run()
 
@@ -482,28 +587,10 @@ def find_text(
 @patch
 def replace_all(
     app: App,
-    old="",
-    new="",
-    old_text_color=None,  # 찾을 폰트 색
-    new_text_color=None,  # 바꿀 폰트 색
-    old_fontsize=None,  # 찾을 폰트 크기(height)
-    new_fontsize=None,  # 바꿀 폰트 크기(height)
-    old_fontname="",  # 찾을 글꼴
-    old_fonttype=1,  # 찾을 글꼴 타입 TTF = 1, HTF = 2
-    new_fontname="",  # 바꿀 글꼴
-    new_fonttype=1,  # 바꿀 글꼴 타입 TTF = 1, HTF = 2
-    old_fontratio=None,  # 찾을 장평
-    new_fontratio=None,  # 바꿀 장평
-    old_spacing=None,  # 찾을 자간
-    new_spacing=None,  # 바꿀 자간
-    old_bold=None,  # 찾을 볼드
-    new_bold=None,  # 바꿀 볼드
-    old_italic=None,  # 찾을 이텔릭
-    new_italic=None,  # 바꿀 이텔릭
-    old_underline=None,  # 찾을 밑줄
-    new_underline=None,  # 바꿀 밑줄
-    old_strike_out=None,  # 찾을 취소선
-    new_strike_out=None,  # 바꿀 취소선
+    old_text="",
+    new_text="",
+    old_charshape: CharShape = None,
+    new_charshape: CharShape = None,
     ignore_message=True,  # 메시지 무시 여부
     direction="All",  # 찾을 방향
     match_case=False,  # 대소문자 구분
@@ -525,8 +612,8 @@ def replace_all(
     p = action.pset
 
     # set options
-    p.FindString = old
-    p.ReplaceString = new
+    p.FindString = old_text
+    p.ReplaceString = new_text
     p.IgnoreMessage = ignore_message
     p.MatchCase = match_case
     p.AllWordForms = all_word_forms
@@ -545,35 +632,11 @@ def replace_all(
     p.FindType = find_type
 
     # set old charshape
-    old_charshape = {
-        "FaceNameHangul": old_fontname,
-        "TextColor": old_text_color,
-    }
 
-    set_charshape_pset(
-        p.FindCharShape,
-        face_name=old_fontname,
-        text_color=old_text_color,
-        font_type=old_fonttype,
-        bold=old_bold,
-        italic=old_italic,
-        strike_out_type=old_strike_out,
-        underline_type=old_underline,
-        ratio=old_fontratio,
-        spacing=old_spacing,
-    )
-    set_charshape_pset(
-        p.ReplaceCharShape,
-        face_name=new_fontname,
-        text_color=new_text_color,
-        font_type=new_fonttype,
-        bold=new_bold,
-        italic=new_italic,
-        strike_out_type=new_strike_out,
-        underline_type=new_underline,
-        ratio=new_fontratio,
-        spacing=new_spacing,
-    )
+    if old_charshape:
+        set_pset(p.FindCharShape, old_charshape.todict())
+    if new_charshape:
+        set_charshape_pset(p.ReplaceCharShape, new_charshape.todict())
 
     return action.run()
 

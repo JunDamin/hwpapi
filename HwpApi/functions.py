@@ -123,10 +123,10 @@ def get_key(dict_, value):
     if value is None:
         return None
     try:
-        return dict([(v, k) for k, v in dict_.items()])[key]
+        return dict([(v, k) for k, v in dict_.items()])[value]
     except KeyError:
         raise KeyError(
-            f"{key}를 해당하는 키 중 찾을 수 없습니다. 키는 {', '.join(dict_.keys())} 중에 있어야 합니다."
+            f"{value}를 해당하는 키 중 찾을 수 없습니다. 키는 {', '.join(dict_.values())} 중에 있어야 합니다."
         )
 
 # %% ../nbs/02_api/02_functions.ipynb 13
