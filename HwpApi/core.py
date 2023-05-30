@@ -105,6 +105,11 @@ def open(app: App, path: str):
 
 # %% ../nbs/02_api/00_core.ipynb 13
 @patch
+def get_hwnd(app:App):
+    return app.api.XHwpWindows.Active_XHwpWindow.WindowHandle
+
+# %% ../nbs/02_api/00_core.ipynb 15
+@patch
 def save(app: App, path=None):
     """
     `create_action` 함수는 `_Action` 클래스의 인스턴스를 생성하고 반환합니다.
@@ -138,25 +143,25 @@ def save(app: App, path=None):
     app.api.SaveAs(name, format_)
     return name
 
-# %% ../nbs/02_api/00_core.ipynb 14
+# %% ../nbs/02_api/00_core.ipynb 16
 @patch
 def close(app: App):
     """`close()` 함수는 현재 열려있는 문서를 닫습니다."""
     app.api.Run("FileClose")
 
-# %% ../nbs/02_api/00_core.ipynb 16
+# %% ../nbs/02_api/00_core.ipynb 18
 @patch
 def quit(app: App):
     """`quit()` 함수는 한/글 프로그램을 종료합니다."""
     app.api.Run("FileQuit")
 
-# %% ../nbs/02_api/00_core.ipynb 17
+# %% ../nbs/02_api/00_core.ipynb 19
 @patch
 def create_action(app: App, action_key: str):
     """`create_action()` 함수는 `_Action` 클래스의 객체를 생성하여 반환합니다."""
     return _Action(app, action_key)
 
-# %% ../nbs/02_api/00_core.ipynb 18
+# %% ../nbs/02_api/00_core.ipynb 20
 @patch
 def create_parameterset(app: App, action_key: str):
     """
@@ -184,7 +189,7 @@ def create_parameterset(app: App, action_key: str):
         return None
     return getattr(app.api.HParameterSet, f"H{pset_key}")
 
-# %% ../nbs/02_api/00_core.ipynb 19
+# %% ../nbs/02_api/00_core.ipynb 21
 @patch
 def get_charshape(app: App):
     """
@@ -204,7 +209,7 @@ def get_charshape(app: App):
     p = action.pset
     return CharShape(p)
 
-# %% ../nbs/02_api/00_core.ipynb 21
+# %% ../nbs/02_api/00_core.ipynb 23
 @patch
 def set_charshape(app: App, charshape: CharShape = None, **kwargs):
     """`set_charshape` 함수는 주어진 `CharShape`를 사용하여 애플리케이션의 현재 문단 모양을 설정합니다.
@@ -238,7 +243,7 @@ def set_charshape(app: App, charshape: CharShape = None, **kwargs):
     set_pset(action.pset, charshape.todict())
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 24
+# %% ../nbs/02_api/00_core.ipynb 26
 @patch
 def get_parashape(app: App):
     """
@@ -259,7 +264,7 @@ def get_parashape(app: App):
 
     return ParaShape(p)
 
-# %% ../nbs/02_api/00_core.ipynb 26
+# %% ../nbs/02_api/00_core.ipynb 28
 @patch
 def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     """`set_parashape` 함수는 주어진 `ParaShape`를 사용하여 애플리케이션의 현재 문단 모양을 설정합니다.
@@ -293,7 +298,7 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     set_pset(action.pset, parashape.todict())
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 28
+# %% ../nbs/02_api/00_core.ipynb 30
 @patch
 def insert_text(
     app: App,
@@ -309,7 +314,7 @@ def insert_text(
     insert_text.run()
     return
 
-# %% ../nbs/02_api/00_core.ipynb 33
+# %% ../nbs/02_api/00_core.ipynb 35
 mask_options = {
     "Normal": 0x00,  # "본문을 대상으로 검색한다.(서브리스트를 검색하지 않는다.)"
     "Char": 0x01,  # "char 타입 컨트롤 마스크를 대상으로 한다.(강제줄나눔, 문단 끝, 하이픈, 묶움빈칸, 고정폭빈칸, 등...)"
@@ -390,7 +395,7 @@ def scan(
     yield _get_text(app)
     app.api.ReleaseScan()
 
-# %% ../nbs/02_api/00_core.ipynb 34
+# %% ../nbs/02_api/00_core.ipynb 36
 def move_to_line(app: App, text):
     """인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다."""
     with app.scan(scan_spos="Line") as scan:
@@ -399,7 +404,7 @@ def move_to_line(app: App, text):
                 return app.move(key="ScanPos")
     return False
 
-# %% ../nbs/02_api/00_core.ipynb 35
+# %% ../nbs/02_api/00_core.ipynb 37
 move_ids = {
     "Main": 0,  # 루트 리스트의 특정 위치.(para pos로 위치 지정)
     "CurList": 1,  # 현재 리스트의 특정 위치.(para pos로 위치 지정)
@@ -449,7 +454,7 @@ def move(app: App, key="ScanPos", para=None, pos=None):
     move_id = get_value(move_ids, key)
     return app.api.MovePos(moveID=move_id, Para=para, pos=pos)
 
-# %% ../nbs/02_api/00_core.ipynb 38
+# %% ../nbs/02_api/00_core.ipynb 40
 size_options = {
     "realSize": 0,  # 이미지를 원래의 크기로 삽입한다.
     "specificSize": 1,  # width와 height에 지정한 크기로 그림을 삽입한다.
@@ -491,7 +496,7 @@ def insert_picture(
         effect=effect,
     )
 
-# %% ../nbs/02_api/00_core.ipynb 39
+# %% ../nbs/02_api/00_core.ipynb 41
 @patch
 def select_text(app: App, option: str = "Line"):
     """
@@ -506,7 +511,7 @@ def select_text(app: App, option: str = "Line"):
     begin, end = select_options.get(option)
     return begin().run(), end().run()
 
-# %% ../nbs/02_api/00_core.ipynb 42
+# %% ../nbs/02_api/00_core.ipynb 44
 @patch
 def get_selected_text(app: App):
     """
@@ -516,7 +521,7 @@ def get_selected_text(app: App):
         text = "\n".join(scan)
     return text
 
-# %% ../nbs/02_api/00_core.ipynb 44
+# %% ../nbs/02_api/00_core.ipynb 46
 @patch
 def get_text(app: App, spos="Line", epos="Line"):
     """
@@ -526,10 +531,10 @@ def get_text(app: App, spos="Line", epos="Line"):
         text = "".join(txts)
     return text
 
-# %% ../nbs/02_api/00_core.ipynb 46
+# %% ../nbs/02_api/00_core.ipynb 48
 directions = {"Forward": 0, "Backward": 1, "All": 2}
 
-# %% ../nbs/02_api/00_core.ipynb 47
+# %% ../nbs/02_api/00_core.ipynb 49
 @patch
 def find_text(
     app: App,
@@ -583,7 +588,7 @@ def find_text(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 49
+# %% ../nbs/02_api/00_core.ipynb 51
 @patch
 def replace_all(
     app: App,
@@ -640,7 +645,7 @@ def replace_all(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 52
+# %% ../nbs/02_api/00_core.ipynb 54
 @patch
 def insert_file(
     app: App,
@@ -664,7 +669,7 @@ def insert_file(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 53
+# %% ../nbs/02_api/00_core.ipynb 55
 @patch
 def set_cell_border(
     app: App,
@@ -740,7 +745,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 54
+# %% ../nbs/02_api/00_core.ipynb 56
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None
