@@ -144,7 +144,7 @@ def convert2int(_dict, value):
 def set_pset(p, value_dict:dict):
     for field in dir(p):
         value = value_dict.get(field, None)
-        if not value:
+        if value is None:
             continue
         setattr(p, field, value)
 

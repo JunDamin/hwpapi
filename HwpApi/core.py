@@ -93,24 +93,9 @@ def get_filepath(app: App):
     doc = app.api.XHwpDocuments.Active_XHwpDocument
     return doc.FullName
 
-# %% ../nbs/02_api/00_core.ipynb 11
+# %% ../nbs/02_api/00_core.ipynb 10
 @patch
-def open(app: App, path: str):
-    """`open()` 함수는 파일 경로를 인자로 받아 해당 파일을 한/글 프로그램에서 엽니다.
-    `get_absolute_path()` 함수를 호출하여 절대 경로로 변환한 후, `api.Open()` 함수를 호출하여 파일을 엽니다.
-    열린 파일의 경로를 반환합니다."""
-    name = get_absolute_path(path)
-    app.api.Open(name)
-    return name
-
-# %% ../nbs/02_api/00_core.ipynb 13
-@patch
-def get_hwnd(app:App):
-    return app.api.XHwpWindows.Active_XHwpWindow.WindowHandle
-
-# %% ../nbs/02_api/00_core.ipynb 15
-@patch
-def save(app: App, path=None):
+def create_action(app: App, action_key: str):
     """
     `create_action` 함수는 `_Action` 클래스의 인스턴스를 생성하고 반환합니다.
 
@@ -127,41 +112,9 @@ def save(app: App, path=None):
     _Action(app, action_key) : _Action object
         입력받은 애플리케이션 객체와 액션 키를 사용하여 생성된 _Action 클래스의 인스턴스를 반환합니다.
     """
-
-    if not path:
-        app.api.Save()
-        return app.get_filepath()
-    name = get_absolute_path(path)
-    extension = Path(name).suffix
-    format_ = {
-        ".hwp": "HWP",
-        ".pdf": "PDF",
-        ".hwpx": "HWPML2X",
-        ".png": "PNG",
-    }.get(extension)
-
-    app.api.SaveAs(name, format_)
-    return name
-
-# %% ../nbs/02_api/00_core.ipynb 16
-@patch
-def close(app: App):
-    """`close()` 함수는 현재 열려있는 문서를 닫습니다."""
-    app.api.Run("FileClose")
-
-# %% ../nbs/02_api/00_core.ipynb 18
-@patch
-def quit(app: App):
-    """`quit()` 함수는 한/글 프로그램을 종료합니다."""
-    app.api.Run("FileQuit")
-
-# %% ../nbs/02_api/00_core.ipynb 19
-@patch
-def create_action(app: App, action_key: str):
-    """`create_action()` 함수는 `_Action` 클래스의 객체를 생성하여 반환합니다."""
     return _Action(app, action_key)
 
-# %% ../nbs/02_api/00_core.ipynb 20
+# %% ../nbs/02_api/00_core.ipynb 11
 @patch
 def create_parameterset(app: App, action_key: str):
     """
@@ -189,7 +142,91 @@ def create_parameterset(app: App, action_key: str):
         return None
     return getattr(app.api.HParameterSet, f"H{pset_key}")
 
+# %% ../nbs/02_api/00_core.ipynb 13
+@patch
+def open(app: App, path: str):
+    """`open()` 함수는 파일 경로를 인자로 받아 해당 파일을 한/글 프로그램에서 엽니다.
+    `get_absolute_path()` 함수를 호출하여 절대 경로로 변환한 후, `api.Open()` 함수를 호출하여 파일을 엽니다.
+    열린 파일의 경로를 반환합니다."""
+    name = get_absolute_path(path)
+    app.api.Open(name)
+    return name
+
+# %% ../nbs/02_api/00_core.ipynb 15
+@patch
+def get_hwnd(app:App):
+    return app.api.XHwpWindows.Active_XHwpWindow.WindowHandle
+
+# %% ../nbs/02_api/00_core.ipynb 17
+@patch
+def save(app: App, path=None):
+    """
+    """
+
+    if not path:
+        app.api.Save()
+        return app.get_filepath()
+    name = get_absolute_path(path)
+    extension = Path(name).suffix
+    format_ = {
+        ".hwp": "HWP",
+        ".pdf": "PDF",
+        ".hwpx": "HWPML2X",
+        ".png": "PNG",
+    }.get(extension)
+
+    app.api.SaveAs(name, format_)
+    return name
+
+# %% ../nbs/02_api/00_core.ipynb 19
+@patch
+def save_block(app: App, path: Path):
+    """
+    `save_block` 함수는 블록을 저장하고 주소를 반환합니다.
+
+    매개변수
+    ----------
+    app : App
+        액션을 생성할 애플리케이션 객체입니다.
+
+    path : Path
+        저장할 주소 입니다.
+
+    반환
+    ------
+    path : 생성이 성공하면 주소를 반환합니다. 실패하면 None을 반환합니다.
+    """
+
+    name = get_absolute_path(path)
+    extension = Path(name).suffix
+    format_ = {
+        ".hwp": "HWP",
+        ".pdf": "PDF",
+        ".hwpx": "HWPML2X",
+        ".png": "PNG",
+    }.get(extension)
+
+    action = app.actions.SaveBlockAction()
+    p = action.pset
+    
+    p.filename = name
+    p.Format = format_
+    action.run()
+    return name if Path(name).exists() else None
+
 # %% ../nbs/02_api/00_core.ipynb 21
+@patch
+def close(app: App):
+    """`close()` 함수는 현재 열려있는 문서를 닫습니다."""
+    app.api.Run("FileClose")
+
+# %% ../nbs/02_api/00_core.ipynb 23
+@patch
+def quit(app: App):
+    """`quit()` 함수는 한/글 프로그램을 종료합니다."""
+    app.api.Run("FileQuit")
+
+# %% ../nbs/02_api/00_core.ipynb 24
 @patch
 def get_charshape(app: App):
     """
@@ -209,7 +246,7 @@ def get_charshape(app: App):
     p = action.pset
     return CharShape(p)
 
-# %% ../nbs/02_api/00_core.ipynb 23
+# %% ../nbs/02_api/00_core.ipynb 26
 @patch
 def set_charshape(app: App, charshape: CharShape = None, **kwargs):
     """`set_charshape` 함수는 주어진 `CharShape`를 사용하여 애플리케이션의 현재 문단 모양을 설정합니다.
@@ -243,7 +280,7 @@ def set_charshape(app: App, charshape: CharShape = None, **kwargs):
     set_pset(action.pset, charshape.todict())
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 26
+# %% ../nbs/02_api/00_core.ipynb 32
 @patch
 def get_parashape(app: App):
     """
@@ -264,7 +301,7 @@ def get_parashape(app: App):
 
     return ParaShape(p)
 
-# %% ../nbs/02_api/00_core.ipynb 28
+# %% ../nbs/02_api/00_core.ipynb 34
 @patch
 def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     """`set_parashape` 함수는 주어진 `ParaShape`를 사용하여 애플리케이션의 현재 문단 모양을 설정합니다.
@@ -298,7 +335,7 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     set_pset(action.pset, parashape.todict())
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 30
+# %% ../nbs/02_api/00_core.ipynb 36
 @patch
 def insert_text(
     app: App,
@@ -314,7 +351,7 @@ def insert_text(
     insert_text.run()
     return
 
-# %% ../nbs/02_api/00_core.ipynb 35
+# %% ../nbs/02_api/00_core.ipynb 41
 mask_options = {
     "Normal": 0x00,  # "본문을 대상으로 검색한다.(서브리스트를 검색하지 않는다.)"
     "Char": 0x01,  # "char 타입 컨트롤 마스크를 대상으로 한다.(강제줄나눔, 문단 끝, 하이픈, 묶움빈칸, 고정폭빈칸, 등...)"
@@ -395,7 +432,7 @@ def scan(
     yield _get_text(app)
     app.api.ReleaseScan()
 
-# %% ../nbs/02_api/00_core.ipynb 36
+# %% ../nbs/02_api/00_core.ipynb 42
 def move_to_line(app: App, text):
     """인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다."""
     with app.scan(scan_spos="Line") as scan:
@@ -404,7 +441,7 @@ def move_to_line(app: App, text):
                 return app.move(key="ScanPos")
     return False
 
-# %% ../nbs/02_api/00_core.ipynb 37
+# %% ../nbs/02_api/00_core.ipynb 43
 move_ids = {
     "Main": 0,  # 루트 리스트의 특정 위치.(para pos로 위치 지정)
     "CurList": 1,  # 현재 리스트의 특정 위치.(para pos로 위치 지정)
@@ -454,7 +491,35 @@ def move(app: App, key="ScanPos", para=None, pos=None):
     move_id = get_value(move_ids, key)
     return app.api.MovePos(moveID=move_id, Para=para, pos=pos)
 
-# %% ../nbs/02_api/00_core.ipynb 40
+# %% ../nbs/02_api/00_core.ipynb 45
+@patch
+def setup_page(
+    app: App,  # app
+    top=20,  # 윗 여백
+    bottom=10,  # 아래 여백
+    right=20,  # 오른쪽 여백
+    left=20,  # 왼쪽 여백
+    header=15,  # 머릿말
+    footer=5,  # 꼬릿말
+    gutter=0,
+):  # 제본
+    """
+    페이지를 설정합니다.
+    """
+    action = app.actions.PageSetup()
+    p = action.pset
+
+    p.PageDef.TopMargin = app.api.MiliToHwpUnit(top)
+    p.PageDef.HeaderLen = app.api.MiliToHwpUnit(header)
+    p.PageDef.RightMargin = app.api.MiliToHwpUnit(right)
+    p.PageDef.BottomMargin = app.api.MiliToHwpUnit(bottom)
+    p.PageDef.FooterLen = app.api.MiliToHwpUnit(footer)
+    p.PageDef.LeftMargin = app.api.MiliToHwpUnit(left)
+    p.PageDef.GutterLen = app.api.MiliToHwpUnit(gutter)
+
+    return action.run()
+
+# %% ../nbs/02_api/00_core.ipynb 46
 size_options = {
     "realSize": 0,  # 이미지를 원래의 크기로 삽입한다.
     "specificSize": 1,  # width와 height에 지정한 크기로 그림을 삽입한다.
@@ -496,7 +561,7 @@ def insert_picture(
         effect=effect,
     )
 
-# %% ../nbs/02_api/00_core.ipynb 41
+# %% ../nbs/02_api/00_core.ipynb 47
 @patch
 def select_text(app: App, option: str = "Line"):
     """
@@ -511,7 +576,7 @@ def select_text(app: App, option: str = "Line"):
     begin, end = select_options.get(option)
     return begin().run(), end().run()
 
-# %% ../nbs/02_api/00_core.ipynb 44
+# %% ../nbs/02_api/00_core.ipynb 50
 @patch
 def get_selected_text(app: App):
     """
@@ -521,7 +586,7 @@ def get_selected_text(app: App):
         text = "\n".join(scan)
     return text
 
-# %% ../nbs/02_api/00_core.ipynb 46
+# %% ../nbs/02_api/00_core.ipynb 52
 @patch
 def get_text(app: App, spos="Line", epos="Line"):
     """
@@ -531,10 +596,10 @@ def get_text(app: App, spos="Line", epos="Line"):
         text = "".join(txts)
     return text
 
-# %% ../nbs/02_api/00_core.ipynb 48
+# %% ../nbs/02_api/00_core.ipynb 54
 directions = {"Forward": 0, "Backward": 1, "All": 2}
 
-# %% ../nbs/02_api/00_core.ipynb 49
+# %% ../nbs/02_api/00_core.ipynb 55
 @patch
 def find_text(
     app: App,
@@ -588,7 +653,7 @@ def find_text(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 51
+# %% ../nbs/02_api/00_core.ipynb 57
 @patch
 def replace_all(
     app: App,
@@ -645,7 +710,7 @@ def replace_all(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 54
+# %% ../nbs/02_api/00_core.ipynb 60
 @patch
 def insert_file(
     app: App,
@@ -669,7 +734,7 @@ def insert_file(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 55
+# %% ../nbs/02_api/00_core.ipynb 61
 @patch
 def set_cell_border(
     app: App,
@@ -745,7 +810,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 56
+# %% ../nbs/02_api/00_core.ipynb 62
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None
