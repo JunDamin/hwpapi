@@ -10,3 +10,5 @@ website:
           - 02_api\00_core.ipynb
           - 02_api\01_actions.ipynb
           - 02_api\02_functions.ipynb
+          - 02_api\03_dataclasses.ipynb
+          - 02_api\04_constants.ipynb

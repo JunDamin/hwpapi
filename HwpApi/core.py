@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['mask_options', 'scan_spos_keys', 'scan_epos_keys', 'scan_directions', 'move_ids', 'size_options', 'effects',
-           'directions', 'App', 'move_to_line']
+           'directions', 'thickness_dict', 'App', 'move_to_line']
 
 # %% ../nbs/02_api/00_core.ipynb 4
 from contextlib import contextmanager
@@ -248,7 +248,7 @@ def get_charshape(app: App):
 
 # %% ../nbs/02_api/00_core.ipynb 26
 @patch
-def set_charshape(app: App, charshape: CharShape = None, **kwargs):
+def set_charshape(app: App, charshape: CharShape=None, **kwargs):
     """`set_charshape` 함수는 주어진 `CharShape`를 사용하여 애플리케이션의 현재 문단 모양을 설정합니다.
 
     만약 `charshape`가 `None`인 경우, `CharShape`의 기본 인스턴스를 생성합니다.
@@ -275,12 +275,12 @@ def set_charshape(app: App, charshape: CharShape = None, **kwargs):
 
     for key, value in kwargs.items():
         setattr(charshape, key, value)
-
+        
     action = app.actions.CharShape()
     set_pset(action.pset, charshape.todict())
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 32
+# %% ../nbs/02_api/00_core.ipynb 30
 @patch
 def get_parashape(app: App):
     """
@@ -301,7 +301,7 @@ def get_parashape(app: App):
 
     return ParaShape(p)
 
-# %% ../nbs/02_api/00_core.ipynb 34
+# %% ../nbs/02_api/00_core.ipynb 32
 @patch
 def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     """`set_parashape` 함수는 주어진 `ParaShape`를 사용하여 애플리케이션의 현재 문단 모양을 설정합니다.
@@ -329,29 +329,35 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
         parashape = ParaShape()
 
     for key, value in kwargs.items():
-        setattr(charshape, key, value)
+        setattr(parashape, key, value)
 
     action = app.actions.ParagraphShape()
     set_pset(action.pset, parashape.todict())
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 36
+# %% ../nbs/02_api/00_core.ipynb 34
 @patch
 def insert_text(
     app: App,
     text: str,
-    charshape: CharShape = None,
+    charshape: CharShape = None, 
+    **kwargs,
 ):
     """`text를 입력합니다."""
-    if charshape:
-        app.set_charshape(charshape)
+    if not charshape:
+        charshape = CharShape()
+    for key, value in kwargs.items():
+        setattr(charshape, key, value)
+    app.set_charshape(charshape)
+    
     insert_text = app.actions.InsertText()
     p = insert_text.pset
     p.Text = text
+    
     insert_text.run()
     return
 
-# %% ../nbs/02_api/00_core.ipynb 41
+# %% ../nbs/02_api/00_core.ipynb 39
 mask_options = {
     "Normal": 0x00,  # "본문을 대상으로 검색한다.(서브리스트를 검색하지 않는다.)"
     "Char": 0x01,  # "char 타입 컨트롤 마스크를 대상으로 한다.(강제줄나눔, 문단 끝, 하이픈, 묶움빈칸, 고정폭빈칸, 등...)"
@@ -432,7 +438,7 @@ def scan(
     yield _get_text(app)
     app.api.ReleaseScan()
 
-# %% ../nbs/02_api/00_core.ipynb 42
+# %% ../nbs/02_api/00_core.ipynb 40
 def move_to_line(app: App, text):
     """인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다."""
     with app.scan(scan_spos="Line") as scan:
@@ -441,7 +447,7 @@ def move_to_line(app: App, text):
                 return app.move(key="ScanPos")
     return False
 
-# %% ../nbs/02_api/00_core.ipynb 43
+# %% ../nbs/02_api/00_core.ipynb 41
 move_ids = {
     "Main": 0,  # 루트 리스트의 특정 위치.(para pos로 위치 지정)
     "CurList": 1,  # 현재 리스트의 특정 위치.(para pos로 위치 지정)
@@ -491,7 +497,7 @@ def move(app: App, key="ScanPos", para=None, pos=None):
     move_id = get_value(move_ids, key)
     return app.api.MovePos(moveID=move_id, Para=para, pos=pos)
 
-# %% ../nbs/02_api/00_core.ipynb 45
+# %% ../nbs/02_api/00_core.ipynb 43
 @patch
 def setup_page(
     app: App,  # app
@@ -519,7 +525,7 @@ def setup_page(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 46
+# %% ../nbs/02_api/00_core.ipynb 44
 size_options = {
     "realSize": 0,  # 이미지를 원래의 크기로 삽입한다.
     "specificSize": 1,  # width와 height에 지정한 크기로 그림을 삽입한다.
@@ -561,7 +567,7 @@ def insert_picture(
         effect=effect,
     )
 
-# %% ../nbs/02_api/00_core.ipynb 47
+# %% ../nbs/02_api/00_core.ipynb 45
 @patch
 def select_text(app: App, option: str = "Line"):
     """
@@ -576,7 +582,7 @@ def select_text(app: App, option: str = "Line"):
     begin, end = select_options.get(option)
     return begin().run(), end().run()
 
-# %% ../nbs/02_api/00_core.ipynb 50
+# %% ../nbs/02_api/00_core.ipynb 48
 @patch
 def get_selected_text(app: App):
     """
@@ -586,20 +592,28 @@ def get_selected_text(app: App):
         text = "\n".join(scan)
     return text
 
-# %% ../nbs/02_api/00_core.ipynb 52
+# %% ../nbs/02_api/00_core.ipynb 50
 @patch
 def get_text(app: App, spos="Line", epos="Line"):
     """
     텍스트를 가져옵니다. 기본은 현재 문장입니다.
+    "Current":  # "캐럿 위치부터. (현재 위치까지)",
+    "Specified": 0x0010,  # "특정 위치부터. (특정 위치까지)",
+    "Line": 0x0020,  # "줄의 시작부터. (줄 끝까지)",
+    "Paragraph": 0x0030,  # "문단의 시작부터. (문단 끝까지)"
+    "Section": 0x0040,  # "구역의 시작부터. (구역의 끝까지)"
+    "List": 0x0050,  # "리스트의 시작부터. (리스트 끝까지)"
+    "Control": 0x0060,  # "컨트롤의 시작부터. (컨트롤 끝까지)"
+    "Document": 0x0070,  # "문서의 시작부터. (문서 끝까지)"
     """
     with app.scan(scan_spos=spos, scan_epos=epos) as txts:
         text = "".join(txts)
     return text
 
-# %% ../nbs/02_api/00_core.ipynb 54
+# %% ../nbs/02_api/00_core.ipynb 52
 directions = {"Forward": 0, "Backward": 1, "All": 2}
 
-# %% ../nbs/02_api/00_core.ipynb 55
+# %% ../nbs/02_api/00_core.ipynb 53
 @patch
 def find_text(
     app: App,
@@ -653,7 +667,7 @@ def find_text(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 57
+# %% ../nbs/02_api/00_core.ipynb 55
 @patch
 def replace_all(
     app: App,
@@ -710,7 +724,7 @@ def replace_all(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 60
+# %% ../nbs/02_api/00_core.ipynb 58
 @patch
 def insert_file(
     app: App,
@@ -734,7 +748,29 @@ def insert_file(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 61
+# %% ../nbs/02_api/00_core.ipynb 59
+thickness_dict = {
+    -1: "최소값 (=0.1 mm)",
+    0: "0.1 mm",
+    1: "0.12 mm",
+    2: "0.15 mm",
+    3: "0.2 mm",
+    4: "0.25 mm",
+    5: "0.3 mm",
+    6: "0.4 mm",
+    7: "0.5 mm",
+    8: "0.6 mm",
+    9: "0.7 mm",
+    10: "1.0 mm",
+    11: "1.5 mm",
+    12: "2.0 mm",
+    13: "3.0 mm",
+    14: "4.0 mm",
+    15: "5.0 mm",
+    16: "최대값 (=5.0 mm)"
+}
+
+
 @patch
 def set_cell_border(
     app: App,
@@ -764,22 +800,12 @@ def set_cell_border(
         "BorderTypeBottom": bottom,
         "TypeHorz": horizontal,
         "TypeVert": vertical,
-        "BorderWidthTop": app.api.HwpLineWidth(f"{top_width}mm") if top_width else None,
-        "BorderWidthRight": app.api.HwpLineWidth(f"{right_width}mm")
-        if right_width
-        else None,
-        "BorderWidthLeft": app.api.HwpLineWidth(f"{left_width}mm")
-        if left_width
-        else None,
-        "BorderWidthBottom": app.api.HwpLineWidth(f"{bottom_width}mm")
-        if bottom_width
-        else None,
-        "WidthHorz": app.api.HwpLineWidth(f"{horizontal_width}mm")
-        if horizontal_width
-        else None,
-        "WidthVert": app.api.HwpLineWidth(f"{vertical_width}mm")
-        if vertical_width
-        else None,
+        "BorderWidthTop": get_value(thickness_dict, top_width),
+        "BorderWidthRight": get_value(thickness_dict, right_width),
+        "BorderWidthLeft": get_value(thickness_dict, left_width),
+        "BorderWidthBottom": get_value(thickness_dict, bottom_width),
+        "WidthHorz": get_value(thickness_dict, horizontal_width),
+        "WidthVert": get_value(thickness_dict, vertical_width),
         "BorderColorTop": app.api.RGBColor(get_rgb_tuple(top_color))
         if top_color
         else None,
@@ -810,7 +836,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 62
+# %% ../nbs/02_api/00_core.ipynb 60
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None

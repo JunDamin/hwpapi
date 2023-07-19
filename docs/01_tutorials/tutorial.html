@@ -2,13 +2,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.296">
+<meta name="generator" content="quarto-1.3.353">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="description" content="사용 기초">
 
-<title>hwpapi - tutorial</title>
+<title>hwpapi - 앱 기본</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -96,10 +96,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="hwpapi - tutorial">
+<meta property="og:title" content="hwpapi - 앱 기본">
 <meta property="og:description" content="사용 기초">
 <meta property="og:site-name" content="hwpapi">
-<meta name="twitter:title" content="hwpapi - tutorial">
+<meta name="twitter:title" content="hwpapi - 앱 기본">
 <meta name="twitter:description" content="사용 기초">
 <meta name="twitter:card" content="summary">
 </head>
@@ -125,7 +125,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01_tutorials/tutorial.html">tutorials</a></li><li class="breadcrumb-item"><a href="../01_tutorials/tutorial.html">tutorial</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01_tutorials/tutorial.html">tutorials</a></li><li class="breadcrumb-item"><a href="../01_tutorials/tutorial.html">앱 기본</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
     </div>
@@ -155,7 +155,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../01_tutorials/tutorial.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">tutorial</span></a>
+ <span class="menu-text">앱 기본</span></a>
   </div>
 </li>
       </ul>
@@ -177,14 +177,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../02_api/variables.html" class="sidebar-item-text sidebar-link">
+  <a href="../02_api/actions.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">actions</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../02_api/fnctions.html" class="sidebar-item-text sidebar-link">
+  <a href="../02_api/functions.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02_api/dataclasses.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">dataclasses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02_api/constants.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">constants</span></a>
   </div>
 </li>
       </ul>
@@ -195,14 +207,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#입력하기" id="toc-입력하기" class="nav-link active" data-scroll-target="#입력하기">입력하기</a></li>
+  <li><a href="#이동하기" id="toc-이동하기" class="nav-link" data-scroll-target="#이동하기">이동하기</a></li>
+  <li><a href="#선택하기" id="toc-선택하기" class="nav-link" data-scroll-target="#선택하기">선택하기</a></li>
+  <li><a href="#서식-넣기" id="toc-서식-넣기" class="nav-link" data-scroll-target="#서식-넣기">서식 넣기</a></li>
+  <li><a href="#텍스트-가져오기" id="toc-텍스트-가져오기" class="nav-link" data-scroll-target="#텍스트-가져오기">텍스트 가져오기</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">tutorial</h1>
+<h1 class="title">앱 기본</h1>
 </div>
 
 <div>
@@ -223,13 +245,136 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 <!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
-<p>기본적으로 한글에서 사용자의 입력을 따라합니다.</p>
-<p>그것을 반복합니다.</p>
+<p>한컴 오피스는 액션이라는 것을 통해서 다양한 문서 편집을 가능하게 하고 있습니다. 그런 편집을 파이썬에서 보다 쉽게 사용하기 위해 만든 라이브러리입니다.</p>
+<p>기본적인 컨셉은 win32com을 쉽게 사용할 수 있게 개편한 것입니다.</p>
+<p>문서 편집의 기본 기능인 1. 문장 입력하기 2. 커서 이동하기 2. 영역 선택하기 2. 서식 변경하기 3. 텍스트 가져오기</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.core <span class="im">import</span> App</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p><a href="https://JunDamin.github.io/hwpapi/02_api/core.html#app"><code>App</code></a>은 기존 hwpapi를 wrapping 하여 보다 사용하기 쉽게 만드는 것을 목적으로 하고 있는 클래스 입니다.</p>
+<p><code>hwpapi</code>는 한글 컨트롤을 조합해서 자주사용했던 기능을 구현하였습니다. 또한, api 메소드를 통해 win32com의 방식으로 모두 사용할 수 있어 다양하게 사용할 수 있습니다.</p>
+<p>아래와 같이 App 객체를 생성하면 한글이 열립니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>한글을 조작할 때는 크게 <code>action</code>과 <code>hwpctrl method</code>로 나눌 수 있습니다. <code>action</code>은 파라미터를 설정하고 그것을 실행시켜서 작동하는 방식으로 사용자 단축키를 누르면 실행되는 명령에 가깝다면 <code>hwpctrl method</code>는 한글 자동화 모듈이 제공하는 것으로 사용자 입력에서는 신경쓰지 않아도 될 부분들을 처리하는 것이라고 보시면 됩니다.</p>
+<p><a href="https://www.hancom.com/board/devmanualList.do">공식 개발 매뉴얼</a>에 여러 <code>action</code>과 <code>parameter</code>, <code>method</code>의 설명을 제공하고 있습니다. 아쉽게도 문서가 잘 관리되고 있지는 않으며, <code>hwpctrl</code>의 <code>method</code>들을 보면 명시되어 있지 않은 기능들이 개발되어 있음을 알 수 있습니다.</p>
+<p>앞으로 개발해 나가면서 확인된 액션과 메소드 들을 정리해 나가고자 합니다.</p>
+<p><code>action</code>은 <code>app</code>에서 생성할 수 있습니다. 방식은 크게 2가지로 직접 <code>action key</code>를 입력하는 방법과 <code>actions</code>에 있는 <code>action</code> 객체를 생성하는 방법이 있습니다. 아래 두 방식은 동일한 <code>Action</code> 객체를 생성합니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>action1 <span class="op">=</span> app.create_action(<span class="st">"InsertText"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>action1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>&lt;Action InsertText: 텍스트 삽입&gt;</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>action2 <span class="op">=</span> app.actions.InsertText()</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>action2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>&lt;Action InsertText: 텍스트 삽입&gt;</code></pre>
+</div>
+</div>
+<p><code>Delete</code>(지우기), <code>BreakPara</code>(줄바꿈) 등 많은 <code>action</code>은 파라미터 세팅이 필요 없습니다. 하지만 위에서 생성한 <code>InsertText</code>객체는 입력할 텍스트 값을 넣어주어야 합니다. 이는 <code>parameter</code>를 통해 설정할 수 있습니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>action1.pset.Text <span class="op">=</span> <span class="st">"입력하기"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>파라미터를 설정한 후 다음과 같이 액션을 실행하면 텍스트가 입력되는 걸 볼 수 있습니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>action1.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>charshape <span class="op">=</span> app.actions.CharShape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>charshape.pset.Height <span class="op">=</span> app.api.PointToHwpUnit(<span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>charshape.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>action2.pset.Text <span class="op">=</span> <span class="st">"크게 입력하기"</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>action2.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<section id="입력하기" class="level2">
+<h2 class="anchored" data-anchor-id="입력하기">입력하기</h2>
+<p>입력은 가장 자주 사용하는 것이기 때문에 다음과 같이 <a href="https://JunDamin.github.io/hwpapi/02_api/core.html#app"><code>App</code></a>의 메소드로 만들었습니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>app.insert_text(<span class="st">"더 크게 입력하기"</span>, height<span class="op">=</span><span class="dv">30</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>action <span class="op">=</span> app.actions.Select()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="이동하기" class="level2">
+<h2 class="anchored" data-anchor-id="이동하기">이동하기</h2>
+<p>크게 두가지 방법이 있습니다.</p>
+<p>액션을 사용하는 방법과 단어를 찾아가는 방법이 있습니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>app.actions.MoveColumnBegin().run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<p>actions를 아래와 같이 하여 찾는 경로를 깗게 할 수도 있습니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>actions <span class="op">=</span> app.actions</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>actions.MoveColumnBegin().run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>app.find_text(<span class="st">"해해"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>False</code></pre>
+</div>
+</div>
+</section>
+<section id="선택하기" class="level2">
+<h2 class="anchored" data-anchor-id="선택하기">선택하기</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>app.select_text(<span class="st">"Para"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(True, True)</code></pre>
+</div>
+</div>
+</section>
+<section id="서식-넣기" class="level2">
+<h2 class="anchored" data-anchor-id="서식-넣기">서식 넣기</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>app.set_charshape(fontname<span class="op">=</span><span class="st">"바탕체"</span>, height<span class="op">=</span><span class="dv">25</span>, bold<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+</section>
+<section id="텍스트-가져오기" class="level2">
+<h2 class="anchored" data-anchor-id="텍스트-가져오기">텍스트 가져오기</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>app.get_text()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>'하기\r\n'</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>app.get_selected_text()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>'입력하기크게 입력하기더 크게 입력하기\n'</code></pre>
+</div>
+</div>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -469,4 +614,4 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action">Report an issue</a></p></div></div></div></div></footer></body></html>
+</body></html>

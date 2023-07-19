@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.296">
+<meta name="generator" content="quarto-1.3.353">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -177,14 +177,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../02_api/variables.html" class="sidebar-item-text sidebar-link">
+  <a href="../02_api/actions.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">actions</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../02_api/fnctions.html" class="sidebar-item-text sidebar-link">
+  <a href="../02_api/functions.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02_api/dataclasses.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">dataclasses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../02_api/constants.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">constants</span></a>
   </div>
 </li>
       </ul>
@@ -199,25 +211,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#gencache-error-해결" id="toc-gencache-error-해결" class="nav-link active" data-scroll-target="#gencache-error-해결">gencache error 해결</a></li>
-  <li><a href="#필요한-패키지는" id="toc-필요한-패키지는" class="nav-link" data-scroll-target="#필요한-패키지는">필요한 패키지는</a></li>
-  <li><a href="#app" id="toc-app" class="nav-link" data-scroll-target="#app">App</a></li>
+  <li><a href="#app" id="toc-app" class="nav-link active" data-scroll-target="#app">App</a></li>
+  <li><a href="#app.reload" id="toc-app.reload" class="nav-link" data-scroll-target="#app.reload">App.reload</a></li>
   <li><a href="#app.set_visible" id="toc-app.set_visible" class="nav-link" data-scroll-target="#app.set_visible">App.set_visible</a></li>
   <li><a href="#app.get_filepath" id="toc-app.get_filepath" class="nav-link" data-scroll-target="#app.get_filepath">App.get_filepath</a></li>
-  <li><a href="#app.open" id="toc-app.open" class="nav-link" data-scroll-target="#app.open">App.open</a></li>
-  <li><a href="#app.save" id="toc-app.save" class="nav-link" data-scroll-target="#app.save">App.save</a></li>
-  <li><a href="#app.close" id="toc-app.close" class="nav-link" data-scroll-target="#app.close">App.close</a></li>
-  <li><a href="#app.quit" id="toc-app.quit" class="nav-link" data-scroll-target="#app.quit">App.quit</a></li>
   <li><a href="#app.create_action" id="toc-app.create_action" class="nav-link" data-scroll-target="#app.create_action">App.create_action</a></li>
   <li><a href="#app.create_parameterset" id="toc-app.create_parameterset" class="nav-link" data-scroll-target="#app.create_parameterset">App.create_parameterset</a></li>
+  <li><a href="#app.open" id="toc-app.open" class="nav-link" data-scroll-target="#app.open">App.open</a></li>
+  <li><a href="#app.get_hwnd" id="toc-app.get_hwnd" class="nav-link" data-scroll-target="#app.get_hwnd">App.get_hwnd</a></li>
+  <li><a href="#app.save" id="toc-app.save" class="nav-link" data-scroll-target="#app.save">App.save</a></li>
+  <li><a href="#app.save_block" id="toc-app.save_block" class="nav-link" data-scroll-target="#app.save_block">App.save_block</a></li>
+  <li><a href="#app.close" id="toc-app.close" class="nav-link" data-scroll-target="#app.close">App.close</a></li>
+  <li><a href="#app.quit" id="toc-app.quit" class="nav-link" data-scroll-target="#app.quit">App.quit</a></li>
+  <li><a href="#app.get_charshape" id="toc-app.get_charshape" class="nav-link" data-scroll-target="#app.get_charshape">App.get_charshape</a></li>
+  <li><a href="#app.set_charshape" id="toc-app.set_charshape" class="nav-link" data-scroll-target="#app.set_charshape">App.set_charshape</a></li>
+  <li><a href="#app.get_parashape" id="toc-app.get_parashape" class="nav-link" data-scroll-target="#app.get_parashape">App.get_parashape</a></li>
+  <li><a href="#app.set_parashape" id="toc-app.set_parashape" class="nav-link" data-scroll-target="#app.set_parashape">App.set_parashape</a></li>
   <li><a href="#app.insert_text" id="toc-app.insert_text" class="nav-link" data-scroll-target="#app.insert_text">App.insert_text</a></li>
-  <li><a href="#app.find_files" id="toc-app.find_files" class="nav-link" data-scroll-target="#app.find_files">App.find_files</a></li>
   <li><a href="#scan" id="toc-scan" class="nav-link" data-scroll-target="#scan">scan</a></li>
+  <li><a href="#move_to_line" id="toc-move_to_line" class="nav-link" data-scroll-target="#move_to_line">move_to_line</a></li>
   <li><a href="#app.move" id="toc-app.move" class="nav-link" data-scroll-target="#app.move">App.move</a></li>
+  <li><a href="#app.setup_page" id="toc-app.setup_page" class="nav-link" data-scroll-target="#app.setup_page">App.setup_page</a></li>
   <li><a href="#app.insert_picture" id="toc-app.insert_picture" class="nav-link" data-scroll-target="#app.insert_picture">App.insert_picture</a></li>
+  <li><a href="#app.select_text" id="toc-app.select_text" class="nav-link" data-scroll-target="#app.select_text">App.select_text</a></li>
   <li><a href="#app.get_selected_text" id="toc-app.get_selected_text" class="nav-link" data-scroll-target="#app.get_selected_text">App.get_selected_text</a></li>
+  <li><a href="#app.get_text" id="toc-app.get_text" class="nav-link" data-scroll-target="#app.get_text">App.get_text</a></li>
+  <li><a href="#app.find_text" id="toc-app.find_text" class="nav-link" data-scroll-target="#app.find_text">App.find_text</a></li>
   <li><a href="#app.replace_all" id="toc-app.replace_all" class="nav-link" data-scroll-target="#app.replace_all">App.replace_all</a></li>
   <li><a href="#app.insert_file" id="toc-app.insert_file" class="nav-link" data-scroll-target="#app.insert_file">App.insert_file</a></li>
+  <li><a href="#app.set_cell_border" id="toc-app.set_cell_border" class="nav-link" data-scroll-target="#app.set_cell_border">App.set_cell_border</a></li>
+  <li><a href="#app.set_cell_color" id="toc-app.set_cell_color" class="nav-link" data-scroll-target="#app.set_cell_color">App.set_cell_color</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
@@ -247,26 +270,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 <!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
-<section id="gencache-error-해결" class="level3">
-<h3 class="anchored" data-anchor-id="gencache-error-해결">gencache error 해결</h3>
-<p>캐시가 충돌하는 문제를 해결하기 위해서 장치를 마련했습니다. 오류가 나는지 확인은 필요할 것으로 보입니다.</p>
-</section>
-<section id="필요한-패키지는" class="level3">
-<h3 class="anchored" data-anchor-id="필요한-패키지는">필요한 패키지는</h3>
-<p>App은 기존 hwpapi를 wrapping 하여 보다 사용하기 쉽게 만드는 것을 목적으로 하고 있는 클래스 입니다.</p>
-<p>제가 만든 기능을 사용할 수 있을 뿐만 아니라 <code>hwpapi</code> 한글 컨트롤과 동등한 기능을 부여하고자 하였으며 api 메소드를 통해 win32com의 방식으로 모두 사용할 수 있어 다양하게 사용할 수 있습니다. 기본 메소드를 보다 쓰기 쉽게 만들고자 합니다. 앞으로 추가할 기능은 화면 크기 조정 등이 있습니다.</p>
-<p>기본적으로는 <a href="https://JunDamin.github.io/hwpapi/api/core.html#app"><code>App</code></a> 클래스와 <a href="https://JunDamin.github.io/hwpapi/tutorials/actions.html#_action"><code>_Action</code></a>클래스가 있습니다. <a href="https://JunDamin.github.io/hwpapi/tutorials/actions.html#_action"><code>_Action</code></a> 클래스는 <a href="https://JunDamin.github.io/hwpapi/api/core.html#app"><code>App</code></a>로만 생성되어야 하기 때문에 언더바로 시작합니다.</p>
+<pre><code>C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: potentially wrong underline length... 
+메소드 
+---------- in 
+`App` 클래스는 한컴오피스의 한/글 프로그램과 상호작용하기 위한 인터페이스를 제공합니다.
+...
+  else: warn(msg)
+C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: Unknown section 메소드
+  else: warn(msg)</code></pre>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L17" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L34" target="_blank" style="float:right; font-size:smaller">source</a></p>
 <section id="app" class="level3">
 <h3 class="anchored" data-anchor-id="app">App</h3>
 <blockquote class="blockquote">
-<pre><code> App (api=None)</code></pre>
+<pre><code> App (api=None, is_visible=True)</code></pre>
 </blockquote>
-<p>App 클래스는 한컴오피스의 한/글 프로그램과 상호작용하기 위한 인터페이스를 제공합니다.</p>
+<p><a href="https://JunDamin.github.io/hwpapi/02_api/core.html#app"><code>App</code></a> 클래스는 한컴오피스의 한/글 프로그램과 상호작용하기 위한 인터페이스를 제공합니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L38" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L74" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.reload" class="level3">
+<h3 class="anchored" data-anchor-id="app.reload">App.reload</h3>
+<blockquote class="blockquote">
+<pre><code> App.reload (app:__main__.App)</code></pre>
+</blockquote>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L82" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.set_visible" class="level3">
 <h3 class="anchored" data-anchor-id="app.set_visible">App.set_visible</h3>
@@ -275,7 +304,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </blockquote>
 <p><code>set_visible()</code> 함수는 한/글 프로그램의 창을 화면에 보이거나 숨기기 위해 호출됩니다. <code>is_visible</code> 인자가 <code>True</code>일 경우 창이 화면에 보이고, <code>False</code>일 경우 숨깁니다. <code>window_i</code> 인자는 창의 인덱스를 지정합니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L47" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L91" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.get_filepath" class="level3">
 <h3 class="anchored" data-anchor-id="app.get_filepath">App.get_filepath</h3>
@@ -283,18 +312,58 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code> App.get_filepath (app:__main__.App)</code></pre>
 </blockquote>
 <p><code>get_filepath()</code> 함수는 현재 열려있는 한/글 문서의 경로를 반환합니다.</p>
+<pre><code>C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: potentially wrong underline length... 
+매개변수 
+---------- in 
+`create_action` 함수는 `_Action` 클래스의 인스턴스를 생성하고 반환합니다.
+...
+  else: warn(msg)
+C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: potentially wrong underline length... 
+반환 
+------ in 
+`create_action` 함수는 `_Action` 클래스의 인스턴스를 생성하고 반환합니다.
+...
+  else: warn(msg)
+C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: Unknown section 매개변수
+  else: warn(msg)
+C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: Unknown section 반환
+  else: warn(msg)</code></pre>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L98" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.create_action" class="level3">
+<h3 class="anchored" data-anchor-id="app.create_action">App.create_action</h3>
+<blockquote class="blockquote">
+<pre><code> App.create_action (app:__main__.App, action_key:str)</code></pre>
+</blockquote>
+<p><code>create_action</code> 함수는 <a href="https://JunDamin.github.io/hwpapi/02_api/actions.html#_action"><code>_Action</code></a> 클래스의 인스턴스를 생성하고 반환합니다.</p>
+<pre><code>C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: potentially wrong underline length... 
+매개변수 
+---------- in 
+`create_parameterset` 함수는 특정 액션에 대한 파라미터셋을 생성하고 반환합니다.
+...
+  else: warn(msg)
+C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: potentially wrong underline length... 
+반환 
+------ in 
+`create_parameterset` 함수는 특정 액션에 대한 파라미터셋을 생성하고 반환합니다.
+...
+  else: warn(msg)</code></pre>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L119" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.create_parameterset" class="level3">
+<h3 class="anchored" data-anchor-id="app.create_parameterset">App.create_parameterset</h3>
+<blockquote class="blockquote">
+<pre><code> App.create_parameterset (app:__main__.App, action_key:str)</code></pre>
+</blockquote>
+<p><code>create_parameterset</code> 함수는 특정 액션에 대한 파라미터셋을 생성하고 반환합니다.</p>
+<p><code>_action_info</code> 딕셔너리를 사용하여 주어진 액션 키에 대한 파라미터셋 정보를 조회합니다. 파라미터셋 정보가 있으면 해당 파라미터셋 객체를 생성하고 반환합니다.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pywintypes</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    app <span class="op">=</span> App(app.api)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">NameError</span>:</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    app <span class="op">=</span> App()</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> pywintypes.com_error:</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    app <span class="op">=</span> App()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L54" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L147" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.open" class="level3">
 <h3 class="anchored" data-anchor-id="app.open">App.open</h3>
@@ -303,22 +372,65 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </blockquote>
 <p><code>open()</code> 함수는 파일 경로를 인자로 받아 해당 파일을 한/글 프로그램에서 엽니다. <code>get_absolute_path()</code> 함수를 호출하여 절대 경로로 변환한 후, <code>api.Open()</code> 함수를 호출하여 파일을 엽니다. 열린 파일의 경로를 반환합니다.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>app.<span class="bu">open</span>(<span class="vs">r"C:\Users\freed\Downloads\일반관리비 관리 자료 작성\1. Template6_일반관리비template_0309_1730(수정).hwp"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>app.<span class="bu">open</span>(<span class="st">"test/공문양식.hwp"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<pre><code>'C:/Users/freed/Downloads/일반관리비 관리 자료 작성/1. Template6_일반관리비template_0309_1730(수정).hwp'</code></pre>
+<pre><code>'c:/Users/freed/Documents/python_projects/HwpApi/nbs/02_api/test/공문양식.hwp'</code></pre>
 </div>
 </div>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L64" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L157" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.get_hwnd" class="level3">
+<h3 class="anchored" data-anchor-id="app.get_hwnd">App.get_hwnd</h3>
+<blockquote class="blockquote">
+<pre><code> App.get_hwnd (app:__main__.App)</code></pre>
+</blockquote>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>app.get_hwnd()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>657134</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L162" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.save" class="level3">
 <h3 class="anchored" data-anchor-id="app.save">App.save</h3>
 <blockquote class="blockquote">
 <pre><code> App.save (app:__main__.App, path=None)</code></pre>
 </blockquote>
-<p><code>save()</code> 함수는 현재 열려있는 문서를 저장하거나 다른 이름으로 저장합니다. <code>path</code> 인자가 주어지지 않은 경우 현재 문서를 덮어쓰기로 저장하고, 저장된 파일의 경로를 반환합니다. <code>path</code> 인자가 주어진 경우, <code>Path</code> 모듈을 이용하여 파일 확장자를 추출한 후, 해당 확장자에 맞게 문서를 저장합니다. 저장된 파일의 경로를 반환합니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>app.save(<span class="st">"test.pdf"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>'c:/Users/freed/Documents/python_projects/HwpApi/nbs/02_api/test.pdf'</code></pre>
+</div>
+</div>
+<pre><code>C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: potentially wrong underline length... 
+매개변수 
+---------- in 
+`save_block` 함수는 블록을 저장하고 주소를 반환합니다.
+...
+  else: warn(msg)
+C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: potentially wrong underline length... 
+반환 
+------ in 
+`save_block` 함수는 블록을 저장하고 주소를 반환합니다.
+...
+  else: warn(msg)</code></pre>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L82" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L183" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.save_block" class="level3">
+<h3 class="anchored" data-anchor-id="app.save_block">App.save_block</h3>
+<blockquote class="blockquote">
+<pre><code> App.save_block (app:__main__.App, path:pathlib.Path)</code></pre>
+</blockquote>
+<p><code>save_block</code> 함수는 블록을 저장하고 주소를 반환합니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>app.save_block(<span class="st">"test2.hwp"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L219" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.close" class="level3">
 <h3 class="anchored" data-anchor-id="app.close">App.close</h3>
@@ -326,8 +438,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code> App.close (app:__main__.App)</code></pre>
 </blockquote>
 <p><code>close()</code> 함수는 현재 열려있는 문서를 닫습니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>app.close()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L88" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L225" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.quit" class="level3">
 <h3 class="anchored" data-anchor-id="app.quit">App.quit</h3>
@@ -335,48 +450,218 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code> App.quit (app:__main__.App)</code></pre>
 </blockquote>
 <p><code>quit()</code> 함수는 한/글 프로그램을 종료합니다.</p>
+<pre><code>C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: potentially wrong underline length... 
+매개변수 
+---------- in 
+`get_charshape` 메소드는 현재 애플리케이션에서 문자 모양을 가져오는 함수입니다.
+...
+  else: warn(msg)
+C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: potentially wrong underline length... 
+반환 
+------ in 
+`get_charshape` 메소드는 현재 애플리케이션에서 문자 모양을 가져오는 함수입니다.
+...
+  else: warn(msg)</code></pre>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L94" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L231" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
-<section id="app.create_action" class="level3">
-<h3 class="anchored" data-anchor-id="app.create_action">App.create_action</h3>
+<section id="app.get_charshape" class="level3">
+<h3 class="anchored" data-anchor-id="app.get_charshape">App.get_charshape</h3>
 <blockquote class="blockquote">
-<pre><code> App.create_action (app:__main__.App, action_key:str)</code></pre>
+<pre><code> App.get_charshape (app:__main__.App)</code></pre>
 </blockquote>
-<p><code>create_action()</code> 함수는 <a href="https://JunDamin.github.io/hwpapi/tutorials/actions.html#_action"><code>_Action</code></a> 클래스의 객체를 생성하여 반환합니다.</p>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L100" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="app.create_parameterset" class="level3">
-<h3 class="anchored" data-anchor-id="app.create_parameterset">App.create_parameterset</h3>
-<blockquote class="blockquote">
-<pre><code> App.create_parameterset (app:__main__.App, action_key:str)</code></pre>
-</blockquote>
-<p><code>create_parameterset()</code> 함수는 특정 액션의 파라미터셋을 반환합니다. <code>_action_info</code> 딕셔너리에서 액션에 대한 정보를 찾아서 파라미터셋의 키 값을 가져옵니다. 파라미터셋 객체를 반환합니다.</p>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/methods.py#L12" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="app.insert_text" class="level3">
-<h3 class="anchored" data-anchor-id="app.insert_text">App.insert_text</h3>
-<blockquote class="blockquote">
-<pre><code> App.insert_text (app:__main__.App, text:str)</code></pre>
-</blockquote>
-<p>`text를 입력합니다.</p>
+<p><code>get_charshape</code> 메소드는 현재 애플리케이션에서 문자 모양을 가져오는 함수입니다.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>app.insert_text(<span class="st">"test"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>app.get_charshape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>&lt;CharShape: hangul_font=함초롬바탕, latin_font=함초롬바탕, text_color=0, fontsize=10.0, bold=0, italic=0, super_script=0, sub_script=0, offset=0, spacing=0, ratio=100, shade_color=#ffffff, shadow_color=#c0c0c0, shadow_offset_x=10, shadow_offset_y=10, strike_out_type=0, strike_out_color=0, underline_type=0, underline_shape=0, underline_color=0, out_line_type=0&gt;</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L251" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.set_charshape" class="level3">
+<h3 class="anchored" data-anchor-id="app.set_charshape">App.set_charshape</h3>
+<blockquote class="blockquote">
+<pre><code> App.set_charshape (app:__main__.App,
+                    charshape:hwpapi.dataclasses.CharShape=None, **kwargs)</code></pre>
+</blockquote>
+<p><code>set_charshape</code> 함수는 주어진 <a href="https://JunDamin.github.io/hwpapi/02_api/dataclasses.html#charshape"><code>CharShape</code></a>를 사용하여 애플리케이션의 현재 문단 모양을 설정합니다.</p>
+<p>만약 <code>charshape</code>가 <code>None</code>인 경우, <a href="https://JunDamin.github.io/hwpapi/02_api/dataclasses.html#charshape"><code>CharShape</code></a>의 기본 인스턴스를 생성합니다.</p>
+<p>이 함수는 추가로 <code>kwargs</code>를 인자로 받아, 이를 <code>parashape</code>의 속성에 할당합니다. 이렇게 수정된 <code>parashape</code>는 한/글 문서의 현재 문단 모양을 변경하는데 사용됩니다.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>app</td>
+<td>App</td>
+<td></td>
+<td><a href="https://JunDamin.github.io/hwpapi/02_api/core.html#app"><code>App</code></a> 객체입니다. 한/글 애플리케이션에 접근하는데 사용됩니다.</td>
+</tr>
+<tr class="even">
+<td>charshape</td>
+<td>CharShape</td>
+<td>None</td>
+<td>한/글 글자 모양을 설정하는데 사용될 <a href="https://JunDamin.github.io/hwpapi/02_api/dataclasses.html#charshape"><code>CharShape</code></a> 객체입니다. 기본값은 <code>None</code>입니다.</td>
+</tr>
+<tr class="odd">
+<td>kwargs</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>bool</strong></td>
+<td></td>
+<td><strong><code>set_charshape</code> 작업의 성공 여부를 나타내는 부울 값입니다.</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>charshape <span class="op">=</span> CharShape()</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>charshape.font <span class="op">=</span> <span class="st">"바탕체"</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>charshape.super_script<span class="op">=</span><span class="dv">1</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>charshape.sub_script <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>app.set_charshape(charshape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>app.get_charshape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>&lt;CharShape: hangul_font=바탕체, latin_font=바탕체, text_color=0, fontsize=10.0, bold=0, italic=0, super_script=1, sub_script=1, offset=0, spacing=0, ratio=100, shade_color=#ffffff, shadow_color=#c0c0c0, shadow_offset_x=10, shadow_offset_y=10, strike_out_type=0, strike_out_color=0, underline_type=0, underline_shape=0, underline_color=0, out_line_type=0&gt;</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>charshape <span class="op">=</span> CharShape()</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>charshape.font <span class="op">=</span> <span class="st">"바탕체"</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>charshape.super_script<span class="op">=</span><span class="dv">0</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>app.set_charshape(charshape)</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>charshape <span class="op">=</span> app.get_charshape()</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>charshape.super_script <span class="op">==</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<pre><code>C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: potentially wrong underline length... 
+매개변수 
+---------- in 
+`get_parashape` 메소드는 현재 애플리케이션에서 문단 모양을 가져오는 함수입니다.
+...
+  else: warn(msg)
+C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: potentially wrong underline length... 
+반환 
+------ in 
+`get_parashape` 메소드는 현재 애플리케이션에서 문단 모양을 가져오는 함수입니다.
+...
+  else: warn(msg)</code></pre>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L285" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.get_parashape" class="level3">
+<h3 class="anchored" data-anchor-id="app.get_parashape">App.get_parashape</h3>
+<blockquote class="blockquote">
+<pre><code> App.get_parashape (app:__main__.App)</code></pre>
+</blockquote>
+<p><code>get_parashape</code> 메소드는 현재 애플리케이션에서 문단 모양을 가져오는 함수입니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>app.get_parashape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>&lt;ParaShape: left_margin=0, right_margin=0, indentation=0, prev_spacing=0, next_spacing=0, line_spacing_type=Word, line_spacing=160, align_type=Both, break_latin_word=Word, break_non_latin_word=1, snap_to_grid=1, condense=0, widow_orphan=0, keep_with_next=0, page_break_before=0, text_alignment=Font, font_line_height=0, heading_type=None, level=0, border_connect=0, border_text=0, border_offset_left=0, border_offset_right=0, border_offset_top=0, border_offset_bottom=0, tail_type=0, line_wrap=0&gt;</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L306" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.set_parashape" class="level3">
+<h3 class="anchored" data-anchor-id="app.set_parashape">App.set_parashape</h3>
+<blockquote class="blockquote">
+<pre><code> App.set_parashape (app:__main__.App,
+                    parashape:hwpapi.dataclasses.ParaShape=None, **kwargs)</code></pre>
+</blockquote>
+<p><code>set_parashape</code> 함수는 주어진 <a href="https://JunDamin.github.io/hwpapi/02_api/dataclasses.html#parashape"><code>ParaShape</code></a>를 사용하여 애플리케이션의 현재 문단 모양을 설정합니다.</p>
+<p>만약 <code>parashape</code>가 <code>None</code>인 경우, <a href="https://JunDamin.github.io/hwpapi/02_api/dataclasses.html#parashape"><code>ParaShape</code></a>의 기본 인스턴스를 생성합니다.</p>
+<p>이 함수는 추가로 <code>kwargs</code>를 인자로 받아, 이를 <code>parashape</code>의 속성에 할당합니다. 이렇게 수정된 <code>parashape</code>는 한/글 문서의 현재 문단 모양을 변경하는데 사용됩니다.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>app</td>
+<td>App</td>
+<td></td>
+<td><a href="https://JunDamin.github.io/hwpapi/02_api/core.html#app"><code>App</code></a> 객체입니다. 한/글 애플리케이션에 접근하는데 사용됩니다.</td>
+</tr>
+<tr class="even">
+<td>parashape</td>
+<td>ParaShape</td>
+<td>None</td>
+<td>한/글 문단 모양을 설정하는데 사용될 <a href="https://JunDamin.github.io/hwpapi/02_api/dataclasses.html#parashape"><code>ParaShape</code></a> 객체입니다. 기본값은 <code>None</code>입니다.</td>
+</tr>
+<tr class="odd">
+<td>kwargs</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>bool</strong></td>
+<td></td>
+<td><strong><code>set_parashape</code> 작업의 성공 여부를 나타내는 부울 값입니다.</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>app.set_parashape(line_spacing<span class="op">=</span><span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <pre><code>True</code></pre>
 </div>
 </div>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L120" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L340" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
-<section id="app.find_files" class="level3">
-<h3 class="anchored" data-anchor-id="app.find_files">App.find_files</h3>
+<section id="app.insert_text" class="level3">
+<h3 class="anchored" data-anchor-id="app.insert_text">App.insert_text</h3>
 <blockquote class="blockquote">
-<pre><code> App.find_files (app:__main__.App)</code></pre>
+<pre><code> App.insert_text (app:__main__.App, text:str,
+                  charshape:hwpapi.dataclasses.CharShape=None)</code></pre>
 </blockquote>
 <p>`text를 입력합니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>app.insert_text(<span class="st">"안녕하세요"</span>, charshape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>app.set_parashape(ParaShape(right_margin<span class="op">=</span><span class="dv">20</span>, align_type<span class="op">=</span><span class="st">"Left"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>parashape <span class="op">=</span> app.actions.ParagraphShape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>parashape.pset.RightMargin</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>5660</code></pre>
+</div>
+</div>
 <hr>
 </section>
 <section id="scan" class="level3">
@@ -387,418 +672,101 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
        epara=None, epos=None, scan_direction='Forward')</code></pre>
 </blockquote>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L233" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L436" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="move_to_line" class="level3">
+<h3 class="anchored" data-anchor-id="move_to_line">move_to_line</h3>
+<blockquote class="blockquote">
+<pre><code> move_to_line (app:__main__.App, text)</code></pre>
+</blockquote>
+<p>인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L488" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.move" class="level3">
 <h3 class="anchored" data-anchor-id="app.move">App.move</h3>
 <blockquote class="blockquote">
-<pre><code> App.move (app:__main__.App, move_key='ScanPos', para=None, pos=None)</code></pre>
+<pre><code> App.move (app:__main__.App, key='ScanPos', para=None, pos=None)</code></pre>
 </blockquote>
 <p>키워드를 바탕으로 캐럿 위치를 이동시킵니다.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>get_value(move_ids, <span class="st">"ScanPos"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>get_value(move_ids, <span class="st">"ScanPos"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <pre><code>201</code></pre>
 </div>
 </div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> app.scan() <span class="im">as</span> scan:</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> text <span class="kw">in</span> scan:</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(text)</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="st">"청년인턴"</span> <span class="kw">in</span> text:</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>            app.move()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-
-
-
-(6) 일반관리비 관리 지표의 점수계산을 위한 Template(2)_준정부기관
-
- 준정부기관은 이 양식을 사용하는 것을 원칙으로 하며, 자체수익사업 등이 있는 기관의 경우에는 양식 (5)를 사용할 수 있음. 
-
-
-
-
-구분
-
-2022
-
-2021
-
-2020
-
-1. 사업비(직접사업비와 사업비성 경비)와 판관비(또는 경비)
-
-　
-
-　
-
-　
-
-  a. 손익계산서 등의 직접사업비&lt;주1&gt;
-
-968,356,150,820 
-
-844,717,571,019 
-
-743,960,305,518 
-
-  b. 손익계산서 등의 사업비성 경비&lt;주1&gt;
-
-- 
-
-- 
-
-- 
-
-  c. 손익계산서상의 판관비(또는 경비)
-
-52,823,138,260 
-
-45,739,033,709 
-
-44,912,084,147 
-
- 사업비와 판관비 계: (A)=a+b+c
-
-1,021,179,289,080 
-
-890,456,604,728 
-
-788,872,389,665 
-
-2. 사업비 중 제외항목 &lt;주2&gt;
-
-　
-
-　
-
-　
-
-  d. 직접사업비  
-
-938,474,753,330 
-
-820,516,672,451 
-
-708,180,239,253 
-
-  e. 사업비성 경비 
-
-8,976,588,028 
-
-6,289,073,570 
-
-10,647,673,873 
-
-제외항목 총계: (B)=d+e 
-
-947,451,341,358 
-
-826,805,746,021 
-
-718,827,913,126 
-
-3. 비정규직 인건비 등 &lt;주3&gt;
-
-　
-
-　
-
-　
-
-
-  f. 비정규직 인건비 등 총계
-
-19,442,425,086 
-
-17,243,943,642 
-
-19,856,530,881 
-
-
-  g. 비정규직 특수건강진단비
-
-- 
-
-- 
-
-- 
-
-
-차감 비정규직 인건비 등: (C) = f-g
-
-19,442,425,086 
-
-17,243,943,642 
-
-19,856,530,881 
-
-4. 비상임이사 인건비(D)&lt;주4&gt;
-
-61,300,000 
-
-76,549,990 
-
-63,850,000 
-
-5. 인상률 제외 인건비 중 기타 제외 인건비(E) &lt;주5&gt;
-
-　
-
-- 
-
-- 
-
-6. 사내근로복지기금출연금(F) &lt;주6&gt;
-
-　
-
-- 
-
-- 
-
-7. 감가상각비
-
-　
-
-　
-
-　
-
-  h. 사업비로 처리된 유형자산 감가상각비
-
-439,207,413 
-
-496,001,763 
-
-509,099,787 
-
-  i. 사업비로 처리된 무형자산 감가상각비
-
-- 
-
-- 
-
-- 
-
-  j. 판관비로 처리된 유형자산 감가상각비
-
-8,563,565,655 
-
-8,245,421,190 
-
-8,453,899,310 
-
-  k. 판관비로 처리된 무형자산 감가상각비
-
-2,937,462,955 
-
-2,721,623,724 
-
-2,551,321,675 
-
-감가상각비 총계: (G) = h+i+j+k
-
-11,940,236,023 
-
-11,463,046,677 
-
-11,514,320,772 
-
-8. 교육훈련비 &lt;주7&gt; 
-
-　
-
-　
-
-　
-
-  l. 사업비로 처리된 교육훈련비
-
-1,430,893 
-
-38,828,940 
-
-60,983,811 
-
-  m. 판관비로 처리된 교육훈련비
-
-1,450,057,354 
-
-1,360,002,485 
-
-1,263,153,190 
-
-교육훈련비 총계: (H) =l+m
-
-1,451,488,247 
-
-1,398,831,425 
-
-1,324,137,001 
-
-9. 연구비 및 경상개발비 &lt;주7&gt; 
-
-　
-
-　
-
-　
-
-  n. 사업비로 처리된 연구비 및 경상개발비
-
-- 
-
-- 
-
-- 
-
-  o. 판관비로 처리된 연구비 및 경상개발비
-
-373,155,890 
-
-323,413,809 
-
-122,238,417 
-
-연구비 및 경상개발비 총계: (I) = n+o
-
-373,155,890 
-
-323,413,809 
-
-122,238,417 
-
-10. 세금과공과 &lt;주7, 8&gt; 
-
-　
-
-　
-
-　
-
-  p. 사업비로 처리된 세금과공과
-
-- 
-
-- 
-
-- 
-
-  q. 판관비로 처리된 세금과공과
-
-721,630,836 
-
-647,281,606 
-
-542,776,456 
-
-세금과공과 총계: (J) = p+q
-
-721,630,836 
-
-647,281,606 
-
-542,776,456 
-
-11. 수선유지비 &lt;주7, 9&gt; 
-
-　
-
-　
-
-　
-
-  r. 사업비로 처리된 수선유지비
-
-　
-
-　
-
-　
-
-  s. 판관비로 처리된 수선유지비
-
-　
-
-　
-
-　
-
-세금과공과 총계: (K) = r+s
-
-- 
-
-- 
-
-- 
-
-
-일반관리비: 
-
-(L)=(A)-(B)+(C)+(D)+(E)+(F)-(G)-(H)-(I)-(J)-(K)
-
-78,745,161,812 
-
-67,138,778,822 
-
-76,461,384,774 
-
-매출액: (M)
-
-1,082,748,153,681 
-
-943,261,080,451 
-
-842,716,245,593 
-
-일반관리비 관리 지표 = (L)/(M)
-
-7.273%
-
-7.118%
-
-9.073test%
-
-
-
-
-
-* 청년인턴이 무기계약직으로 전환된 경우 비교가능성 등 동질성이 유지되도록 전년도 일반관리비 계산 시 당년도에 전환된 무기계약직 인건비 발생액을 전년도 일반관리비에 가산하여 기준치를 조정한 후 일반관리비 관리 점수계산을 할 수 있음
-
-</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="at">@patch</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> setup_page(</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    app:App,   <span class="co"># app</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    top<span class="op">=</span><span class="dv">20</span>,     <span class="co"># 윗 여백</span></span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    bottom<span class="op">=</span><span class="dv">10</span>,     <span class="co"># 아래 여백</span></span>
-<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    right<span class="op">=</span><span class="dv">20</span>,     <span class="co"># 오른쪽 여백</span></span>
-<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    left<span class="op">=</span><span class="dv">20</span>,     <span class="co"># 왼쪽 여백</span></span>
-<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    header<span class="op">=</span><span class="dv">15</span>,     <span class="co"># 머릿말</span></span>
-<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>    footer<span class="op">=</span><span class="dv">5</span>,     <span class="co"># 꼬릿말</span></span>
-<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>    gutter<span class="op">=</span><span class="dv">0</span>):    <span class="co"># 제본</span></span>
-<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="co">    페이지를 설정합니다.</span></span>
-<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    action <span class="op">=</span> app.actions.PageSetup()</span>
-<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> action.pset</span>
-<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>    p.PageDef.TopMargin <span class="op">=</span> app.api.MiliToHwpUnit(top)</span>
-<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>    p.PageDef.HeaderLen <span class="op">=</span> app.api.MiliToHwpUnit(header)</span>
-<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>    p.PageDef.RightMargin <span class="op">=</span> app.api.MiliToHwpUnit(right)</span>
-<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>    p.PageDef.BottomMargin <span class="op">=</span> app.api.MiliToHwpUnit(bottom)</span>
-<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>    p.PageDef.FooterLen <span class="op">=</span> app.api.MiliToHwpUnit(footer)</span>
-<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>    p.PageDef.LeftMargin <span class="op">=</span> app.api.MiliToHwpUnit(left)</span>
-<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>    p.PageDef.GutterLen <span class="op">=</span> app.api.MiliToHwpUnit(gutter)</span>
-<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> action.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L255" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L496" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.setup_page" class="level3">
+<h3 class="anchored" data-anchor-id="app.setup_page">App.setup_page</h3>
+<blockquote class="blockquote">
+<pre><code> App.setup_page (app:__main__.App, top=20, bottom=10, right=20, left=20,
+                 header=15, footer=5, gutter=0)</code></pre>
+</blockquote>
+<p>페이지를 설정합니다.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>app</td>
+<td>App</td>
+<td></td>
+<td>app</td>
+</tr>
+<tr class="even">
+<td>top</td>
+<td>int</td>
+<td>20</td>
+<td>윗 여백</td>
+</tr>
+<tr class="odd">
+<td>bottom</td>
+<td>int</td>
+<td>10</td>
+<td>아래 여백</td>
+</tr>
+<tr class="even">
+<td>right</td>
+<td>int</td>
+<td>20</td>
+<td>오른쪽 여백</td>
+</tr>
+<tr class="odd">
+<td>left</td>
+<td>int</td>
+<td>20</td>
+<td>왼쪽 여백</td>
+</tr>
+<tr class="even">
+<td>header</td>
+<td>int</td>
+<td>15</td>
+<td>머릿말</td>
+</tr>
+<tr class="odd">
+<td>footer</td>
+<td>int</td>
+<td>5</td>
+<td>꼬릿말</td>
+</tr>
+<tr class="even">
+<td>gutter</td>
+<td>int</td>
+<td>0</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L538" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.insert_picture" class="level3">
 <h3 class="anchored" data-anchor-id="app.insert_picture">App.insert_picture</h3>
@@ -869,7 +837,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L283" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L566" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.select_text" class="level3">
+<h3 class="anchored" data-anchor-id="app.select_text">App.select_text</h3>
+<blockquote class="blockquote">
+<pre><code> App.select_text (app:__main__.App, option:str='Line')</code></pre>
+</blockquote>
+<p>한줄을 선택합니다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>app.select_text()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>(True, True)</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>app.set_charshape(CharShape(font<span class="op">=</span><span class="st">"바탕"</span>, fontsize<span class="op">=</span><span class="dv">20</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>True</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L581" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.get_selected_text" class="level3">
 <h3 class="anchored" data-anchor-id="app.get_selected_text">App.get_selected_text</h3>
@@ -877,20 +866,185 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code> App.get_selected_text (app:__main__.App)</code></pre>
 </blockquote>
 <p>선택된 영역의 텍스트를 불러온다.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>app.get_selected_text()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>'안녕하세요\n'</code></pre>
+</div>
+</div>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L300" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L591" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.get_text" class="level3">
+<h3 class="anchored" data-anchor-id="app.get_text">App.get_text</h3>
+<blockquote class="blockquote">
+<pre><code> App.get_text (app:__main__.App, spos='Line', epos='Line')</code></pre>
+</blockquote>
+<p>텍스트를 가져옵니다. 기본은 현재 문장입니다. “Current”: # “캐럿 위치부터. (현재 위치까지)”, “Specified”: 0x0010, # “특정 위치부터. (특정 위치까지)”, “Line”: 0x0020, # “줄의 시작부터. (줄 끝까지)”, “Paragraph”: 0x0030, # “문단의 시작부터. (문단 끝까지)” “Section”: 0x0040, # “구역의 시작부터. (구역의 끝까지)” “List”: 0x0050, # “리스트의 시작부터. (리스트 끝까지)” “Control”: 0x0060, # “컨트롤의 시작부터. (컨트롤 끝까지)” “Document”: 0x0070, # “문서의 시작부터. (문서 끝까지)”</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>app.get_text()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>'안녕하세요\r\n'</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L604" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.find_text" class="level3">
+<h3 class="anchored" data-anchor-id="app.find_text">App.find_text</h3>
+<blockquote class="blockquote">
+<pre><code> App.find_text (app:__main__.App, text='',
+                charshape:hwpapi.dataclasses.CharShape=None,
+                ignore_message=True, direction='Forward',
+                match_case=False, all_word_forms=False,
+                several_words=False, use_wild_cards=False,
+                whole_word_only=False, replace_mode=False,
+                ignore_find_string=False, ignore_replace_string=False,
+                find_style='', replace_style='', find_jaso=False,
+                find_reg_exp=False, find_type=False)</code></pre>
+</blockquote>
+<p>text를 찾습니다. 찾지못하면 False를 반환합니다.</p>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>app</td>
+<td>App</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>text</td>
+<td>str</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>charshape</td>
+<td>CharShape</td>
+<td>None</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>ignore_message</td>
+<td>bool</td>
+<td>True</td>
+<td>메시지 무시 여부</td>
+</tr>
+<tr class="odd">
+<td>direction</td>
+<td>str</td>
+<td>Forward</td>
+<td>찾을 방향</td>
+</tr>
+<tr class="even">
+<td>match_case</td>
+<td>bool</td>
+<td>False</td>
+<td>대소문자 구분</td>
+</tr>
+<tr class="odd">
+<td>all_word_forms</td>
+<td>bool</td>
+<td>False</td>
+<td>문자열 결합</td>
+</tr>
+<tr class="even">
+<td>several_words</td>
+<td>bool</td>
+<td>False</td>
+<td>여러 단어 찾기</td>
+</tr>
+<tr class="odd">
+<td>use_wild_cards</td>
+<td>bool</td>
+<td>False</td>
+<td>아무개 문자</td>
+</tr>
+<tr class="even">
+<td>whole_word_only</td>
+<td>bool</td>
+<td>False</td>
+<td>온전한 낱말</td>
+</tr>
+<tr class="odd">
+<td>replace_mode</td>
+<td>bool</td>
+<td>False</td>
+<td>찾아 바꾸기 모드</td>
+</tr>
+<tr class="even">
+<td>ignore_find_string</td>
+<td>bool</td>
+<td>False</td>
+<td>찾을 문자열 무시</td>
+</tr>
+<tr class="odd">
+<td>ignore_replace_string</td>
+<td>bool</td>
+<td>False</td>
+<td>바꿀 문자열 무시</td>
+</tr>
+<tr class="even">
+<td>find_style</td>
+<td>str</td>
+<td></td>
+<td>찾을 스타일</td>
+</tr>
+<tr class="odd">
+<td>replace_style</td>
+<td>str</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>find_jaso</td>
+<td>bool</td>
+<td>False</td>
+<td>자소로 찾기</td>
+</tr>
+<tr class="odd">
+<td>find_reg_exp</td>
+<td>bool</td>
+<td>False</td>
+<td>정규표현식으로 찾기</td>
+</tr>
+<tr class="even">
+<td>find_type</td>
+<td>bool</td>
+<td>False</td>
+<td>다시 찾기를 할 때 마지막으로 실한 찾기를 할 경우 True, 찾아가기를 할경우 False</td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>app.find_text(<span class="st">"안녕하세요"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>False</code></pre>
+</div>
+</div>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L658" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.replace_all" class="level3">
 <h3 class="anchored" data-anchor-id="app.replace_all">App.replace_all</h3>
 <blockquote class="blockquote">
-<pre><code> App.replace_all (app:__main__.App, old='', new='', old_fontcolor=None,
-                  new_fontcolor=None, old_fontsize=None,
-                  new_fontsize=None, old_fontname='', old_fonttype=1,
-                  new_fontname='', new_fonttype=1, old_fontratio=None,
-                  new_fontratio=None, old_spacing=None, new_spacing=None,
-                  old_bold=None, new_bold=None, old_italic=None,
-                  new_italic=None, old_underline=None, new_underline=None,
-                  old_strike_out=None, new_strike_out=None,
+<pre><code> App.replace_all (app:__main__.App, old_text='', new_text='',
+                  old_charshape:hwpapi.dataclasses.CharShape=None,
+                  new_charshape:hwpapi.dataclasses.CharShape=None,
                   ignore_message=True, direction='All', match_case=False,
                   all_word_forms=False, several_words=False,
                   use_wild_cards=False, whole_word_only=False,
@@ -922,136 +1076,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td></td>
 </tr>
 <tr class="even">
-<td>old</td>
+<td>old_text</td>
 <td>str</td>
 <td></td>
 <td></td>
 </tr>
 <tr class="odd">
-<td>new</td>
+<td>new_text</td>
 <td>str</td>
 <td></td>
 <td></td>
 </tr>
 <tr class="even">
-<td>old_fontcolor</td>
-<td>NoneType</td>
+<td>old_charshape</td>
+<td>CharShape</td>
 <td>None</td>
-<td>찾을 폰트 색</td>
-</tr>
-<tr class="odd">
-<td>new_fontcolor</td>
-<td>NoneType</td>
-<td>None</td>
-<td>바꿀 폰트 색</td>
-</tr>
-<tr class="even">
-<td>old_fontsize</td>
-<td>NoneType</td>
-<td>None</td>
-<td>찾을 폰트 크기(height)</td>
-</tr>
-<tr class="odd">
-<td>new_fontsize</td>
-<td>NoneType</td>
-<td>None</td>
-<td>바꿀 폰트 크기(height)</td>
-</tr>
-<tr class="even">
-<td>old_fontname</td>
-<td>str</td>
 <td></td>
-<td>찾을 글꼴</td>
 </tr>
 <tr class="odd">
-<td>old_fonttype</td>
-<td>int</td>
-<td>1</td>
-<td>찾을 글꼴 타입 TTF = 1, HTF = 2</td>
-</tr>
-<tr class="even">
-<td>new_fontname</td>
-<td>str</td>
+<td>new_charshape</td>
+<td>CharShape</td>
+<td>None</td>
 <td></td>
-<td>바꿀 글꼴</td>
-</tr>
-<tr class="odd">
-<td>new_fonttype</td>
-<td>int</td>
-<td>1</td>
-<td>바꿀 글꼴 타입 TTF = 1, HTF = 2</td>
-</tr>
-<tr class="even">
-<td>old_fontratio</td>
-<td>NoneType</td>
-<td>None</td>
-<td>찾을 장평</td>
-</tr>
-<tr class="odd">
-<td>new_fontratio</td>
-<td>NoneType</td>
-<td>None</td>
-<td>바꿀 장평</td>
-</tr>
-<tr class="even">
-<td>old_spacing</td>
-<td>NoneType</td>
-<td>None</td>
-<td>찾을 자간</td>
-</tr>
-<tr class="odd">
-<td>new_spacing</td>
-<td>NoneType</td>
-<td>None</td>
-<td>바꿀 자간</td>
-</tr>
-<tr class="even">
-<td>old_bold</td>
-<td>NoneType</td>
-<td>None</td>
-<td>찾을 볼드</td>
-</tr>
-<tr class="odd">
-<td>new_bold</td>
-<td>NoneType</td>
-<td>None</td>
-<td>바꿀 볼드</td>
-</tr>
-<tr class="even">
-<td>old_italic</td>
-<td>NoneType</td>
-<td>None</td>
-<td>찾을 이텔릭</td>
-</tr>
-<tr class="odd">
-<td>new_italic</td>
-<td>NoneType</td>
-<td>None</td>
-<td>바꿀 이텔릭</td>
-</tr>
-<tr class="even">
-<td>old_underline</td>
-<td>NoneType</td>
-<td>None</td>
-<td>찾을 밑줄</td>
-</tr>
-<tr class="odd">
-<td>new_underline</td>
-<td>NoneType</td>
-<td>None</td>
-<td>바꿀 밑줄</td>
-</tr>
-<tr class="even">
-<td>old_strike_out</td>
-<td>NoneType</td>
-<td>None</td>
-<td>찾을 취소선</td>
-</tr>
-<tr class="odd">
-<td>new_strike_out</td>
-<td>NoneType</td>
-<td>None</td>
-<td>바꿀 취소선</td>
 </tr>
 <tr class="even">
 <td>ignore_message</td>
@@ -1152,19 +1198,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tbody>
 </table>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>app.replace_all(<span class="st">"t"</span>, <span class="st">"txt"</span>, new_fontname<span class="op">=</span><span class="st">"가는안상수체"</span>, new_fontsize<span class="op">=</span><span class="dv">21</span>, new_fonttype<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>False</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>app.insert_text(<span class="st">"t"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>app.replace_all(<span class="st">""</span>, <span class="st">""</span>, old_fontname<span class="op">=</span><span class="st">"바탕체"</span>, new_fontname<span class="op">=</span><span class="st">"바탕체"</span>, ignore_find_string<span class="op">=</span><span class="va">True</span>, ignore_replace_string<span class="op">=</span><span class="va">True</span>, new_fontsize<span class="op">=</span><span class="dv">11</span>, new_fonttype<span class="op">=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>app.replace_all(<span class="st">"t"</span>, <span class="st">"txt"</span>, new_charshape<span class="op">=</span>CharShape(hangul_font<span class="op">=</span><span class="st">"가는안상수체"</span>, fontsize<span class="op">=</span><span class="dv">21</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<pre><code>False</code></pre>
+<pre><code>True</code></pre>
 </div>
 </div>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L373" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L715" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.insert_file" class="level3">
 <h3 class="anchored" data-anchor-id="app.insert_file">App.insert_file</h3>
@@ -1174,64 +1217,64 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
                   keep_style=False)</code></pre>
 </blockquote>
 <p>파일 끼워 넣기</p>
-<p>한글 문서 사용은 다음과 같이 할 수 있습니다. 먼저 App 객체를 생성합니다.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L739" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.set_cell_border" class="level3">
+<h3 class="anchored" data-anchor-id="app.set_cell_border">App.set_cell_border</h3>
+<blockquote class="blockquote">
+<pre><code> App.set_cell_border (app:__main__.App, top=None, right=None, left=None,
+                      bottom=None, horizontal=None, vertical=None,
+                      top_width=None, right_width=None, left_width=None,
+                      bottom_width=None, horizontal_width=None,
+                      vertical_width=None, top_color=None,
+                      bottom_color=None, left_color=None,
+                      right_color=None, horizontal_color=None,
+                      vertical_color=None)</code></pre>
+</blockquote>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L815" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.set_cell_color" class="level3">
+<h3 class="anchored" data-anchor-id="app.set_cell_color">App.set_cell_color</h3>
+<blockquote class="blockquote">
+<pre><code> App.set_cell_color (app:__main__.App, bg_color=None,
+                     hatch_color='#000000', hatch_style=6, alpha=None)</code></pre>
+</blockquote>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>app.get_selected_text()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>app.set_charshape(CharShape(hangul_font<span class="op">=</span><span class="st">"문화바탕"</span>, font_type<span class="op">=</span><span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<pre><code>'연구비 및 경상개발비 총계: (I) = n+o\n'</code></pre>
+<pre><code>True</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> app.actions.InsertFile().pset</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>action <span class="op">=</span> app.actions.CharShape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="bu">dir</span>(p)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>app.get_charshape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-<pre><code>['CLSID',
- 'CreateItemArray',
- 'FileArg',
- 'FileFormat',
- 'HSet',
- 'KeepCharshape',
- 'KeepParashape',
- 'KeepSection',
- 'KeepStyle',
- '_ApplyTypes_',
- '__class__',
- '__delattr__',
- '__dict__',
- '__dir__',
- '__doc__',
- '__eq__',
- '__format__',
- '__ge__',
- '__getattr__',
- '__getattribute__',
- '__gt__',
- '__hash__',
- '__init__',
- '__init_subclass__',
- '__iter__',
- '__le__',
- '__lt__',
- '__module__',
- '__ne__',
- '__new__',
- '__reduce__',
- '__reduce_ex__',
- '__repr__',
- '__setattr__',
- '__sizeof__',
- '__str__',
- '__subclasshook__',
- '__weakref__',
- '_get_good_object_',
- '_get_good_single_object_',
- '_oleobj_',
- '_prop_map_get_',
- '_prop_map_put_',
- 'coclass_clsid',
- 'filename']</code></pre>
+<pre><code>&lt;CharShape: hangul_font=문화바탕, latin_font=함초롬바탕, text_color=0, fontsize=10.0, bold=0, italic=0, super_script=0, sub_script=0, offset=0, spacing=0, ratio=100, shade_color=#ffffff, shadow_color=#c0c0c0, shadow_offset_x=10, shadow_offset_y=10, strike_out_type=0, strike_out_color=0, underline_type=0, underline_shape=0, underline_color=0, out_line_type=0&gt;</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>app.api.HwpLineWidth(<span class="st">"1.0mm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>10</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>app.set_cell_border(bottom<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>False</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>app.set_cell_color(bg_color<span class="op">=</span>(<span class="dv">123</span>, <span class="dv">123</span>, <span class="dv">123</span>), hatch_style<span class="op">=</span><span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>False</code></pre>
 </div>
 </div>
 
