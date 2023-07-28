@@ -5,6 +5,7 @@ website:
       - section: tutorials
         contents:
           - 01_tutorials\01_app_basics.ipynb
+          - 01_tutorials\02_find_and_replace.ipynb
       - section: api
         contents:
           - 02_api\00_core.ipynb
