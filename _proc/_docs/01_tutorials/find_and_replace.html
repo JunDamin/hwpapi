@@ -6,9 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="action list">
+<meta name="description" content="찾아바꾸기를 활용한 파이썬 자동화 사례">
 
-<title>hwpapi - functions</title>
+<title>hwpapi - Find and replace</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -96,12 +96,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <link rel="stylesheet" href="../styles.css">
-<meta property="og:title" content="hwpapi - functions">
-<meta property="og:description" content="action list">
+<meta property="og:title" content="hwpapi - Find and replace">
+<meta property="og:description" content="찾아바꾸기를 활용한 파이썬 자동화 사례">
+<meta property="og:image" content="https://JunDamin.github.io/hwpapi/01_tutorials/img/주거안정.png">
 <meta property="og:site-name" content="hwpapi">
-<meta name="twitter:title" content="hwpapi - functions">
-<meta name="twitter:description" content="action list">
-<meta name="twitter:card" content="summary">
+<meta property="og:image:height" content="493">
+<meta property="og:image:width" content="985">
+<meta name="twitter:title" content="hwpapi - Find and replace">
+<meta name="twitter:description" content="찾아바꾸기를 활용한 파이썬 자동화 사례">
+<meta name="twitter:image" content="https://JunDamin.github.io/hwpapi/01_tutorials/img/주거안정.png">
+<meta name="twitter:image-height" content="493">
+<meta name="twitter:image-width" content="985">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 
 <body class="nav-sidebar floating nav-fixed">
@@ -125,7 +131,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../02_api/core.html">api</a></li><li class="breadcrumb-item"><a href="../02_api/functions.html">functions</a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01_tutorials/tutorial.html">tutorials</a></li><li class="breadcrumb-item"><a href="../01_tutorials/find_and_replace.html">Find and replace</a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
     </div>
@@ -160,7 +166,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../01_tutorials/find_and_replace.html" class="sidebar-item-text sidebar-link">
+  <a href="../01_tutorials/find_and_replace.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Find and replace</span></a>
   </div>
 </li>
@@ -189,7 +195,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../02_api/functions.html" class="sidebar-item-text sidebar-link active">
+  <a href="../02_api/functions.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">functions</span></a>
   </div>
 </li>
@@ -217,29 +223,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#get_font_name" id="toc-get_font_name" class="nav-link active" data-scroll-target="#get_font_name">get_font_name</a></li>
-  <li><a href="#dispatch" id="toc-dispatch" class="nav-link" data-scroll-target="#dispatch">dispatch</a></li>
-  <li><a href="#get_absolute_path" id="toc-get_absolute_path" class="nav-link" data-scroll-target="#get_absolute_path">get_absolute_path</a></li>
-  <li><a href="#get_dll_path" id="toc-get_dll_path" class="nav-link" data-scroll-target="#get_dll_path">get_dll_path</a></li>
-  <li><a href="#add_dll_to_registry" id="toc-add_dll_to_registry" class="nav-link" data-scroll-target="#add_dll_to_registry">add_dll_to_registry</a></li>
-  <li><a href="#get_registry_value" id="toc-get_registry_value" class="nav-link" data-scroll-target="#get_registry_value">get_registry_value</a></li>
-  <li><a href="#check_dll" id="toc-check_dll" class="nav-link" data-scroll-target="#check_dll">check_dll</a></li>
-  <li><a href="#get_value" id="toc-get_value" class="nav-link" data-scroll-target="#get_value">get_value</a></li>
-  <li><a href="#get_key" id="toc-get_key" class="nav-link" data-scroll-target="#get_key">get_key</a></li>
-  <li><a href="#convert2int" id="toc-convert2int" class="nav-link" data-scroll-target="#convert2int">convert2int</a></li>
-  <li><a href="#set_pset" id="toc-set_pset" class="nav-link" data-scroll-target="#set_pset">set_pset</a></li>
-  <li><a href="#get_charshape_pset" id="toc-get_charshape_pset" class="nav-link" data-scroll-target="#get_charshape_pset">get_charshape_pset</a></li>
-  <li><a href="#set_charshape_pset" id="toc-set_charshape_pset" class="nav-link" data-scroll-target="#set_charshape_pset">set_charshape_pset</a></li>
-  <li><a href="#get_parashape_pset" id="toc-get_parashape_pset" class="nav-link" data-scroll-target="#get_parashape_pset">get_parashape_pset</a></li>
-  <li><a href="#set_parashape_pset" id="toc-set_parashape_pset" class="nav-link" data-scroll-target="#set_parashape_pset">set_parashape_pset</a></li>
-  <li><a href="#get_rgb_tuple" id="toc-get_rgb_tuple" class="nav-link" data-scroll-target="#get_rgb_tuple">get_rgb_tuple</a></li>
-  <li><a href="#hex_to_rgb" id="toc-hex_to_rgb" class="nav-link" data-scroll-target="#hex_to_rgb">hex_to_rgb</a></li>
-  <li><a href="#convert_to_hwp_color" id="toc-convert_to_hwp_color" class="nav-link" data-scroll-target="#convert_to_hwp_color">convert_to_hwp_color</a></li>
-  <li><a href="#convert_hwp_color_to_hex" id="toc-convert_hwp_color_to_hex" class="nav-link" data-scroll-target="#convert_hwp_color_to_hex">convert_hwp_color_to_hex</a></li>
-  <li><a href="#mili2unit" id="toc-mili2unit" class="nav-link" data-scroll-target="#mili2unit">mili2unit</a></li>
-  <li><a href="#unit2mili" id="toc-unit2mili" class="nav-link" data-scroll-target="#unit2mili">unit2mili</a></li>
-  <li><a href="#point2unit" id="toc-point2unit" class="nav-link" data-scroll-target="#point2unit">point2unit</a></li>
-  <li><a href="#unit2point" id="toc-unit2point" class="nav-link" data-scroll-target="#unit2point">unit2point</a></li>
+  <li><a href="#문제설정" id="toc-문제설정" class="nav-link active" data-scroll-target="#문제설정">문제설정</a>
+  <ul class="collapse">
+  <li><a href="#문서-불러오기" id="toc-문서-불러오기" class="nav-link" data-scroll-target="#문서-불러오기">문서 불러오기</a></li>
+  <li><a href="#기존-단어와-변경할-단어-목록-만들기" id="toc-기존-단어와-변경할-단어-목록-만들기" class="nav-link" data-scroll-target="#기존-단어와-변경할-단어-목록-만들기">기존 단어와 변경할 단어 목록 만들기</a></li>
+  <li><a href="#찾아바꾸기" id="toc-찾아바꾸기" class="nav-link" data-scroll-target="#찾아바꾸기">찾아바꾸기</a></li>
+  </ul></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
@@ -248,12 +237,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">functions</h1>
+<h1 class="title">Find and replace</h1>
 </div>
 
 <div>
   <div class="description">
-    action list
+    찾아바꾸기를 활용한 파이썬 자동화 사례
   </div>
 </div>
 
@@ -269,210 +258,54 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 <!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L19" target="_blank" style="float:right; font-size:smaller">source</a></p>
-<section id="get_font_name" class="level3">
-<h3 class="anchored" data-anchor-id="get_font_name">get_font_name</h3>
-<blockquote class="blockquote">
-<pre><code> get_font_name (text)</code></pre>
-</blockquote>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L24" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="dispatch" class="level3">
-<h3 class="anchored" data-anchor-id="dispatch">dispatch</h3>
-<blockquote class="blockquote">
-<pre><code> dispatch (app_name:str)</code></pre>
-</blockquote>
-<p>캐시가 충돌하는 문제를 해결하기 위해 실행합니다. 에러가 발생할 경우 기존 캐시를 삭제하고 다시 불러옵니다.</p>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L49" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="get_absolute_path" class="level3">
-<h3 class="anchored" data-anchor-id="get_absolute_path">get_absolute_path</h3>
-<blockquote class="blockquote">
-<pre><code> get_absolute_path (path)</code></pre>
-</blockquote>
-<p>파일 절대 경로를 반환합니다.</p>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L55" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="get_dll_path" class="level3">
-<h3 class="anchored" data-anchor-id="get_dll_path">get_dll_path</h3>
-<blockquote class="blockquote">
-<pre><code> get_dll_path (package_name, dll_filename)</code></pre>
-</blockquote>
-<p>패키지에서 dll 경로를 확보합니다.</p>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L66" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="add_dll_to_registry" class="level3">
-<h3 class="anchored" data-anchor-id="add_dll_to_registry">add_dll_to_registry</h3>
-<blockquote class="blockquote">
-<pre><code> add_dll_to_registry (dll_path, key_path)</code></pre>
-</blockquote>
-<p>레지스트리에 dll을 등록합니다.</p>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L86" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="get_registry_value" class="level3">
-<h3 class="anchored" data-anchor-id="get_registry_value">get_registry_value</h3>
-<blockquote class="blockquote">
-<pre><code> get_registry_value (key_path, value_name)</code></pre>
-</blockquote>
-<p>레지스트리에 값이 있는지 확인해 봅니다.</p>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L96" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="check_dll" class="level3">
-<h3 class="anchored" data-anchor-id="check_dll">check_dll</h3>
-<blockquote class="blockquote">
-<pre><code> check_dll ()</code></pre>
-</blockquote>
-<p>dll 모듈을 등록합니다.</p>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L109" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="get_value" class="level3">
-<h3 class="anchored" data-anchor-id="get_value">get_value</h3>
-<blockquote class="blockquote">
-<pre><code> get_value (dict_, key)</code></pre>
-</blockquote>
-<p>딕셔너리에서 키를 찾아 값을 반환합니다. 반환할 값이 없으면 키에러와 함께 가능한 키를 알려줍니다.</p>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L121" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="get_key" class="level3">
-<h3 class="anchored" data-anchor-id="get_key">get_key</h3>
-<blockquote class="blockquote">
-<pre><code> get_key (dict_, value)</code></pre>
-</blockquote>
-<p>딕셔너리에서 값를 찾아 키를 반환합니다. 반환할 값이 없으면 키에러와 함께 가능한 키를 알려줍니다.</p>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L133" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="convert2int" class="level3">
-<h3 class="anchored" data-anchor-id="convert2int">convert2int</h3>
-<blockquote class="blockquote">
-<pre><code> convert2int (_dict, value)</code></pre>
-</blockquote>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L144" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="set_pset" class="level3">
-<h3 class="anchored" data-anchor-id="set_pset">set_pset</h3>
-<blockquote class="blockquote">
-<pre><code> set_pset (p, value_dict:dict)</code></pre>
-</blockquote>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L154" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="get_charshape_pset" class="level3">
-<h3 class="anchored" data-anchor-id="get_charshape_pset">get_charshape_pset</h3>
-<blockquote class="blockquote">
-<pre><code> get_charshape_pset (p)</code></pre>
-</blockquote>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L158" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="set_charshape_pset" class="level3">
-<h3 class="anchored" data-anchor-id="set_charshape_pset">set_charshape_pset</h3>
-<blockquote class="blockquote">
-<pre><code> set_charshape_pset (charshape_pset, value_dict:dict)</code></pre>
-</blockquote>
-<p>CharShape값을 입력하기 위한 함수입니다. char_fields에 정의된 키 값을 기반으로 파라미터를 세팅합니다.</p>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L175" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="get_parashape_pset" class="level3">
-<h3 class="anchored" data-anchor-id="get_parashape_pset">get_parashape_pset</h3>
-<blockquote class="blockquote">
-<pre><code> get_parashape_pset (p)</code></pre>
-</blockquote>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L180" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="set_parashape_pset" class="level3">
-<h3 class="anchored" data-anchor-id="set_parashape_pset">set_parashape_pset</h3>
-<blockquote class="blockquote">
-<pre><code> set_parashape_pset (parashape_pset, value_dict:dict)</code></pre>
-</blockquote>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L208" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="get_rgb_tuple" class="level3">
-<h3 class="anchored" data-anchor-id="get_rgb_tuple">get_rgb_tuple</h3>
-<blockquote class="blockquote">
-<pre><code> get_rgb_tuple (color)</code></pre>
-</blockquote>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L194" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="hex_to_rgb" class="level3">
-<h3 class="anchored" data-anchor-id="hex_to_rgb">hex_to_rgb</h3>
-<blockquote class="blockquote">
-<pre><code> hex_to_rgb (hex_string)</code></pre>
-</blockquote>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L252" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="convert_to_hwp_color" class="level3">
-<h3 class="anchored" data-anchor-id="convert_to_hwp_color">convert_to_hwp_color</h3>
-<blockquote class="blockquote">
-<pre><code> convert_to_hwp_color (color)</code></pre>
-</blockquote>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L282" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="convert_hwp_color_to_hex" class="level3">
-<h3 class="anchored" data-anchor-id="convert_hwp_color_to_hex">convert_hwp_color_to_hex</h3>
-<blockquote class="blockquote">
-<pre><code> convert_hwp_color_to_hex (color:int)</code></pre>
-</blockquote>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(convert_to_hwp_color(<span class="st">"00FFFF"</span>))  <span class="co"># Outputs: 65535</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(convert_to_hwp_color((<span class="dv">0</span>, <span class="dv">255</span>, <span class="dv">255</span>)))  <span class="co"># Outputs: 65535</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>16776960
-16776960</code></pre>
+<section id="문제설정" class="level2">
+<h2 class="anchored" data-anchor-id="문제설정">문제설정</h2>
+<p>문서 작업을 하면서 같은 의미지만 다르게 작성하여 형식을 통일하기 위해 문서를 처음부터 검토해야 하는 경우가 있습니다. 예를 들어 “2022년”이라고 쓰는 경우도 있고 “’22년”으로 적는 경우도 있습니다. 이를 모두 2022년으로 작성 방식을 통일하고자 한다면 찾아바꾸기를 통해 쉽게 달성할 수 있습니다.</p>
+<p>만약 이런 바꿔야 하는 단어가 수십개가 된다면 어떻게 될까요? 붙여써야 하는 경우, 자주 틀리는 오탈자, 영문명으로 바로 작성하거나 이니셜로만 작성하는 등, 수십개의 케이스를 모두 적용하는 것은 상당히 귀찮고 오류가 발생하기 쉬운 일입니다.</p>
+<p>이런 문제를 <code>hwpapi</code>를 사용해 해결해 보고자 합니다.</p>
+<p><a href="http://www.molit.go.kr/USR/NEWS/m_71/dtl.jsp?id=95086857">국토부 보도자료</a>를 보면 임대차 시장 안정 및 3분기 부동산 정상화 방안이라는 문서를 볼 수 있습니다.</p>
+<p>여기서 보면 ’주거 안정’이라고 띄어 쓴 경우와 ’주거안정’이라고 붙여쓴 경우가 있습니다. <img src="img/주거안정.png" class="img-fluid"></p>
+<p>유사하게 ’분양가 상한제’와 같이 띄어 쓴 경우와 ’분양가상한제’라고 붙여 쓴 경우가 있죠. <img src="img/분양가상한제1.png" class="img-fluid"> <img src="img/분양가상한제2.png" class="img-fluid"></p>
+<p>또한 ’시범사업지’와 ’시범 사업지’와 같이 경우에 따라 붙이거나 띄는 경우는 한국어 특성상 자주 발생합니다. <img src="img/시범사업지.png" class="img-fluid"></p>
+<p>이런 항목을 모두 붙여 쓰는 스크립트를 짜보도록 하겠습니다.</p>
+<p>해야 할 일은</p>
+<ol type="1">
+<li>문서 불러오기</li>
+<li>기존과 변경할 것 목록 만들기</li>
+<li>찾아 바꾸기</li>
+</ol>
+<p>이렇게 3단계로 구성됩니다.</p>
+<section id="문서-불러오기" class="level3">
+<h3 class="anchored" data-anchor-id="문서-불러오기">문서 불러오기</h3>
+<p>우선 패키지를 불러오고 문서를 불러 옵니다. 저는 <code>hwps/220621(안건_1,2)임대차_시장_안정_및_3분기_부동산_정상화_방안.hwp</code> 파일을 읽어 오겠습니다.</p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.core <span class="im">import</span> App</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App()</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>app.<span class="bu">open</span>(<span class="st">"hwps/220621(안건_1,2)임대차_시장_안정_및_3분기_부동산_정상화_방안.hwp"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
+<section id="기존-단어와-변경할-단어-목록-만들기" class="level3">
+<h3 class="anchored" data-anchor-id="기존-단어와-변경할-단어-목록-만들기">기존 단어와 변경할 단어 목록 만들기</h3>
+<p>아래와 같이 기존 단어와 변경할 단어를 만들어 둡니다. 여기서는 단순히 <code>list</code>를 사용했지만, <code>pandas</code> 등을 사용하면 엑셀 파일에서 관리할 수 있습니다.</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>words <span class="op">=</span> [(<span class="st">"분양가 상한제"</span>, <span class="st">"분양가상한제"</span>), (<span class="st">"주거안정"</span>, <span class="st">"주거 안정"</span>), (<span class="st">"시범사업지"</span>, <span class="st">"시범 사업지"</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L290" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
-<section id="mili2unit" class="level3">
-<h3 class="anchored" data-anchor-id="mili2unit">mili2unit</h3>
-<blockquote class="blockquote">
-<pre><code> mili2unit (value)</code></pre>
-</blockquote>
-<p>1 밀리는 283 hwpunit 입니다.</p>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L297" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="unit2mili" class="level3">
-<h3 class="anchored" data-anchor-id="unit2mili">unit2mili</h3>
-<blockquote class="blockquote">
-<pre><code> unit2mili (value)</code></pre>
-</blockquote>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L301" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="point2unit" class="level3">
-<h3 class="anchored" data-anchor-id="point2unit">point2unit</h3>
-<blockquote class="blockquote">
-<pre><code> point2unit (value)</code></pre>
-</blockquote>
-<p>1point는 100 hwpunit입니다.</p>
-<hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/functions.py#L308" target="_blank" style="float:right; font-size:smaller">source</a></p>
-</section>
-<section id="unit2point" class="level3">
-<h3 class="anchored" data-anchor-id="unit2point">unit2point</h3>
-<blockquote class="blockquote">
-<pre><code> unit2point (value)</code></pre>
-</blockquote>
+<section id="찾아바꾸기" class="level3">
+<h3 class="anchored" data-anchor-id="찾아바꾸기">찾아바꾸기</h3>
+<p>이렇게 까지 되면 나머지는 간단합니다. <code>words</code>를 순환 하면서 반복해 주기만 하면 됩니다. 모두 찾아바꾸기를 하면 어디를 바꾸었는지 확인하기 어렵기 때문에 바꾼 단어는 붉은 색으로 처리해서 쉽게 눈으로 확인해 볼 수 있게 하겠습니다. 그러기 위해서 <a href="https://JunDamin.github.io/hwpapi/02_api/dataclasses.html#charshape"><code>CharShape</code></a>이라고 하는 <code>dataclass</code>를 불러오겠습니다.</p>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.dataclasses <span class="im">import</span> CharShape</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> old, new <span class="kw">in</span> words:</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    app.replace_all(old, new, new_charshape<span class="op">=</span>CharShape(text_color<span class="op">=</span><span class="st">"#FF0000"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>코드를 실행하고 나면 아래와 같이 바뀐 단어는 붉은색으로 표시되게 됩니다. <img src="img/주거안정_변경.png" class="img-fluid"> <img src="img/시범사업지_변경.png" class="img-fluid"></p>
+<p>이렇게 변경된 사항을 눈으로 확인하고 최종적으로 단축키 등으로 정리하면 문서 전체적으로 맞춰야 하는 단어나 자주 틀리는 오탈자를 쉽게 관리 할 수 있게 됩니다.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

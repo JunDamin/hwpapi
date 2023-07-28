@@ -3,11 +3,11 @@
 }
 
 .cell > .sourceCode {
-  margin-bottom: 0;
+  margin-bottom: 5;
 }
 
 .cell-output > pre {
-  margin-bottom: 0;
+  margin-bottom: 5;
 }
 
 .cell-output > pre, .cell-output > .sourceCode > pre, .cell-output-stdout > pre {
