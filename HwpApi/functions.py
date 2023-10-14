@@ -4,7 +4,7 @@
 __all__ = ['get_font_name', 'dispatch', 'get_absolute_path', 'get_dll_path', 'add_dll_to_registry', 'get_registry_value',
            'check_dll', 'get_value', 'get_key', 'convert2int', 'set_pset', 'get_charshape_pset', 'set_charshape_pset',
            'get_parashape_pset', 'set_parashape_pset', 'hex_to_rgb', 'get_rgb_tuple', 'convert_to_hwp_color',
-           'convert_hwp_color_to_hex', 'mili2unit', 'unit2mili', 'point2unit', 'unit2point']
+           'convert_hwp_color_to_hex', 'mili2unit', 'unit2mili', 'point2unit', 'unit2point', 'protect_input']
 
 # %% ../nbs/02_api/02_functions.ipynb 3
 import importlib.resources
@@ -307,3 +307,13 @@ def point2unit(value):
 # %% ../nbs/02_api/02_functions.ipynb 26
 def unit2point(value):
     return value / 100 if value else value
+
+# %% ../nbs/02_api/02_functions.ipynb 27
+def protect_input(func):
+    def wrapper(app, *args, **kwargs):
+        app.api.EditMode = 2
+        result = func(app, *args, **kwargs)
+        app.api.EditMode = 1
+        return result
+    return wrapper
+

@@ -240,6 +240,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#unit2mili" id="toc-unit2mili" class="nav-link" data-scroll-target="#unit2mili">unit2mili</a></li>
   <li><a href="#point2unit" id="toc-point2unit" class="nav-link" data-scroll-target="#point2unit">point2unit</a></li>
   <li><a href="#unit2point" id="toc-unit2point" class="nav-link" data-scroll-target="#unit2point">unit2point</a></li>
+  <li><a href="#block_input" id="toc-block_input" class="nav-link" data-scroll-target="#block_input">block_input</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
@@ -327,7 +328,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="check_dll" class="level3">
 <h3 class="anchored" data-anchor-id="check_dll">check_dll</h3>
 <blockquote class="blockquote">
-<pre><code> check_dll ()</code></pre>
+<pre><code> check_dll (dll_path=None)</code></pre>
 </blockquote>
 <p>dll 모듈을 등록합니다.</p>
 <hr>
@@ -471,6 +472,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <blockquote class="blockquote">
 <pre><code> unit2point (value)</code></pre>
 </blockquote>
+<hr>
+</section>
+<section id="block_input" class="level3">
+<h3 class="anchored" data-anchor-id="block_input">block_input</h3>
+<blockquote class="blockquote">
+<pre><code> block_input (func)</code></pre>
+</blockquote>
+<p>함수가 실행될 동안 다른 입력을 할 수 없게 하는 기능을 가진 데코레이터입니다.</p>
 
 
 </section>
