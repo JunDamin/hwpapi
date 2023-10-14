@@ -34,9 +34,9 @@ from hwpapi.functions import (
 
 # %% ../nbs/02_api/00_core.ipynb 6
 class Engines:
-    def __init__(self):
+    def __init__(self, dll_path=None):
         self.active = None
-        self.engines = [Engine(hwp_object) for hwp_object in get_HwpObjects()]
+        self.engines = [Engine(hwp_object) for hwp_object in get_hwp_objects()]
         check_dll(dll_path)
 
     def add(self, engine):
@@ -70,19 +70,13 @@ class Engines:
 class Engine:
     def __init__(self, hwp_object=None):
         if not hwp_object:
-            hwp_object = dispatch("HWPFrame.HwpObject")
-        self.impl = hwp_object
-
-    @property
-    def apps(self):
-        return Apps(impl=self.impl)
+            hwp_object = "HWPFrame.HwpObject"
+        impl = dispatch(hwp_object)
+        self.impl = impl
 
     @property
     def name(self):
         return self.impl.CLSID
-
-    def activate(self):
-        engines.active = self
 
     def __repr__(self):
         return f"<Engine {self.name}>"
@@ -96,31 +90,14 @@ class Apps:
     def __init__(self):
         self._apps = [App(engine=engine) for engine in Engines()]
 
-    def keys(self):
-        """
-        Provides the PIDs of the Excel instances
-        that act as keys in the Apps collection.
-
-        .. versionadded:: 0.13.0
-        """
-        return self.impl.keys()
 
     def add(self, **kwargs):
         """
         Creates a new App. The new App becomes the active one. Returns an App object.
         """
-        return App(impl=self.impl.add(**kwargs))
-
-    @property
-    def active(self):
-        """
-        Returns the active app.
-
-        .. versionadded:: 0.9.0
-        """
-        for app in self.impl:
-            return App(impl=app)
-        return None
+        app = App(engine=Engine())
+        self._apps.append(app)
+        return app  
 
     def __call__(self, i):
         return self[i]
@@ -131,10 +108,10 @@ class Apps:
         )
 
     def __getitem__(self, item):
-        return App(impl=self.impl[item])
+        return self._apps[item]
 
     def __len__(self):
-        return len(self.impl)
+        return len(self._apps)
 
     @property
     def count(self):
@@ -147,16 +124,13 @@ class Apps:
 
     def cleanup(self):
         """
-        Removes Excel zombie processes (Windows-only). Note that this is automatically
-        called with ``App.quit()`` and ``App.kill()``.
-
-        .. versionadded:: 0.30.2
+        
         """
-        self.impl.cleanup()
+        
 
     def __iter__(self):
-        for app in self.impl:
-            yield App(impl=app)
+        for app in self._apps:
+            yield app
 
 
 
@@ -193,22 +167,22 @@ class App:
         if not engine:
             engines = Engines()
             engine = engines[-1] if len(engines) > 0 else Engine()
-        self.api = engine
+        self.engine = engine
         self.api.RegisterModule("FilePathCheckDLL", "FilePathCheckerModule")
         self.actions = _Actions(self)
-        self.parameters = api.HParameterSet
+        self.parameters = self.api.HParameterSet
         self.set_visible(is_visible)
 
     @property
-    def engine(self):
-        return Engine(api=self.api)
+    def api(self):
+        return self.engine.impl
     
     def __str__(self):
         return f"<Hwp App: {self.get_filepath()}>"
 
     __repr__ = __str__
 
-# %% ../nbs/02_api/00_core.ipynb 11
+# %% ../nbs/02_api/00_core.ipynb 12
 @patch
 def reload(app: App, dll_path=None):
     app.api = dispatch("HWPFrame.HwpObject")
@@ -216,7 +190,7 @@ def reload(app: App, dll_path=None):
     check_dll()
     app.api.RegisterModule("FilePathCheckDLL", "FilePathCheckerModule")
 
-# %% ../nbs/02_api/00_core.ipynb 12
+# %% ../nbs/02_api/00_core.ipynb 13
 @patch
 def set_visible(app: App, is_visible=True, window_i=0):
     """`set_visible()` 함수는 한/글 프로그램의 창을 화면에 보이거나 숨기기 위해 호출됩니다.
@@ -225,14 +199,14 @@ def set_visible(app: App, is_visible=True, window_i=0):
 
     app.api.XHwpWindows.Item(window_i).Visible = is_visible
 
-# %% ../nbs/02_api/00_core.ipynb 13
+# %% ../nbs/02_api/00_core.ipynb 14
 @patch
 def get_filepath(app: App):
     """`get_filepath()` 함수는 현재 열려있는 한/글 문서의 경로를 반환합니다."""
     doc = app.api.XHwpDocuments.Active_XHwpDocument
     return doc.FullName
 
-# %% ../nbs/02_api/00_core.ipynb 14
+# %% ../nbs/02_api/00_core.ipynb 15
 @patch
 def create_action(app: App, action_key: str):
     """
@@ -253,7 +227,7 @@ def create_action(app: App, action_key: str):
     """
     return _Action(app, action_key)
 
-# %% ../nbs/02_api/00_core.ipynb 15
+# %% ../nbs/02_api/00_core.ipynb 16
 @patch
 def create_parameterset(app: App, action_key: str):
     """
@@ -281,7 +255,7 @@ def create_parameterset(app: App, action_key: str):
         return None
     return getattr(app.api.HParameterSet, f"H{pset_key}")
 
-# %% ../nbs/02_api/00_core.ipynb 17
+# %% ../nbs/02_api/00_core.ipynb 18
 @patch
 def open(app: App, path: str):
     """`open()` 함수는 파일 경로를 인자로 받아 해당 파일을 한/글 프로그램에서 엽니다.
@@ -291,12 +265,12 @@ def open(app: App, path: str):
     app.api.Open(name)
     return name
 
-# %% ../nbs/02_api/00_core.ipynb 19
+# %% ../nbs/02_api/00_core.ipynb 20
 @patch
 def get_hwnd(app:App):
     return app.api.XHwpWindows.Active_XHwpWindow.WindowHandle
 
-# %% ../nbs/02_api/00_core.ipynb 21
+# %% ../nbs/02_api/00_core.ipynb 22
 @patch
 def save(app: App, path=None):
     """
@@ -317,7 +291,7 @@ def save(app: App, path=None):
     app.api.SaveAs(name, format_)
     return name
 
-# %% ../nbs/02_api/00_core.ipynb 23
+# %% ../nbs/02_api/00_core.ipynb 24
 @patch
 def save_block(app: App, path: Path):
     """
@@ -353,19 +327,19 @@ def save_block(app: App, path: Path):
     action.run()
     return name if Path(name).exists() else None
 
-# %% ../nbs/02_api/00_core.ipynb 25
+# %% ../nbs/02_api/00_core.ipynb 26
 @patch
 def close(app: App):
     """`close()` 함수는 현재 열려있는 문서를 닫습니다."""
     app.api.Run("FileClose")
 
-# %% ../nbs/02_api/00_core.ipynb 27
+# %% ../nbs/02_api/00_core.ipynb 28
 @patch
 def quit(app: App):
     """`quit()` 함수는 한/글 프로그램을 종료합니다."""
     app.api.Run("FileQuit")
 
-# %% ../nbs/02_api/00_core.ipynb 28
+# %% ../nbs/02_api/00_core.ipynb 29
 @patch
 def get_charshape(app: App):
     """
@@ -385,7 +359,7 @@ def get_charshape(app: App):
     p = action.pset
     return CharShape(p)
 
-# %% ../nbs/02_api/00_core.ipynb 30
+# %% ../nbs/02_api/00_core.ipynb 31
 @patch
 def set_charshape(app: App, charshape: CharShape=None, **kwargs):
     """`set_charshape` 함수는 주어진 `CharShape`를 사용하여 애플리케이션의 현재 문단 모양을 설정합니다.
@@ -419,7 +393,7 @@ def set_charshape(app: App, charshape: CharShape=None, **kwargs):
     set_pset(action.pset, charshape.todict())
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 34
+# %% ../nbs/02_api/00_core.ipynb 35
 @patch
 def get_parashape(app: App):
     """
@@ -440,7 +414,7 @@ def get_parashape(app: App):
 
     return ParaShape(p)
 
-# %% ../nbs/02_api/00_core.ipynb 36
+# %% ../nbs/02_api/00_core.ipynb 37
 @patch
 def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     """`set_parashape` 함수는 주어진 `ParaShape`를 사용하여 애플리케이션의 현재 문단 모양을 설정합니다.
@@ -474,7 +448,7 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     set_pset(action.pset, parashape.todict())
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 38
+# %% ../nbs/02_api/00_core.ipynb 39
 @patch
 def insert_text(
     app: App,
@@ -496,7 +470,7 @@ def insert_text(
     insert_text.run()
     return
 
-# %% ../nbs/02_api/00_core.ipynb 43
+# %% ../nbs/02_api/00_core.ipynb 44
 mask_options = {
     "Normal": 0x00,  # "본문을 대상으로 검색한다.(서브리스트를 검색하지 않는다.)"
     "Char": 0x01,  # "char 타입 컨트롤 마스크를 대상으로 한다.(강제줄나눔, 문단 끝, 하이픈, 묶움빈칸, 고정폭빈칸, 등...)"
@@ -577,7 +551,7 @@ def scan(
     yield _get_text(app)
     app.api.ReleaseScan()
 
-# %% ../nbs/02_api/00_core.ipynb 44
+# %% ../nbs/02_api/00_core.ipynb 45
 def move_to_line(app: App, text):
     """인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다."""
     with app.scan(scan_spos="Line") as scan:
@@ -586,7 +560,7 @@ def move_to_line(app: App, text):
                 return app.move(key="ScanPos")
     return False
 
-# %% ../nbs/02_api/00_core.ipynb 45
+# %% ../nbs/02_api/00_core.ipynb 46
 move_ids = {
     "Main": 0,  # 루트 리스트의 특정 위치.(para pos로 위치 지정)
     "CurList": 1,  # 현재 리스트의 특정 위치.(para pos로 위치 지정)
@@ -636,7 +610,7 @@ def move(app: App, key="ScanPos", para=None, pos=None):
     move_id = get_value(move_ids, key)
     return app.api.MovePos(moveID=move_id, Para=para, pos=pos)
 
-# %% ../nbs/02_api/00_core.ipynb 47
+# %% ../nbs/02_api/00_core.ipynb 48
 @patch
 def setup_page(
     app: App,  # app
@@ -664,7 +638,7 @@ def setup_page(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 48
+# %% ../nbs/02_api/00_core.ipynb 49
 size_options = {
     "realSize": 0,  # 이미지를 원래의 크기로 삽입한다.
     "specificSize": 1,  # width와 height에 지정한 크기로 그림을 삽입한다.
@@ -706,7 +680,7 @@ def insert_picture(
         effect=effect,
     )
 
-# %% ../nbs/02_api/00_core.ipynb 49
+# %% ../nbs/02_api/00_core.ipynb 50
 @patch
 def select_text(app: App, option: str = "Line"):
     """
@@ -721,7 +695,7 @@ def select_text(app: App, option: str = "Line"):
     begin, end = select_options.get(option)
     return begin().run(), end().run()
 
-# %% ../nbs/02_api/00_core.ipynb 52
+# %% ../nbs/02_api/00_core.ipynb 53
 @patch
 def get_selected_text(app: App):
     """
@@ -731,7 +705,7 @@ def get_selected_text(app: App):
         text = "\n".join(scan)
     return text
 
-# %% ../nbs/02_api/00_core.ipynb 54
+# %% ../nbs/02_api/00_core.ipynb 55
 @patch
 def get_text(app: App, spos="Line", epos="Line"):
     """
@@ -749,10 +723,10 @@ def get_text(app: App, spos="Line", epos="Line"):
         text = "".join(txts)
     return text
 
-# %% ../nbs/02_api/00_core.ipynb 56
+# %% ../nbs/02_api/00_core.ipynb 57
 directions = {"Forward": 0, "Backward": 1, "All": 2}
 
-# %% ../nbs/02_api/00_core.ipynb 57
+# %% ../nbs/02_api/00_core.ipynb 58
 @patch
 def find_text(
     app: App,
@@ -806,7 +780,7 @@ def find_text(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 59
+# %% ../nbs/02_api/00_core.ipynb 60
 @patch
 def replace_all(
     app: App,
@@ -863,7 +837,7 @@ def replace_all(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 62
+# %% ../nbs/02_api/00_core.ipynb 63
 @patch
 def insert_file(
     app: App,
@@ -887,7 +861,7 @@ def insert_file(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 63
+# %% ../nbs/02_api/00_core.ipynb 64
 thickness_dict = {
     -1: "최소값 (=0.1 mm)",
     0: "0.1 mm",
@@ -975,7 +949,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 64
+# %% ../nbs/02_api/00_core.ipynb 65
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None

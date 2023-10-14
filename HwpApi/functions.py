@@ -69,8 +69,7 @@ def get_hwp_objects():
             # 현재 moniker를 통해 ROT에서 한글의 object를 가져옵니다. 
             obje = running_coms.GetObject(moniker)
             # 가져온 object를 Dispatch를 통해 사용할수 있는 객체로 변환시킵니다. 
-            hwp_object = dispatch(obje.QueryInterface(pythoncom.IID_IDispatch))
-            hwp_objects.append(hwp_object)
+            hwp_objects.append(obje.QueryInterface(pythoncom.IID_IDispatch))
     return hwp_objects
 
 # %% ../nbs/02_api/02_functions.ipynb 7
