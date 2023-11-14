@@ -70,10 +70,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="dark">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -326,24 +326,24 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 <pre><code> CharShape (char_pset=None, **kwargs)</code></pre>
 </blockquote>
 <p>CharShape 클래스는 문자 모양을 다룹니다. CharShape는 폰트, 색상, 크기 및 스타일과 같이 문자에 적용된 스타일링 속성의 전체 세트를 나타냅니다.</p>
-<div class="cell" data-execution_count="6">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>charshape <span class="op">=</span> CharShape()</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>charshape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="6">
+<div class="cell-output cell-output-display">
 <pre><code>&lt;CharShape: hangul_font=None, latin_font=None, text_color=None, fontsize=None, bold=None, italic=None, super_script=None, sub_script=None, offset=None, spacing=None, ratio=None, shade_color=None, shadow_color=None, shadow_offset_x=None, shadow_offset_y=None, strike_out_type=None, strike_out_color=None, underline_type=None, underline_shape=None, underline_color=None, out_line_type=None&gt;</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="19">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>charshape.super_script <span class="op">=</span> <span class="dv">1</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>charshape.todict()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="19">
+<div class="cell-output cell-output-display">
 <pre><code>{'SuperScript': 1}</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="20">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>charshape.super_script <span class="op">=</span> <span class="dv">0</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>charshape.todict()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="20">
+<div class="cell-output cell-output-display">
 <pre><code>{'SuperScript': 0}</code></pre>
 </div>
 </div>
@@ -404,10 +404,10 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 <pre><code> ParaShape (char_pset=None, **kwargs)</code></pre>
 </blockquote>
 <p>ParaShape 클래스는 문단 모양을 다룹니다. ParaShape는 문단에 적용되는 스타일링 속성을 나타냅니다.</p>
-<div class="cell" data-execution_count="13">
+<div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>parashape <span class="op">=</span> ParaShape()</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>parashape</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="13">
+<div class="cell-output cell-output-display">
 <pre><code>&lt;ParaShape: left_margin=None, right_margin=None, indentation=None, prev_spacing=None, next_spacing=None, line_spacing_type=None, line_spacing=None, align_type=None, break_latin_word=None, break_non_latin_word=None, snap_to_grid=None, condense=None, widow_orphan=None, keep_with_next=None, page_break_before=None, text_alignment=None, font_line_height=None, heading_type=None, level=None, border_connect=None, border_text=None, border_offset_left=None, border_offset_right=None, border_offset_top=None, border_offset_bottom=None, tail_type=None, line_wrap=None&gt;</code></pre>
 </div>
 </div>
