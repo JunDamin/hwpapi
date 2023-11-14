@@ -3,7 +3,7 @@ project:
 
 format:
   html:
-    theme: lux
+    theme: darkly
     css: styles.css
     toc: true
 
