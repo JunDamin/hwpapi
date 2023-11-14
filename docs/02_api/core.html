@@ -21,40 +21,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -252,6 +218,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#app.select_text" id="toc-app.select_text" class="nav-link" data-scroll-target="#app.select_text">App.select_text</a></li>
   <li><a href="#selectionoption" id="toc-selectionoption" class="nav-link" data-scroll-target="#selectionoption">SelectionOption</a></li>
   <li><a href="#app.get_selected_text" id="toc-app.get_selected_text" class="nav-link" data-scroll-target="#app.get_selected_text">App.get_selected_text</a></li>
+  <li><a href="#app.get_text" id="toc-app.get_text" class="nav-link" data-scroll-target="#app.get_text">App.get_text</a></li>
+  <li><a href="#scanendposition-1" id="toc-scanendposition-1" class="nav-link" data-scroll-target="#scanendposition-1">ScanEndPosition</a></li>
+  <li><a href="#scanstartposition-1" id="toc-scanstartposition-1" class="nav-link" data-scroll-target="#scanstartposition-1">ScanStartPosition</a></li>
   <li><a href="#direction" id="toc-direction" class="nav-link" data-scroll-target="#direction">Direction</a></li>
   <li><a href="#app.find_text" id="toc-app.find_text" class="nav-link" data-scroll-target="#app.find_text">App.find_text</a></li>
   <li><a href="#app.replace_all" id="toc-app.replace_all" class="nav-link" data-scroll-target="#app.replace_all">App.replace_all</a></li>
@@ -259,7 +228,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#app.set_cell_border" id="toc-app.set_cell_border" class="nav-link" data-scroll-target="#app.set_cell_border">App.set_cell_border</a></li>
   <li><a href="#thickness" id="toc-thickness" class="nav-link" data-scroll-target="#thickness">Thickness</a></li>
   <li><a href="#app.set_cell_color" id="toc-app.set_cell_color" class="nav-link" data-scroll-target="#app.set_cell_color">App.set_cell_color</a></li>
-  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"></a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
@@ -516,11 +484,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L490" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
@@ -557,14 +520,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>app.<span class="bu">open</span>(<span class="st">"test/공문양식.hwp"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>'C:/Users/freed/Documents/python_projects/hwpapi/nbs/02_api/test/공문양식.hwp'</code></pre>
-</div>
-</div>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L522" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
@@ -596,14 +551,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>app.get_hwnd()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>3804544</code></pre>
-</div>
-</div>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L551" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
@@ -644,14 +591,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>app.save(<span class="st">"test.pdf"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>'C:/Users/freed/Documents/python_projects/hwpapi/nbs/02_api/test.pdf'</code></pre>
-</div>
-</div>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L596" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
@@ -693,11 +632,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>app.save_block(<span class="st">"test2.hwp"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L643" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
@@ -724,11 +658,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>app.close()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L666" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
@@ -791,14 +720,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>app.get_charshape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>&lt;CharShape: hangul_font=함초롬바탕, latin_font=함초롬바탕, text_color=0, fontsize=10.0, bold=0, italic=0, super_script=0, sub_script=0, offset=0, spacing=0, ratio=100, shade_color=#ffffff, shadow_color=#c0c0c0, shadow_offset_x=10, shadow_offset_y=10, strike_out_type=0, strike_out_color=0, underline_type=0, underline_shape=0, underline_color=0, out_line_type=0&gt;</code></pre>
-</div>
-</div>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L719" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
@@ -846,40 +767,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>charshape <span class="op">=</span> CharShape()</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>charshape.font <span class="op">=</span> <span class="st">"바탕체"</span></span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>charshape.super_script<span class="op">=</span><span class="dv">1</span></span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>charshape.sub_script <span class="op">=</span> <span class="dv">1</span></span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>app.set_charshape(charshape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>True</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>app.get_charshape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>&lt;CharShape: hangul_font=바탕체, latin_font=바탕체, text_color=0, fontsize=10.0, bold=0, italic=0, super_script=1, sub_script=1, offset=0, spacing=0, ratio=100, shade_color=#ffffff, shadow_color=#c0c0c0, shadow_offset_x=10, shadow_offset_y=10, strike_out_type=0, strike_out_color=0, underline_type=0, underline_shape=0, underline_color=0, out_line_type=0&gt;</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>charshape <span class="op">=</span> CharShape()</span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>charshape.font <span class="op">=</span> <span class="st">"바탕체"</span></span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>charshape.super_script<span class="op">=</span><span class="dv">0</span></span>
-<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>app.set_charshape(charshape)</span>
-<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>charshape <span class="op">=</span> app.get_charshape()</span>
-<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>charshape.super_script <span class="op">==</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>True</code></pre>
-</div>
-</div>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L761" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
@@ -916,14 +803,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>app.get_parashape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>&lt;ParaShape: left_margin=0, right_margin=0, indentation=0, prev_spacing=0, next_spacing=0, line_spacing_type=Word, line_spacing=160, align_type=Both, break_latin_word=Word, break_non_latin_word=1, snap_to_grid=1, condense=0, widow_orphan=0, keep_with_next=0, page_break_before=0, text_alignment=Font, font_line_height=0, heading_type=None, level=0, border_connect=0, border_text=0, border_offset_left=0, border_offset_right=0, border_offset_top=0, border_offset_bottom=0, tail_type=0, line_wrap=0&gt;</code></pre>
-</div>
-</div>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L792" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
@@ -971,14 +850,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>app.set_parashape(line_spacing<span class="op">=</span><span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>True</code></pre>
-</div>
-</div>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L834" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
@@ -1026,32 +897,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>app.insert_text(<span class="st">"안녕하세요"</span>, charshape)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>app.set_parashape(ParaShape(right_margin<span class="op">=</span><span class="dv">20</span>, align_type<span class="op">=</span><span class="st">"Left"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>True</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>parashape <span class="op">=</span> app.actions.ParagraphShape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>parashape.pset.RightMargin</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>5660</code></pre>
-</div>
-</div>
 <hr>
 </section>
 <section id="scan" class="level3">
@@ -1403,24 +1248,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
                   type=None, start=1)</code></pre>
 </blockquote>
 <p>An enumeration.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>app.select_text()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>(True, True)</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a>app.set_charshape(CharShape(font<span class="op">=</span><span class="st">"바탕"</span>, fontsize<span class="op">=</span><span class="dv">20</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>True</code></pre>
-</div>
-</div>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1201" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
@@ -1452,88 +1279,71 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>app.get_selected_text()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>'안녕하세요\n'</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> enum <span class="im">import</span> Enum</span>
-<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Enums as defined in your code</span></span>
-<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ScanStartPosition(Enum):</span>
-<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a>    Current <span class="op">=</span> <span class="bn">0x0000</span></span>
-<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a>    Specified <span class="op">=</span> <span class="bn">0x0010</span></span>
-<span id="cb71-7"><a href="#cb71-7" aria-hidden="true" tabindex="-1"></a>    Line <span class="op">=</span> <span class="bn">0x0020</span></span>
-<span id="cb71-8"><a href="#cb71-8" aria-hidden="true" tabindex="-1"></a>    Paragraph <span class="op">=</span> <span class="bn">0x0030</span></span>
-<span id="cb71-9"><a href="#cb71-9" aria-hidden="true" tabindex="-1"></a>    Section <span class="op">=</span> <span class="bn">0x0040</span></span>
-<span id="cb71-10"><a href="#cb71-10" aria-hidden="true" tabindex="-1"></a>    List <span class="op">=</span> <span class="bn">0x0050</span></span>
-<span id="cb71-11"><a href="#cb71-11" aria-hidden="true" tabindex="-1"></a>    Control <span class="op">=</span> <span class="bn">0x0060</span></span>
-<span id="cb71-12"><a href="#cb71-12" aria-hidden="true" tabindex="-1"></a>    Document <span class="op">=</span> <span class="bn">0x0070</span></span>
-<span id="cb71-13"><a href="#cb71-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb71-14"><a href="#cb71-14" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ScanEndPosition(Enum):</span>
-<span id="cb71-15"><a href="#cb71-15" aria-hidden="true" tabindex="-1"></a>    Current <span class="op">=</span> <span class="bn">0x0000</span></span>
-<span id="cb71-16"><a href="#cb71-16" aria-hidden="true" tabindex="-1"></a>    Specified <span class="op">=</span> <span class="bn">0x0001</span></span>
-<span id="cb71-17"><a href="#cb71-17" aria-hidden="true" tabindex="-1"></a>    Line <span class="op">=</span> <span class="bn">0x0002</span></span>
-<span id="cb71-18"><a href="#cb71-18" aria-hidden="true" tabindex="-1"></a>    Paragraph <span class="op">=</span> <span class="bn">0x0003</span></span>
-<span id="cb71-19"><a href="#cb71-19" aria-hidden="true" tabindex="-1"></a>    Section <span class="op">=</span> <span class="bn">0x0004</span></span>
-<span id="cb71-20"><a href="#cb71-20" aria-hidden="true" tabindex="-1"></a>    List <span class="op">=</span> <span class="bn">0x0005</span></span>
-<span id="cb71-21"><a href="#cb71-21" aria-hidden="true" tabindex="-1"></a>    Control <span class="op">=</span> <span class="bn">0x0006</span></span>
-<span id="cb71-22"><a href="#cb71-22" aria-hidden="true" tabindex="-1"></a>    Document <span class="op">=</span> <span class="bn">0x0007</span></span>
-<span id="cb71-23"><a href="#cb71-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb71-24"><a href="#cb71-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Refactored get_text function</span></span>
-<span id="cb71-25"><a href="#cb71-25" aria-hidden="true" tabindex="-1"></a><span class="at">@patch</span></span>
-<span id="cb71-26"><a href="#cb71-26" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_text(app: App, spos<span class="op">=</span>ScanStartPosition.Line, epos<span class="op">=</span>ScanEndPosition.Line):</span>
-<span id="cb71-27"><a href="#cb71-27" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
-<span id="cb71-28"><a href="#cb71-28" aria-hidden="true" tabindex="-1"></a><span class="co">    Retrieves text from the document based on specified start and end positions.</span></span>
-<span id="cb71-29"><a href="#cb71-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb71-30"><a href="#cb71-30" aria-hidden="true" tabindex="-1"></a><span class="co">    Parameters</span></span>
-<span id="cb71-31"><a href="#cb71-31" aria-hidden="true" tabindex="-1"></a><span class="co">    ----------</span></span>
-<span id="cb71-32"><a href="#cb71-32" aria-hidden="true" tabindex="-1"></a><span class="co">    app : App</span></span>
-<span id="cb71-33"><a href="#cb71-33" aria-hidden="true" tabindex="-1"></a><span class="co">        The `App` instance associated with the Hancom Office Hwp program.</span></span>
-<span id="cb71-34"><a href="#cb71-34" aria-hidden="true" tabindex="-1"></a><span class="co">    spos : ScanStartPosition, optional</span></span>
-<span id="cb71-35"><a href="#cb71-35" aria-hidden="true" tabindex="-1"></a><span class="co">        The start position for text retrieval. Default is ScanStartPosition.Line.</span></span>
-<span id="cb71-36"><a href="#cb71-36" aria-hidden="true" tabindex="-1"></a><span class="co">    epos : ScanEndPosition, optional</span></span>
-<span id="cb71-37"><a href="#cb71-37" aria-hidden="true" tabindex="-1"></a><span class="co">        The end position for text retrieval. Default is ScanEndPosition.Line.</span></span>
-<span id="cb71-38"><a href="#cb71-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb71-39"><a href="#cb71-39" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns</span></span>
-<span id="cb71-40"><a href="#cb71-40" aria-hidden="true" tabindex="-1"></a><span class="co">    -------</span></span>
-<span id="cb71-41"><a href="#cb71-41" aria-hidden="true" tabindex="-1"></a><span class="co">    str</span></span>
-<span id="cb71-42"><a href="#cb71-42" aria-hidden="true" tabindex="-1"></a><span class="co">        The retrieved text from the specified start to end positions.</span></span>
-<span id="cb71-43"><a href="#cb71-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb71-44"><a href="#cb71-44" aria-hidden="true" tabindex="-1"></a><span class="co">    Examples</span></span>
-<span id="cb71-45"><a href="#cb71-45" aria-hidden="true" tabindex="-1"></a><span class="co">    --------</span></span>
-<span id="cb71-46"><a href="#cb71-46" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; app = App()</span></span>
-<span id="cb71-47"><a href="#cb71-47" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; text = get_text(app, spos=ScanStartPosition.Paragraph, epos=ScanEndPosition.Paragraph)</span></span>
-<span id="cb71-48"><a href="#cb71-48" aria-hidden="true" tabindex="-1"></a><span class="co">    &gt;&gt;&gt; print(text)</span></span>
-<span id="cb71-49"><a href="#cb71-49" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb71-50"><a href="#cb71-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb71-51"><a href="#cb71-51" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> app.scan(scan_spos<span class="op">=</span>spos, scan_epos<span class="op">=</span>epos) <span class="im">as</span> txts:</span>
-<span id="cb71-52"><a href="#cb71-52" aria-hidden="true" tabindex="-1"></a>        text <span class="op">=</span> <span class="st">""</span>.join(txts)</span>
-<span id="cb71-53"><a href="#cb71-53" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> text</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a>ScanStartPosition.Line.value</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>32</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>app.get_text()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>'안녕하세요\r\n'</code></pre>
-</div>
-</div>
+<hr>
+</section>
+<section id="app.get_text" class="level3">
+<h3 class="anchored" data-anchor-id="app.get_text">App.get_text</h3>
+<blockquote class="blockquote">
+<pre><code> App.get_text (app:__main__.App, spos=&lt;ScanStartPosition.Line: 32&gt;,
+               epos=&lt;ScanEndPosition.Line: 2&gt;)</code></pre>
+</blockquote>
+<p>Retrieves text from the document based on specified start and end positions.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>app</td>
+<td>App</td>
+<td></td>
+<td>The <a href="https://JunDamin.github.io/hwpapi/02_api/core.html#app"><code>App</code></a> instance associated with the Hancom Office Hwp program.</td>
+</tr>
+<tr class="even">
+<td>spos</td>
+<td>ScanStartPosition</td>
+<td>ScanStartPosition.Line</td>
+<td>The start position for text retrieval. Default is ScanStartPosition.Line.</td>
+</tr>
+<tr class="odd">
+<td>epos</td>
+<td>ScanEndPosition</td>
+<td>ScanEndPosition.Line</td>
+<td>The end position for text retrieval. Default is ScanEndPosition.Line.</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>str</strong></td>
+<td></td>
+<td><strong>The retrieved text from the specified start to end positions.</strong></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L895" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="scanendposition-1" class="level3">
+<h3 class="anchored" data-anchor-id="scanendposition-1">ScanEndPosition</h3>
+<blockquote class="blockquote">
+<pre><code> ScanEndPosition (value, names=None, module=None, qualname=None,
+                  type=None, start=1)</code></pre>
+</blockquote>
+<p>An enumeration.</p>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L885" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="scanstartposition-1" class="level3">
+<h3 class="anchored" data-anchor-id="scanstartposition-1">ScanStartPosition</h3>
+<blockquote class="blockquote">
+<pre><code> ScanStartPosition (value, names=None, module=None, qualname=None,
+                    type=None, start=1)</code></pre>
+</blockquote>
+<p>An enumeration.</p>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1231" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
@@ -1687,15 +1497,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb78-4"><a href="#cb78-4" aria-hidden="true" tabindex="-1"></a>app.find_text(<span class="st">"안녕하세요"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>False</code></pre>
-</div>
-</div>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1312" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
@@ -1859,29 +1660,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>app.insert_text(<span class="st">"t"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-3"><a href="#cb82-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb82-4"><a href="#cb82-4" aria-hidden="true" tabindex="-1"></a>Direction.All.value</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>2</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb84-3"><a href="#cb84-3" aria-hidden="true" tabindex="-1"></a>app.replace_all(<span class="st">"t"</span>, <span class="st">"txt"</span>, new_charshape<span class="op">=</span>CharShape(hangul_font<span class="op">=</span><span class="st">"가는안상수체"</span>, fontsize<span class="op">=</span><span class="dv">21</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>True</code></pre>
-</div>
-</div>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1393" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
@@ -2169,407 +1947,6 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tr>
 </tbody>
 </table>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb90-3"><a href="#cb90-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb90-4"><a href="#cb90-4" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb91-3"><a href="#cb91-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb91-4"><a href="#cb91-4" aria-hidden="true" tabindex="-1"></a>app.set_charshape(CharShape(hangul_font<span class="op">=</span><span class="st">"문화바탕"</span>, font_type<span class="op">=</span><span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>True</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a>action <span class="op">=</span> app.actions.CharShape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb94-4"><a href="#cb94-4" aria-hidden="true" tabindex="-1"></a>app.get_charshape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>&lt;CharShape: hangul_font=문화바탕, latin_font=바탕, text_color=0, fontsize=21.0, bold=0, italic=0, super_script=0, sub_script=1, offset=0, spacing=0, ratio=100, shade_color=#ffffff, shadow_color=#c0c0c0, shadow_offset_x=10, shadow_offset_y=10, strike_out_type=0, strike_out_color=0, underline_type=0, underline_shape=0, underline_color=0, out_line_type=0&gt;</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a>app.api.HwpLineWidth(<span class="st">"1.0mm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>10</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a>app.set_cell_border(bottom<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>False</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a>get_rgb_tuple(<span class="st">"#123456"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>(18, 52, 86)</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a>app.set_cell_color(bg_color<span class="op">=</span><span class="st">"#123456"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>False</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb104-2"><a href="#cb104-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb104-3"><a href="#cb104-3" aria-hidden="true" tabindex="-1"></a><span class="co"># app.api.CurSelectedCtrl.CtrlID</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb105-2"><a href="#cb105-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb105-3"><a href="#cb105-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 동작은 되나 너무 느리다. </span></span>
-<span id="cb105-4"><a href="#cb105-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 빠르게 할 수 있는 방법을 찾아보자. </span></span>
-<span id="cb105-5"><a href="#cb105-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 양식을 설정할 수 있는 방법을 생각해 보자.</span></span>
-<span id="cb105-6"><a href="#cb105-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 어떻게 해야 위아래로 값이 같은 셀을 병합할 수 있을지 생각해 보자.</span></span>
-<span id="cb105-7"><a href="#cb105-7" aria-hidden="true" tabindex="-1"></a><span class="co"># block_input을 해야 그나마 쓸 수 있을 듯</span></span>
-<span id="cb105-8"><a href="#cb105-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb105-9"><a href="#cb105-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> insert_dataframe(app, df):</span>
-<span id="cb105-10"><a href="#cb105-10" aria-hidden="true" tabindex="-1"></a>    action <span class="op">=</span> app.actions.TableCreate()</span>
-<span id="cb105-11"><a href="#cb105-11" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> action.pset</span>
-<span id="cb105-12"><a href="#cb105-12" aria-hidden="true" tabindex="-1"></a>    p.WidthType <span class="op">=</span> <span class="dv">1</span>    <span class="co"># fit size</span></span>
-<span id="cb105-13"><a href="#cb105-13" aria-hidden="true" tabindex="-1"></a>    p.Rows <span class="op">=</span> df.shape[<span class="dv">0</span>]<span class="op">+</span><span class="dv">1</span>  <span class="co"># add header</span></span>
-<span id="cb105-14"><a href="#cb105-14" aria-hidden="true" tabindex="-1"></a>    p.Cols <span class="op">=</span> df.shape[<span class="dv">1</span>]</span>
-<span id="cb105-15"><a href="#cb105-15" aria-hidden="true" tabindex="-1"></a>    action.run()</span>
-<span id="cb105-16"><a href="#cb105-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb105-17"><a href="#cb105-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> col <span class="kw">in</span> df.columns:</span>
-<span id="cb105-18"><a href="#cb105-18" aria-hidden="true" tabindex="-1"></a>        app.insert_text(col)</span>
-<span id="cb105-19"><a href="#cb105-19" aria-hidden="true" tabindex="-1"></a>        app.move(<span class="st">"RightOfCell"</span>)</span>
-<span id="cb105-20"><a href="#cb105-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, row <span class="kw">in</span> df.iterrows():</span>
-<span id="cb105-21"><a href="#cb105-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> item <span class="kw">in</span> row.values:</span>
-<span id="cb105-22"><a href="#cb105-22" aria-hidden="true" tabindex="-1"></a>            app.insert_text(item)</span>
-<span id="cb105-23"><a href="#cb105-23" aria-hidden="true" tabindex="-1"></a>            app.move(<span class="st">"RightOfCell"</span>)</span>
-<span id="cb105-24"><a href="#cb105-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> app.api.ParentCtrl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb106"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb106-2"><a href="#cb106-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb106-3"><a href="#cb106-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb106-4"><a href="#cb106-4" aria-hidden="true" tabindex="-1"></a><span class="co">## 더 빠르고 안정적일 듯</span></span>
-<span id="cb106-5"><a href="#cb106-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 초단위로 걸려서 block_input을 해야 할 듯 </span></span>
-<span id="cb106-6"><a href="#cb106-6" aria-hidden="true" tabindex="-1"></a><span class="co"># value 중에서 tab이 있으면 replace는 해야 할 듯</span></span>
-<span id="cb106-7"><a href="#cb106-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb106-8"><a href="#cb106-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> convert_to_text(value):</span>
-<span id="cb106-9"><a href="#cb106-9" aria-hidden="true" tabindex="-1"></a>    value <span class="op">=</span> <span class="bu">str</span>(value).replace(<span class="st">"</span><span class="ch">\t</span><span class="st">"</span>, <span class="st">"    "</span>)</span>
-<span id="cb106-10"><a href="#cb106-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> value</span>
-<span id="cb106-11"><a href="#cb106-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb106-12"><a href="#cb106-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> insert_dataframe(app:App, df):</span>
-<span id="cb106-13"><a href="#cb106-13" aria-hidden="true" tabindex="-1"></a>    start_pos <span class="op">=</span> app.api.GetPos()</span>
-<span id="cb106-14"><a href="#cb106-14" aria-hidden="true" tabindex="-1"></a>    text <span class="op">=</span> <span class="st">""</span></span>
-<span id="cb106-15"><a href="#cb106-15" aria-hidden="true" tabindex="-1"></a>    text <span class="op">+=</span> <span class="st">"</span><span class="ch">\t</span><span class="st">"</span>.join(<span class="bu">map</span>(convert_to_text, df.columns))</span>
-<span id="cb106-16"><a href="#cb106-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, row <span class="kw">in</span> df.iterrows():</span>
-<span id="cb106-17"><a href="#cb106-17" aria-hidden="true" tabindex="-1"></a>        text <span class="op">+=</span> <span class="st">"</span><span class="ch">\r\n</span><span class="st">"</span></span>
-<span id="cb106-18"><a href="#cb106-18" aria-hidden="true" tabindex="-1"></a>        text <span class="op">+=</span> <span class="st">"</span><span class="ch">\t</span><span class="st">"</span>.join(<span class="bu">map</span>(convert_to_text, row.values))</span>
-<span id="cb106-19"><a href="#cb106-19" aria-hidden="true" tabindex="-1"></a>    app.insert_text(text)</span>
-<span id="cb106-20"><a href="#cb106-20" aria-hidden="true" tabindex="-1"></a>    end_pos <span class="op">=</span> app.api.GetPos()</span>
-<span id="cb106-21"><a href="#cb106-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb106-22"><a href="#cb106-22" aria-hidden="true" tabindex="-1"></a>    app.api.SelectText(start_pos[<span class="dv">1</span>], start_pos[<span class="dv">2</span>], end_pos[<span class="dv">1</span>], end_pos[<span class="dv">2</span>])</span>
-<span id="cb106-23"><a href="#cb106-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb106-24"><a href="#cb106-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> app.actions.TableStringToTable().run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb107"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb107-2"><a href="#cb107-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb107-3"><a href="#cb107-3" aria-hidden="true" tabindex="-1"></a><span class="at">@property</span></span>
-<span id="cb107-4"><a href="#cb107-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pagewidth(app:App):</span>
-<span id="cb107-5"><a href="#cb107-5" aria-hidden="true" tabindex="-1"></a>    action <span class="op">=</span> app.actions.PageSetup()</span>
-<span id="cb107-6"><a href="#cb107-6" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> action.pset.PageDef</span>
-<span id="cb107-7"><a href="#cb107-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> unit2mili(p.PaperWidth <span class="op">-</span> (p.LeftMargin <span class="op">+</span> p.RightMargin))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb108"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb108-2"><a href="#cb108-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb108-3"><a href="#cb108-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb108-4"><a href="#cb108-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb108-5"><a href="#cb108-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb108-6"><a href="#cb108-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb108-7"><a href="#cb108-7" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.DataFrame(np.random.random(<span class="dv">100</span>).reshape(<span class="dv">10</span>, <span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a><span class="co">#hide</span></span>
-<span id="cb109-2"><a href="#cb109-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb109-3"><a href="#cb109-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb109-4"><a href="#cb109-4" aria-hidden="true" tabindex="-1"></a><span class="bu">dir</span>(app.api)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display">
-<pre><code>['Application',
- 'ArcType',
- 'AutoNumType',
- 'BorderShape',
- 'BreakWordLatin',
- 'BrushType',
- 'CLSID',
- 'Canonical',
- 'CellApply',
- 'CellShape',
- 'CharShadowType',
- 'CharShape',
- 'CheckXObject',
- 'Clear',
- 'ColDefType',
- 'ColLayoutType',
- 'ConvertPUAHangulToUnicode',
- 'CreateAction',
- 'CreateField',
- 'CreateID',
- 'CreateMode',
- 'CreatePageImage',
- 'CreateSet',
- 'CrookedSlash',
- 'CurFieldState',
- 'CurMetatagState',
- 'CurSelectedCtrl',
- 'DSMark',
- 'DbfCodeType',
- 'DeleteCtrl',
- 'Delimiter',
- 'DrawAspect',
- 'DrawFillImage',
- 'DrawShadowType',
- 'EditMode',
- 'Encrypt',
- 'EndSize',
- 'EndStyle',
- 'EngineProperties',
- 'ExportStyle',
- 'FieldExist',
- 'FileTranslate',
- 'FillAreaType',
- 'FindCtrl',
- 'FindDir',
- 'FindPrivateInfo',
- 'FontType',
- 'GetBinDataPath',
- 'GetCurFieldName',
- 'GetCurMetatagName',
- 'GetFieldList',
- 'GetFieldText',
- 'GetFileInfo',
- 'GetFontList',
- 'GetHeadingString',
- 'GetMessageBoxMode',
- 'GetMetatagList',
- 'GetMetatagNameText',
- 'GetMousePos',
- 'GetPageText',
- 'GetPos',
- 'GetPosBySet',
- 'GetScriptSource',
- 'GetSelectedPos',
- 'GetSelectedPosBySet',
- 'GetText',
- 'GetTextFile',
- 'GetTranslateLangList',
- 'GetUserInfo',
- 'Gradation',
- 'GridMethod',
- 'GridViewLine',
- 'GutterMethod',
- 'HAction',
- 'HAlign',
- 'HParameterSet',
- 'Handler',
- 'Hash',
- 'HatchStyle',
- 'HeadCtrl',
- 'HeadType',
- 'HeightRel',
- 'Hiding',
- 'HorzRel',
- 'HwpLineType',
- 'HwpLineWidth',
- 'HwpOutlineStyle',
- 'HwpOutlineType',
- 'HwpUnderlineShape',
- 'HwpUnderlineType',
- 'HwpZoomType',
- 'ImageFormat',
- 'ImportStyle',
- 'InitHParameterSet',
- 'InitScan',
- 'Insert',
- 'InsertBackgroundPicture',
- 'InsertCtrl',
- 'InsertPicture',
- 'IsActionEnable',
- 'IsCommandLock',
- 'IsEmpty',
- 'IsModified',
- 'IsPrivateInfoProtected',
- 'IsTrackChange',
- 'IsTrackChangePassword',
- 'KeyIndicator',
- 'LastCtrl',
- 'LineSpacingMethod',
- 'LineWrapType',
- 'LockCommand',
- 'LunarToSolar',
- 'LunarToSolarBySet',
- 'MacroState',
- 'MailType',
- 'MetatagExist',
- 'MiliToHwpUnit',
- 'ModifyFieldProperties',
- 'ModifyMetatagProperties',
- 'MovePos',
- 'MoveToField',
- 'MoveToMetatag',
- 'NumberFormat',
- 'Numbering',
- 'Open',
- 'PageCount',
- 'PageNumPosition',
- 'PageType',
- 'ParaHeadAlign',
- 'ParaShape',
- 'ParentCtrl',
- 'Path',
- 'PicEffect',
- 'PlacementType',
- 'PointToHwpUnit',
- 'PresentEffect',
- 'PrintDevice',
- 'PrintPaper',
- 'PrintRange',
- 'PrintType',
- 'ProtectPrivateInfo',
- 'PutFieldText',
- 'PutMetatagNameText',
- 'Quit',
- 'RGBColor',
- 'RegisterModule',
- 'RegisterPrivateInfoPattern',
- 'ReleaseAction',
- 'ReleaseScan',
- 'RenameField',
- 'RenameMetatag',
- 'ReplaceAction',
- 'ReplaceFont',
- 'Revision',
- 'Run',
- 'RunScriptMacro',
- 'Save',
- 'SaveAs',
- 'ScanFont',
- 'SelectText',
- 'SelectionMode',
- 'SetBarCodeImage',
- 'SetCurFieldName',
- 'SetCurMetatagName',
- 'SetDRMAuthority',
- 'SetFieldViewOption',
- 'SetMessageBoxMode',
- 'SetPos',
- 'SetPosBySet',
- 'SetPrivateInfoPassword',
- 'SetTextFile',
- 'SetTitleName',
- 'SetUserInfo',
- 'SideType',
- 'Signature',
- 'Slash',
- 'SolarToLunar',
- 'SolarToLunarBySet',
- 'SortDelimiter',
- 'StrikeOut',
- 'StyleType',
- 'SubtPos',
- 'TableBreak',
- 'TableFormat',
- 'TableSwapType',
- 'TableTarget',
- 'TextAlign',
- 'TextArtAlign',
- 'TextDir',
- 'TextFlowType',
- 'TextWrapType',
- 'UnSelectCtrl',
- 'VAlign',
- 'Version',
- 'VertRel',
- 'ViewFlag',
- 'ViewProperties',
- 'WatermarkBrush',
- 'WidthRel',
- 'XHwpDocuments',
- 'XHwpMessageBox',
- 'XHwpODBC',
- 'XHwpWindows',
- '_ApplyTypes_',
- '__class__',
- '__delattr__',
- '__dict__',
- '__dir__',
- '__doc__',
- '__eq__',
- '__format__',
- '__ge__',
- '__getattr__',
- '__getattribute__',
- '__gt__',
- '__hash__',
- '__init__',
- '__init_subclass__',
- '__iter__',
- '__le__',
- '__lt__',
- '__module__',
- '__ne__',
- '__new__',
- '__reduce__',
- '__reduce_ex__',
- '__repr__',
- '__setattr__',
- '__sizeof__',
- '__str__',
- '__subclasshook__',
- '__weakref__',
- '_get_good_object_',
- '_get_good_single_object_',
- '_oleobj_',
- '_prop_map_get_',
- '_prop_map_put_',
- 'coclass_clsid']</code></pre>
-</div>
-</div>
-</section>
-<section id="section" class="level2">
-<h2 class="anchored" data-anchor-id="section"></h2>
-<p>cell을 순환하면서 모양을 잡을 수 있을 것으로 예상된다. 6개 값을 받아서 정렬하면 되지 않을까 싶다.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a>insert_dataframe(app, df)</span>
-<span id="cb111-2"><a href="#cb111-2" aria-hidden="true" tabindex="-1"></a>app.api.FindCtrl()</span>
-<span id="cb111-3"><a href="#cb111-3" aria-hidden="true" tabindex="-1"></a>app.actions.ShapeObjTextBoxEdit().run()</span>
-<span id="cb111-4"><a href="#cb111-4" aria-hidden="true" tabindex="-1"></a>app.set_cell_border(<span class="va">False</span>, <span class="va">False</span>)</span>
-<span id="cb111-5"><a href="#cb111-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> _ <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">10</span>):</span>
-<span id="cb111-6"><a href="#cb111-6" aria-hidden="true" tabindex="-1"></a>    app.actions.TableCellBlockRow().run()</span>
-<span id="cb111-7"><a href="#cb111-7" aria-hidden="true" tabindex="-1"></a>    app.set_cell_color(bg_color<span class="op">=</span>(<span class="dv">253</span>, <span class="dv">123</span>, <span class="dv">253</span>), hatch_style<span class="op">=</span><span class="dv">6</span>)</span>
-<span id="cb111-8"><a href="#cb111-8" aria-hidden="true" tabindex="-1"></a>    app.set_cell_border(<span class="va">False</span>, <span class="va">False</span>, <span class="va">False</span>, <span class="va">False</span>)</span>
-<span id="cb111-9"><a href="#cb111-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb111-10"><a href="#cb111-10" aria-hidden="true" tabindex="-1"></a>    app.actions.TableCellBlock().run()</span>
-<span id="cb111-11"><a href="#cb111-11" aria-hidden="true" tabindex="-1"></a>    app.move(<span class="st">"DownOfCell"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
 
 
 </section>
