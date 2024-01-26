@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.353">
+<meta name="generator" content="quarto-1.4.548">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -46,7 +46,13 @@ ul.task-list li input[type="checkbox"] {
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -55,8 +61,10 @@ ul.task-list li input[type="checkbox"] {
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 
@@ -64,7 +72,7 @@ ul.task-list li input[type="checkbox"] {
 <link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="hwpapi - core">
 <meta property="og:description" content="Core Classes for hwpapi">
-<meta property="og:site-name" content="hwpapi">
+<meta property="og:site_name" content="hwpapi">
 <meta name="twitter:title" content="hwpapi - core">
 <meta name="twitter:description" content="Core Classes for hwpapi">
 <meta name="twitter:card" content="summary">
@@ -74,33 +82,33 @@ ul.task-list li input[type="checkbox"] {
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">hwpapi</span>
     </a>
   </div>
-        <div class="quarto-navbar-tools ms-auto">
+        <div class="quarto-navbar-tools">
 </div>
           <div id="quarto-search" class="" title="Search"></div>
       </div> <!-- /container-fluid -->
     </nav>
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../02_api/core.html">api</a></li><li class="breadcrumb-item"><a href="../02_api/core.html">core</a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../02_api/core.html">api</a></li><li class="breadcrumb-item"><a href="../02_api/core.html">core</a></li></ol></nav>
+        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
     </div>
   </nav>
 </header>
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
@@ -126,8 +134,8 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../01_tutorials/find_and_replace.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Find and replace</span></a>
+  <a href="../01_tutorials/find_replace.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">찾아바꾸기 기능 활용</span></a>
   </div>
 </li>
       </ul>
@@ -176,7 +184,7 @@ ul.task-list li input[type="checkbox"] {
     </ul>
     </div>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
@@ -198,6 +206,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#app.save_block" id="toc-app.save_block" class="nav-link" data-scroll-target="#app.save_block">App.save_block</a></li>
   <li><a href="#app.close" id="toc-app.close" class="nav-link" data-scroll-target="#app.close">App.close</a></li>
   <li><a href="#app.quit" id="toc-app.quit" class="nav-link" data-scroll-target="#app.quit">App.quit</a></li>
+  <li><a href="#app.get_font_list" id="toc-app.get_font_list" class="nav-link" data-scroll-target="#app.get_font_list">App.get_font_list</a></li>
   <li><a href="#app.get_charshape" id="toc-app.get_charshape" class="nav-link" data-scroll-target="#app.get_charshape">App.get_charshape</a></li>
   <li><a href="#app.set_charshape" id="toc-app.set_charshape" class="nav-link" data-scroll-target="#app.set_charshape">App.set_charshape</a></li>
   <li><a href="#app.get_parashape" id="toc-app.get_parashape" class="nav-link" data-scroll-target="#app.get_parashape">App.get_parashape</a></li>
@@ -229,12 +238,12 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#thickness" id="toc-thickness" class="nav-link" data-scroll-target="#thickness">Thickness</a></li>
   <li><a href="#app.set_cell_color" id="toc-app.set_cell_color" class="nav-link" data-scroll-target="#app.set_cell_color">App.set_cell_color</a></li>
   </ul>
-<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../02_api/core.html">api</a></li><li class="breadcrumb-item"><a href="../02_api/core.html">core</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">core</h1>
 </div>
@@ -254,9 +263,17 @@ ul.task-list li input[type="checkbox"] {
   </div>
   
 
+
 </header>
 
+
 <!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<pre><code>C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: Unknown section Attributes
+  else: warn(msg)
+C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: Unknown section Methods
+  else: warn(msg)
+C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: Unknown section Examples
+  else: warn(msg)</code></pre>
 <hr>
 <p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L37" target="_blank" style="float:right; font-size:smaller">source</a></p>
 <section id="engine" class="level3">
@@ -265,22 +282,69 @@ ul.task-list li input[type="checkbox"] {
 <pre><code> Engine (hwp_object=None)</code></pre>
 </blockquote>
 <p>Engine class to encapsulate the Hancom Office Hwp object.</p>
-<p>This class provides an interface to interact with the Hancom Office Hwp application, allowing for actions and operations within the Hwp environment.</p>
+<p>This class provides an interface to interact with the Hancom Office Hwp application, facilitating actions and operations within the Hwp environment.</p>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>hwp_object</td>
+<td>NoneType</td>
+<td>None</td>
+<td>The Hwp object to be encapsulated by the Engine. If not provided, <br>it defaults to creating a new Hwp object using “HWPFrame.HwpObject”.</td>
+</tr>
+</tbody>
+</table>
+<pre><code>C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: Unknown section Notes
+  else: warn(msg)</code></pre>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L90" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L111" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="engines" class="level3">
 <h3 class="anchored" data-anchor-id="engines">Engines</h3>
 <blockquote class="blockquote">
 <pre><code> Engines (dll_path=None)</code></pre>
 </blockquote>
-<p>Initialize self. See help(type(self)) for accurate signature.</p>
-<pre><code>C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: Unknown section Attributes
-  else: warn(msg)
-C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: Unknown section Methods
-  else: warn(msg)</code></pre>
+<p>A collection manager for multiple Engine instances.</p>
+<p>This class manages multiple Engine instances, providing methods to access and iterate over them. It is useful for handling multiple Hancom Office Hwp objects.</p>
+<table class="table">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 25%">
+<col style="width: 34%">
+<col style="width: 34%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dll_path</td>
+<td>NoneType</td>
+<td>None</td>
+<td>Path to a DLL file, if required for initialization.</td>
+</tr>
+</tbody>
+</table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L124" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L257" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="apps" class="level3">
 <h3 class="anchored" data-anchor-id="apps">Apps</h3>
@@ -289,26 +353,22 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </blockquote>
 <p>A collection of all <code>app &lt;App&gt;</code> objects.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L257" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L390" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app" class="level3">
 <h3 class="anchored" data-anchor-id="app">App</h3>
 <blockquote class="blockquote">
-<pre><code> App (engine=None, is_visible=True, dll_path=None)</code></pre>
+<pre><code> App (new_app=False, is_visible=True, dll_path=None, engine=None)</code></pre>
 </blockquote>
 <p><a href="https://JunDamin.github.io/hwpapi/02_api/core.html#app"><code>App</code></a> 클래스는 한컴오피스의 한/글 프로그램과 상호작용하기 위한 인터페이스를 제공합니다.</p>
 <p>이 클래스는 한/글 프로그램의 COM 객체와의 연동을 관리하고, 해당 객체에 대한 작업을 수행하는 메서드들을 포함합니다.</p>
-<pre><code>C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: Unknown section Notes
-  else: warn(msg)
-C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docscrape.py:225: UserWarning: Unknown section Examples
-  else: warn(msg)</code></pre>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L337" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L515" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.reload" class="level3">
 <h3 class="anchored" data-anchor-id="app.reload">App.reload</h3>
 <blockquote class="blockquote">
-<pre><code> App.reload (app:__main__.App, dll_path=None)</code></pre>
+<pre><code> App.reload (app:__main__.App, new_app=False, dll_path=None)</code></pre>
 </blockquote>
 <p>Reloads the <a href="https://JunDamin.github.io/hwpapi/02_api/core.html#app"><code>App</code></a> instance with a new HWPFrame.HwpObject and resets its visibility and DLL path.</p>
 <p>This function is designed to reinitialize the <code>app</code> object’s API with a new instance of the HWPFrame.HwpObject. It also checks and registers the specified DLL file if provided.</p>
@@ -329,6 +389,12 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 <td>The <a href="https://JunDamin.github.io/hwpapi/02_api/core.html#app"><code>App</code></a> instance to be reloaded.</td>
 </tr>
 <tr class="even">
+<td>new_app</td>
+<td>bool</td>
+<td>False</td>
+<td></td>
+</tr>
+<tr class="odd">
 <td>dll_path</td>
 <td>NoneType</td>
 <td>None</td>
@@ -337,7 +403,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L369" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L544" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.set_visible" class="level3">
 <h3 class="anchored" data-anchor-id="app.set_visible">App.set_visible</h3>
@@ -377,7 +443,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L397" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L572" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.get_filepath" class="level3">
 <h3 class="anchored" data-anchor-id="app.get_filepath">App.get_filepath</h3>
@@ -408,12 +474,12 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L426" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L601" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.create_action" class="level3">
 <h3 class="anchored" data-anchor-id="app.create_action">App.create_action</h3>
 <blockquote class="blockquote">
-<pre><code> App.create_action (app:__main__.App, action_key:str)</code></pre>
+<pre><code> App.create_action (app:__main__.App, action_key:str, pset_key=None)</code></pre>
 </blockquote>
 <p>Creates and returns an instance of the <a href="https://JunDamin.github.io/hwpapi/02_api/actions.html#_action"><code>_Action</code></a> class.</p>
 <p>This function generates a new <a href="https://JunDamin.github.io/hwpapi/02_api/actions.html#_action"><code>_Action</code></a> instance associated with the given <code>app</code> and <code>action_key</code>. The <code>action_key</code> specifies the type of action to be created for the application.</p>
@@ -422,6 +488,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 <tr class="header">
 <th></th>
 <th><strong>Type</strong></th>
+<th><strong>Default</strong></th>
 <th><strong>Details</strong></th>
 </tr>
 </thead>
@@ -429,22 +496,31 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 <tr class="odd">
 <td>app</td>
 <td>App</td>
+<td></td>
 <td>The application object for which the action is being created.</td>
 </tr>
 <tr class="even">
 <td>action_key</td>
 <td>str</td>
+<td></td>
 <td>The key representing the specific action to be created.</td>
 </tr>
 <tr class="odd">
+<td>pset_key</td>
+<td>NoneType</td>
+<td>None</td>
+<td></td>
+</tr>
+<tr class="even">
 <td><strong>Returns</strong></td>
 <td>**_Action**</td>
+<td></td>
 <td><strong>An instance of the <a href="https://JunDamin.github.io/hwpapi/02_api/actions.html#_action"><code>_Action</code></a> class initialized with the provided application object and action key.</strong></td>
 </tr>
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L456" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L631" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.create_parameterset" class="level3">
 <h3 class="anchored" data-anchor-id="app.create_parameterset">App.create_parameterset</h3>
@@ -485,7 +561,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L490" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L665" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.open" class="level3">
 <h3 class="anchored" data-anchor-id="app.open">App.open</h3>
@@ -521,7 +597,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L522" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L697" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.get_hwnd" class="level3">
 <h3 class="anchored" data-anchor-id="app.get_hwnd">App.get_hwnd</h3>
@@ -552,7 +628,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L551" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L726" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.save" class="level3">
 <h3 class="anchored" data-anchor-id="app.save">App.save</h3>
@@ -592,7 +668,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L596" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L771" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.save_block" class="level3">
 <h3 class="anchored" data-anchor-id="app.save_block">App.save_block</h3>
@@ -633,7 +709,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L643" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L818" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.close" class="level3">
 <h3 class="anchored" data-anchor-id="app.close">App.close</h3>
@@ -659,7 +735,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L666" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L841" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.quit" class="level3">
 <h3 class="anchored" data-anchor-id="app.quit">App.quit</h3>
@@ -685,7 +761,43 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L689" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L864" target="_blank" style="float:right; font-size:smaller">source</a></p>
+</section>
+<section id="app.get_font_list" class="level3">
+<h3 class="anchored" data-anchor-id="app.get_font_list">App.get_font_list</h3>
+<blockquote class="blockquote">
+<pre><code> App.get_font_list (app:__main__.App)</code></pre>
+</blockquote>
+<p>Retrieves the list of fonts that used in the documnents from the current application.</p>
+<p>This method accesses the font list in the Hancom Office Hwp program linked to the <a href="https://JunDamin.github.io/hwpapi/02_api/core.html#app"><code>App</code></a> instance. It extracts fonts that used and return in list for further use or analysis.</p>
+<table class="table">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 38%">
+<col style="width: 52%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Type</strong></th>
+<th><strong>Details</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>app</td>
+<td>App</td>
+<td>The application object from which the character shape settings will be retrieved.</td>
+</tr>
+<tr class="even">
+<td><strong>Returns</strong></td>
+<td><strong>List</strong></td>
+<td><strong>return font list that used in the hwp document.</strong></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L897" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.get_charshape" class="level3">
 <h3 class="anchored" data-anchor-id="app.get_charshape">App.get_charshape</h3>
@@ -721,7 +833,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L719" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L927" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.set_charshape" class="level3">
 <h3 class="anchored" data-anchor-id="app.set_charshape">App.set_charshape</h3>
@@ -768,7 +880,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L761" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L969" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.get_parashape" class="level3">
 <h3 class="anchored" data-anchor-id="app.get_parashape">App.get_parashape</h3>
@@ -804,7 +916,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L792" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1000" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.set_parashape" class="level3">
 <h3 class="anchored" data-anchor-id="app.set_parashape">App.set_parashape</h3>
@@ -851,7 +963,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L834" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1042" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.insert_text" class="level3">
 <h3 class="anchored" data-anchor-id="app.insert_text">App.insert_text</h3>
@@ -908,7 +1020,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
        epara=None, epos=None, scan_direction=&lt;ScanDirection.Forward: 0&gt;)</code></pre>
 </blockquote>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L905" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1113" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="scandirection" class="level3">
 <h3 class="anchored" data-anchor-id="scandirection">ScanDirection</h3>
@@ -918,7 +1030,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </blockquote>
 <p>An enumeration.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L895" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1449" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="scanendposition" class="level3">
 <h3 class="anchored" data-anchor-id="scanendposition">ScanEndPosition</h3>
@@ -928,7 +1040,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </blockquote>
 <p>An enumeration.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L885" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1439" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="scanstartposition" class="level3">
 <h3 class="anchored" data-anchor-id="scanstartposition">ScanStartPosition</h3>
@@ -938,7 +1050,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </blockquote>
 <p>An enumeration.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L878" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1086" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="maskoption" class="level3">
 <h3 class="anchored" data-anchor-id="maskoption">MaskOption</h3>
@@ -948,7 +1060,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </blockquote>
 <p>An enumeration.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L948" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1156" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="move_to_line" class="level3">
 <h3 class="anchored" data-anchor-id="move_to_line">move_to_line</h3>
@@ -957,7 +1069,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </blockquote>
 <p>인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L998" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1206" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.move" class="level3">
 <h3 class="anchored" data-anchor-id="app.move">App.move</h3>
@@ -1009,7 +1121,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L957" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1165" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="moveid" class="level3">
 <h3 class="anchored" data-anchor-id="moveid">MoveId</h3>
@@ -1019,7 +1131,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </blockquote>
 <p>An enumeration.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1030" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1238" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.setup_page" class="level3">
 <h3 class="anchored" data-anchor-id="app.setup_page">App.setup_page</h3>
@@ -1102,7 +1214,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1103" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1311" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.insert_picture" class="level3">
 <h3 class="anchored" data-anchor-id="app.insert_picture">App.insert_picture</h3>
@@ -1179,7 +1291,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1097" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1305" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="effect" class="level3">
 <h3 class="anchored" data-anchor-id="effect">Effect</h3>
@@ -1189,7 +1301,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </blockquote>
 <p>An enumeration.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1091" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1299" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="sizeoption" class="level3">
 <h3 class="anchored" data-anchor-id="sizeoption">SizeOption</h3>
@@ -1199,7 +1311,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </blockquote>
 <p>An enumeration.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1170" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1378" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.select_text" class="level3">
 <h3 class="anchored" data-anchor-id="app.select_text">App.select_text</h3>
@@ -1239,7 +1351,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1163" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1371" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="selectionoption" class="level3">
 <h3 class="anchored" data-anchor-id="selectionoption">SelectionOption</h3>
@@ -1249,7 +1361,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </blockquote>
 <p>An enumeration.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1201" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1409" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.get_selected_text" class="level3">
 <h3 class="anchored" data-anchor-id="app.get_selected_text">App.get_selected_text</h3>
@@ -1280,6 +1392,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1461" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.get_text" class="level3">
 <h3 class="anchored" data-anchor-id="app.get_text">App.get_text</h3>
@@ -1325,7 +1438,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L895" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1449" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="scanendposition-1" class="level3">
 <h3 class="anchored" data-anchor-id="scanendposition-1">ScanEndPosition</h3>
@@ -1335,7 +1448,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </blockquote>
 <p>An enumeration.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L885" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1439" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="scanstartposition-1" class="level3">
 <h3 class="anchored" data-anchor-id="scanstartposition-1">ScanStartPosition</h3>
@@ -1345,7 +1458,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </blockquote>
 <p>An enumeration.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1231" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1492" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="direction" class="level3">
 <h3 class="anchored" data-anchor-id="direction">Direction</h3>
@@ -1355,20 +1468,28 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </blockquote>
 <p>An enumeration.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1239" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1500" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.find_text" class="level3">
 <h3 class="anchored" data-anchor-id="app.find_text">App.find_text</h3>
 <blockquote class="blockquote">
 <pre><code> App.find_text (app:__main__.App, text='',
-                charshape:hwpapi.dataclasses.CharShape=None,
-                ignore_message=True, direction=&lt;Direction.Forward: 0&gt;,
-                match_case=False, all_word_forms=False,
-                several_words=False, use_wild_cards=False,
-                whole_word_only=False, replace_mode=False,
-                ignore_find_string=False, ignore_replace_string=False,
-                find_style='', replace_style='', find_jaso=False,
-                find_reg_exp=False, find_type=False)</code></pre>
+                charshape:hwpapi.dataclasses.CharShape=&lt;CharShape:
+                hangul_font=None, latin_font=None, text_color=None,
+                fontsize=None, bold=None, italic=None, super_script=None,
+                sub_script=None, offset=None, spacing=None, ratio=None,
+                shade_color=None, shadow_color=None, shadow_offset_x=None,
+                shadow_offset_y=None, strike_out_type=None,
+                strike_out_color=None, underline_type=None,
+                underline_shape=None, underline_color=None,
+                out_line_type=None&gt;, ignore_message=True,
+                direction=&lt;Direction.Forward: 0&gt;, match_case=False,
+                all_word_forms=False, several_words=False,
+                use_wild_cards=False, whole_word_only=False,
+                replace_mode=False, ignore_find_string=False,
+                ignore_replace_string=False, find_style='',
+                replace_style='', find_jaso=False, find_reg_exp=False,
+                find_type=False)</code></pre>
 </blockquote>
 <p>Searches for the specified text in the document with various options.</p>
 <table class="table">
@@ -1396,7 +1517,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 <tr class="odd">
 <td>charshape</td>
 <td>CharShape</td>
-<td>None</td>
+<td>&lt;CharShape: hangul_font=None, latin_font=None, text_color=None, fontsize=None, bold=None, italic=None, super_script=None, sub_script=None, offset=None, spacing=None, ratio=None, shade_color=None, shadow_color=None, shadow_offset_x=None, shadow_offset_y=None, strike_out_type=None, strike_out_color=None, underline_type=None, underline_shape=None, underline_color=None, out_line_type=None&gt;</td>
 <td></td>
 </tr>
 <tr class="even">
@@ -1498,14 +1619,30 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1312" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1573" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.replace_all" class="level3">
 <h3 class="anchored" data-anchor-id="app.replace_all">App.replace_all</h3>
 <blockquote class="blockquote">
 <pre><code> App.replace_all (app:__main__.App, old_text='', new_text='',
-                  old_charshape:hwpapi.dataclasses.CharShape=None,
-                  new_charshape:hwpapi.dataclasses.CharShape=None,
+                  old_charshape=&lt;CharShape: hangul_font=None,
+                  latin_font=None, text_color=None, fontsize=None,
+                  bold=None, italic=None, super_script=None,
+                  sub_script=None, offset=None, spacing=None, ratio=None,
+                  shade_color=None, shadow_color=None,
+                  shadow_offset_x=None, shadow_offset_y=None,
+                  strike_out_type=None, strike_out_color=None,
+                  underline_type=None, underline_shape=None,
+                  underline_color=None, out_line_type=None&gt;,
+                  new_charshape=&lt;CharShape: hangul_font=None,
+                  latin_font=None, text_color=None, fontsize=None,
+                  bold=None, italic=None, super_script=None,
+                  sub_script=None, offset=None, spacing=None, ratio=None,
+                  shade_color=None, shadow_color=None,
+                  shadow_offset_x=None, shadow_offset_y=None,
+                  strike_out_type=None, strike_out_color=None,
+                  underline_type=None, underline_shape=None,
+                  underline_color=None, out_line_type=None&gt;,
                   ignore_message=True, direction=&lt;Direction.All: 2&gt;,
                   match_case=False, all_word_forms=False,
                   several_words=False, use_wild_cards=False,
@@ -1547,13 +1684,13 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 <tr class="even">
 <td>old_charshape</td>
 <td>CharShape</td>
-<td>None</td>
+<td>&lt;CharShape: hangul_font=None, latin_font=None, text_color=None, fontsize=None, bold=None, italic=None, super_script=None, sub_script=None, offset=None, spacing=None, ratio=None, shade_color=None, shadow_color=None, shadow_offset_x=None, shadow_offset_y=None, strike_out_type=None, strike_out_color=None, underline_type=None, underline_shape=None, underline_color=None, out_line_type=None&gt;</td>
 <td></td>
 </tr>
 <tr class="odd">
 <td>new_charshape</td>
 <td>CharShape</td>
-<td>None</td>
+<td>&lt;CharShape: hangul_font=None, latin_font=None, text_color=None, fontsize=None, bold=None, italic=None, super_script=None, sub_script=None, offset=None, spacing=None, ratio=None, shade_color=None, shadow_color=None, shadow_offset_x=None, shadow_offset_y=None, strike_out_type=None, strike_out_color=None, underline_type=None, underline_shape=None, underline_color=None, out_line_type=None&gt;</td>
 <td></td>
 </tr>
 <tr class="even">
@@ -1661,7 +1798,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1393" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1654" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.insert_file" class="level3">
 <h3 class="anchored" data-anchor-id="app.insert_file">App.insert_file</h3>
@@ -1727,7 +1864,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1490" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1751" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.set_cell_border" class="level3">
 <h3 class="anchored" data-anchor-id="app.set_cell_border">App.set_cell_border</h3>
@@ -1879,7 +2016,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </tbody>
 </table>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1446" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1707" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="thickness" class="level3">
 <h3 class="anchored" data-anchor-id="thickness">Thickness</h3>
@@ -1889,7 +2026,7 @@ C:\Users\freed\.pyenv\pyenv-win\versions\3.10.1\lib\site-packages\fastcore\docsc
 </blockquote>
 <p>An enumeration.</p>
 <hr>
-<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1588" target="_blank" style="float:right; font-size:smaller">source</a></p>
+<p><a href="https://github.com/JunDamin/hwpapi/blob/main/hwpapi/core.py#L1849" target="_blank" style="float:right; font-size:smaller">source</a></p>
 </section>
 <section id="app.set_cell_color" class="level3">
 <h3 class="anchored" data-anchor-id="app.set_cell_color">App.set_cell_color</h3>
@@ -2031,10 +2168,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -2044,8 +2180,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -2058,6 +2203,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -2101,6 +2365,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -2126,6 +2391,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -2189,4 +2480,5 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-</body></html>
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.3.353">
+<meta name="generator" content="quarto-1.4.548">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -23,7 +23,7 @@ ul.task-list li input[type="checkbox"] {
 }
 /* CSS for syntax highlighting */
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -80,7 +80,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "collapse-after": 3,
   "panel-placement": "end",
   "type": "overlay",
-  "limit": 20,
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
   "language": {
     "search-no-results-text": "No results",
     "search-matching-documents-text": "matching documents",
@@ -89,8 +95,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
-    "search-submit-button-title": "Submit"
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
   }
 }</script>
 
@@ -98,7 +106,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link rel="stylesheet" href="../styles.css">
 <meta property="og:title" content="hwpapi - 튜토리얼">
 <meta property="og:description" content="사용 기초">
-<meta property="og:site-name" content="hwpapi">
+<meta property="og:site_name" content="hwpapi">
 <meta name="twitter:title" content="hwpapi - 튜토리얼">
 <meta name="twitter:description" content="사용 기초">
 <meta name="twitter:card" content="summary">
@@ -108,33 +116,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
-    <nav class="navbar navbar-expand-lg navbar-dark ">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
-      <div class="navbar-brand-container">
+      <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">hwpapi</span>
     </a>
   </div>
-        <div class="quarto-navbar-tools ms-auto">
+        <div class="quarto-navbar-tools">
 </div>
           <div id="quarto-search" class="" title="Search"></div>
       </div> <!-- /container-fluid -->
     </nav>
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01_tutorials/tutorial.html">tutorials</a></li><li class="breadcrumb-item"><a href="../01_tutorials/tutorial.html">튜토리얼</a></li></ol></nav>
-      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-      </a>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01_tutorials/tutorial.html">tutorials</a></li><li class="breadcrumb-item"><a href="../01_tutorials/tutorial.html">튜토리얼</a></li></ol></nav>
+        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
     </div>
   </nav>
 </header>
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
@@ -160,8 +168,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../01_tutorials/find_and_replace.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Find and replace</span></a>
+  <a href="../01_tutorials/find_replace.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">찾아바꾸기 기능 활용</span></a>
   </div>
 </li>
       </ul>
@@ -210,7 +218,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </ul>
     </div>
 </nav>
-<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
@@ -223,12 +231,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#서식-넣기" id="toc-서식-넣기" class="nav-link" data-scroll-target="#서식-넣기">서식 넣기</a></li>
   <li><a href="#텍스트-가져오기" id="toc-텍스트-가져오기" class="nav-link" data-scroll-target="#텍스트-가져오기">텍스트 가져오기</a></li>
   </ul>
-<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../01_tutorials/tutorial.html">tutorials</a></li><li class="breadcrumb-item"><a href="../01_tutorials/tutorial.html">튜토리얼</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">튜토리얼</h1>
 </div>
@@ -248,10 +256,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </div>
   
 
+
 </header>
 
+
 <!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
-<div class="cell" data-execution_count="72">
+<div id="5dfe2ff7-0f7b-4fae-8a1c-9a09a85cd389" class="cell" data-execution_count="72">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>The autoreload extension is already loaded. To reload it, use:
@@ -261,27 +271,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>한컴 오피스는 액션이라는 것을 통해서 다양한 문서 편집을 가능하게 하고 있습니다. 그런 편집을 파이썬에서 보다 쉽게 사용하기 위해 만든 라이브러리입니다.</p>
 <p>기본적인 컨셉은 win32com을 쉽게 사용할 수 있게 개편한 것입니다.</p>
 <p>문서 편집의 기본 기능인 1. 문장 입력하기 2. 커서 이동하기 2. 영역 선택하기 2. 서식 변경하기 3. 텍스트 가져오기</p>
-<div class="cell" data-execution_count="73">
+<div id="cccb95a9-5588-40fa-ade4-bb0357b5e2ea" class="cell" data-execution_count="73">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.core <span class="im">import</span> App</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><a href="https://JunDamin.github.io/hwpapi/02_api/core.html#app"><code>App</code></a>은 기존 hwpapi를 wrapping 하여 보다 사용하기 쉽게 만드는 것을 목적으로 하고 있는 클래스 입니다.</p>
 <p><code>hwpapi</code>는 한글 컨트롤을 조합해서 자주사용했던 기능을 구현하였습니다. 또한, api 메소드를 통해 win32com의 방식으로 모두 사용할 수 있어 다양하게 사용할 수 있습니다.</p>
 <p>아래와 같이 App 객체를 생성하면 한글이 열립니다.</p>
-<div class="cell" data-execution_count="74">
+<div id="e8f1fd20-f6e4-48ec-8cba-e4c7fcbd7109" class="cell" data-execution_count="74">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>한글을 조작할 때는 크게 <code>action</code>과 <code>hwpctrl method</code>로 나눌 수 있습니다. <code>action</code>은 파라미터를 설정하고 그것을 실행시켜서 작동하는 방식으로 사용자 단축키를 누르면 실행되는 명령에 가깝다면 <code>hwpctrl method</code>는 한글 자동화 모듈이 제공하는 것으로 사용자 입력에서는 신경쓰지 않아도 될 부분들을 처리하는 것이라고 보시면 됩니다.</p>
 <p><a href="https://www.hancom.com/board/devmanualList.do">공식 개발 매뉴얼</a>에 여러 <code>action</code>과 <code>parameter</code>, <code>method</code>의 설명을 제공하고 있습니다. 아쉽게도 문서가 잘 관리되고 있지는 않으며, <code>hwpctrl</code>의 <code>method</code>들을 보면 명시되어 있지 않은 기능들이 개발되어 있음을 알 수 있습니다.</p>
 <p>앞으로 개발해 나가면서 확인된 액션과 메소드 들을 정리해 나가고자 합니다.</p>
 <p><code>action</code>은 <code>app</code>에서 생성할 수 있습니다. 방식은 크게 2가지로 직접 <code>action key</code>를 입력하는 방법과 <code>actions</code>에 있는 <code>action</code> 객체를 생성하는 방법이 있습니다. 아래 두 방식은 동일한 <code>Action</code> 객체를 생성합니다.</p>
-<div class="cell" data-execution_count="75">
+<div id="3baa1486-30bd-403e-b6c1-e273f18af05e" class="cell" data-execution_count="75">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>action1 <span class="op">=</span> app.create_action(<span class="st">"InsertText"</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>action1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="75">
 <pre><code>&lt;Action InsertText: 텍스트 삽입&gt;</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="76">
+<div id="0163beab-1a00-4503-bb20-59230682fcec" class="cell" data-execution_count="76">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>action2 <span class="op">=</span> app.actions.InsertText()</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>action2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="76">
@@ -289,29 +299,29 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p><code>Delete</code>(지우기), <code>BreakPara</code>(줄바꿈) 등 많은 <code>action</code>은 파라미터 세팅이 필요 없습니다. 하지만 위에서 생성한 <code>InsertText</code>객체는 입력할 텍스트 값을 넣어주어야 합니다. 이는 <code>parameter</code>를 통해 설정할 수 있습니다.</p>
-<div class="cell" data-execution_count="77">
+<div id="803629f4-a4c1-4a8b-b7e0-622619749568" class="cell" data-execution_count="77">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>action1.pset.Text <span class="op">=</span> <span class="st">"입력하기"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>파라미터를 설정한 후 다음과 같이 액션을 실행하면 텍스트가 입력되는 걸 볼 수 있습니다.</p>
-<div class="cell" data-execution_count="78">
+<div id="3b7aa7f1-009f-4b23-a61a-dd153db363e0" class="cell" data-execution_count="78">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>action1.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="78">
 <pre><code>True</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="79">
+<div id="4d244dc4-01c9-4faf-9381-7f35fbe467c7" class="cell" data-execution_count="79">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>charshape <span class="op">=</span> app.actions.CharShape()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="80">
+<div id="c0f619b6-2fe0-4217-b1e5-5c1e029f4726" class="cell" data-execution_count="80">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>charshape.pset.Height <span class="op">=</span> app.api.PointToHwpUnit(<span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="81">
+<div id="78d0cd48-2a41-480e-b284-21db07b86343" class="cell" data-execution_count="81">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>charshape.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="81">
 <pre><code>True</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="82">
+<div id="7f637594-0af7-4065-9d8e-0b84e67bd356" class="cell" data-execution_count="82">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>action2.pset.Text <span class="op">=</span> <span class="st">"크게 입력하기"</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>action2.run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="82">
@@ -321,10 +331,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="입력하기" class="level2">
 <h2 class="anchored" data-anchor-id="입력하기">입력하기</h2>
 <p>입력은 가장 자주 사용하는 것이기 때문에 다음과 같이 <a href="https://JunDamin.github.io/hwpapi/02_api/core.html#app"><code>App</code></a>의 메소드로 만들었습니다.</p>
-<div class="cell" data-execution_count="83">
+<div id="d770711b-1f4c-420d-90f9-c078469975df" class="cell" data-execution_count="83">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>app.insert_text(<span class="st">"더 크게 입력하기"</span>, height<span class="op">=</span><span class="dv">30</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="84">
+<div id="7151e810-756c-484c-a3a6-c08bd79e034c" class="cell" data-execution_count="84">
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>action <span class="op">=</span> app.actions.Select()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
@@ -332,21 +342,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="이동하기">이동하기</h2>
 <p>크게 두가지 방법이 있습니다.</p>
 <p>액션을 사용하는 방법과 단어를 찾아가는 방법이 있습니다.</p>
-<div class="cell" data-execution_count="85">
+<div id="790d7e99-6cf2-491c-865e-c4f281528447" class="cell" data-execution_count="85">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>app.actions.MoveColumnBegin().run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="85">
 <pre><code>True</code></pre>
 </div>
 </div>
 <p>actions를 아래와 같이 하여 찾는 경로를 깗게 할 수도 있습니다.</p>
-<div class="cell" data-execution_count="86">
+<div id="b55198fe-c853-45b5-98b3-327c9400b600" class="cell" data-execution_count="86">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>actions <span class="op">=</span> app.actions</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>actions.MoveColumnBegin().run()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="86">
 <pre><code>True</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="87">
+<div id="1ed03ea8-be34-42ab-9ce3-deed5fc4526f" class="cell" data-execution_count="87">
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>app.find_text(<span class="st">"해해"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="87">
 <pre><code>False</code></pre>
@@ -356,7 +366,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="텍스트-선택하기" class="level2">
 <h2 class="anchored" data-anchor-id="텍스트-선택하기">텍스트 선택하기</h2>
 <p>문서에서 드래그한 것과 같이 영역을 선택할 수 있습니다.</p>
-<div class="cell" data-execution_count="88">
+<div id="5395dfcd-7219-443f-9469-b4a08fa5092b" class="cell" data-execution_count="88">
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>app.select_text(<span class="st">"Para"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="88">
 <pre><code>(True, True)</code></pre>
@@ -366,14 +376,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="서식-넣기" class="level2">
 <h2 class="anchored" data-anchor-id="서식-넣기">서식 넣기</h2>
 <p>선택한 영역에 글자 서식을 넣을 수 있습니다.</p>
-<div class="cell" data-execution_count="89">
+<div id="7f0e8f66-4b74-4f75-bff8-3200a2f08ec7" class="cell" data-execution_count="89">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>app.set_charshape(fontname<span class="op">=</span><span class="st">"바탕체"</span>, height<span class="op">=</span><span class="dv">25</span>, bold<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="89">
 <pre><code>True</code></pre>
 </div>
 </div>
 <p>문단 서식 또한 가능합니다.</p>
-<div class="cell" data-execution_count="90">
+<div id="b40483d3" class="cell" data-execution_count="90">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>app.set_parashape(left_margin<span class="op">=</span><span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="90">
 <pre><code>True</code></pre>
@@ -383,14 +393,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="텍스트-가져오기" class="level2">
 <h2 class="anchored" data-anchor-id="텍스트-가져오기">텍스트 가져오기</h2>
 <p>현재 위치의 문장이나 텍스트를 가져 올 수 있습니다. 기본은 현재 문장의 시작에서 문장의 끝을 선택합니다.</p>
-<div class="cell" data-execution_count="91">
+<div id="c0ea4e59-f4be-4bd3-8451-e97491f7f6fa" class="cell" data-execution_count="91">
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>app.get_text()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="91">
 <pre><code>'입력하기크게 입력하기더 크게 입력하기\r\n'</code></pre>
 </div>
 </div>
 <p>선택 영역만 가져올 수도 있습니다.</p>
-<div class="cell" data-execution_count="92">
+<div id="085dc66d-760c-4e22-90d7-79f974e4aa61" class="cell" data-execution_count="92">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>app.get_selected_text()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="92">
 <pre><code>'입력하기크게 입력하기더 크게 입력하기\n'</code></pre>
@@ -480,10 +490,9 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
-  function tippyHover(el, contentFn) {
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
-      content: contentFn,
       maxWidth: 500,
       delay: 100,
       arrow: false,
@@ -493,8 +502,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       interactive: true,
       interactiveBorder: 10,
       theme: 'quarto',
-      placement: 'bottom-start'
+      placement: 'bottom-start',
     };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
     window.tippy(el, config); 
   }
   const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
@@ -507,6 +525,125 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
       return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
     });
   }
       let selectedAnnoteEl;
@@ -550,6 +687,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             }
             div.style.top = top - 2 + "px";
             div.style.height = height + 4 + "px";
+            div.style.left = 0;
             let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
             if (gutterDiv === null) {
               gutterDiv = window.document.createElement("div");
@@ -575,6 +713,32 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         });
         selectedAnnoteEl = undefined;
       };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
       // Attach click handler to the DT
       const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
       for (const annoteDlNode of annoteDls) {
@@ -638,4 +802,5 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-</body></html>
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

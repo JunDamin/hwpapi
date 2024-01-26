@@ -39,25 +39,46 @@ class Engine:
     Engine class to encapsulate the Hancom Office Hwp object.
 
     This class provides an interface to interact with the Hancom Office Hwp application,
-    allowing for actions and operations within the Hwp environment.
+    facilitating actions and operations within the Hwp environment.
+
+    Parameters
+    ----------
+    hwp_object : object, optional
+        The Hwp object to be encapsulated by the Engine. If not provided, 
+        it defaults to creating a new Hwp object using "HWPFrame.HwpObject".
+
+    Attributes
+    ----------
+    impl : object
+        The implementation of the Hwp object.
+
+    Methods
+    -------
+    name()
+        Returns the name (CLSID) of the Hwp object.
+
+    Examples
+    --------
+    >>> engine = Engine()
+    >>> print(engine.name)
     """
 
     def __init__(self, hwp_object=None):
         """
         Initializes the Engine with a Hancom Hwp object.
 
+        If `hwp_object` is not provided, a new Hwp object is created. If the creation fails, `impl` is set to None.
+
         Parameters
         ----------
         hwp_object : object, optional
-            The Hwp object to be encapsulated by the Engine. If not provided, it defaults to creating a new Hwp object.
+            The Hwp object to be encapsulated by the Engine. Defaults to "HWPFrame.HwpObject".
         """
         try:
             if not hwp_object:
                 hwp_object = "HWPFrame.HwpObject"
-            impl = dispatch(hwp_object)
-            self.impl = impl
+            self.impl = dispatch(hwp_object)
         except Exception as e:
-            # Handle specific exceptions as needed
             print(f"Failed to initialize Hwp object: {e}")
             self.impl = None
 
@@ -69,7 +90,7 @@ class Engine:
         Returns
         -------
         str
-            The CLSID of the Hwp object.
+            The CLSID of the Hwp object. Returns None if the object is not initialized.
         """
         return self.impl.CLSID if self.impl else None
 
@@ -80,7 +101,7 @@ class Engine:
         Returns
         -------
         str
-            String representation of the Engine.
+            String representation of the Engine. If the engine is uninitialized, it indicates 'Uninitialized'.
         """
         engine_name = self.name if self.name else "Uninitialized"
         return f"<Engine {engine_name}>"
@@ -88,37 +109,149 @@ class Engine:
 
 # %% ../nbs/02_api/00_core.ipynb 7
 class Engines:
+    """
+    A collection manager for multiple Engine instances.
+
+    This class manages multiple Engine instances, providing methods to access and iterate over them.
+    It is useful for handling multiple Hancom Office Hwp objects.
+
+    Parameters
+    ----------
+    dll_path : str, optional
+        Path to a DLL file, if required for initialization.
+
+    Attributes
+    ----------
+    active : Engine or None
+        The currently active Engine instance.
+    engines : list of Engine
+        List of Engine instances managed by this collection.
+
+    Methods
+    -------
+    add(engine)
+        Adds a new Engine instance to the collection.
+    count()
+        Returns the number of Engine instances in the collection.
+
+    Examples
+    --------
+    >>> engines = Engines()
+    >>> engines.add(Engine())
+    >>> print(engines.count)
+    >>> for engine in engines:
+    ...     print(engine)
+
+    Notes
+    -----
+    The `Engines` class initializes by creating Engine instances for each object retrieved
+    from `get_hwp_objects()` function. It also checks for the required DLLs if `dll_path` is provided.
+    """
+
     def __init__(self, dll_path=None):
+        """
+        Initializes the Engines collection with available Hwp objects.
+
+        Parameters
+        ----------
+        dll_path : str, optional
+            Path to a DLL file, if required for initialization.
+        """
         self.active = None
         self.engines = [Engine(hwp_object) for hwp_object in get_hwp_objects()]
         check_dll(dll_path)
 
     def add(self, engine):
+        """
+        Adds a new Engine instance to the collection.
+
+        Parameters
+        ----------
+        engine : Engine
+            The Engine instance to be added to the collection.
+        """
         self.engines.append(engine)
 
     @property
     def count(self):
+        """
+        Returns the number of Engine instances in the collection.
+
+        Returns
+        -------
+        int
+            The number of Engine instances.
+        """
         return len(self)
 
     def __call__(self, ind):
+        """
+        Returns an Engine instance from the collection based on its index.
+
+        Parameters
+        ----------
+        ind : int
+            The index of the Engine instance to retrieve.
+
+        Returns
+        -------
+        Engine
+            The Engine instance at the specified index.
+        """
         if isinstance(ind, numbers.Number):
             return self.engines[ind]
-                
 
     def __getitem__(self, ind):
+        """
+        Returns an Engine instance from the collection based on its index.
+
+        Parameters
+        ----------
+        ind : int
+            The index of the Engine instance to retrieve.
+
+        Returns
+        -------
+        Engine
+            The Engine instance at the specified index.
+        """
         if isinstance(ind, numbers.Number):
             return self.engines[ind]
-        
 
     def __len__(self):
+        """
+        Returns the number of Engine instances in the collection.
+
+        Returns
+        -------
+        int
+            The number of Engine instances.
+        """
         return len(self.engines)
 
     def __iter__(self):
+        """
+        Yields each Engine instance in the collection.
+
+        Yields
+        ------
+        Engine
+            Each Engine instance in the collection.
+        """
         for engine in self.engines:
             yield engine
 
     def __repr__(self):
+        """
+        Returns the string representation of the Engines collection.
+
+        Returns
+        -------
+        str
+            String representation of the Engines collection.
+        """
         return f"<HWP Engines activated: {len(self.engines)}>"
+
 
 # %% ../nbs/02_api/00_core.ipynb 8
 class Apps:
@@ -279,32 +412,45 @@ class App:
         `App` 인스턴스의 문자열 표현을 반환합니다.
     """
 
-    def __init__(self, engine=None, is_visible=True, dll_path=None):
+    def __init__(
+        self,
+        new_app=False,
+        is_visible=True,
+        dll_path=None,
+        engine=None,
+    ):
         """
         `App` 클래스의 인스턴스를 초기화합니다.
 
         Parameters
         ----------
-        engine : Engine, optional
-            한/글 프로그램과의 상호작용을 위한 엔진. 기본값이 없을 경우, 새로운 엔진 인스턴스가 생성됩니다.
+        new_app: bool, optional
+            별도 앱을 열지를 결정합니다.
         is_visible : bool, optional
             한/글 프로그램의 가시성 설정. 기본값은 True입니다.
         dll_path : str, optional
             사용할 DLL 파일의 경로. 기본값은 None입니다.
-
+        engine : Engine, optional
+            한/글 프로그램과의 상호작용을 위한 엔진. 기본값이 없을 경우, 새로운 엔진 인스턴스가 생성됩니다.
         Notes
         -----
         engine이 제공되지 않은 경우, `Engines`를 통해 엔진을 생성하거나 선택합니다.
         """
+        self._load(new_app=new_app, dll_path=dll_path, engine=engine)
+        self.actions = _Actions(self)
+        self.parameters = self.api.HParameterSet
+        self.set_visible(is_visible)
+
+    def _load(self, new_app, engine, dll_path):
+        if new_app:
+            engine = Engine()
         if not engine:
             engines = Engines()
             engine = engines[-1] if len(engines) > 0 else Engine()
         self.engine = engine
         check_dll(dll_path)
         self.api.RegisterModule("FilePathCheckDLL", "FilePathCheckerModule")
-        self.actions = _Actions(self)
-        self.parameters = self.api.HParameterSet
-        self.set_visible(is_visible)
+        
 
     @property
     def api(self):
@@ -317,7 +463,7 @@ class App:
             엔진의 구현체.
         """
         return self.engine.impl
-    
+
     def __str__(self):
         """
         `App` 인스턴스의 문자열 표현을 반환합니다.
@@ -331,10 +477,42 @@ class App:
 
     __repr__ = __str__
 
+    # patched functions
+    close = 'patch'
+    create_action = 'patch'
+    create_parameterset = 'patch'
+    engine = 'patch'
+    find_text = 'patch'
+    get_charshape = 'patch'
+    get_filepath = 'patch'
+    get_font_list = 'patch'
+    get_hwnd = 'patch'
+    get_parashape = 'patch'
+    get_selected_text = 'patch'
+    get_text = 'patch'
+    insert_file = 'patch'
+    insert_picture = 'patch'
+    insert_text = 'patch'
+    move = 'patch'
+    open = 'patch'
+    quit = 'patch'
+    reload = 'patch'
+    replace_all = 'patch'
+    save = 'patch'
+    save_block = 'patch'
+    scan = 'patch'
+    select_text = 'patch'
+    set_cell_border = 'patch'
+    set_cell_color = 'patch'
+    set_charshape = 'patch'
+    set_parashape = 'patch'
+    set_visible = 'patch'
+    setup_page = 'patch'
+
 
 # %% ../nbs/02_api/00_core.ipynb 11
 @patch
-def reload(app: App, dll_path=None):
+def reload(app: App, new_app=False, dll_path=None):
     """
     Reloads the `App` instance with a new HWPFrame.HwpObject and resets its visibility and DLL path.
 
@@ -358,10 +536,7 @@ def reload(app: App, dll_path=None):
     >>> app = App()
     >>> reload(app, dll_path="path/to/dll")
     """
-    app.api = dispatch("HWPFrame.HwpObject")
-    app.set_visible()
-    check_dll(dll_path)
-    app.api.RegisterModule("FilePathCheckDLL", "FilePathCheckerModule")
+    app._load(new_app=new_app, dll_path=dll_path)
 
 
 # %% ../nbs/02_api/00_core.ipynb 12
@@ -423,7 +598,7 @@ def get_filepath(app: App):
 
 # %% ../nbs/02_api/00_core.ipynb 14
 @patch
-def create_action(app: App, action_key: str):
+def create_action(app: App, action_key: str, pset_key=None):
     """
     Creates and returns an instance of the `_Action` class.
 
@@ -448,7 +623,7 @@ def create_action(app: App, action_key: str):
     >>> action = create_action(app, 'some_action_key')
     >>> print(action)
     """
-    return _Action(app, action_key)
+    return _Action(app, action_key, pset_key=pset_key)
 
 
 # %% ../nbs/02_api/00_core.ipynb 15
@@ -686,6 +861,39 @@ def quit(app: App):
 
 # %% ../nbs/02_api/00_core.ipynb 28
 @patch
+def get_font_list(app:App):
+    """
+    Retrieves the list of fonts that used in the documnents from the current application.
+
+    This method accesses the font list in the Hancom Office Hwp program linked to the `App` instance.
+    It extracts fonts that used and return in list for further use or analysis.
+
+    
+    Parameters
+    ----------
+    app : App
+        The application object from which the character shape settings will be retrieved.
+
+    Returns
+    -------
+    List
+        return font list that used in the hwp document.
+
+    Examples
+    --------
+    >>> app = App()
+    >>> font_list = app.get_font_list()
+    >>> print(font_list)
+    """
+    app.api.ScanFont()
+    result = app.api.GetFontList()
+    output = list(map(lambda txt: txt.split(",")[0],
+        result.split("\x02")
+        ))
+    return output
+
+# %% ../nbs/02_api/00_core.ipynb 29
+@patch
 def get_charshape(app: App):
     """
     Retrieves the character shape settings from the current application.
@@ -714,7 +922,7 @@ def get_charshape(app: App):
     return CharShape(p)
 
 
-# %% ../nbs/02_api/00_core.ipynb 30
+# %% ../nbs/02_api/00_core.ipynb 31
 @patch
 def set_charshape(app: App, charshape: CharShape=None, **kwargs):
     """
@@ -756,7 +964,7 @@ def set_charshape(app: App, charshape: CharShape=None, **kwargs):
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 34
+# %% ../nbs/02_api/00_core.ipynb 35
 @patch
 def get_parashape(app: App):
     """
@@ -787,7 +995,7 @@ def get_parashape(app: App):
     return ParaShape(p)
 
 
-# %% ../nbs/02_api/00_core.ipynb 36
+# %% ../nbs/02_api/00_core.ipynb 37
 @patch
 def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     """
@@ -829,7 +1037,7 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 38
+# %% ../nbs/02_api/00_core.ipynb 39
 @patch
 def insert_text(
     app: App,
@@ -874,7 +1082,7 @@ def insert_text(
     return
 
 
-# %% ../nbs/02_api/00_core.ipynb 43
+# %% ../nbs/02_api/00_core.ipynb 44
 class MaskOption(Enum):
     Normal = 0x00
     Char = 0x01
@@ -944,7 +1152,7 @@ def scan(
     app.api.ReleaseScan()
 
 
-# %% ../nbs/02_api/00_core.ipynb 44
+# %% ../nbs/02_api/00_core.ipynb 45
 def move_to_line(app: App, text):
     """인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다."""
     with app.scan(scan_spos="Line") as scan:
@@ -953,7 +1161,7 @@ def move_to_line(app: App, text):
                 return app.move(key=MoveID.ScanPos)
     return False
 
-# %% ../nbs/02_api/00_core.ipynb 45
+# %% ../nbs/02_api/00_core.ipynb 46
 class MoveId(Enum):
     Main = 0
     CurList = 1
@@ -1025,7 +1233,7 @@ def move(app: App, key=MoveId.ScanPos, para=None, pos=None):
     return app.api.MovePos(moveID=move_id, Para=para, pos=pos)
 
 
-# %% ../nbs/02_api/00_core.ipynb 46
+# %% ../nbs/02_api/00_core.ipynb 47
 @patch
 def setup_page(
     app: App,  # app
@@ -1087,7 +1295,7 @@ def setup_page(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 47
+# %% ../nbs/02_api/00_core.ipynb 48
 class SizeOption(Enum):
     RealSize = 0
     SpecificSize = 1
@@ -1159,7 +1367,7 @@ def insert_picture(
     )
 
 
-# %% ../nbs/02_api/00_core.ipynb 48
+# %% ../nbs/02_api/00_core.ipynb 49
 class SelectionOption(Enum):
     Doc = ("MoveDocBegin", "MoveSelDocEnd")
     Para = ("MoveParaBegin", "MoveSelParaEnd")
@@ -1196,7 +1404,7 @@ def select_text(app: App, option=SelectionOption.Line):
     return begin_action().run(), end_action().run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 51
+# %% ../nbs/02_api/00_core.ipynb 52
 @patch
 def get_selected_text(app: App):
     """
@@ -1227,19 +1435,72 @@ def get_selected_text(app: App):
     return text
 
 
-# %% ../nbs/02_api/00_core.ipynb 56
+# %% ../nbs/02_api/00_core.ipynb 54
+class ScanStartPosition(Enum):
+    Current = 0x0000
+    Specified = 0x0010
+    Line = 0x0020
+    Paragraph = 0x0030
+    Section = 0x0040
+    List = 0x0050
+    Control = 0x0060
+    Document = 0x0070
+
+class ScanEndPosition(Enum):
+    Current = 0x0000
+    Specified = 0x0001
+    Line = 0x0002
+    Paragraph = 0x0003
+    Section = 0x0004
+    List = 0x0005
+    Control = 0x0006
+    Document = 0x0007
+
+# Refactored get_text function
+@patch
+def get_text(app: App, spos=ScanStartPosition.Line, epos=ScanEndPosition.Line):
+    """
+    Retrieves text from the document based on specified start and end positions.
+
+    Parameters
+    ----------
+    app : App
+        The `App` instance associated with the Hancom Office Hwp program.
+    spos : ScanStartPosition, optional
+        The start position for text retrieval. Default is ScanStartPosition.Line.
+    epos : ScanEndPosition, optional
+        The end position for text retrieval. Default is ScanEndPosition.Line.
+
+    Returns
+    -------
+    str
+        The retrieved text from the specified start to end positions.
+
+    Examples
+    --------
+    >>> app = App()
+    >>> text = get_text(app, spos=ScanStartPosition.Paragraph, epos=ScanEndPosition.Paragraph)
+    >>> print(text)
+    """
+
+    with app.scan(scan_spos=spos, scan_epos=epos) as txts:
+        text = "".join(txts)
+    return text
+
+
+# %% ../nbs/02_api/00_core.ipynb 57
 class Direction(Enum):
     Forward = 0
     Backward = 1
     All = 2
 
 
-# %% ../nbs/02_api/00_core.ipynb 57
+# %% ../nbs/02_api/00_core.ipynb 58
 @patch
 def find_text(
     app: App,
     text="",
-    charshape: CharShape = None,
+    charshape: CharShape = CharShape(),
     ignore_message=True,  # 메시지 무시 여부
     direction=Direction.Forward,  # 찾을 방향
     match_case=False,  # 대소문자 구분
@@ -1281,6 +1542,7 @@ def find_text(
 
     action = app.actions.RepeatFind()
     p = action.pset
+    p.FindCharShape = action.act.CreateSet()
 
     # Set options
     p.FindString = text
@@ -1306,15 +1568,14 @@ def find_text(
 
     return action.run()
 
-
-# %% ../nbs/02_api/00_core.ipynb 59
+# %% ../nbs/02_api/00_core.ipynb 60
 @patch
 def replace_all(
     app: App,
     old_text="",
     new_text="",
-    old_charshape: CharShape = None,
-    new_charshape: CharShape = None,
+    old_charshape=CharShape(),
+    new_charshape=CharShape(),
     ignore_message=True,  # 메시지 무시 여부
     direction=Direction.All,  # 찾을 방향
     match_case=False,  # 대소문자 구분
@@ -1357,7 +1618,8 @@ def replace_all(
     >>> print(success)
     """
 
-    action = app.actions.AllReplace()
+    # create action
+    action = app.actions.AllReplace(pset_key="FindReplace")
     p = action.pset
 
     # Set options
@@ -1387,8 +1649,7 @@ def replace_all(
 
     return action.run()
 
-
-# %% ../nbs/02_api/00_core.ipynb 63
+# %% ../nbs/02_api/00_core.ipynb 64
 @patch
 def insert_file(
     app: App,
@@ -1442,7 +1703,7 @@ def insert_file(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 64
+# %% ../nbs/02_api/00_core.ipynb 65
 class Thickness(Enum):
     NULL = None
     최소값 = -1  # "최소값 (=0.1 mm)"
@@ -1583,7 +1844,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 65
+# %% ../nbs/02_api/00_core.ipynb 66
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None

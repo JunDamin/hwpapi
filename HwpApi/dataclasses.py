@@ -492,6 +492,7 @@ class CharShape:
     def fromdict(self, values: dict):
         for key, value in values.items():
             setattr(self.p, key, value)
+        return self
 
     def get_from_pset(self, pset):
         data_fields = fields(self.p)
@@ -500,6 +501,8 @@ class CharShape:
             name = field.name
             value = getattr(pset, name)
             setattr(self.p, name, value)
+
+        return self
 
 # %% ../nbs/02_api/03_dataclasses.ipynb 9
 @dataclass
@@ -885,6 +888,7 @@ class ParaShape:
     def fromdict(self, values: dict):
         for key, value in values.items():
             setattr(self.p, key, value)
+        return self
 
     def get_from_pset(self, pset):
         data_fields = fields(self.p)
@@ -893,6 +897,8 @@ class ParaShape:
             name = field.name
             value = getattr(pset, name)
             setattr(self.p, name, value)
+        
+        return self
 
 # %% ../nbs/02_api/03_dataclasses.ipynb 13
 @dataclass
