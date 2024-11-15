@@ -2,9 +2,14 @@
 
 # %% auto 0
 __all__ = ['char_fields', 'para_fields', 'korean_fonts', 'english_fonts', 'chinese_fonts', 'japanese_fonts', 'other_fonts',
-           'symbol_fonts', 'user_fonts']
+           'symbol_fonts', 'user_fonts', 'MaskOption', 'ScanStartPosition', 'ScanEndPosition', 'ScanDirection',
+           'MoveId', 'SizeOption', 'Effect', 'SelectionOption', 'Direction', 'Thickness']
 
 # %% ../nbs/02_api/04_constants.ipynb 3
+from enum import Enum, auto
+
+
+# %% ../nbs/02_api/04_constants.ipynb 4
 # constants
 char_fields = [
     "Bold",
@@ -110,7 +115,7 @@ para_fields = [
     "WidowOrphan",
 ]
 
-# %% ../nbs/02_api/04_constants.ipynb 4
+# %% ../nbs/02_api/04_constants.ipynb 5
 korean_fonts = [
     "명조",
     "고딕",
@@ -224,7 +229,7 @@ korean_fonts = [
     "#빅",
 ]
 
-# %% ../nbs/02_api/04_constants.ipynb 5
+# %% ../nbs/02_api/04_constants.ipynb 6
 english_fonts = [
     "명조",
     "고딕",
@@ -356,7 +361,7 @@ english_fonts = [
     "Stencil BT",
 ]
 
-# %% ../nbs/02_api/04_constants.ipynb 6
+# %% ../nbs/02_api/04_constants.ipynb 7
 chinese_fonts = [
     "명조",
     "시스템",
@@ -397,7 +402,7 @@ chinese_fonts = [
     "#궁서",
 ]
 
-# %% ../nbs/02_api/04_constants.ipynb 7
+# %% ../nbs/02_api/04_constants.ipynb 8
 japanese_fonts = [
     "명조",
     "고딕",
@@ -429,10 +434,10 @@ japanese_fonts = [
     "#태고딕 V",
 ]
 
-# %% ../nbs/02_api/04_constants.ipynb 8
+# %% ../nbs/02_api/04_constants.ipynb 9
 other_fonts = ["명조", "수식", "한양신명조"]
 
-# %% ../nbs/02_api/04_constants.ipynb 9
+# %% ../nbs/02_api/04_constants.ipynb 10
 symbol_fonts = [
     "명조",
     "시스템",
@@ -471,5 +476,168 @@ symbol_fonts = [
     "#빅",
 ]
 
-# %% ../nbs/02_api/04_constants.ipynb 10
+# %% ../nbs/02_api/04_constants.ipynb 11
 user_fonts = ["명조", "한글 풀어쓰기"]
+
+# %% ../nbs/02_api/04_constants.ipynb 12
+class MaskOption(Enum):
+    Normal = 0x00
+    Char = 0x01
+    Inline = 0x02
+    Ctrl = 0x04
+    All = auto()
+
+class ScanStartPosition(Enum):
+    Current = 0x0000
+    Specified = 0x0010
+    Line = 0x0020
+    Paragraph = 0x0030
+    Section = 0x0040
+    List = 0x0050
+    Control = 0x0060
+    Document = 0x0070
+
+class ScanEndPosition(Enum):
+    Current = 0x0000
+    Specified = 0x0001
+    Line = 0x0002
+    Paragraph = 0x0003
+    Section = 0x0004
+    List = 0x0005
+    Control = 0x0006
+    Document = 0x0007
+
+class ScanDirection(Enum):
+    Forward = 0x0000
+    Backward = 0x0100
+
+# %% ../nbs/02_api/04_constants.ipynb 13
+class MoveId(Enum):
+    Main = 0
+    CurList = 1
+    TopOfFile = 2
+    BottomOfFile = 3
+    TopOfList = 4
+    BottomOfList = 5
+    StartOfPara = 6
+    EndOfPara = 7
+    StartOfWord = 8
+    EndOfWord = 9
+    NextPara = 10
+    PrevPara = 11
+    NextPos = 12
+    PrevPos = 13
+    NextPosEx = 14
+    PrevPosEx = 15
+    NextChar = 16
+    PrevChar = 17
+    NextWord = 18
+    PrevWord = 19
+    NextLine = 20
+    PrevLine = 21
+    StartOfLine = 22
+    EndOfLine = 23
+    ParentList = 24
+    TopLevelList = 25
+    RootList = 26
+    CurrentCaret = 27
+    LeftOfCell = 100
+    RightOfCell = 101
+    UpOfCell = 102
+    DownOfCell = 103
+    StartOfCell = 104
+    EndOfCell = 105
+    TopOfCell = 106
+    BottomOfCell = 107
+    ScrPos = 200
+    ScanPos = 201
+
+
+# %% ../nbs/02_api/04_constants.ipynb 14
+class SizeOption(Enum):
+    RealSize = 0
+    SpecificSize = 1
+    CellSize = 2
+    CellSizeWithSameRatio = 3
+
+class Effect(Enum):
+    RealPicture = 0
+    GrayScale = 1
+    BlackWhite = 2
+
+# %% ../nbs/02_api/04_constants.ipynb 15
+class SelectionOption(Enum):
+    Doc = ("MoveDocBegin", "MoveSelDocEnd")
+    Para = ("MoveParaBegin", "MoveSelParaEnd")
+    Line = ("MoveLineBegin", "MoveSelLineEnd")
+    Word = ("MoveWordBegin", "MoveSelWordEnd")
+
+# %% ../nbs/02_api/04_constants.ipynb 16
+class ScanStartPosition(Enum):
+    Current = 0x0000
+    Specified = 0x0010
+    Line = 0x0020
+    Paragraph = 0x0030
+    Section = 0x0040
+    List = 0x0050
+    Control = 0x0060
+    Document = 0x0070
+
+class ScanEndPosition(Enum):
+    Current = 0x0000
+    Specified = 0x0001
+    Line = 0x0002
+    Paragraph = 0x0003
+    Section = 0x0004
+    List = 0x0005
+    Control = 0x0006
+    Document = 0x0007
+
+# %% ../nbs/02_api/04_constants.ipynb 17
+class Direction(Enum):
+    Forward = 0
+    Backward = 1
+    All = 2
+
+
+# %% ../nbs/02_api/04_constants.ipynb 18
+class Thickness(Enum):
+    NULL = None
+    최소값 = -1  # "최소값 (=0.1 mm)"
+    _0_1_mm = 0  # "0.1 mm"
+    _0_12_mm = 1  # "0.12 mm"
+    _0_15_mm = 2  # "0.15 mm"
+    _0_2_mm = 3  # "0.2 mm"
+    _0_25_mm = 4  # "0.25 mm"
+    _0_3_mm = 5  # "0.3 mm"
+    _0_4_mm = 6  # "0.4 mm"
+    _0_5_mm = 7  # "0.5 mm"
+    _0_6_mm = 8  # "0.6 mm"
+    _0_7_mm = 9  # "0.7 mm"
+    _1_0_mm = 10  # "1.0 mm"
+    _1_5_mm = 11  # "1.5 mm"
+    _2_0_mm = 12  # "2.0 mm"
+    _3_0_mm = 13  # "3.0 mm"
+    _4_0_mm = 14  # "4.0 mm"
+    _5_0_mm = 15  # "5.0 mm"
+    최대값 = 16  # "최대값 (=5.0 mm)"
+    
+    @classmethod
+    def get_thickness_description(cls, value):
+        """
+        Returns the description of the thickness based on the value.
+
+        Parameters
+        ----------
+        value : int
+            The value representing the thickness.
+
+        Returns
+        -------
+        str
+            The string description associated with the thickness value.
+        """
+        for thickness in cls:
+            if thickness.value == value:
+                return thickness.name.replace('_', '.')
+        return None
