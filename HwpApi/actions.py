@@ -921,7 +921,7 @@ class _Action:
 
     def run(self, pset=None):
         if pset:
-            return self.act.Execute(pset.HSet)
+            return self.act.Execute(pset)
         if self.pset:
             return self.act.Execute(self.pset.HSet)
         return self.act.Execute(None)
@@ -931,6 +931,11 @@ class _Action:
             return None
         pset = getattr(self.App.api.HParameterSet, f"H{self.pset_key}")
         self.App.api.HAction.GetDefault(pset_key if pset_key else self.action_key, pset.HSet)
+        return pset
+    
+    def create_pset(self):
+        pset = self.act.CreateSet()
+        self.act.GetDefault(pset)
         return pset
 
 # %% ../nbs/02_api/01_actions.ipynb 9
