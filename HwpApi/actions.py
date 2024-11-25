@@ -15,7 +15,7 @@ _action_info = {
     ],
     "AutoChangeHangul": [None, "낱자모 우선"],
     "AutoChangeRun": [None, "동작"],
-    "AutoSpell Run": [None, "맞춤법 ― 메뉴에서 맞춤법 도우미 동작 On/Off"],
+    # "AutoSpell Run": [None, "맞춤법 ― 메뉴에서 맞춤법 도우미 동작 On/Off"],
     "Average": ["Sum", "블록 평균"],
     "BackwardFind": ["FindReplace", "뒤로 찾기"],
     "Bookmark": ["BookMark", "책갈피"],
@@ -725,7 +725,7 @@ _action_info = {
     "ShapeObjVertFlipOrgState": [None, "그리기 개체 상하 뒤집기 원상태로 되돌리기"],
     "ShapeObjWrapSquare": [None, "직사각형"],
     "ShapeObjWrapTopAndBottom": [None, "자리 차지"],
-    "Soft Keyboard": [None, "보기"],
+    # "Soft Keyboard": [None, "보기"],
     "Sort": ["Sort", "소트"],
     "SpellingCheck": [None, "맞춤법"],
     "SplitMemoOpen": [None, "메모창 열기"],
@@ -892,7 +892,7 @@ _action_info = {
     # "VoiceCommand Stop": [None, "음성 명령 레코딩 중지"],
 }
 
-# %% ../nbs/02_api/01_actions.ipynb 6
+# %% ../nbs/02_api/01_actions.ipynb 7
 class _Action:
     """한글 Action 클래스 입니다. 엑션의 기능을 사용하기 쉽게 만들고자 했습니다."""
 
@@ -938,738 +938,2880 @@ class _Action:
         self.act.GetDefault(pset)
         return pset
 
-# %% ../nbs/02_api/01_actions.ipynb 9
+# %% ../nbs/02_api/01_actions.ipynb 10
 def create_action_wrapper(app, action_key, pset_key=None):
         def wrapper(pset_key=pset_key):
             return app.create_action(action_key, pset_key)
         return wrapper
 
-# %% ../nbs/02_api/01_actions.ipynb 10
+# %% ../nbs/02_api/01_actions.ipynb 11
 class _Actions:
     """사전에 정보가 확인된 Action들을 App에 등록하는 기능을 합니다."""
-
+    
     def __init__(self, app):
         self._app = app
 
-        self.AddHanjaWord = create_action_wrapper(app, 'AddHanjaWord')
-        self.AllReplace = create_action_wrapper(app, 'AllReplace')
-        self.AQcommandMerge = create_action_wrapper(app, 'AQcommandMerge')
-        self.AutoChangeHangul = create_action_wrapper(app, 'AutoChangeHangul')
-        self.AutoChangeRun = create_action_wrapper(app, 'AutoChangeRun')
-        self.Average = create_action_wrapper(app, 'Average')
-        self.BackwardFind = create_action_wrapper(app, 'BackwardFind')
-        self.Bookmark = create_action_wrapper(app, 'Bookmark')
-        self.BreakColDef = create_action_wrapper(app, 'BreakColDef')
-        self.BreakColumn = create_action_wrapper(app, 'BreakColumn')
-        self.BreakLine = create_action_wrapper(app, 'BreakLine')
-        self.BreakPage = create_action_wrapper(app, 'BreakPage')
-        self.BreakPara = create_action_wrapper(app, 'BreakPara')
-        self.BreakSection = create_action_wrapper(app, 'BreakSection')
-        self.Cancel = create_action_wrapper(app, 'Cancel')
-        self.CaptureDialog = create_action_wrapper(app, 'CaptureDialog')
-        self.CaptureHandler = create_action_wrapper(app, 'CaptureHandler')
-        self.CellBorder = create_action_wrapper(app, 'CellBorder')
-        self.CellBorderFill = create_action_wrapper(app, 'CellBorderFill')
-        self.CellFill = create_action_wrapper(app, 'CellFill')
-        self.CellZoneBorder = create_action_wrapper(app, 'CellZoneBorder')
-        self.CellZoneBorderFill = create_action_wrapper(app, 'CellZoneBorderFill')
-        self.CellZoneFill = create_action_wrapper(app, 'CellZoneFill')
-        self.ChangeRome = create_action_wrapper(app, 'ChangeRome')
-        self.CharShape = create_action_wrapper(app, 'CharShape')
-        self.CharShapeBold = create_action_wrapper(app, 'CharShapeBold')
-        self.CharShapeCenterline = create_action_wrapper(app, 'CharShapeCenterline')
-        self.CharShapeDialog = create_action_wrapper(app, 'CharShapeDialog')
-        self.CharShapeDialogWithoutBorder = create_action_wrapper(app, 'CharShapeDialogWithoutBorder')
-        self.CharShapeEmboss = create_action_wrapper(app, 'CharShapeEmboss')
-        self.CharShapeEngrave = create_action_wrapper(app, 'CharShapeEngrave')
-        self.CharShapeHeight = create_action_wrapper(app, 'CharShapeHeight')
-        self.CharShapeHeightDecrease = create_action_wrapper(app, 'CharShapeHeightDecrease')
-        self.CharShapeHeightIncrease = create_action_wrapper(app, 'CharShapeHeightIncrease')
-        self.CharShapeItalic = create_action_wrapper(app, 'CharShapeItalic')
-        self.CharShapeLang = create_action_wrapper(app, 'CharShapeLang')
-        self.CharShapeNextFaceName = create_action_wrapper(app, 'CharShapeNextFaceName')
-        self.CharShapeNormal = create_action_wrapper(app, 'CharShapeNormal')
-        self.CharShapeOutline = create_action_wrapper(app, 'CharShapeOutline')
-        self.CharShapePrevFaceName = create_action_wrapper(app, 'CharShapePrevFaceName')
-        self.CharShapeShadow = create_action_wrapper(app, 'CharShapeShadow')
-        self.CharShapeSpacing = create_action_wrapper(app, 'CharShapeSpacing')
-        self.CharShapeSpacingDecrease = create_action_wrapper(app, 'CharShapeSpacingDecrease')
-        self.CharShapeSpacingIncrease = create_action_wrapper(app, 'CharShapeSpacingIncrease')
-        self.CharShapeSubscript = create_action_wrapper(app, 'CharShapeSubscript')
-        self.CharShapeSuperscript = create_action_wrapper(app, 'CharShapeSuperscript')
-        self.CharShapeSuperSubscript = create_action_wrapper(app, 'CharShapeSuperSubscript')
-        self.CharShapeTextColorBlack = create_action_wrapper(app, 'CharShapeTextColorBlack')
-        self.CharShapeTextColorBlue = create_action_wrapper(app, 'CharShapeTextColorBlue')
-        self.CharShapeTextColorBluish = create_action_wrapper(app, 'CharShapeTextColorBluish')
-        self.CharShapeTextColorGreen = create_action_wrapper(app, 'CharShapeTextColorGreen')
-        self.CharShapeTextColorRed = create_action_wrapper(app, 'CharShapeTextColorRed')
-        self.CharShapeTextColorViolet = create_action_wrapper(app, 'CharShapeTextColorViolet')
-        self.CharShapeTextColorWhite = create_action_wrapper(app, 'CharShapeTextColorWhite')
-        self.CharShapeTextColorYellow = create_action_wrapper(app, 'CharShapeTextColorYellow')
-        self.CharShapeTypeFace = create_action_wrapper(app, 'CharShapeTypeFace')
-        self.CharShapeUnderline = create_action_wrapper(app, 'CharShapeUnderline')
-        self.CharShapeWidth = create_action_wrapper(app, 'CharShapeWidth')
-        self.CharShapeWidthDecrease = create_action_wrapper(app, 'CharShapeWidthDecrease')
-        self.CharShapeWidthIncrease = create_action_wrapper(app, 'CharShapeWidthIncrease')
-        self.Close = create_action_wrapper(app, 'Close')
-        self.CloseEx = create_action_wrapper(app, 'CloseEx')
-        self.Comment = create_action_wrapper(app, 'Comment')
-        self.CommentDelete = create_action_wrapper(app, 'CommentDelete')
-        self.CommentModify = create_action_wrapper(app, 'CommentModify')
-        self.ComposeChars = create_action_wrapper(app, 'ComposeChars')
-        self.ConvertCase = create_action_wrapper(app, 'ConvertCase')
-        self.ConvertFullHalfWidth = create_action_wrapper(app, 'ConvertFullHalfWidth')
-        self.ConvertHiraGata = create_action_wrapper(app, 'ConvertHiraGata')
-        self.ConvertJianFan = create_action_wrapper(app, 'ConvertJianFan')
-        self.ConvertToHangul = create_action_wrapper(app, 'ConvertToHangul')
-        self.Copy = create_action_wrapper(app, 'Copy')
-        self.CopyPage = create_action_wrapper(app, 'CopyPage')
-        self.Cut = create_action_wrapper(app, 'Cut')
-        self.Delete = create_action_wrapper(app, 'Delete')
-        self.DeleteBack = create_action_wrapper(app, 'DeleteBack')
-        self.DeleteCtrls = create_action_wrapper(app, 'DeleteCtrls')
-        self.DeleteDutmal = create_action_wrapper(app, 'DeleteDutmal')
-        self.DeleteField = create_action_wrapper(app, 'DeleteField')
-        self.DeleteFieldMemo = create_action_wrapper(app, 'DeleteFieldMemo')
-        self.DeleteLine = create_action_wrapper(app, 'DeleteLine')
-        self.DeleteLineEnd = create_action_wrapper(app, 'DeleteLineEnd')
-        self.DeleteWord = create_action_wrapper(app, 'DeleteWord')
-        self.DeleteWordBack = create_action_wrapper(app, 'DeleteWordBack')
-        self.DocFindEnd = create_action_wrapper(app, 'DocFindEnd')
-        self.DocFindInit = create_action_wrapper(app, 'DocFindInit')
-        self.DocFindNext = create_action_wrapper(app, 'DocFindNext')
-        self.DocSummaryInfo = create_action_wrapper(app, 'DocSummaryInfo')
-        self.DocumentInfo = create_action_wrapper(app, 'DocumentInfo')
-        self.DrawObjCancelOneStep = create_action_wrapper(app, 'DrawObjCancelOneStep')
-        self.DrawObjCreatorArc = create_action_wrapper(app, 'DrawObjCreatorArc')
-        self.DrawObjCreatorCanvas = create_action_wrapper(app, 'DrawObjCreatorCanvas')
-        self.DrawObjCreatorCurve = create_action_wrapper(app, 'DrawObjCreatorCurve')
-        self.DrawObjCreatorEllipse = create_action_wrapper(app, 'DrawObjCreatorEllipse')
-        self.DrawObjCreatorFreeDrawing = create_action_wrapper(app, 'DrawObjCreatorFreeDrawing')
-        self.DrawObjCreatorLine = create_action_wrapper(app, 'DrawObjCreatorLine')
-        self.DrawObjCreatorMultiArc = create_action_wrapper(app, 'DrawObjCreatorMultiArc')
-        self.DrawObjCreatorMultiCanvas = create_action_wrapper(app, 'DrawObjCreatorMultiCanvas')
-        self.DrawObjCreatorMultiCurve = create_action_wrapper(app, 'DrawObjCreatorMultiCurve')
-        self.DrawObjCreatorMultiEllipse = create_action_wrapper(app, 'DrawObjCreatorMultiEllipse')
-        self.DrawObjCreatorMultiFreeDrawing = create_action_wrapper(app, 'DrawObjCreatorMultiFreeDrawing')
-        self.DrawObjCreatorMultiLine = create_action_wrapper(app, 'DrawObjCreatorMultiLine')
-        self.DrawObjCreatorMultiPolygon = create_action_wrapper(app, 'DrawObjCreatorMultiPolygon')
-        self.DrawObjCreatorMultiRectangle = create_action_wrapper(app, 'DrawObjCreatorMultiRectangle')
-        self.DrawObjCreatorMultiTextBox = create_action_wrapper(app, 'DrawObjCreatorMultiTextBox')
-        self.DrawObjCreatorObject = create_action_wrapper(app, 'DrawObjCreatorObject')
-        self.DrawObjCreatorPolygon = create_action_wrapper(app, 'DrawObjCreatorPolygon')
-        self.DrawObjCreatorRectangle = create_action_wrapper(app, 'DrawObjCreatorRectangle')
-        self.DrawObjCreatorTextBox = create_action_wrapper(app, 'DrawObjCreatorTextBox')
-        self.DrawObjEditDetail = create_action_wrapper(app, 'DrawObjEditDetail')
-        self.DrawObjOpenClosePolygon = create_action_wrapper(app, 'DrawObjOpenClosePolygon')
-        self.DrawObjTemplateLoad = create_action_wrapper(app, 'DrawObjTemplateLoad')
-        self.DrawObjTemplateSave = create_action_wrapper(app, 'DrawObjTemplateSave')
-        self.DrawShapeObjShadow = create_action_wrapper(app, 'DrawShapeObjShadow')
-        self.DropCap = create_action_wrapper(app, 'DropCap')
-        self.DutmalChars = create_action_wrapper(app, 'DutmalChars')
-        self.EditFieldMemo = create_action_wrapper(app, 'EditFieldMemo')
-        self.EquationCreate = create_action_wrapper(app, 'EquationCreate')
-        self.EquationModify = create_action_wrapper(app, 'EquationModify')
-        self.EquationPropertyDialog = create_action_wrapper(app, 'EquationPropertyDialog')
-        self.Erase = create_action_wrapper(app, 'Erase')
-        self.ExchangeFootnoteEndnote = create_action_wrapper(app, 'ExchangeFootnoteEndnote')
-        self.ExecReplace = create_action_wrapper(app, 'ExecReplace')
-        self.FileClose = create_action_wrapper(app, 'FileClose')
-        self.FileNew = create_action_wrapper(app, 'FileNew')
-        self.FileOpen = create_action_wrapper(app, 'FileOpen')
-        self.FileOpenMRU = create_action_wrapper(app, 'FileOpenMRU')
-        self.FilePassword = create_action_wrapper(app, 'FilePassword')
-        self.FilePreview = create_action_wrapper(app, 'FilePreview')
-        self.FileQuit = create_action_wrapper(app, 'FileQuit')
-        self.FileSave = create_action_wrapper(app, 'FileSave')
-        self.FileSaveAs = create_action_wrapper(app, 'FileSaveAs')
-        self.FileSetSecurity = create_action_wrapper(app, 'FileSetSecurity')
-        self.FileTemplate = create_action_wrapper(app, 'FileTemplate')
-        self.FindAll = create_action_wrapper(app, 'FindAll')
-        self.FindDlg = create_action_wrapper(app, 'FindDlg')
-        self.FindForeBackBookmark = create_action_wrapper(app, 'FindForeBackBookmark')
-        self.FindForeBackCtrl = create_action_wrapper(app, 'FindForeBackCtrl')
-        self.FindForeBackFind = create_action_wrapper(app, 'FindForeBackFind')
-        self.FindForeBackLine = create_action_wrapper(app, 'FindForeBackLine')
-        self.FindForeBackPage = create_action_wrapper(app, 'FindForeBackPage')
-        self.FindForeBackSection = create_action_wrapper(app, 'FindForeBackSection')
-        self.FindForeBackStyle = create_action_wrapper(app, 'FindForeBackStyle')
-        self.FootnoteOption = create_action_wrapper(app, 'FootnoteOption')
-        self.ForwardFind = create_action_wrapper(app, 'ForwardFind')
-        self.FrameStatusBar = create_action_wrapper(app, 'FrameStatusBar')
-        self.FtpUpload = create_action_wrapper(app, 'FtpUpload')
-        self.FtpDownload = create_action_wrapper(app, 'FtpDownload')
-        self.GetDefaultBullet = create_action_wrapper(app, 'GetDefaultBullet')
-        self.GetDefaultParaNumber = create_action_wrapper(app, 'GetDefaultParaNumber')
-        self.GetDocFilters = create_action_wrapper(app, 'GetDocFilters')
-        self.GetSectionApplyString = create_action_wrapper(app, 'GetSectionApplyString')
-        self.GetSectionApplyTo = create_action_wrapper(app, 'GetSectionApplyTo')
-        self.GetVersionItemInfo = create_action_wrapper(app, 'GetVersionItemInfo')
-        self.Goto = create_action_wrapper(app, 'Goto')
-        self.GotoStyle = create_action_wrapper(app, 'GotoStyle')
-        self.HanThDIC = create_action_wrapper(app, 'HanThDIC')
-        self.HeaderFooter = create_action_wrapper(app, 'HeaderFooter')
-        self.HeaderFooterDelete = create_action_wrapper(app, 'HeaderFooterDelete')
-        self.HeaderFooterInsField = create_action_wrapper(app, 'HeaderFooterInsField')
-        self.HeaderFooterModify = create_action_wrapper(app, 'HeaderFooterModify')
-        self.HeaderFooterToNext = create_action_wrapper(app, 'HeaderFooterToNext')
-        self.HeaderFooterToPrev = create_action_wrapper(app, 'HeaderFooterToPrev')
-        self.HiddenCredits = create_action_wrapper(app, 'HiddenCredits')
-        self.HideTitle = create_action_wrapper(app, 'HideTitle')
-        self.HimKbdChange = create_action_wrapper(app, 'HimKbdChange')
-        self.HwpCtrlEquationCreate97 = create_action_wrapper(app, 'HwpCtrlEquationCreate97')
-        self.HwpCtrlFileNew = create_action_wrapper(app, 'HwpCtrlFileNew')
-        self.HwpCtrlFileOpen = create_action_wrapper(app, 'HwpCtrlFileOpen')
-        self.HwpCtrlFileSave = create_action_wrapper(app, 'HwpCtrlFileSave')
-        self.HwpCtrlFileSaveAs = create_action_wrapper(app, 'HwpCtrlFileSaveAs')
-        self.HwpCtrlFileSaveAsAutoBlock = create_action_wrapper(app, 'HwpCtrlFileSaveAsAutoBlock')
-        self.HwpCtrlFileSaveAutoBlock = create_action_wrapper(app, 'HwpCtrlFileSaveAutoBlock')
-        self.HwpCtrlFindDlg = create_action_wrapper(app, 'HwpCtrlFindDlg')
-        self.HwpCtrlReplaceDlg = create_action_wrapper(app, 'HwpCtrlReplaceDlg')
-        self.HwpDic = create_action_wrapper(app, 'HwpDic')
-        self.Hyperlink = create_action_wrapper(app, 'Hyperlink')
-        self.HyperlinkBackward = create_action_wrapper(app, 'HyperlinkBackward')
-        self.HyperlinkForward = create_action_wrapper(app, 'HyperlinkForward')
-        self.HyperlinkJump = create_action_wrapper(app, 'HyperlinkJump')
-        self.Idiom = create_action_wrapper(app, 'Idiom')
-        self.ImageFindPath = create_action_wrapper(app, 'ImageFindPath')
-        self.IndexMark = create_action_wrapper(app, 'IndexMark')
-        self.IndexMarkModify = create_action_wrapper(app, 'IndexMarkModify')
-        self.InputCodeChange = create_action_wrapper(app, 'InputCodeChange')
-        self.InputCodeTable = create_action_wrapper(app, 'InputCodeTable')
-        self.InputDateStyle = create_action_wrapper(app, 'InputDateStyle')
-        self.InputHanja = create_action_wrapper(app, 'InputHanja')
-        self.InputHanjaBusu = create_action_wrapper(app, 'InputHanjaBusu')
-        self.InputHanjaMean = create_action_wrapper(app, 'InputHanjaMean')
-        self.InsertAutoNum = create_action_wrapper(app, 'InsertAutoNum')
-        self.InsertCCLMark = create_action_wrapper(app, 'InsertCCLMark')
-        self.InsertChart = create_action_wrapper(app, 'InsertChart')
-        self.InsertConnectLineArcBoth = create_action_wrapper(app, 'InsertConnectLineArcBoth')
-        self.InsertConnectLineArcNoArrow = create_action_wrapper(app, 'InsertConnectLineArcNoArrow')
-        self.InsertConnectLineArcOneWay = create_action_wrapper(app, 'InsertConnectLineArcOneWay')
-        self.InsertConnectLineMultiArcBoth = create_action_wrapper(app, 'InsertConnectLineMultiArcBoth')
-        self.InsertConnectLineMultiArcNoArrow = create_action_wrapper(app, 'InsertConnectLineMultiArcNoArrow')
-        self.InsertConnectLineMultiArcOneWay = create_action_wrapper(app, 'InsertConnectLineMultiArcOneWay')
-        self.InsertConnectLineMultiStraightBoth = create_action_wrapper(app, 'InsertConnectLineMultiStraightBoth')
-        self.InsertConnectLineMultiStraightNoArrow = create_action_wrapper(app, 'InsertConnectLineMultiStraightNoArrow')
-        self.InsertConnectLineMultiStraightOneWay = create_action_wrapper(app, 'InsertConnectLineMultiStraightOneWay')
-        self.InsertConnectLineMultiStrokeBoth = create_action_wrapper(app, 'InsertConnectLineMultiStrokeBoth')
-        self.InsertConnectLineMultiStrokeNoArrow = create_action_wrapper(app, 'InsertConnectLineMultiStrokeNoArrow')
-        self.InsertConnectLineMultiStrokeOneWay = create_action_wrapper(app, 'InsertConnectLineMultiStrokeOneWay')
-        self.InsertConnectLineStraightBoth = create_action_wrapper(app, 'InsertConnectLineStraightBoth')
-        self.InsertConnectLineStraightNoArrow = create_action_wrapper(app, 'InsertConnectLineStraightNoArrow')
-        self.InsertConnectLineStraightOneWay = create_action_wrapper(app, 'InsertConnectLineStraightOneWay')
-        self.InsertConnectLineStrokeBoth = create_action_wrapper(app, 'InsertConnectLineStrokeBoth')
-        self.InsertConnectLineStrokeNoArrow = create_action_wrapper(app, 'InsertConnectLineStrokeNoArrow')
-        self.InsertConnectLineStrokeOneWay = create_action_wrapper(app, 'InsertConnectLineStrokeOneWay')
-        self.InsertCpNo = create_action_wrapper(app, 'InsertCpNo')
-        self.InsertCpTpNo = create_action_wrapper(app, 'InsertCpTpNo')
-        self.InsertCrossReference = create_action_wrapper(app, 'InsertCrossReference')
-        self.InsertDateCode = create_action_wrapper(app, 'InsertDateCode')
-        self.InsertDocInfo = create_action_wrapper(app, 'InsertDocInfo')
-        self.InsertDocTitle = create_action_wrapper(app, 'InsertDocTitle')
-        self.InsertEndnote = create_action_wrapper(app, 'InsertEndnote')
-        self.InsertFieldDateTime = create_action_wrapper(app, 'InsertFieldDateTime')
-        self.InsertFieldFileName = create_action_wrapper(app, 'InsertFieldFileName')
-        self.InsertFieldMemo = create_action_wrapper(app, 'InsertFieldMemo')
-        self.InsertFieldRevisionChagne = create_action_wrapper(app, 'InsertFieldRevisionChagne')
-        self.InsertFieldTemplate = create_action_wrapper(app, 'InsertFieldTemplate')
-        self.InsertFile = create_action_wrapper(app, 'InsertFile')
-        self.InsertFileName = create_action_wrapper(app, 'InsertFileName')
-        self.InsertFilePath = create_action_wrapper(app, 'InsertFilePath')
-        self.InsertFixedWidthSpace = create_action_wrapper(app, 'InsertFixedWidthSpace')
-        self.InsertFootnote = create_action_wrapper(app, 'InsertFootnote')
-        self.InsertHyperlink = create_action_wrapper(app, 'InsertHyperlink')
-        self.InsertIdiom = create_action_wrapper(app, 'InsertIdiom')
-        self.InsertLastPrintDate = create_action_wrapper(app, 'InsertLastPrintDate')
-        self.InsertLastSaveBy = create_action_wrapper(app, 'InsertLastSaveBy')
-        self.InsertLastSaveDate = create_action_wrapper(app, 'InsertLastSaveDate')
-        self.InsertLine = create_action_wrapper(app, 'InsertLine')
-        self.InsertNonBreakingSpace = create_action_wrapper(app, 'InsertNonBreakingSpace')
-        self.InsertPageNum = create_action_wrapper(app, 'InsertPageNum')
-        self.InsertRevision = create_action_wrapper(app, 'InsertRevision')
-        self.InsertRevisionAttach = create_action_wrapper(app, 'InsertRevisionAttach')
-        self.InsertRevisionClipping = create_action_wrapper(app, 'InsertRevisionClipping')
-        self.InsertRevisionDelete = create_action_wrapper(app, 'InsertRevisionDelete')
-        self.InsertRevisionHyperlink = create_action_wrapper(app, 'InsertRevisionHyperlink')
-        self.InsertRevisionInsert = create_action_wrapper(app, 'InsertRevisionInsert')
-        self.InsertRevisionLeftMove = create_action_wrapper(app, 'InsertRevisionLeftMove')
-        self.InsertRevisionLine = create_action_wrapper(app, 'InsertRevisionLine')
-        self.InsertRevisionLineAttach = create_action_wrapper(app, 'InsertRevisionLineAttach')
-        self.InsertRevisionLineInsert = create_action_wrapper(app, 'InsertRevisionLineInsert')
-        self.InsertRevisionLineLink = create_action_wrapper(app, 'InsertRevisionLineLink')
-        self.InsertRevisionLineSeparate = create_action_wrapper(app, 'InsertRevisionLineSeparate')
-        self.InsertRevisionLineTransfer = create_action_wrapper(app, 'InsertRevisionLineTransfer')
-        self.InsertRevisionLineTransferSplit = create_action_wrapper(app, 'InsertRevisionLineTransferSplit')
-        self.InsertRevisionPraise = create_action_wrapper(app, 'InsertRevisionPraise')
-        self.InsertRevisionRightMove = create_action_wrapper(app, 'InsertRevisionRightMove')
-        self.InsertRevisionSawTooth = create_action_wrapper(app, 'InsertRevisionSawTooth')
-        self.InsertRevisionSimpleChange = create_action_wrapper(app, 'InsertRevisionSimpleChange')
-        self.InsertRevisionSpace = create_action_wrapper(app, 'InsertRevisionSpace')
-        self.InsertRevisionSymbol = create_action_wrapper(app, 'InsertRevisionSymbol')
-        self.InsertRevisionThinking = create_action_wrapper(app, 'InsertRevisionThinking')
-        self.InsertRevisionTransfer = create_action_wrapper(app, 'InsertRevisionTransfer')
-        self.InsertRevisionTransferSplit = create_action_wrapper(app, 'InsertRevisionTransferSplit')
-        self.InsertSoftHyphen = create_action_wrapper(app, 'InsertSoftHyphen')
-        self.InsertSpace = create_action_wrapper(app, 'InsertSpace')
-        self.InsertStringDateTime = create_action_wrapper(app, 'InsertStringDateTime')
-        self.InsertTab = create_action_wrapper(app, 'InsertTab')
-        self.InsertText = create_action_wrapper(app, 'InsertText')
-        self.InsertTpNo = create_action_wrapper(app, 'InsertTpNo')
-        self.InsertUserName = create_action_wrapper(app, 'InsertUserName')
-        self.InsertVoice = create_action_wrapper(app, 'InsertVoice')
-        self.Jajun = create_action_wrapper(app, 'Jajun')
-        self.LabelAdd = create_action_wrapper(app, 'LabelAdd')
-        self.LabelTemplate = create_action_wrapper(app, 'LabelTemplate')
-        self.LinkDocument = create_action_wrapper(app, 'LinkDocument')
-        self.LinkTextBox = create_action_wrapper(app, 'LinkTextBox')
-        self.MacroDefine = create_action_wrapper(app, 'MacroDefine')
-        self.MacroPause = create_action_wrapper(app, 'MacroPause')
-        self.MacroPlay1 = create_action_wrapper(app, 'MacroPlay1')
-        self.MacroPlay10 = create_action_wrapper(app, 'MacroPlay10')
-        self.MacroPlay11 = create_action_wrapper(app, 'MacroPlay11')
-        self.MacroPlay2 = create_action_wrapper(app, 'MacroPlay2')
-        self.MacroPlay3 = create_action_wrapper(app, 'MacroPlay3')
-        self.MacroPlay4 = create_action_wrapper(app, 'MacroPlay4')
-        self.MacroPlay5 = create_action_wrapper(app, 'MacroPlay5')
-        self.MacroPlay6 = create_action_wrapper(app, 'MacroPlay6')
-        self.MacroPlay7 = create_action_wrapper(app, 'MacroPlay7')
-        self.MacroPlay8 = create_action_wrapper(app, 'MacroPlay8')
-        self.MacroPlay9 = create_action_wrapper(app, 'MacroPlay9')
-        self.MacroRepeat = create_action_wrapper(app, 'MacroRepeat')
-        self.MacroRepeatDlg = create_action_wrapper(app, 'MacroRepeatDlg')
-        self.MacroStop = create_action_wrapper(app, 'MacroStop')
-        self.MailMergeField = create_action_wrapper(app, 'MailMergeField')
-        self.MailMergeGenerate = create_action_wrapper(app, 'MailMergeGenerate')
-        self.MailMergeInsert = create_action_wrapper(app, 'MailMergeInsert')
-        self.MailMergeModify = create_action_wrapper(app, 'MailMergeModify')
-        self.MakeAllVersionDiffs = create_action_wrapper(app, 'MakeAllVersionDiffs')
-        self.MakeContents = create_action_wrapper(app, 'MakeContents')
-        self.MakeIndex = create_action_wrapper(app, 'MakeIndex')
-        self.ManualChangeHangul = create_action_wrapper(app, 'ManualChangeHangul')
-        self.ManuScriptTemplate = create_action_wrapper(app, 'ManuScriptTemplate')
-        self.MarkPenShape = create_action_wrapper(app, 'MarkPenShape')
-        self.MarkTitle = create_action_wrapper(app, 'MarkTitle')
-        self.MasterPage = create_action_wrapper(app, 'MasterPage')
-        self.MasterPageDelete = create_action_wrapper(app, 'MasterPageDelete')
-        self.MasterPageDuplicate = create_action_wrapper(app, 'MasterPageDuplicate')
-        self.MasterPageEntry = create_action_wrapper(app, 'MasterPageEntry')
-        self.MasterPageExcept = create_action_wrapper(app, 'MasterPageExcept')
-        self.MasterPageFront = create_action_wrapper(app, 'MasterPageFront')
-        self.MasterPagePrevSection = create_action_wrapper(app, 'MasterPagePrevSection')
-        self.MasterPageToNext = create_action_wrapper(app, 'MasterPageToNext')
-        self.MasterPageToPrevious = create_action_wrapper(app, 'MasterPageToPrevious')
-        self.MasterPageTypeDlg = create_action_wrapper(app, 'MasterPageTypeDlg')
-        self.MemoShape = create_action_wrapper(app, 'MemoShape')
-        self.MessageBox = create_action_wrapper(app, 'MessageBox')
-        self.ModifyBookmark = create_action_wrapper(app, 'ModifyBookmark')
-        self.ModifyComposeChars = create_action_wrapper(app, 'ModifyComposeChars')
-        self.ModifyCrossReference = create_action_wrapper(app, 'ModifyCrossReference')
-        self.ModifyCtrl = create_action_wrapper(app, 'ModifyCtrl')
-        self.ModifyDutmal = create_action_wrapper(app, 'ModifyDutmal')
-        self.ModifyFieldClickhere = create_action_wrapper(app, 'ModifyFieldClickhere')
-        self.ModifyFieldDate = create_action_wrapper(app, 'ModifyFieldDate')
-        self.ModifyFieldDateTime = create_action_wrapper(app, 'ModifyFieldDateTime')
-        self.ModifyFieldPath = create_action_wrapper(app, 'ModifyFieldPath')
-        self.ModifyFieldSummary = create_action_wrapper(app, 'ModifyFieldSummary')
-        self.ModifyFieldUserInfo = create_action_wrapper(app, 'ModifyFieldUserInfo')
-        self.ModifyFillProperty = create_action_wrapper(app, 'ModifyFillProperty')
-        self.ModifyHyperlink = create_action_wrapper(app, 'ModifyHyperlink')
-        self.ModifyLineProperty = create_action_wrapper(app, 'ModifyLineProperty')
-        self.ModifyRevision = create_action_wrapper(app, 'ModifyRevision')
-        self.ModifyRevisionHyperlink = create_action_wrapper(app, 'ModifyRevisionHyperlink')
-        self.ModifySection = create_action_wrapper(app, 'ModifySection')
-        self.ModifyShapeObject = create_action_wrapper(app, 'ModifyShapeObject')
-        self.MoveColumnBegin = create_action_wrapper(app, 'MoveColumnBegin')
-        self.MoveColumnEnd = create_action_wrapper(app, 'MoveColumnEnd')
-        self.MoveDocBegin = create_action_wrapper(app, 'MoveDocBegin')
-        self.MoveDocEnd = create_action_wrapper(app, 'MoveDocEnd')
-        self.MoveDown = create_action_wrapper(app, 'MoveDown')
-        self.MoveLeft = create_action_wrapper(app, 'MoveLeft')
-        self.MoveLineBegin = create_action_wrapper(app, 'MoveLineBegin')
-        self.MoveLineDown = create_action_wrapper(app, 'MoveLineDown')
-        self.MoveLineEnd = create_action_wrapper(app, 'MoveLineEnd')
-        self.MoveLineUp = create_action_wrapper(app, 'MoveLineUp')
-        self.MoveListBegin = create_action_wrapper(app, 'MoveListBegin')
-        self.MoveListEnd = create_action_wrapper(app, 'MoveListEnd')
-        self.MoveNextChar = create_action_wrapper(app, 'MoveNextChar')
-        self.MoveNextColumn = create_action_wrapper(app, 'MoveNextColumn')
-        self.MoveNextParaBegin = create_action_wrapper(app, 'MoveNextParaBegin')
-        self.MoveNextPos = create_action_wrapper(app, 'MoveNextPos')
-        self.MoveNextPosEx = create_action_wrapper(app, 'MoveNextPosEx')
-        self.MoveNextWord = create_action_wrapper(app, 'MoveNextWord')
-        self.MovePageBegin = create_action_wrapper(app, 'MovePageBegin')
-        self.MovePageDown = create_action_wrapper(app, 'MovePageDown')
-        self.MovePageEnd = create_action_wrapper(app, 'MovePageEnd')
-        self.MovePageUp = create_action_wrapper(app, 'MovePageUp')
-        self.MoveParaBegin = create_action_wrapper(app, 'MoveParaBegin')
-        self.MoveParaEnd = create_action_wrapper(app, 'MoveParaEnd')
-        self.MoveParentList = create_action_wrapper(app, 'MoveParentList')
-        self.MovePrevChar = create_action_wrapper(app, 'MovePrevChar')
-        self.MovePrevColumn = create_action_wrapper(app, 'MovePrevColumn')
-        self.MovePrevParaBegin = create_action_wrapper(app, 'MovePrevParaBegin')
-        self.MovePrevParaEnd = create_action_wrapper(app, 'MovePrevParaEnd')
-        self.MovePrevPos = create_action_wrapper(app, 'MovePrevPos')
-        self.MovePrevPosEx = create_action_wrapper(app, 'MovePrevPosEx')
-        self.MovePrevWord = create_action_wrapper(app, 'MovePrevWord')
-        self.MoveRight = create_action_wrapper(app, 'MoveRight')
-        self.MoveRootList = create_action_wrapper(app, 'MoveRootList')
-        self.MoveScrollDown = create_action_wrapper(app, 'MoveScrollDown')
-        self.MoveScrollNext = create_action_wrapper(app, 'MoveScrollNext')
-        self.MoveScrollPrev = create_action_wrapper(app, 'MoveScrollPrev')
-        self.MoveScrollUp = create_action_wrapper(app, 'MoveScrollUp')
-        self.MoveSectionDown = create_action_wrapper(app, 'MoveSectionDown')
-        self.MoveSectionUp = create_action_wrapper(app, 'MoveSectionUp')
-        self.MoveSelDocBegin = create_action_wrapper(app, 'MoveSelDocBegin')
-        self.MoveSelDocEnd = create_action_wrapper(app, 'MoveSelDocEnd')
-        self.MoveSelDown = create_action_wrapper(app, 'MoveSelDown')
-        self.MoveSelLeft = create_action_wrapper(app, 'MoveSelLeft')
-        self.MoveSelLineBegin = create_action_wrapper(app, 'MoveSelLineBegin')
-        self.MoveSelLineDown = create_action_wrapper(app, 'MoveSelLineDown')
-        self.MoveSelLineEnd = create_action_wrapper(app, 'MoveSelLineEnd')
-        self.MoveSelLineUp = create_action_wrapper(app, 'MoveSelLineUp')
-        self.MoveSelListBegin = create_action_wrapper(app, 'MoveSelListBegin')
-        self.MoveSelListEnd = create_action_wrapper(app, 'MoveSelListEnd')
-        self.MoveSelNextChar = create_action_wrapper(app, 'MoveSelNextChar')
-        self.MoveSelNextParaBegin = create_action_wrapper(app, 'MoveSelNextParaBegin')
-        self.MoveSelNextPos = create_action_wrapper(app, 'MoveSelNextPos')
-        self.MoveSelNextWord = create_action_wrapper(app, 'MoveSelNextWord')
-        self.MoveSelPageDown = create_action_wrapper(app, 'MoveSelPageDown')
-        self.MoveSelPageUp = create_action_wrapper(app, 'MoveSelPageUp')
-        self.MoveSelParaBegin = create_action_wrapper(app, 'MoveSelParaBegin')
-        self.MoveSelParaEnd = create_action_wrapper(app, 'MoveSelParaEnd')
-        self.MoveSelPrevChar = create_action_wrapper(app, 'MoveSelPrevChar')
-        self.MoveSelPrevParaBegin = create_action_wrapper(app, 'MoveSelPrevParaBegin')
-        self.MoveSelPrevParaEnd = create_action_wrapper(app, 'MoveSelPrevParaEnd')
-        self.MoveSelPrevPos = create_action_wrapper(app, 'MoveSelPrevPos')
-        self.MoveSelPrevWord = create_action_wrapper(app, 'MoveSelPrevWord')
-        self.MoveSelRight = create_action_wrapper(app, 'MoveSelRight')
-        self.MoveSelTopLevelBegin = create_action_wrapper(app, 'MoveSelTopLevelBegin')
-        self.MoveSelTopLevelEnd = create_action_wrapper(app, 'MoveSelTopLevelEnd')
-        self.MoveSelUp = create_action_wrapper(app, 'MoveSelUp')
-        self.MoveSelViewDown = create_action_wrapper(app, 'MoveSelViewDown')
-        self.MoveSelViewUp = create_action_wrapper(app, 'MoveSelViewUp')
-        self.MoveSelWordBegin = create_action_wrapper(app, 'MoveSelWordBegin')
-        self.MoveSelWordEnd = create_action_wrapper(app, 'MoveSelWordEnd')
-        self.MoveTopLevelBegin = create_action_wrapper(app, 'MoveTopLevelBegin')
-        self.MoveTopLevelEnd = create_action_wrapper(app, 'MoveTopLevelEnd')
-        self.MoveTopLevelList = create_action_wrapper(app, 'MoveTopLevelList')
-        self.MoveUp = create_action_wrapper(app, 'MoveUp')
-        self.MoveViewBegin = create_action_wrapper(app, 'MoveViewBegin')
-        self.MoveViewDown = create_action_wrapper(app, 'MoveViewDown')
-        self.MoveViewEnd = create_action_wrapper(app, 'MoveViewEnd')
-        self.MoveViewUp = create_action_wrapper(app, 'MoveViewUp')
-        self.MoveWordBegin = create_action_wrapper(app, 'MoveWordBegin')
-        self.MoveWordEnd = create_action_wrapper(app, 'MoveWordEnd')
-        self.MPSectionToNext = create_action_wrapper(app, 'MPSectionToNext')
-        self.MPSectionToPrevious = create_action_wrapper(app, 'MPSectionToPrevious')
-        self.MultiColumn = create_action_wrapper(app, 'MultiColumn')
-        self.NewNumber = create_action_wrapper(app, 'NewNumber')
-        self.NewNumberModify = create_action_wrapper(app, 'NewNumberModify')
-        self.NextTextBoxLinked = create_action_wrapper(app, 'NextTextBoxLinked')
-        self.NoteDelete = create_action_wrapper(app, 'NoteDelete')
-        self.NoteModify = create_action_wrapper(app, 'NoteModify')
-        self.NoteNumProperty = create_action_wrapper(app, 'NoteNumProperty')
-        self.NoteToNext = create_action_wrapper(app, 'NoteToNext')
-        self.NoteToPrev = create_action_wrapper(app, 'NoteToPrev')
-        self.OleCreateNew = create_action_wrapper(app, 'OleCreateNew')
-        self.OutlineNumber = create_action_wrapper(app, 'OutlineNumber')
-        self.PageBorder = create_action_wrapper(app, 'PageBorder')
-        self.PageHiding = create_action_wrapper(app, 'PageHiding')
-        self.PageHidingModify = create_action_wrapper(app, 'PageHidingModify')
-        self.PageNumPos = create_action_wrapper(app, 'PageNumPos')
-        self.PageNumPosModify = create_action_wrapper(app, 'PageNumPosModify')
-        self.PageSetup = create_action_wrapper(app, 'PageSetup')
-        self.ParagraphShape = create_action_wrapper(app, 'ParagraphShape')
-        self.ParagraphShapeAlignCenter = create_action_wrapper(app, 'ParagraphShapeAlignCenter')
-        self.ParagraphShapeAlignDistribute = create_action_wrapper(app, 'ParagraphShapeAlignDistribute')
-        self.ParagraphShapeAlignDivision = create_action_wrapper(app, 'ParagraphShapeAlignDivision')
-        self.ParagraphShapeAlignJustify = create_action_wrapper(app, 'ParagraphShapeAlignJustify')
-        self.ParagraphShapeAlignLeft = create_action_wrapper(app, 'ParagraphShapeAlignLeft')
-        self.ParagraphShapeAlignRight = create_action_wrapper(app, 'ParagraphShapeAlignRight')
-        self.ParagraphShapeDecreaseLeftMargin = create_action_wrapper(app, 'ParagraphShapeDecreaseLeftMargin')
-        self.ParagraphShapeDecreaseLineSpacing = create_action_wrapper(app, 'ParagraphShapeDecreaseLineSpacing')
-        self.ParagraphShapeDecreaseMargin = create_action_wrapper(app, 'ParagraphShapeDecreaseMargin')
-        self.ParagraphShapeDecreaseRightMargin = create_action_wrapper(app, 'ParagraphShapeDecreaseRightMargin')
-        self.ParagraphShapeIncreaseLeftMargin = create_action_wrapper(app, 'ParagraphShapeIncreaseLeftMargin')
-        self.ParagraphShapeIncreaseLineSpacing = create_action_wrapper(app, 'ParagraphShapeIncreaseLineSpacing')
-        self.ParagraphShapeIncreaseMargin = create_action_wrapper(app, 'ParagraphShapeIncreaseMargin')
-        self.ParagraphShapeIncreaseRightMargin = create_action_wrapper(app, 'ParagraphShapeIncreaseRightMargin')
-        self.ParagraphShapeIndentAtCaret = create_action_wrapper(app, 'ParagraphShapeIndentAtCaret')
-        self.ParagraphShapeIndentNegative = create_action_wrapper(app, 'ParagraphShapeIndentNegative')
-        self.ParagraphShapeIndentPositive = create_action_wrapper(app, 'ParagraphShapeIndentPositive')
-        self.ParagraphShapeProtect = create_action_wrapper(app, 'ParagraphShapeProtect')
-        self.ParagraphShapeWithNext = create_action_wrapper(app, 'ParagraphShapeWithNext')
-        self.ParaNumberBullet = create_action_wrapper(app, 'ParaNumberBullet')
-        self.ParaNumberBulletLevelDown = create_action_wrapper(app, 'ParaNumberBulletLevelDown')
-        self.ParaNumberBulletLevelUp = create_action_wrapper(app, 'ParaNumberBulletLevelUp')
-        self.ParaShapeDialog = create_action_wrapper(app, 'ParaShapeDialog')
-        self.Paste = create_action_wrapper(app, 'Paste')
-        self.PastePage = create_action_wrapper(app, 'PastePage')
-        self.PasteSpecial = create_action_wrapper(app, 'PasteSpecial')
-        self.PictureEffect1 = create_action_wrapper(app, 'PictureEffect1')
-        self.PictureEffect2 = create_action_wrapper(app, 'PictureEffect2')
-        self.PictureEffect3 = create_action_wrapper(app, 'PictureEffect3')
-        self.PictureEffect4 = create_action_wrapper(app, 'PictureEffect4')
-        self.PictureEffect5 = create_action_wrapper(app, 'PictureEffect5')
-        self.PictureEffect6 = create_action_wrapper(app, 'PictureEffect6')
-        self.PictureEffect7 = create_action_wrapper(app, 'PictureEffect7')
-        self.PictureEffect8 = create_action_wrapper(app, 'PictureEffect8')
-        self.PictureInsertDialog = create_action_wrapper(app, 'PictureInsertDialog')
-        self.PictureLinkedToEmbedded = create_action_wrapper(app, 'PictureLinkedToEmbedded')
-        self.PictureSave = create_action_wrapper(app, 'PictureSave')
-        self.PictureScissor = create_action_wrapper(app, 'PictureScissor')
-        self.PictureToOriginal = create_action_wrapper(app, 'PictureToOriginal')
-        self.Preference = create_action_wrapper(app, 'Preference')
-        self.Presentation = create_action_wrapper(app, 'Presentation')
-        self.PresentationSetup = create_action_wrapper(app, 'PresentationSetup')
-        self.PrevTextBoxLinked = create_action_wrapper(app, 'PrevTextBoxLinked')
-        self.Print = create_action_wrapper(app, 'Print')
-        self.PrintToImage = create_action_wrapper(app, 'PrintToImage')
-        self.PutBullet = create_action_wrapper(app, 'PutBullet')
-        self.PutNewParaNumber = create_action_wrapper(app, 'PutNewParaNumber')
-        self.PutOutlineNumber = create_action_wrapper(app, 'PutOutlineNumber')
-        self.PutParaNumber = create_action_wrapper(app, 'PutParaNumber')
-        self.QuickCorrect = create_action_wrapper(app, 'QuickCorrect')
-        self.RecalcPageCount = create_action_wrapper(app, 'RecalcPageCount')
-        self.RecentCode = create_action_wrapper(app, 'RecentCode')
-        self.Redo = create_action_wrapper(app, 'Redo')
-        self.RepeatFind = create_action_wrapper(app, 'RepeatFind')
-        self.ReplaceDlg = create_action_wrapper(app, 'ReplaceDlg')
-        self.ReturnKeyInField = create_action_wrapper(app, 'ReturnKeyInField')
-        self.ReturnPrevPos = create_action_wrapper(app, 'ReturnPrevPos')
-        self.ReverseFind = create_action_wrapper(app, 'ReverseFind')
-        self.SaveBlockAction = create_action_wrapper(app, 'SaveBlockAction')
-        self.SaveFootnote = create_action_wrapper(app, 'SaveFootnote')
-        self.SaveHistoryItem = create_action_wrapper(app, 'SaveHistoryItem')
-        self.ScrMacroDefine = create_action_wrapper(app, 'ScrMacroDefine')
-        self.ScrMacroPause = create_action_wrapper(app, 'ScrMacroPause')
-        self.ScrMacroRepeatDlg = create_action_wrapper(app, 'ScrMacroRepeatDlg')
-        self.ScrMacroSecurityDlg = create_action_wrapper(app, 'ScrMacroSecurityDlg')
-        self.ScrMacroStop = create_action_wrapper(app, 'ScrMacroStop')
-        self.SearchAddress = create_action_wrapper(app, 'SearchAddress')
-        self.SearchForeign = create_action_wrapper(app, 'SearchForeign')
-        self.Select = create_action_wrapper(app, 'Select')
-        self.SelectAll = create_action_wrapper(app, 'SelectAll')
-        self.SelectColumn = create_action_wrapper(app, 'SelectColumn')
-        self.SelectCtrlFront = create_action_wrapper(app, 'SelectCtrlFront')
-        self.SelectCtrlReverse = create_action_wrapper(app, 'SelectCtrlReverse')
-        self.SendBrowserText = create_action_wrapper(app, 'SendBrowserText')
-        self.SendMailAttach = create_action_wrapper(app, 'SendMailAttach')
-        self.SendMailText = create_action_wrapper(app, 'SendMailText')
-        self.ShapeCopyPaste = create_action_wrapper(app, 'ShapeCopyPaste')
-        self.ShapeObjAlignBottom = create_action_wrapper(app, 'ShapeObjAlignBottom')
-        self.ShapeObjAlignCenter = create_action_wrapper(app, 'ShapeObjAlignCenter')
-        self.ShapeObjAlignHeight = create_action_wrapper(app, 'ShapeObjAlignHeight')
-        self.ShapeObjAlignHorzSpacing = create_action_wrapper(app, 'ShapeObjAlignHorzSpacing')
-        self.ShapeObjAlignLeft = create_action_wrapper(app, 'ShapeObjAlignLeft')
-        self.ShapeObjAlignMiddle = create_action_wrapper(app, 'ShapeObjAlignMiddle')
-        self.ShapeObjAlignRight = create_action_wrapper(app, 'ShapeObjAlignRight')
-        self.ShapeObjAlignSize = create_action_wrapper(app, 'ShapeObjAlignSize')
-        self.ShapeObjAlignTop = create_action_wrapper(app, 'ShapeObjAlignTop')
-        self.ShapeObjAlignVertSpacing = create_action_wrapper(app, 'ShapeObjAlignVertSpacing')
-        self.ShapeObjAlignWidth = create_action_wrapper(app, 'ShapeObjAlignWidth')
-        self.ShapeObjAttachCaption = create_action_wrapper(app, 'ShapeObjAttachCaption')
-        self.ShapeObjAttachTextBox = create_action_wrapper(app, 'ShapeObjAttachTextBox')
-        self.ShapeObjAttrDialog = create_action_wrapper(app, 'ShapeObjAttrDialog')
-        self.ShapeObjBringForward = create_action_wrapper(app, 'ShapeObjBringForward')
-        self.ShapeObjBringInFrontOfText = create_action_wrapper(app, 'ShapeObjBringInFrontOfText')
-        self.ShapeObjBringToFront = create_action_wrapper(app, 'ShapeObjBringToFront')
-        self.ShapeObjCtrlSendBehindText = create_action_wrapper(app, 'ShapeObjCtrlSendBehindText')
-        self.ShapeObjDetachCaption = create_action_wrapper(app, 'ShapeObjDetachCaption')
-        self.ShapeObjDetachTextBox = create_action_wrapper(app, 'ShapeObjDetachTextBox')
-        self.ShapeObjDialog = create_action_wrapper(app, 'ShapeObjDialog')
-        self.ShapeObjectCopy = create_action_wrapper(app, 'ShapeObjectCopy')
-        self.ShapeObjectPaste = create_action_wrapper(app, 'ShapeObjectPaste')
-        self.ShapeObjFillProperty = create_action_wrapper(app, 'ShapeObjFillProperty')
-        self.ShapeObjGroup = create_action_wrapper(app, 'ShapeObjGroup')
-        self.ShapeObjHorzFlip = create_action_wrapper(app, 'ShapeObjHorzFlip')
-        self.ShapeObjHorzFlipOrgState = create_action_wrapper(app, 'ShapeObjHorzFlipOrgState')
-        self.ShapeObjInsertCaptionNum = create_action_wrapper(app, 'ShapeObjInsertCaptionNum')
-        self.ShapeObjLineProperty = create_action_wrapper(app, 'ShapeObjLineProperty')
-        self.ShapeObjLock = create_action_wrapper(app, 'ShapeObjLock')
-        self.ShapeObjMoveDown = create_action_wrapper(app, 'ShapeObjMoveDown')
-        self.ShapeObjMoveLeft = create_action_wrapper(app, 'ShapeObjMoveLeft')
-        self.ShapeObjMoveRight = create_action_wrapper(app, 'ShapeObjMoveRight')
-        self.ShapeObjMoveUp = create_action_wrapper(app, 'ShapeObjMoveUp')
-        self.ShapeObjNextObject = create_action_wrapper(app, 'ShapeObjNextObject')
-        self.ShapeObjNorm = create_action_wrapper(app, 'ShapeObjNorm')
-        self.ShapeObjPrevObject = create_action_wrapper(app, 'ShapeObjPrevObject')
-        self.ShapeObjRandomAngleRotater = create_action_wrapper(app, 'ShapeObjRandomAngleRotater')
-        self.ShapeObjResizeDown = create_action_wrapper(app, 'ShapeObjResizeDown')
-        self.ShapeObjResizeLeft = create_action_wrapper(app, 'ShapeObjResizeLeft')
-        self.ShapeObjResizeRight = create_action_wrapper(app, 'ShapeObjResizeRight')
-        self.ShapeObjResizeUp = create_action_wrapper(app, 'ShapeObjResizeUp')
-        self.ShapeObjRightAngleRotater = create_action_wrapper(app, 'ShapeObjRightAngleRotater')
-        self.ShapeObjRightAngleRotaterAnticlockwise = create_action_wrapper(app, 'ShapeObjRightAngleRotaterAnticlockwise')
-        self.ShapeObjRotater = create_action_wrapper(app, 'ShapeObjRotater')
-        self.ShapeObjSaveAsPicture = create_action_wrapper(app, 'ShapeObjSaveAsPicture')
-        self.ShapeObjSelect = create_action_wrapper(app, 'ShapeObjSelect')
-        self.ShapeObjSendBack = create_action_wrapper(app, 'ShapeObjSendBack')
-        self.ShapeObjSendToBack = create_action_wrapper(app, 'ShapeObjSendToBack')
-        self.ShapeObjShadowEnlarge = create_action_wrapper(app, 'ShapeObjShadowEnlarge')
-        self.ShapeObjShadowMoveDown = create_action_wrapper(app, 'ShapeObjShadowMoveDown')
-        self.ShapeObjShadowMoveLeft = create_action_wrapper(app, 'ShapeObjShadowMoveLeft')
-        self.ShapeObjShadowMoveRight = create_action_wrapper(app, 'ShapeObjShadowMoveRight')
-        self.ShapeObjShadowMoveUp = create_action_wrapper(app, 'ShapeObjShadowMoveUp')
-        self.ShapeObjShadowNarrow = create_action_wrapper(app, 'ShapeObjShadowNarrow')
-        self.ShapeObjShadowParellelLeftBottom = create_action_wrapper(app, 'ShapeObjShadowParellelLeftBottom')
-        self.ShapeObjShadowParellelLeftTop = create_action_wrapper(app, 'ShapeObjShadowParellelLeftTop')
-        self.ShapeObjShadowParellelRightBottom = create_action_wrapper(app, 'ShapeObjShadowParellelRightBottom')
-        self.ShapeObjShadowParellelRightTop = create_action_wrapper(app, 'ShapeObjShadowParellelRightTop')
-        self.ShapeObjShadowShearLeftBottom = create_action_wrapper(app, 'ShapeObjShadowShearLeftBottom')
-        self.ShapeObjShadowShearLeftTop = create_action_wrapper(app, 'ShapeObjShadowShearLeftTop')
-        self.ShapeObjShadowShearRightBottom = create_action_wrapper(app, 'ShapeObjShadowShearRightBottom')
-        self.ShapeObjShadowShearRightTop = create_action_wrapper(app, 'ShapeObjShadowShearRightTop')
-        self.ShapeObjShear = create_action_wrapper(app, 'ShapeObjShear')
-        self.ShapeObjTableSelCell = create_action_wrapper(app, 'ShapeObjTableSelCell')
-        self.ShapeObjTextBoxEdit = create_action_wrapper(app, 'ShapeObjTextBoxEdit')
-        self.ShapeObjUngroup = create_action_wrapper(app, 'ShapeObjUngroup')
-        self.ShapeObjUnlockAll = create_action_wrapper(app, 'ShapeObjUnlockAll')
-        self.ShapeObjVertFlip = create_action_wrapper(app, 'ShapeObjVertFlip')
-        self.ShapeObjVertFlipOrgState = create_action_wrapper(app, 'ShapeObjVertFlipOrgState')
-        self.ShapeObjWrapSquare = create_action_wrapper(app, 'ShapeObjWrapSquare')
-        self.ShapeObjWrapTopAndBottom = create_action_wrapper(app, 'ShapeObjWrapTopAndBottom')
-        self.Sort = create_action_wrapper(app, 'Sort')
-        self.SpellingCheck = create_action_wrapper(app, 'SpellingCheck')
-        self.SplitMemoOpen = create_action_wrapper(app, 'SplitMemoOpen')
-        self.Style = create_action_wrapper(app, 'Style')
-        self.StyleAdd = create_action_wrapper(app, 'StyleAdd')
-        self.StyleClearCharStyle = create_action_wrapper(app, 'StyleClearCharStyle')
-        self.StyleDelete = create_action_wrapper(app, 'StyleDelete')
-        self.StyleEdit = create_action_wrapper(app, 'StyleEdit')
-        self.StyleEx = create_action_wrapper(app, 'StyleEx')
-        self.StyleParaNumberBullet = create_action_wrapper(app, 'StyleParaNumberBullet')
-        self.StyleShortcut1 = create_action_wrapper(app, 'StyleShortcut1')
-        self.StyleShortcut10 = create_action_wrapper(app, 'StyleShortcut10')
-        self.StyleShortcut2 = create_action_wrapper(app, 'StyleShortcut2')
-        self.StyleShortcut3 = create_action_wrapper(app, 'StyleShortcut3')
-        self.StyleShortcut4 = create_action_wrapper(app, 'StyleShortcut4')
-        self.StyleShortcut5 = create_action_wrapper(app, 'StyleShortcut5')
-        self.StyleShortcut6 = create_action_wrapper(app, 'StyleShortcut6')
-        self.StyleShortcut7 = create_action_wrapper(app, 'StyleShortcut7')
-        self.StyleShortcut8 = create_action_wrapper(app, 'StyleShortcut8')
-        self.StyleShortcut9 = create_action_wrapper(app, 'StyleShortcut9')
-        self.StyleTemplate = create_action_wrapper(app, 'StyleTemplate')
-        self.Sum = create_action_wrapper(app, 'Sum')
-        self.TableAppendRow = create_action_wrapper(app, 'TableAppendRow')
-        self.TableAutoDrawPenStyleWidthDlg = create_action_wrapper(app, 'TableAutoDrawPenStyleWidthDlg')
-        self.TableAutoFill = create_action_wrapper(app, 'TableAutoFill')
-        self.TableAutoFillDlg = create_action_wrapper(app, 'TableAutoFillDlg')
-        self.TableCellBlock = create_action_wrapper(app, 'TableCellBlock')
-        self.TableCellBlockCol = create_action_wrapper(app, 'TableCellBlockCol')
-        self.TableCellBlockExtend = create_action_wrapper(app, 'TableCellBlockExtend')
-        self.TableCellBlockExtendAbs = create_action_wrapper(app, 'TableCellBlockExtendAbs')
-        self.TableCellBlockRow = create_action_wrapper(app, 'TableCellBlockRow')
-        self.TableCellBorderAll = create_action_wrapper(app, 'TableCellBorderAll')
-        self.TableCellBorderBottom = create_action_wrapper(app, 'TableCellBorderBottom')
-        self.TableCellBorderDiagonalDown = create_action_wrapper(app, 'TableCellBorderDiagonalDown')
-        self.TableCellBorderDiagonalUp = create_action_wrapper(app, 'TableCellBorderDiagonalUp')
-        self.TableCellBorderInside = create_action_wrapper(app, 'TableCellBorderInside')
-        self.TableCellBorderInsideHorz = create_action_wrapper(app, 'TableCellBorderInsideHorz')
-        self.TableCellBorderInsideVert = create_action_wrapper(app, 'TableCellBorderInsideVert')
-        self.TableCellBorderLeft = create_action_wrapper(app, 'TableCellBorderLeft')
-        self.TableCellBorderNo = create_action_wrapper(app, 'TableCellBorderNo')
-        self.TableCellBorderOutside = create_action_wrapper(app, 'TableCellBorderOutside')
-        self.TableCellBorderRight = create_action_wrapper(app, 'TableCellBorderRight')
-        self.TableCellBorderTop = create_action_wrapper(app, 'TableCellBorderTop')
-        self.TableCellShadeDec = create_action_wrapper(app, 'TableCellShadeDec')
-        self.TableCellShadeInc = create_action_wrapper(app, 'TableCellShadeInc')
-        self.TableColBegin = create_action_wrapper(app, 'TableColBegin')
-        self.TableColEnd = create_action_wrapper(app, 'TableColEnd')
-        self.TableColPageDown = create_action_wrapper(app, 'TableColPageDown')
-        self.TableColPageUp = create_action_wrapper(app, 'TableColPageUp')
-        self.TableCreate = create_action_wrapper(app, 'TableCreate')
-        self.TableDeleteCell = create_action_wrapper(app, 'TableDeleteCell')
-        self.TableDeleteColumn = create_action_wrapper(app, 'TableDeleteColumn')
-        self.TableDeleteRow = create_action_wrapper(app, 'TableDeleteRow')
-        self.TableDeleteRowColumn = create_action_wrapper(app, 'TableDeleteRowColumn')
-        self.TableDistributeCellHeight = create_action_wrapper(app, 'TableDistributeCellHeight')
-        self.TableDistributeCellWidth = create_action_wrapper(app, 'TableDistributeCellWidth')
-        self.TableDrawPen = create_action_wrapper(app, 'TableDrawPen')
-        self.TableEraser = create_action_wrapper(app, 'TableEraser')
-        self.TableFormula = create_action_wrapper(app, 'TableFormula')
-        self.TableFormulaAvgAuto = create_action_wrapper(app, 'TableFormulaAvgAuto')
-        self.TableFormulaAvgHor = create_action_wrapper(app, 'TableFormulaAvgHor')
-        self.TableFormulaAvgVer = create_action_wrapper(app, 'TableFormulaAvgVer')
-        self.TableFormulaProAuto = create_action_wrapper(app, 'TableFormulaProAuto')
-        self.TableFormulaProHor = create_action_wrapper(app, 'TableFormulaProHor')
-        self.TableFormulaProVer = create_action_wrapper(app, 'TableFormulaProVer')
-        self.TableFormulaSumAuto = create_action_wrapper(app, 'TableFormulaSumAuto')
-        self.TableFormulaSumHor = create_action_wrapper(app, 'TableFormulaSumHor')
-        self.TableFormulaSumVer = create_action_wrapper(app, 'TableFormulaSumVer')
-        self.TableInsertLeftColumn = create_action_wrapper(app, 'TableInsertLeftColumn')
-        self.TableInsertLowerRow = create_action_wrapper(app, 'TableInsertLowerRow')
-        self.TableInsertRightColumn = create_action_wrapper(app, 'TableInsertRightColumn')
-        self.TableInsertRowColumn = create_action_wrapper(app, 'TableInsertRowColumn')
-        self.TableInsertUpperRow = create_action_wrapper(app, 'TableInsertUpperRow')
-        self.TableLeftCell = create_action_wrapper(app, 'TableLeftCell')
-        self.TableLowerCell = create_action_wrapper(app, 'TableLowerCell')
-        self.TableMergeCell = create_action_wrapper(app, 'TableMergeCell')
-        self.TableMergeTable = create_action_wrapper(app, 'TableMergeTable')
-        self.TablePropertyDialog = create_action_wrapper(app, 'TablePropertyDialog')
-        self.TableResizeCellDown = create_action_wrapper(app, 'TableResizeCellDown')
-        self.TableResizeCellLeft = create_action_wrapper(app, 'TableResizeCellLeft')
-        self.TableResizeCellRight = create_action_wrapper(app, 'TableResizeCellRight')
-        self.TableResizeCellUp = create_action_wrapper(app, 'TableResizeCellUp')
-        self.TableResizeDown = create_action_wrapper(app, 'TableResizeDown')
-        self.TableResizeExDown = create_action_wrapper(app, 'TableResizeExDown')
-        self.TableResizeExLeft = create_action_wrapper(app, 'TableResizeExLeft')
-        self.TableResizeExRight = create_action_wrapper(app, 'TableResizeExRight')
-        self.TableResizeExUp = create_action_wrapper(app, 'TableResizeExUp')
-        self.TableResizeLeft = create_action_wrapper(app, 'TableResizeLeft')
-        self.TableResizeLineDown = create_action_wrapper(app, 'TableResizeLineDown')
-        self.TableResizeLineLeft = create_action_wrapper(app, 'TableResizeLineLeft')
-        self.TableResizeLineRight = create_action_wrapper(app, 'TableResizeLineRight')
-        self.TableResizeLineUp = create_action_wrapper(app, 'TableResizeLineUp')
-        self.TableResizeRight = create_action_wrapper(app, 'TableResizeRight')
-        self.TableResizeUp = create_action_wrapper(app, 'TableResizeUp')
-        self.TableRightCell = create_action_wrapper(app, 'TableRightCell')
-        self.TableRightCellAppend = create_action_wrapper(app, 'TableRightCellAppend')
-        self.TableSplitCell = create_action_wrapper(app, 'TableSplitCell')
-        self.TableSplitCellCol2 = create_action_wrapper(app, 'TableSplitCellCol2')
-        self.TableSplitCellRow2 = create_action_wrapper(app, 'TableSplitCellRow2')
-        self.TableSplitTable = create_action_wrapper(app, 'TableSplitTable')
-        self.TableStringToTable = create_action_wrapper(app, 'TableStringToTable')
-        self.TableSubtractRow = create_action_wrapper(app, 'TableSubtractRow')
-        self.TableSwap = create_action_wrapper(app, 'TableSwap')
-        self.TableTableToString = create_action_wrapper(app, 'TableTableToString')
-        self.TableTemplate = create_action_wrapper(app, 'TableTemplate')
-        self.TableUpperCell = create_action_wrapper(app, 'TableUpperCell')
-        self.TableVAlignBottom = create_action_wrapper(app, 'TableVAlignBottom')
-        self.TableVAlignCenter = create_action_wrapper(app, 'TableVAlignCenter')
-        self.TableVAlignTop = create_action_wrapper(app, 'TableVAlignTop')
-        self.TextArtCreate = create_action_wrapper(app, 'TextArtCreate')
-        self.TextArtModify = create_action_wrapper(app, 'TextArtModify')
-        self.TextArtShadow = create_action_wrapper(app, 'TextArtShadow')
-        self.ToggleOverwrite = create_action_wrapper(app, 'ToggleOverwrite')
-        self.Undo = create_action_wrapper(app, 'Undo')
-        self.UnlinkTextBox = create_action_wrapper(app, 'UnlinkTextBox')
-        self.UserAutoFill = create_action_wrapper(app, 'UserAutoFill')
-        self.VersionDelete = create_action_wrapper(app, 'VersionDelete')
-        self.VersionDeleteAll = create_action_wrapper(app, 'VersionDeleteAll')
-        self.VersionInfo = create_action_wrapper(app, 'VersionInfo')
-        self.VersionSave = create_action_wrapper(app, 'VersionSave')
-        self.VerticalText = create_action_wrapper(app, 'VerticalText')
-        self.ViewGridOption = create_action_wrapper(app, 'ViewGridOption')
-        self.ViewIdiom = create_action_wrapper(app, 'ViewIdiom')
-        self.ViewOptionCtrlMark = create_action_wrapper(app, 'ViewOptionCtrlMark')
-        self.ViewOptionGuideLine = create_action_wrapper(app, 'ViewOptionGuideLine')
-        self.ViewOptionMemo = create_action_wrapper(app, 'ViewOptionMemo')
-        self.ViewOptionMemoGuideline = create_action_wrapper(app, 'ViewOptionMemoGuideline')
-        self.ViewOptionPaper = create_action_wrapper(app, 'ViewOptionPaper')
-        self.ViewOptionParaMark = create_action_wrapper(app, 'ViewOptionParaMark')
-        self.ViewOptionPicture = create_action_wrapper(app, 'ViewOptionPicture')
-        self.ViewOptionRevision = create_action_wrapper(app, 'ViewOptionRevision')
-        self.ViewShowGrid = create_action_wrapper(app, 'ViewShowGrid')
-        self.ViewZoom = create_action_wrapper(app, 'ViewZoom')
-        self.ViewZoomFitPage = create_action_wrapper(app, 'ViewZoomFitPage')
-        self.ViewZoomFitWidth = create_action_wrapper(app, 'ViewZoomFitWidth')
-        self.ViewZoomNormal = create_action_wrapper(app, 'ViewZoomNormal')
-        self.VoiceCommand = create_action_wrapper(app, 'VoiceCommand')
-        
+    @property    
+    def AddHanjaWord(self):
+        return self._app.create_action("AddHanjaWord", None)
 
-        
-    
-    
-    
+    @property    
+    def AllReplace(self):
+        return self._app.create_action("AllReplace", "FindReplace")
+
+    @property    
+    def AQcommandMerge(self):
+        return self._app.create_action("AQcommandMerge", "UserQCommandFile")
+
+    @property    
+    def AutoChangeHangul(self):
+        return self._app.create_action("AutoChangeHangul", None)
+
+    @property    
+    def AutoChangeRun(self):
+        return self._app.create_action("AutoChangeRun", None)
+
+    @property    
+    def Average(self):
+        return self._app.create_action("Average", "Sum")
+
+    @property    
+    def BackwardFind(self):
+        return self._app.create_action("BackwardFind", "FindReplace")
+
+    @property    
+    def Bookmark(self):
+        return self._app.create_action("Bookmark", "BookMark")
+
+    @property    
+    def BreakColDef(self):
+        return self._app.create_action("BreakColDef", None)
+
+    @property    
+    def BreakColumn(self):
+        return self._app.create_action("BreakColumn", None)
+
+    @property    
+    def BreakLine(self):
+        return self._app.create_action("BreakLine", None)
+
+    @property    
+    def BreakPage(self):
+        return self._app.create_action("BreakPage", None)
+
+    @property    
+    def BreakPara(self):
+        return self._app.create_action("BreakPara", None)
+
+    @property    
+    def BreakSection(self):
+        return self._app.create_action("BreakSection", None)
+
+    @property    
+    def Cancel(self):
+        return self._app.create_action("Cancel", None)
+
+    @property    
+    def CaptureDialog(self):
+        return self._app.create_action("CaptureDialog", None)
+
+    @property    
+    def CaptureHandler(self):
+        return self._app.create_action("CaptureHandler", None)
+
+    @property    
+    def CellBorder(self):
+        return self._app.create_action("CellBorder", "CellBorderFill")
+
+    @property    
+    def CellBorderFill(self):
+        return self._app.create_action("CellBorderFill", "CellBorderFill")
+
+    @property    
+    def CellFill(self):
+        return self._app.create_action("CellFill", "CellBorderFill")
+
+    @property    
+    def CellZoneBorder(self):
+        return self._app.create_action("CellZoneBorder", "CellBorderFill")
+
+    @property    
+    def CellZoneBorderFill(self):
+        return self._app.create_action("CellZoneBorderFill", "CellBorderFill")
+
+    @property    
+    def CellZoneFill(self):
+        return self._app.create_action("CellZoneFill", "CellBorderFill")
+
+    @property    
+    def ChangeRome(self):
+        return self._app.create_action("ChangeRome", None)
+
+    @property    
+    def CharShape(self):
+        return self._app.create_action("CharShape", "CharShape")
+
+    @property    
+    def CharShapeBold(self):
+        return self._app.create_action("CharShapeBold", None)
+
+    @property    
+    def CharShapeCenterline(self):
+        return self._app.create_action("CharShapeCenterline", None)
+
+    @property    
+    def CharShapeDialog(self):
+        return self._app.create_action("CharShapeDialog", "CharShape")
+
+    @property    
+    def CharShapeDialogWithoutBorder(self):
+        return self._app.create_action("CharShapeDialogWithoutBorder", "CharShape")
+
+    @property    
+    def CharShapeEmboss(self):
+        return self._app.create_action("CharShapeEmboss", None)
+
+    @property    
+    def CharShapeEngrave(self):
+        return self._app.create_action("CharShapeEngrave", None)
+
+    @property    
+    def CharShapeHeight(self):
+        return self._app.create_action("CharShapeHeight", None)
+
+    @property    
+    def CharShapeHeightDecrease(self):
+        return self._app.create_action("CharShapeHeightDecrease", None)
+
+    @property    
+    def CharShapeHeightIncrease(self):
+        return self._app.create_action("CharShapeHeightIncrease", None)
+
+    @property    
+    def CharShapeItalic(self):
+        return self._app.create_action("CharShapeItalic", None)
+
+    @property    
+    def CharShapeLang(self):
+        return self._app.create_action("CharShapeLang", None)
+
+    @property    
+    def CharShapeNextFaceName(self):
+        return self._app.create_action("CharShapeNextFaceName", None)
+
+    @property    
+    def CharShapeNormal(self):
+        return self._app.create_action("CharShapeNormal", None)
+
+    @property    
+    def CharShapeOutline(self):
+        return self._app.create_action("CharShapeOutline", None)
+
+    @property    
+    def CharShapePrevFaceName(self):
+        return self._app.create_action("CharShapePrevFaceName", None)
+
+    @property    
+    def CharShapeShadow(self):
+        return self._app.create_action("CharShapeShadow", None)
+
+    @property    
+    def CharShapeSpacing(self):
+        return self._app.create_action("CharShapeSpacing", None)
+
+    @property    
+    def CharShapeSpacingDecrease(self):
+        return self._app.create_action("CharShapeSpacingDecrease", None)
+
+    @property    
+    def CharShapeSpacingIncrease(self):
+        return self._app.create_action("CharShapeSpacingIncrease", None)
+
+    @property    
+    def CharShapeSubscript(self):
+        return self._app.create_action("CharShapeSubscript", None)
+
+    @property    
+    def CharShapeSuperscript(self):
+        return self._app.create_action("CharShapeSuperscript", None)
+
+    @property    
+    def CharShapeSuperSubscript(self):
+        return self._app.create_action("CharShapeSuperSubscript", None)
+
+    @property    
+    def CharShapeTextColorBlack(self):
+        return self._app.create_action("CharShapeTextColorBlack", "CharShape")
+
+    @property    
+    def CharShapeTextColorBlue(self):
+        return self._app.create_action("CharShapeTextColorBlue", "CharShape")
+
+    @property    
+    def CharShapeTextColorBluish(self):
+        return self._app.create_action("CharShapeTextColorBluish", "CharShape")
+
+    @property    
+    def CharShapeTextColorGreen(self):
+        return self._app.create_action("CharShapeTextColorGreen", "CharShape")
+
+    @property    
+    def CharShapeTextColorRed(self):
+        return self._app.create_action("CharShapeTextColorRed", "CharShape")
+
+    @property    
+    def CharShapeTextColorViolet(self):
+        return self._app.create_action("CharShapeTextColorViolet", "CharShape")
+
+    @property    
+    def CharShapeTextColorWhite(self):
+        return self._app.create_action("CharShapeTextColorWhite", "CharShape")
+
+    @property    
+    def CharShapeTextColorYellow(self):
+        return self._app.create_action("CharShapeTextColorYellow", "CharShape")
+
+    @property    
+    def CharShapeTypeFace(self):
+        return self._app.create_action("CharShapeTypeFace", None)
+
+    @property    
+    def CharShapeUnderline(self):
+        return self._app.create_action("CharShapeUnderline", None)
+
+    @property    
+    def CharShapeWidth(self):
+        return self._app.create_action("CharShapeWidth", None)
+
+    @property    
+    def CharShapeWidthDecrease(self):
+        return self._app.create_action("CharShapeWidthDecrease", None)
+
+    @property    
+    def CharShapeWidthIncrease(self):
+        return self._app.create_action("CharShapeWidthIncrease", None)
+
+    @property    
+    def Close(self):
+        return self._app.create_action("Close", None)
+
+    @property    
+    def CloseEx(self):
+        return self._app.create_action("CloseEx", None)
+
+    @property    
+    def Comment(self):
+        return self._app.create_action("Comment", None)
+
+    @property    
+    def CommentDelete(self):
+        return self._app.create_action("CommentDelete", None)
+
+    @property    
+    def CommentModify(self):
+        return self._app.create_action("CommentModify", None)
+
+    @property    
+    def ComposeChars(self):
+        return self._app.create_action("ComposeChars", "ChCompose")
+
+    @property    
+    def ConvertCase(self):
+        return self._app.create_action("ConvertCase", "ConvertCase")
+
+    @property    
+    def ConvertFullHalfWidth(self):
+        return self._app.create_action("ConvertFullHalfWidth", "ConvertFullHalf")
+
+    @property    
+    def ConvertHiraGata(self):
+        return self._app.create_action("ConvertHiraGata", "ConvertHiraToGata")
+
+    @property    
+    def ConvertJianFan(self):
+        return self._app.create_action("ConvertJianFan", "ConvertJianFan")
+
+    @property    
+    def ConvertToHangul(self):
+        return self._app.create_action("ConvertToHangul", "ConvertToHangul")
+
+    @property    
+    def Copy(self):
+        return self._app.create_action("Copy", None)
+
+    @property    
+    def CopyPage(self):
+        return self._app.create_action("CopyPage", None)
+
+    @property    
+    def Cut(self):
+        return self._app.create_action("Cut", None)
+
+    @property    
+    def Delete(self):
+        return self._app.create_action("Delete", None)
+
+    @property    
+    def DeleteBack(self):
+        return self._app.create_action("DeleteBack", None)
+
+    @property    
+    def DeleteCtrls(self):
+        return self._app.create_action("DeleteCtrls", "DeleteCtrls")
+
+    @property    
+    def DeleteDutmal(self):
+        return self._app.create_action("DeleteDutmal", None)
+
+    @property    
+    def DeleteField(self):
+        return self._app.create_action("DeleteField", None)
+
+    @property    
+    def DeleteFieldMemo(self):
+        return self._app.create_action("DeleteFieldMemo", None)
+
+    @property    
+    def DeleteLine(self):
+        return self._app.create_action("DeleteLine", None)
+
+    @property    
+    def DeleteLineEnd(self):
+        return self._app.create_action("DeleteLineEnd", None)
+
+    @property    
+    def DeleteWord(self):
+        return self._app.create_action("DeleteWord", None)
+
+    @property    
+    def DeleteWordBack(self):
+        return self._app.create_action("DeleteWordBack", None)
+
+    @property    
+    def DocFindEnd(self):
+        return self._app.create_action("DocFindEnd", "FindReplace")
+
+    @property    
+    def DocFindInit(self):
+        return self._app.create_action("DocFindInit", "FindReplace")
+
+    @property    
+    def DocFindNext(self):
+        return self._app.create_action("DocFindNext", "DocFindInfo")
+
+    @property    
+    def DocSummaryInfo(self):
+        return self._app.create_action("DocSummaryInfo", "SummaryInfo")
+
+    @property    
+    def DocumentInfo(self):
+        return self._app.create_action("DocumentInfo", "DocumentInfo")
+
+    @property    
+    def DrawObjCancelOneStep(self):
+        return self._app.create_action("DrawObjCancelOneStep", None)
+
+    @property    
+    def DrawObjCreatorArc(self):
+        return self._app.create_action("DrawObjCreatorArc", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorCanvas(self):
+        return self._app.create_action("DrawObjCreatorCanvas", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorCurve(self):
+        return self._app.create_action("DrawObjCreatorCurve", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorEllipse(self):
+        return self._app.create_action("DrawObjCreatorEllipse", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorFreeDrawing(self):
+        return self._app.create_action("DrawObjCreatorFreeDrawing", None)
+
+    @property    
+    def DrawObjCreatorLine(self):
+        return self._app.create_action("DrawObjCreatorLine", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorMultiArc(self):
+        return self._app.create_action("DrawObjCreatorMultiArc", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorMultiCanvas(self):
+        return self._app.create_action("DrawObjCreatorMultiCanvas", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorMultiCurve(self):
+        return self._app.create_action("DrawObjCreatorMultiCurve", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorMultiEllipse(self):
+        return self._app.create_action("DrawObjCreatorMultiEllipse", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorMultiFreeDrawing(self):
+        return self._app.create_action("DrawObjCreatorMultiFreeDrawing", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorMultiLine(self):
+        return self._app.create_action("DrawObjCreatorMultiLine", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorMultiPolygon(self):
+        return self._app.create_action("DrawObjCreatorMultiPolygon", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorMultiRectangle(self):
+        return self._app.create_action("DrawObjCreatorMultiRectangle", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorMultiTextBox(self):
+        return self._app.create_action("DrawObjCreatorMultiTextBox", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorObject(self):
+        return self._app.create_action("DrawObjCreatorObject", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorPolygon(self):
+        return self._app.create_action("DrawObjCreatorPolygon", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorRectangle(self):
+        return self._app.create_action("DrawObjCreatorRectangle", "ShapeObject")
+
+    @property    
+    def DrawObjCreatorTextBox(self):
+        return self._app.create_action("DrawObjCreatorTextBox", "ShapeObject")
+
+    @property    
+    def DrawObjEditDetail(self):
+        return self._app.create_action("DrawObjEditDetail", None)
+
+    @property    
+    def DrawObjOpenClosePolygon(self):
+        return self._app.create_action("DrawObjOpenClosePolygon", None)
+
+    @property    
+    def DrawObjTemplateLoad(self):
+        return self._app.create_action("DrawObjTemplateLoad", "ShapeObject")
+
+    @property    
+    def DrawObjTemplateSave(self):
+        return self._app.create_action("DrawObjTemplateSave", None)
+
+    @property    
+    def DrawShapeObjShadow(self):
+        return self._app.create_action("DrawShapeObjShadow", "ShapeObject")
+
+    @property    
+    def DropCap(self):
+        return self._app.create_action("DropCap", "DropCap")
+
+    @property    
+    def DutmalChars(self):
+        return self._app.create_action("DutmalChars", "Dutmal")
+
+    @property    
+    def EditFieldMemo(self):
+        return self._app.create_action("EditFieldMemo", None)
+
+    @property    
+    def EquationCreate(self):
+        return self._app.create_action("EquationCreate", "EqEdit")
+
+    @property    
+    def EquationModify(self):
+        return self._app.create_action("EquationModify", "EqEdit")
+
+    @property    
+    def EquationPropertyDialog(self):
+        return self._app.create_action("EquationPropertyDialog", "ShapeObject")
+
+    @property    
+    def Erase(self):
+        return self._app.create_action("Erase", None)
+
+    @property    
+    def ExchangeFootnoteEndnote(self):
+        return self._app.create_action("ExchangeFootnoteEndnote", "ExchangeFootnoteEndNote")
+
+    @property    
+    def ExecReplace(self):
+        return self._app.create_action("ExecReplace", "FindReplace")
+
+    @property    
+    def FileClose(self):
+        return self._app.create_action("FileClose", None)
+
+    @property    
+    def FileNew(self):
+        return self._app.create_action("FileNew", None)
+
+    @property    
+    def FileOpen(self):
+        return self._app.create_action("FileOpen", None)
+
+    @property    
+    def FileOpenMRU(self):
+        return self._app.create_action("FileOpenMRU", None)
+
+    @property    
+    def FilePassword(self):
+        return self._app.create_action("FilePassword", "Password")
+
+    @property    
+    def FilePreview(self):
+        return self._app.create_action("FilePreview", None)
+
+    @property    
+    def FileQuit(self):
+        return self._app.create_action("FileQuit", None)
+
+    @property    
+    def FileSave(self):
+        return self._app.create_action("FileSave", None)
+
+    @property    
+    def FileSaveAs(self):
+        return self._app.create_action("FileSaveAs", None)
+
+    @property    
+    def FileSetSecurity(self):
+        return self._app.create_action("FileSetSecurity", "FileSetSecurity")
+
+    @property    
+    def FileTemplate(self):
+        return self._app.create_action("FileTemplate", "FileOpen")
+
+    @property    
+    def FindAll(self):
+        return self._app.create_action("FindAll", "FindReplace")
+
+    @property    
+    def FindDlg(self):
+        return self._app.create_action("FindDlg", "FindReplace")
+
+    @property    
+    def FindForeBackBookmark(self):
+        return self._app.create_action("FindForeBackBookmark", None)
+
+    @property    
+    def FindForeBackCtrl(self):
+        return self._app.create_action("FindForeBackCtrl", None)
+
+    @property    
+    def FindForeBackFind(self):
+        return self._app.create_action("FindForeBackFind", None)
+
+    @property    
+    def FindForeBackLine(self):
+        return self._app.create_action("FindForeBackLine", None)
+
+    @property    
+    def FindForeBackPage(self):
+        return self._app.create_action("FindForeBackPage", None)
+
+    @property    
+    def FindForeBackSection(self):
+        return self._app.create_action("FindForeBackSection", None)
+
+    @property    
+    def FindForeBackStyle(self):
+        return self._app.create_action("FindForeBackStyle", None)
+
+    @property    
+    def FootnoteOption(self):
+        return self._app.create_action("FootnoteOption", "SecDef")
+
+    @property    
+    def ForwardFind(self):
+        return self._app.create_action("ForwardFind", "FindReplace")
+
+    @property    
+    def FrameStatusBar(self):
+        return self._app.create_action("FrameStatusBar", None)
+
+    @property    
+    def FtpUpload(self):
+        return self._app.create_action("FtpUpload", "FtpUpload")
+
+    @property    
+    def FtpDownload(self):
+        return self._app.create_action("FtpDownload", "FtpDownload")
+
+    @property    
+    def GetDefaultBullet(self):
+        return self._app.create_action("GetDefaultBullet", "ParaShape")
+
+    @property    
+    def GetDefaultParaNumber(self):
+        return self._app.create_action("GetDefaultParaNumber", "ParaShape")
+
+    @property    
+    def GetDocFilters(self):
+        return self._app.create_action("GetDocFilters", "DocFilters")
+
+    @property    
+    def GetSectionApplyString(self):
+        return self._app.create_action("GetSectionApplyString", "SectionApply")
+
+    @property    
+    def GetSectionApplyTo(self):
+        return self._app.create_action("GetSectionApplyTo", "SectionApply")
+
+    @property    
+    def GetVersionItemInfo(self):
+        return self._app.create_action("GetVersionItemInfo", "VersionInfo")
+
+    @property    
+    def Goto(self):
+        return self._app.create_action("Goto", "GotoE")
+
+    @property    
+    def GotoStyle(self):
+        return self._app.create_action("GotoStyle", "GotoE")
+
+    @property    
+    def HanThDIC(self):
+        return self._app.create_action("HanThDIC", None)
+
+    @property    
+    def HeaderFooter(self):
+        return self._app.create_action("HeaderFooter", "HeaderFooter")
+
+    @property    
+    def HeaderFooterDelete(self):
+        return self._app.create_action("HeaderFooterDelete", None)
+
+    @property    
+    def HeaderFooterInsField(self):
+        return self._app.create_action("HeaderFooterInsField", "HeaderFooter")
+
+    @property    
+    def HeaderFooterModify(self):
+        return self._app.create_action("HeaderFooterModify", None)
+
+    @property    
+    def HeaderFooterToNext(self):
+        return self._app.create_action("HeaderFooterToNext", None)
+
+    @property    
+    def HeaderFooterToPrev(self):
+        return self._app.create_action("HeaderFooterToPrev", None)
+
+    @property    
+    def HiddenCredits(self):
+        return self._app.create_action("HiddenCredits", None)
+
+    @property    
+    def HideTitle(self):
+        return self._app.create_action("HideTitle", None)
+
+    @property    
+    def HimKbdChange(self):
+        return self._app.create_action("HimKbdChange", None)
+
+    @property    
+    def HwpCtrlEquationCreate97(self):
+        return self._app.create_action("HwpCtrlEquationCreate97", None)
+
+    @property    
+    def HwpCtrlFileNew(self):
+        return self._app.create_action("HwpCtrlFileNew", None)
+
+    @property    
+    def HwpCtrlFileOpen(self):
+        return self._app.create_action("HwpCtrlFileOpen", None)
+
+    @property    
+    def HwpCtrlFileSave(self):
+        return self._app.create_action("HwpCtrlFileSave", None)
+
+    @property    
+    def HwpCtrlFileSaveAs(self):
+        return self._app.create_action("HwpCtrlFileSaveAs", None)
+
+    @property    
+    def HwpCtrlFileSaveAsAutoBlock(self):
+        return self._app.create_action("HwpCtrlFileSaveAsAutoBlock", None)
+
+    @property    
+    def HwpCtrlFileSaveAutoBlock(self):
+        return self._app.create_action("HwpCtrlFileSaveAutoBlock", None)
+
+    @property    
+    def HwpCtrlFindDlg(self):
+        return self._app.create_action("HwpCtrlFindDlg", None)
+
+    @property    
+    def HwpCtrlReplaceDlg(self):
+        return self._app.create_action("HwpCtrlReplaceDlg", None)
+
+    @property    
+    def HwpDic(self):
+        return self._app.create_action("HwpDic", None)
+
+    @property    
+    def Hyperlink(self):
+        return self._app.create_action("Hyperlink", "HyperLink")
+
+    @property    
+    def HyperlinkBackward(self):
+        return self._app.create_action("HyperlinkBackward", None)
+
+    @property    
+    def HyperlinkForward(self):
+        return self._app.create_action("HyperlinkForward", None)
+
+    @property    
+    def HyperlinkJump(self):
+        return self._app.create_action("HyperlinkJump", "HyperlinkJump")
+
+    @property    
+    def Idiom(self):
+        return self._app.create_action("Idiom", "Idiom")
+
+    @property    
+    def ImageFindPath(self):
+        return self._app.create_action("ImageFindPath", None)
+
+    @property    
+    def IndexMark(self):
+        return self._app.create_action("IndexMark", "IndexMark")
+
+    @property    
+    def IndexMarkModify(self):
+        return self._app.create_action("IndexMarkModify", "IndexMark")
+
+    @property    
+    def InputCodeChange(self):
+        return self._app.create_action("InputCodeChange", None)
+
+    @property    
+    def InputCodeTable(self):
+        return self._app.create_action("InputCodeTable", "CodeTable")
+
+    @property    
+    def InputDateStyle(self):
+        return self._app.create_action("InputDateStyle", "InputDateStyle")
+
+    @property    
+    def InputHanja(self):
+        return self._app.create_action("InputHanja", None)
+
+    @property    
+    def InputHanjaBusu(self):
+        return self._app.create_action("InputHanjaBusu", None)
+
+    @property    
+    def InputHanjaMean(self):
+        return self._app.create_action("InputHanjaMean", None)
+
+    @property    
+    def InsertAutoNum(self):
+        return self._app.create_action("InsertAutoNum", None)
+
+    @property    
+    def InsertCCLMark(self):
+        return self._app.create_action("InsertCCLMark", "HyperLink")
+
+    @property    
+    def InsertChart(self):
+        return self._app.create_action("InsertChart", "OleCreation")
+
+    @property    
+    def InsertConnectLineArcBoth(self):
+        return self._app.create_action("InsertConnectLineArcBoth", "ShapeObject")
+
+    @property    
+    def InsertConnectLineArcNoArrow(self):
+        return self._app.create_action("InsertConnectLineArcNoArrow", "ShapeObject")
+
+    @property    
+    def InsertConnectLineArcOneWay(self):
+        return self._app.create_action("InsertConnectLineArcOneWay", "ShapeObject")
+
+    @property    
+    def InsertConnectLineMultiArcBoth(self):
+        return self._app.create_action("InsertConnectLineMultiArcBoth", "ShapeObject")
+
+    @property    
+    def InsertConnectLineMultiArcNoArrow(self):
+        return self._app.create_action("InsertConnectLineMultiArcNoArrow", "ShapeObject")
+
+    @property    
+    def InsertConnectLineMultiArcOneWay(self):
+        return self._app.create_action("InsertConnectLineMultiArcOneWay", "ShapeObject")
+
+    @property    
+    def InsertConnectLineMultiStraightBoth(self):
+        return self._app.create_action("InsertConnectLineMultiStraightBoth", "ShapeObject")
+
+    @property    
+    def InsertConnectLineMultiStraightNoArrow(self):
+        return self._app.create_action("InsertConnectLineMultiStraightNoArrow", "ShapeObject")
+
+    @property    
+    def InsertConnectLineMultiStraightOneWay(self):
+        return self._app.create_action("InsertConnectLineMultiStraightOneWay", "ShapeObject")
+
+    @property    
+    def InsertConnectLineMultiStrokeBoth(self):
+        return self._app.create_action("InsertConnectLineMultiStrokeBoth", "ShapeObject")
+
+    @property    
+    def InsertConnectLineMultiStrokeNoArrow(self):
+        return self._app.create_action("InsertConnectLineMultiStrokeNoArrow", "ShapeObject")
+
+    @property    
+    def InsertConnectLineMultiStrokeOneWay(self):
+        return self._app.create_action("InsertConnectLineMultiStrokeOneWay", "ShapeObject")
+
+    @property    
+    def InsertConnectLineStraightBoth(self):
+        return self._app.create_action("InsertConnectLineStraightBoth", "ShapeObject")
+
+    @property    
+    def InsertConnectLineStraightNoArrow(self):
+        return self._app.create_action("InsertConnectLineStraightNoArrow", "ShapeObject")
+
+    @property    
+    def InsertConnectLineStraightOneWay(self):
+        return self._app.create_action("InsertConnectLineStraightOneWay", "ShapeObject")
+
+    @property    
+    def InsertConnectLineStrokeBoth(self):
+        return self._app.create_action("InsertConnectLineStrokeBoth", "ShapeObject")
+
+    @property    
+    def InsertConnectLineStrokeNoArrow(self):
+        return self._app.create_action("InsertConnectLineStrokeNoArrow", "ShapeObject")
+
+    @property    
+    def InsertConnectLineStrokeOneWay(self):
+        return self._app.create_action("InsertConnectLineStrokeOneWay", "ShapeObject")
+
+    @property    
+    def InsertCpNo(self):
+        return self._app.create_action("InsertCpNo", None)
+
+    @property    
+    def InsertCpTpNo(self):
+        return self._app.create_action("InsertCpTpNo", None)
+
+    @property    
+    def InsertCrossReference(self):
+        return self._app.create_action("InsertCrossReference", "ActionCrossRef")
+
+    @property    
+    def InsertDateCode(self):
+        return self._app.create_action("InsertDateCode", None)
+
+    @property    
+    def InsertDocInfo(self):
+        return self._app.create_action("InsertDocInfo", None)
+
+    @property    
+    def InsertDocTitle(self):
+        return self._app.create_action("InsertDocTitle", "InsertFieldTemplate")
+
+    @property    
+    def InsertEndnote(self):
+        return self._app.create_action("InsertEndnote", None)
+
+    @property    
+    def InsertFieldDateTime(self):
+        return self._app.create_action("InsertFieldDateTime", None)
+
+    @property    
+    def InsertFieldFileName(self):
+        return self._app.create_action("InsertFieldFileName", "InsertFieldTemplate")
+
+    @property    
+    def InsertFieldMemo(self):
+        return self._app.create_action("InsertFieldMemo", None)
+
+    @property    
+    def InsertFieldRevisionChagne(self):
+        return self._app.create_action("InsertFieldRevisionChagne", None)
+
+    @property    
+    def InsertFieldTemplate(self):
+        return self._app.create_action("InsertFieldTemplate", "InsertFieldTemplate")
+
+    @property    
+    def InsertFile(self):
+        return self._app.create_action("InsertFile", "InsertFile")
+
+    @property    
+    def InsertFileName(self):
+        return self._app.create_action("InsertFileName", "InsertFieldTemplate")
+
+    @property    
+    def InsertFilePath(self):
+        return self._app.create_action("InsertFilePath", "InsertFieldTemplate")
+
+    @property    
+    def InsertFixedWidthSpace(self):
+        return self._app.create_action("InsertFixedWidthSpace", None)
+
+    @property    
+    def InsertFootnote(self):
+        return self._app.create_action("InsertFootnote", None)
+
+    @property    
+    def InsertHyperlink(self):
+        return self._app.create_action("InsertHyperlink", "HyperlinkJump")
+
+    @property    
+    def InsertIdiom(self):
+        return self._app.create_action("InsertIdiom", "Idiom")
+
+    @property    
+    def InsertLastPrintDate(self):
+        return self._app.create_action("InsertLastPrintDate", None)
+
+    @property    
+    def InsertLastSaveBy(self):
+        return self._app.create_action("InsertLastSaveBy", None)
+
+    @property    
+    def InsertLastSaveDate(self):
+        return self._app.create_action("InsertLastSaveDate", None)
+
+    @property    
+    def InsertLine(self):
+        return self._app.create_action("InsertLine", None)
+
+    @property    
+    def InsertNonBreakingSpace(self):
+        return self._app.create_action("InsertNonBreakingSpace", None)
+
+    @property    
+    def InsertPageNum(self):
+        return self._app.create_action("InsertPageNum", None)
+
+    @property    
+    def InsertRevision(self):
+        return self._app.create_action("InsertRevision", "RevisionDef")
+
+    @property    
+    def InsertRevisionAttach(self):
+        return self._app.create_action("InsertRevisionAttach", "RevisionDef")
+
+    @property    
+    def InsertRevisionClipping(self):
+        return self._app.create_action("InsertRevisionClipping", "RevisionDef")
+
+    @property    
+    def InsertRevisionDelete(self):
+        return self._app.create_action("InsertRevisionDelete", "RevisionDef")
+
+    @property    
+    def InsertRevisionHyperlink(self):
+        return self._app.create_action("InsertRevisionHyperlink", "HyperLink")
+
+    @property    
+    def InsertRevisionInsert(self):
+        return self._app.create_action("InsertRevisionInsert", "RevisionDef")
+
+    @property    
+    def InsertRevisionLeftMove(self):
+        return self._app.create_action("InsertRevisionLeftMove", "RevisionDef")
+
+    @property    
+    def InsertRevisionLine(self):
+        return self._app.create_action("InsertRevisionLine", "RevisionDef")
+
+    @property    
+    def InsertRevisionLineAttach(self):
+        return self._app.create_action("InsertRevisionLineAttach", "RevisionDef")
+
+    @property    
+    def InsertRevisionLineInsert(self):
+        return self._app.create_action("InsertRevisionLineInsert", "RevisionDef")
+
+    @property    
+    def InsertRevisionLineLink(self):
+        return self._app.create_action("InsertRevisionLineLink", "RevisionDef")
+
+    @property    
+    def InsertRevisionLineSeparate(self):
+        return self._app.create_action("InsertRevisionLineSeparate", "RevisionDef")
+
+    @property    
+    def InsertRevisionLineTransfer(self):
+        return self._app.create_action("InsertRevisionLineTransfer", "RevisionDef")
+
+    @property    
+    def InsertRevisionLineTransferSplit(self):
+        return self._app.create_action("InsertRevisionLineTransferSplit", "RevisionDef")
+
+    @property    
+    def InsertRevisionPraise(self):
+        return self._app.create_action("InsertRevisionPraise", "RevisionDef")
+
+    @property    
+    def InsertRevisionRightMove(self):
+        return self._app.create_action("InsertRevisionRightMove", "RevisionDef")
+
+    @property    
+    def InsertRevisionSawTooth(self):
+        return self._app.create_action("InsertRevisionSawTooth", "RevisionDef")
+
+    @property    
+    def InsertRevisionSimpleChange(self):
+        return self._app.create_action("InsertRevisionSimpleChange", "RevisionDef")
+
+    @property    
+    def InsertRevisionSpace(self):
+        return self._app.create_action("InsertRevisionSpace", "RevisionDef")
+
+    @property    
+    def InsertRevisionSymbol(self):
+        return self._app.create_action("InsertRevisionSymbol", "RevisionDef")
+
+    @property    
+    def InsertRevisionThinking(self):
+        return self._app.create_action("InsertRevisionThinking", "RevisionDef")
+
+    @property    
+    def InsertRevisionTransfer(self):
+        return self._app.create_action("InsertRevisionTransfer", "RevisionDef")
+
+    @property    
+    def InsertRevisionTransferSplit(self):
+        return self._app.create_action("InsertRevisionTransferSplit", "RevisionDef")
+
+    @property    
+    def InsertSoftHyphen(self):
+        return self._app.create_action("InsertSoftHyphen", None)
+
+    @property    
+    def InsertSpace(self):
+        return self._app.create_action("InsertSpace", None)
+
+    @property    
+    def InsertStringDateTime(self):
+        return self._app.create_action("InsertStringDateTime", None)
+
+    @property    
+    def InsertTab(self):
+        return self._app.create_action("InsertTab", None)
+
+    @property    
+    def InsertText(self):
+        return self._app.create_action("InsertText", "InsertText")
+
+    @property    
+    def InsertTpNo(self):
+        return self._app.create_action("InsertTpNo", None)
+
+    @property    
+    def InsertUserName(self):
+        return self._app.create_action("InsertUserName", "InsertFieldTemplate")
+
+    @property    
+    def InsertVoice(self):
+        return self._app.create_action("InsertVoice", "OleCreation")
+
+    @property    
+    def Jajun(self):
+        return self._app.create_action("Jajun", None)
+
+    @property    
+    def LabelAdd(self):
+        return self._app.create_action("LabelAdd", None)
+
+    @property    
+    def LabelTemplate(self):
+        return self._app.create_action("LabelTemplate", None)
+
+    @property    
+    def LinkDocument(self):
+        return self._app.create_action("LinkDocument", "LinkDocument")
+
+    @property    
+    def LinkTextBox(self):
+        return self._app.create_action("LinkTextBox", None)
+
+    @property    
+    def MacroDefine(self):
+        return self._app.create_action("MacroDefine", "KeyMacro")
+
+    @property    
+    def MacroPause(self):
+        return self._app.create_action("MacroPause", None)
+
+    @property    
+    def MacroPlay1(self):
+        return self._app.create_action("MacroPlay1", None)
+
+    @property    
+    def MacroPlay10(self):
+        return self._app.create_action("MacroPlay10", None)
+
+    @property    
+    def MacroPlay11(self):
+        return self._app.create_action("MacroPlay11", None)
+
+    @property    
+    def MacroPlay2(self):
+        return self._app.create_action("MacroPlay2", None)
+
+    @property    
+    def MacroPlay3(self):
+        return self._app.create_action("MacroPlay3", None)
+
+    @property    
+    def MacroPlay4(self):
+        return self._app.create_action("MacroPlay4", None)
+
+    @property    
+    def MacroPlay5(self):
+        return self._app.create_action("MacroPlay5", None)
+
+    @property    
+    def MacroPlay6(self):
+        return self._app.create_action("MacroPlay6", None)
+
+    @property    
+    def MacroPlay7(self):
+        return self._app.create_action("MacroPlay7", None)
+
+    @property    
+    def MacroPlay8(self):
+        return self._app.create_action("MacroPlay8", None)
+
+    @property    
+    def MacroPlay9(self):
+        return self._app.create_action("MacroPlay9", None)
+
+    @property    
+    def MacroRepeat(self):
+        return self._app.create_action("MacroRepeat", None)
+
+    @property    
+    def MacroRepeatDlg(self):
+        return self._app.create_action("MacroRepeatDlg", "KeyMacro")
+
+    @property    
+    def MacroStop(self):
+        return self._app.create_action("MacroStop", None)
+
+    @property    
+    def MailMergeField(self):
+        return self._app.create_action("MailMergeField", None)
+
+    @property    
+    def MailMergeGenerate(self):
+        return self._app.create_action("MailMergeGenerate", "MailMergeGenerate")
+
+    @property    
+    def MailMergeInsert(self):
+        return self._app.create_action("MailMergeInsert", "FieldCtrl")
+
+    @property    
+    def MailMergeModify(self):
+        return self._app.create_action("MailMergeModify", "FieldCtrl")
+
+    @property    
+    def MakeAllVersionDiffs(self):
+        return self._app.create_action("MakeAllVersionDiffs", "VersionInfo")
+
+    @property    
+    def MakeContents(self):
+        return self._app.create_action("MakeContents", "MakeContents")
+
+    @property    
+    def MakeIndex(self):
+        return self._app.create_action("MakeIndex", None)
+
+    @property    
+    def ManualChangeHangul(self):
+        return self._app.create_action("ManualChangeHangul", None)
+
+    @property    
+    def ManuScriptTemplate(self):
+        return self._app.create_action("ManuScriptTemplate", "FileOpen")
+
+    @property    
+    def MarkPenShape(self):
+        return self._app.create_action("MarkPenShape", "MarkpenShape")
+
+    @property    
+    def MarkTitle(self):
+        return self._app.create_action("MarkTitle", None)
+
+    @property    
+    def MasterPage(self):
+        return self._app.create_action("MasterPage", "MasterPage")
+
+    @property    
+    def MasterPageDelete(self):
+        return self._app.create_action("MasterPageDelete", "MasterPage")
+
+    @property    
+    def MasterPageDuplicate(self):
+        return self._app.create_action("MasterPageDuplicate", None)
+
+    @property    
+    def MasterPageEntry(self):
+        return self._app.create_action("MasterPageEntry", "MasterPage")
+
+    @property    
+    def MasterPageExcept(self):
+        return self._app.create_action("MasterPageExcept", None)
+
+    @property    
+    def MasterPageFront(self):
+        return self._app.create_action("MasterPageFront", None)
+
+    @property    
+    def MasterPagePrevSection(self):
+        return self._app.create_action("MasterPagePrevSection", None)
+
+    @property    
+    def MasterPageToNext(self):
+        return self._app.create_action("MasterPageToNext", None)
+
+    @property    
+    def MasterPageToPrevious(self):
+        return self._app.create_action("MasterPageToPrevious", None)
+
+    @property    
+    def MasterPageTypeDlg(self):
+        return self._app.create_action("MasterPageTypeDlg", "MasterPage")
+
+    @property    
+    def MemoShape(self):
+        return self._app.create_action("MemoShape", "SecDef")
+
+    @property    
+    def MessageBox(self):
+        return self._app.create_action("MessageBox", None)
+
+    @property    
+    def ModifyBookmark(self):
+        return self._app.create_action("ModifyBookmark", "BookMark")
+
+    @property    
+    def ModifyComposeChars(self):
+        return self._app.create_action("ModifyComposeChars", None)
+
+    @property    
+    def ModifyCrossReference(self):
+        return self._app.create_action("ModifyCrossReference", "ActionCrossRef")
+
+    @property    
+    def ModifyCtrl(self):
+        return self._app.create_action("ModifyCtrl", None)
+
+    @property    
+    def ModifyDutmal(self):
+        return self._app.create_action("ModifyDutmal", None)
+
+    @property    
+    def ModifyFieldClickhere(self):
+        return self._app.create_action("ModifyFieldClickhere", "InsertFieldTemplate")
+
+    @property    
+    def ModifyFieldDate(self):
+        return self._app.create_action("ModifyFieldDate", "InsertFieldTemplate")
+
+    @property    
+    def ModifyFieldDateTime(self):
+        return self._app.create_action("ModifyFieldDateTime", "InputDateStyle")
+
+    @property    
+    def ModifyFieldPath(self):
+        return self._app.create_action("ModifyFieldPath", "InsertFieldTemplate")
+
+    @property    
+    def ModifyFieldSummary(self):
+        return self._app.create_action("ModifyFieldSummary", "InsertFieldTemplate")
+
+    @property    
+    def ModifyFieldUserInfo(self):
+        return self._app.create_action("ModifyFieldUserInfo", "InsertFieldTemplate")
+
+    @property    
+    def ModifyFillProperty(self):
+        return self._app.create_action("ModifyFillProperty", None)
+
+    @property    
+    def ModifyHyperlink(self):
+        return self._app.create_action("ModifyHyperlink", "HyperLink")
+
+    @property    
+    def ModifyLineProperty(self):
+        return self._app.create_action("ModifyLineProperty", None)
+
+    @property    
+    def ModifyRevision(self):
+        return self._app.create_action("ModifyRevision", "RevisionDef")
+
+    @property    
+    def ModifyRevisionHyperlink(self):
+        return self._app.create_action("ModifyRevisionHyperlink", "HyperLink")
+
+    @property    
+    def ModifySection(self):
+        return self._app.create_action("ModifySection", "SecDef")
+
+    @property    
+    def ModifyShapeObject(self):
+        return self._app.create_action("ModifyShapeObject", None)
+
+    @property    
+    def MoveColumnBegin(self):
+        return self._app.create_action("MoveColumnBegin", None)
+
+    @property    
+    def MoveColumnEnd(self):
+        return self._app.create_action("MoveColumnEnd", None)
+
+    @property    
+    def MoveDocBegin(self):
+        return self._app.create_action("MoveDocBegin", None)
+
+    @property    
+    def MoveDocEnd(self):
+        return self._app.create_action("MoveDocEnd", None)
+
+    @property    
+    def MoveDown(self):
+        return self._app.create_action("MoveDown", None)
+
+    @property    
+    def MoveLeft(self):
+        return self._app.create_action("MoveLeft", None)
+
+    @property    
+    def MoveLineBegin(self):
+        return self._app.create_action("MoveLineBegin", None)
+
+    @property    
+    def MoveLineDown(self):
+        return self._app.create_action("MoveLineDown", None)
+
+    @property    
+    def MoveLineEnd(self):
+        return self._app.create_action("MoveLineEnd", None)
+
+    @property    
+    def MoveLineUp(self):
+        return self._app.create_action("MoveLineUp", None)
+
+    @property    
+    def MoveListBegin(self):
+        return self._app.create_action("MoveListBegin", None)
+
+    @property    
+    def MoveListEnd(self):
+        return self._app.create_action("MoveListEnd", None)
+
+    @property    
+    def MoveNextChar(self):
+        return self._app.create_action("MoveNextChar", None)
+
+    @property    
+    def MoveNextColumn(self):
+        return self._app.create_action("MoveNextColumn", None)
+
+    @property    
+    def MoveNextParaBegin(self):
+        return self._app.create_action("MoveNextParaBegin", None)
+
+    @property    
+    def MoveNextPos(self):
+        return self._app.create_action("MoveNextPos", None)
+
+    @property    
+    def MoveNextPosEx(self):
+        return self._app.create_action("MoveNextPosEx", None)
+
+    @property    
+    def MoveNextWord(self):
+        return self._app.create_action("MoveNextWord", None)
+
+    @property    
+    def MovePageBegin(self):
+        return self._app.create_action("MovePageBegin", None)
+
+    @property    
+    def MovePageDown(self):
+        return self._app.create_action("MovePageDown", None)
+
+    @property    
+    def MovePageEnd(self):
+        return self._app.create_action("MovePageEnd", None)
+
+    @property    
+    def MovePageUp(self):
+        return self._app.create_action("MovePageUp", None)
+
+    @property    
+    def MoveParaBegin(self):
+        return self._app.create_action("MoveParaBegin", None)
+
+    @property    
+    def MoveParaEnd(self):
+        return self._app.create_action("MoveParaEnd", None)
+
+    @property    
+    def MoveParentList(self):
+        return self._app.create_action("MoveParentList", None)
+
+    @property    
+    def MovePrevChar(self):
+        return self._app.create_action("MovePrevChar", None)
+
+    @property    
+    def MovePrevColumn(self):
+        return self._app.create_action("MovePrevColumn", None)
+
+    @property    
+    def MovePrevParaBegin(self):
+        return self._app.create_action("MovePrevParaBegin", None)
+
+    @property    
+    def MovePrevParaEnd(self):
+        return self._app.create_action("MovePrevParaEnd", None)
+
+    @property    
+    def MovePrevPos(self):
+        return self._app.create_action("MovePrevPos", None)
+
+    @property    
+    def MovePrevPosEx(self):
+        return self._app.create_action("MovePrevPosEx", None)
+
+    @property    
+    def MovePrevWord(self):
+        return self._app.create_action("MovePrevWord", None)
+
+    @property    
+    def MoveRight(self):
+        return self._app.create_action("MoveRight", None)
+
+    @property    
+    def MoveRootList(self):
+        return self._app.create_action("MoveRootList", None)
+
+    @property    
+    def MoveScrollDown(self):
+        return self._app.create_action("MoveScrollDown", None)
+
+    @property    
+    def MoveScrollNext(self):
+        return self._app.create_action("MoveScrollNext", None)
+
+    @property    
+    def MoveScrollPrev(self):
+        return self._app.create_action("MoveScrollPrev", None)
+
+    @property    
+    def MoveScrollUp(self):
+        return self._app.create_action("MoveScrollUp", None)
+
+    @property    
+    def MoveSectionDown(self):
+        return self._app.create_action("MoveSectionDown", None)
+
+    @property    
+    def MoveSectionUp(self):
+        return self._app.create_action("MoveSectionUp", None)
+
+    @property    
+    def MoveSelDocBegin(self):
+        return self._app.create_action("MoveSelDocBegin", None)
+
+    @property    
+    def MoveSelDocEnd(self):
+        return self._app.create_action("MoveSelDocEnd", None)
+
+    @property    
+    def MoveSelDown(self):
+        return self._app.create_action("MoveSelDown", None)
+
+    @property    
+    def MoveSelLeft(self):
+        return self._app.create_action("MoveSelLeft", None)
+
+    @property    
+    def MoveSelLineBegin(self):
+        return self._app.create_action("MoveSelLineBegin", None)
+
+    @property    
+    def MoveSelLineDown(self):
+        return self._app.create_action("MoveSelLineDown", None)
+
+    @property    
+    def MoveSelLineEnd(self):
+        return self._app.create_action("MoveSelLineEnd", None)
+
+    @property    
+    def MoveSelLineUp(self):
+        return self._app.create_action("MoveSelLineUp", None)
+
+    @property    
+    def MoveSelListBegin(self):
+        return self._app.create_action("MoveSelListBegin", None)
+
+    @property    
+    def MoveSelListEnd(self):
+        return self._app.create_action("MoveSelListEnd", None)
+
+    @property    
+    def MoveSelNextChar(self):
+        return self._app.create_action("MoveSelNextChar", None)
+
+    @property    
+    def MoveSelNextParaBegin(self):
+        return self._app.create_action("MoveSelNextParaBegin", None)
+
+    @property    
+    def MoveSelNextPos(self):
+        return self._app.create_action("MoveSelNextPos", None)
+
+    @property    
+    def MoveSelNextWord(self):
+        return self._app.create_action("MoveSelNextWord", None)
+
+    @property    
+    def MoveSelPageDown(self):
+        return self._app.create_action("MoveSelPageDown", None)
+
+    @property    
+    def MoveSelPageUp(self):
+        return self._app.create_action("MoveSelPageUp", None)
+
+    @property    
+    def MoveSelParaBegin(self):
+        return self._app.create_action("MoveSelParaBegin", None)
+
+    @property    
+    def MoveSelParaEnd(self):
+        return self._app.create_action("MoveSelParaEnd", None)
+
+    @property    
+    def MoveSelPrevChar(self):
+        return self._app.create_action("MoveSelPrevChar", None)
+
+    @property    
+    def MoveSelPrevParaBegin(self):
+        return self._app.create_action("MoveSelPrevParaBegin", None)
+
+    @property    
+    def MoveSelPrevParaEnd(self):
+        return self._app.create_action("MoveSelPrevParaEnd", None)
+
+    @property    
+    def MoveSelPrevPos(self):
+        return self._app.create_action("MoveSelPrevPos", None)
+
+    @property    
+    def MoveSelPrevWord(self):
+        return self._app.create_action("MoveSelPrevWord", None)
+
+    @property    
+    def MoveSelRight(self):
+        return self._app.create_action("MoveSelRight", None)
+
+    @property    
+    def MoveSelTopLevelBegin(self):
+        return self._app.create_action("MoveSelTopLevelBegin", None)
+
+    @property    
+    def MoveSelTopLevelEnd(self):
+        return self._app.create_action("MoveSelTopLevelEnd", None)
+
+    @property    
+    def MoveSelUp(self):
+        return self._app.create_action("MoveSelUp", None)
+
+    @property    
+    def MoveSelViewDown(self):
+        return self._app.create_action("MoveSelViewDown", None)
+
+    @property    
+    def MoveSelViewUp(self):
+        return self._app.create_action("MoveSelViewUp", None)
+
+    @property    
+    def MoveSelWordBegin(self):
+        return self._app.create_action("MoveSelWordBegin", None)
+
+    @property    
+    def MoveSelWordEnd(self):
+        return self._app.create_action("MoveSelWordEnd", None)
+
+    @property    
+    def MoveTopLevelBegin(self):
+        return self._app.create_action("MoveTopLevelBegin", None)
+
+    @property    
+    def MoveTopLevelEnd(self):
+        return self._app.create_action("MoveTopLevelEnd", None)
+
+    @property    
+    def MoveTopLevelList(self):
+        return self._app.create_action("MoveTopLevelList", None)
+
+    @property    
+    def MoveUp(self):
+        return self._app.create_action("MoveUp", None)
+
+    @property    
+    def MoveViewBegin(self):
+        return self._app.create_action("MoveViewBegin", None)
+
+    @property    
+    def MoveViewDown(self):
+        return self._app.create_action("MoveViewDown", None)
+
+    @property    
+    def MoveViewEnd(self):
+        return self._app.create_action("MoveViewEnd", None)
+
+    @property    
+    def MoveViewUp(self):
+        return self._app.create_action("MoveViewUp", None)
+
+    @property    
+    def MoveWordBegin(self):
+        return self._app.create_action("MoveWordBegin", None)
+
+    @property    
+    def MoveWordEnd(self):
+        return self._app.create_action("MoveWordEnd", None)
+
+    @property    
+    def MPSectionToNext(self):
+        return self._app.create_action("MPSectionToNext", None)
+
+    @property    
+    def MPSectionToPrevious(self):
+        return self._app.create_action("MPSectionToPrevious", None)
+
+    @property    
+    def MultiColumn(self):
+        return self._app.create_action("MultiColumn", "ColDef")
+
+    @property    
+    def NewNumber(self):
+        return self._app.create_action("NewNumber", "AutoNum")
+
+    @property    
+    def NewNumberModify(self):
+        return self._app.create_action("NewNumberModify", "AutoNum")
+
+    @property    
+    def NextTextBoxLinked(self):
+        return self._app.create_action("NextTextBoxLinked", None)
+
+    @property    
+    def NoteDelete(self):
+        return self._app.create_action("NoteDelete", None)
+
+    @property    
+    def NoteModify(self):
+        return self._app.create_action("NoteModify", None)
+
+    @property    
+    def NoteNumProperty(self):
+        return self._app.create_action("NoteNumProperty", None)
+
+    @property    
+    def NoteToNext(self):
+        return self._app.create_action("NoteToNext", None)
+
+    @property    
+    def NoteToPrev(self):
+        return self._app.create_action("NoteToPrev", None)
+
+    @property    
+    def OleCreateNew(self):
+        return self._app.create_action("OleCreateNew", "OleCreation")
+
+    @property    
+    def OutlineNumber(self):
+        return self._app.create_action("OutlineNumber", "SecDef")
+
+    @property    
+    def PageBorder(self):
+        return self._app.create_action("PageBorder", "SecDef")
+
+    @property    
+    def PageHiding(self):
+        return self._app.create_action("PageHiding", "PageHiding")
+
+    @property    
+    def PageHidingModify(self):
+        return self._app.create_action("PageHidingModify", "PageHiding")
+
+    @property    
+    def PageNumPos(self):
+        return self._app.create_action("PageNumPos", "PageNumPos")
+
+    @property    
+    def PageNumPosModify(self):
+        return self._app.create_action("PageNumPosModify", "PageNumPos")
+
+    @property    
+    def PageSetup(self):
+        return self._app.create_action("PageSetup", "SecDef")
+
+    @property    
+    def ParagraphShape(self):
+        return self._app.create_action("ParagraphShape", "ParaShape")
+
+    @property    
+    def ParagraphShapeAlignCenter(self):
+        return self._app.create_action("ParagraphShapeAlignCenter", None)
+
+    @property    
+    def ParagraphShapeAlignDistribute(self):
+        return self._app.create_action("ParagraphShapeAlignDistribute", None)
+
+    @property    
+    def ParagraphShapeAlignDivision(self):
+        return self._app.create_action("ParagraphShapeAlignDivision", None)
+
+    @property    
+    def ParagraphShapeAlignJustify(self):
+        return self._app.create_action("ParagraphShapeAlignJustify", None)
+
+    @property    
+    def ParagraphShapeAlignLeft(self):
+        return self._app.create_action("ParagraphShapeAlignLeft", None)
+
+    @property    
+    def ParagraphShapeAlignRight(self):
+        return self._app.create_action("ParagraphShapeAlignRight", None)
+
+    @property    
+    def ParagraphShapeDecreaseLeftMargin(self):
+        return self._app.create_action("ParagraphShapeDecreaseLeftMargin", None)
+
+    @property    
+    def ParagraphShapeDecreaseLineSpacing(self):
+        return self._app.create_action("ParagraphShapeDecreaseLineSpacing", None)
+
+    @property    
+    def ParagraphShapeDecreaseMargin(self):
+        return self._app.create_action("ParagraphShapeDecreaseMargin", None)
+
+    @property    
+    def ParagraphShapeDecreaseRightMargin(self):
+        return self._app.create_action("ParagraphShapeDecreaseRightMargin", None)
+
+    @property    
+    def ParagraphShapeIncreaseLeftMargin(self):
+        return self._app.create_action("ParagraphShapeIncreaseLeftMargin", None)
+
+    @property    
+    def ParagraphShapeIncreaseLineSpacing(self):
+        return self._app.create_action("ParagraphShapeIncreaseLineSpacing", None)
+
+    @property    
+    def ParagraphShapeIncreaseMargin(self):
+        return self._app.create_action("ParagraphShapeIncreaseMargin", None)
+
+    @property    
+    def ParagraphShapeIncreaseRightMargin(self):
+        return self._app.create_action("ParagraphShapeIncreaseRightMargin", None)
+
+    @property    
+    def ParagraphShapeIndentAtCaret(self):
+        return self._app.create_action("ParagraphShapeIndentAtCaret", None)
+
+    @property    
+    def ParagraphShapeIndentNegative(self):
+        return self._app.create_action("ParagraphShapeIndentNegative", None)
+
+    @property    
+    def ParagraphShapeIndentPositive(self):
+        return self._app.create_action("ParagraphShapeIndentPositive", None)
+
+    @property    
+    def ParagraphShapeProtect(self):
+        return self._app.create_action("ParagraphShapeProtect", None)
+
+    @property    
+    def ParagraphShapeWithNext(self):
+        return self._app.create_action("ParagraphShapeWithNext", None)
+
+    @property    
+    def ParaNumberBullet(self):
+        return self._app.create_action("ParaNumberBullet", "ParaShape")
+
+    @property    
+    def ParaNumberBulletLevelDown(self):
+        return self._app.create_action("ParaNumberBulletLevelDown", "ParaShape")
+
+    @property    
+    def ParaNumberBulletLevelUp(self):
+        return self._app.create_action("ParaNumberBulletLevelUp", "ParaShape")
+
+    @property    
+    def ParaShapeDialog(self):
+        return self._app.create_action("ParaShapeDialog", "ParaShape")
+
+    @property    
+    def Paste(self):
+        return self._app.create_action("Paste", "SelectionOpt")
+
+    @property    
+    def PastePage(self):
+        return self._app.create_action("PastePage", None)
+
+    @property    
+    def PasteSpecial(self):
+        return self._app.create_action("PasteSpecial", None)
+
+    @property    
+    def PictureEffect1(self):
+        return self._app.create_action("PictureEffect1", None)
+
+    @property    
+    def PictureEffect2(self):
+        return self._app.create_action("PictureEffect2", None)
+
+    @property    
+    def PictureEffect3(self):
+        return self._app.create_action("PictureEffect3", None)
+
+    @property    
+    def PictureEffect4(self):
+        return self._app.create_action("PictureEffect4", None)
+
+    @property    
+    def PictureEffect5(self):
+        return self._app.create_action("PictureEffect5", None)
+
+    @property    
+    def PictureEffect6(self):
+        return self._app.create_action("PictureEffect6", None)
+
+    @property    
+    def PictureEffect7(self):
+        return self._app.create_action("PictureEffect7", None)
+
+    @property    
+    def PictureEffect8(self):
+        return self._app.create_action("PictureEffect8", None)
+
+    @property    
+    def PictureInsertDialog(self):
+        return self._app.create_action("PictureInsertDialog", None)
+
+    @property    
+    def PictureLinkedToEmbedded(self):
+        return self._app.create_action("PictureLinkedToEmbedded", None)
+
+    @property    
+    def PictureSave(self):
+        return self._app.create_action("PictureSave", None)
+
+    @property    
+    def PictureScissor(self):
+        return self._app.create_action("PictureScissor", None)
+
+    @property    
+    def PictureToOriginal(self):
+        return self._app.create_action("PictureToOriginal", None)
+
+    @property    
+    def Preference(self):
+        return self._app.create_action("Preference", "Preference")
+
+    @property    
+    def Presentation(self):
+        return self._app.create_action("Presentation", "Presentation")
+
+    @property    
+    def PresentationSetup(self):
+        return self._app.create_action("PresentationSetup", "Presentation")
+
+    @property    
+    def PrevTextBoxLinked(self):
+        return self._app.create_action("PrevTextBoxLinked", None)
+
+    @property    
+    def Print(self):
+        return self._app.create_action("Print", "Print")
+
+    @property    
+    def PrintToImage(self):
+        return self._app.create_action("PrintToImage", "PrintToImage")
+
+    @property    
+    def PutBullet(self):
+        return self._app.create_action("PutBullet", "ParaShape")
+
+    @property    
+    def PutNewParaNumber(self):
+        return self._app.create_action("PutNewParaNumber", "ParaShape")
+
+    @property    
+    def PutOutlineNumber(self):
+        return self._app.create_action("PutOutlineNumber", "ParaShape")
+
+    @property    
+    def PutParaNumber(self):
+        return self._app.create_action("PutParaNumber", "ParaShape")
+
+    @property    
+    def QuickCorrect(self):
+        return self._app.create_action("QuickCorrect", None)
+
+    @property    
+    def RecalcPageCount(self):
+        return self._app.create_action("RecalcPageCount", None)
+
+    @property    
+    def RecentCode(self):
+        return self._app.create_action("RecentCode", None)
+
+    @property    
+    def Redo(self):
+        return self._app.create_action("Redo", None)
+
+    @property    
+    def RepeatFind(self):
+        return self._app.create_action("RepeatFind", "FindReplace")
+
+    @property    
+    def ReplaceDlg(self):
+        return self._app.create_action("ReplaceDlg", "FindReplace")
+
+    @property    
+    def ReturnKeyInField(self):
+        return self._app.create_action("ReturnKeyInField", None)
+
+    @property    
+    def ReturnPrevPos(self):
+        return self._app.create_action("ReturnPrevPos", None)
+
+    @property    
+    def ReverseFind(self):
+        return self._app.create_action("ReverseFind", "FindReplace")
+
+    @property    
+    def SaveBlockAction(self):
+        return self._app.create_action("SaveBlockAction", "FileSaveBlock")
+
+    @property    
+    def SaveFootnote(self):
+        return self._app.create_action("SaveFootnote", "SaveFootnote")
+
+    @property    
+    def SaveHistoryItem(self):
+        return self._app.create_action("SaveHistoryItem", "VersionInfo")
+
+    @property    
+    def ScrMacroDefine(self):
+        return self._app.create_action("ScrMacroDefine", "ScriptMacro")
+
+    @property    
+    def ScrMacroPause(self):
+        return self._app.create_action("ScrMacroPause", None)
+
+    @property    
+    def ScrMacroRepeatDlg(self):
+        return self._app.create_action("ScrMacroRepeatDlg", "ScriptMacro")
+
+    @property    
+    def ScrMacroSecurityDlg(self):
+        return self._app.create_action("ScrMacroSecurityDlg", None)
+
+    @property    
+    def ScrMacroStop(self):
+        return self._app.create_action("ScrMacroStop", None)
+
+    @property    
+    def SearchAddress(self):
+        return self._app.create_action("SearchAddress", None)
+
+    @property    
+    def SearchForeign(self):
+        return self._app.create_action("SearchForeign", None)
+
+    @property    
+    def Select(self):
+        return self._app.create_action("Select", None)
+
+    @property    
+    def SelectAll(self):
+        return self._app.create_action("SelectAll", None)
+
+    @property    
+    def SelectColumn(self):
+        return self._app.create_action("SelectColumn", None)
+
+    @property    
+    def SelectCtrlFront(self):
+        return self._app.create_action("SelectCtrlFront", None)
+
+    @property    
+    def SelectCtrlReverse(self):
+        return self._app.create_action("SelectCtrlReverse", None)
+
+    @property    
+    def SendBrowserText(self):
+        return self._app.create_action("SendBrowserText", None)
+
+    @property    
+    def SendMailAttach(self):
+        return self._app.create_action("SendMailAttach", "FileSendMail")
+
+    @property    
+    def SendMailText(self):
+        return self._app.create_action("SendMailText", "FileSendMail")
+
+    @property    
+    def ShapeCopyPaste(self):
+        return self._app.create_action("ShapeCopyPaste", "ShapeCopyPaste")
+
+    @property    
+    def ShapeObjAlignBottom(self):
+        return self._app.create_action("ShapeObjAlignBottom", None)
+
+    @property    
+    def ShapeObjAlignCenter(self):
+        return self._app.create_action("ShapeObjAlignCenter", None)
+
+    @property    
+    def ShapeObjAlignHeight(self):
+        return self._app.create_action("ShapeObjAlignHeight", None)
+
+    @property    
+    def ShapeObjAlignHorzSpacing(self):
+        return self._app.create_action("ShapeObjAlignHorzSpacing", None)
+
+    @property    
+    def ShapeObjAlignLeft(self):
+        return self._app.create_action("ShapeObjAlignLeft", None)
+
+    @property    
+    def ShapeObjAlignMiddle(self):
+        return self._app.create_action("ShapeObjAlignMiddle", None)
+
+    @property    
+    def ShapeObjAlignRight(self):
+        return self._app.create_action("ShapeObjAlignRight", None)
+
+    @property    
+    def ShapeObjAlignSize(self):
+        return self._app.create_action("ShapeObjAlignSize", None)
+
+    @property    
+    def ShapeObjAlignTop(self):
+        return self._app.create_action("ShapeObjAlignTop", None)
+
+    @property    
+    def ShapeObjAlignVertSpacing(self):
+        return self._app.create_action("ShapeObjAlignVertSpacing", None)
+
+    @property    
+    def ShapeObjAlignWidth(self):
+        return self._app.create_action("ShapeObjAlignWidth", None)
+
+    @property    
+    def ShapeObjAttachCaption(self):
+        return self._app.create_action("ShapeObjAttachCaption", None)
+
+    @property    
+    def ShapeObjAttachTextBox(self):
+        return self._app.create_action("ShapeObjAttachTextBox", None)
+
+    @property    
+    def ShapeObjAttrDialog(self):
+        return self._app.create_action("ShapeObjAttrDialog", "ShapeObject")
+
+    @property    
+    def ShapeObjBringForward(self):
+        return self._app.create_action("ShapeObjBringForward", None)
+
+    @property    
+    def ShapeObjBringInFrontOfText(self):
+        return self._app.create_action("ShapeObjBringInFrontOfText", None)
+
+    @property    
+    def ShapeObjBringToFront(self):
+        return self._app.create_action("ShapeObjBringToFront", None)
+
+    @property    
+    def ShapeObjCtrlSendBehindText(self):
+        return self._app.create_action("ShapeObjCtrlSendBehindText", None)
+
+    @property    
+    def ShapeObjDetachCaption(self):
+        return self._app.create_action("ShapeObjDetachCaption", None)
+
+    @property    
+    def ShapeObjDetachTextBox(self):
+        return self._app.create_action("ShapeObjDetachTextBox", None)
+
+    @property    
+    def ShapeObjDialog(self):
+        return self._app.create_action("ShapeObjDialog", "ShapeObject")
+
+    @property    
+    def ShapeObjectCopy(self):
+        return self._app.create_action("ShapeObjectCopy", "ShapeObjectCopyPaste")
+
+    @property    
+    def ShapeObjectPaste(self):
+        return self._app.create_action("ShapeObjectPaste", "ShapeObjectCopyPaste")
+
+    @property    
+    def ShapeObjFillProperty(self):
+        return self._app.create_action("ShapeObjFillProperty", None)
+
+    @property    
+    def ShapeObjGroup(self):
+        return self._app.create_action("ShapeObjGroup", None)
+
+    @property    
+    def ShapeObjHorzFlip(self):
+        return self._app.create_action("ShapeObjHorzFlip", None)
+
+    @property    
+    def ShapeObjHorzFlipOrgState(self):
+        return self._app.create_action("ShapeObjHorzFlipOrgState", None)
+
+    @property    
+    def ShapeObjInsertCaptionNum(self):
+        return self._app.create_action("ShapeObjInsertCaptionNum", None)
+
+    @property    
+    def ShapeObjLineProperty(self):
+        return self._app.create_action("ShapeObjLineProperty", None)
+
+    @property    
+    def ShapeObjLock(self):
+        return self._app.create_action("ShapeObjLock", None)
+
+    @property    
+    def ShapeObjMoveDown(self):
+        return self._app.create_action("ShapeObjMoveDown", None)
+
+    @property    
+    def ShapeObjMoveLeft(self):
+        return self._app.create_action("ShapeObjMoveLeft", None)
+
+    @property    
+    def ShapeObjMoveRight(self):
+        return self._app.create_action("ShapeObjMoveRight", None)
+
+    @property    
+    def ShapeObjMoveUp(self):
+        return self._app.create_action("ShapeObjMoveUp", None)
+
+    @property    
+    def ShapeObjNextObject(self):
+        return self._app.create_action("ShapeObjNextObject", None)
+
+    @property    
+    def ShapeObjNorm(self):
+        return self._app.create_action("ShapeObjNorm", None)
+
+    @property    
+    def ShapeObjPrevObject(self):
+        return self._app.create_action("ShapeObjPrevObject", None)
+
+    @property    
+    def ShapeObjRandomAngleRotater(self):
+        return self._app.create_action("ShapeObjRandomAngleRotater", "ShapeObject")
+
+    @property    
+    def ShapeObjResizeDown(self):
+        return self._app.create_action("ShapeObjResizeDown", None)
+
+    @property    
+    def ShapeObjResizeLeft(self):
+        return self._app.create_action("ShapeObjResizeLeft", None)
+
+    @property    
+    def ShapeObjResizeRight(self):
+        return self._app.create_action("ShapeObjResizeRight", None)
+
+    @property    
+    def ShapeObjResizeUp(self):
+        return self._app.create_action("ShapeObjResizeUp", None)
+
+    @property    
+    def ShapeObjRightAngleRotater(self):
+        return self._app.create_action("ShapeObjRightAngleRotater", None)
+
+    @property    
+    def ShapeObjRightAngleRotaterAnticlockwise(self):
+        return self._app.create_action("ShapeObjRightAngleRotaterAnticlockwise", None)
+
+    @property    
+    def ShapeObjRotater(self):
+        return self._app.create_action("ShapeObjRotater", None)
+
+    @property    
+    def ShapeObjSaveAsPicture(self):
+        return self._app.create_action("ShapeObjSaveAsPicture", None)
+
+    @property    
+    def ShapeObjSelect(self):
+        return self._app.create_action("ShapeObjSelect", None)
+
+    @property    
+    def ShapeObjSendBack(self):
+        return self._app.create_action("ShapeObjSendBack", None)
+
+    @property    
+    def ShapeObjSendToBack(self):
+        return self._app.create_action("ShapeObjSendToBack", None)
+
+    @property    
+    def ShapeObjShadowEnlarge(self):
+        return self._app.create_action("ShapeObjShadowEnlarge", None)
+
+    @property    
+    def ShapeObjShadowMoveDown(self):
+        return self._app.create_action("ShapeObjShadowMoveDown", None)
+
+    @property    
+    def ShapeObjShadowMoveLeft(self):
+        return self._app.create_action("ShapeObjShadowMoveLeft", None)
+
+    @property    
+    def ShapeObjShadowMoveRight(self):
+        return self._app.create_action("ShapeObjShadowMoveRight", None)
+
+    @property    
+    def ShapeObjShadowMoveUp(self):
+        return self._app.create_action("ShapeObjShadowMoveUp", None)
+
+    @property    
+    def ShapeObjShadowNarrow(self):
+        return self._app.create_action("ShapeObjShadowNarrow", None)
+
+    @property    
+    def ShapeObjShadowParellelLeftBottom(self):
+        return self._app.create_action("ShapeObjShadowParellelLeftBottom", None)
+
+    @property    
+    def ShapeObjShadowParellelLeftTop(self):
+        return self._app.create_action("ShapeObjShadowParellelLeftTop", None)
+
+    @property    
+    def ShapeObjShadowParellelRightBottom(self):
+        return self._app.create_action("ShapeObjShadowParellelRightBottom", None)
+
+    @property    
+    def ShapeObjShadowParellelRightTop(self):
+        return self._app.create_action("ShapeObjShadowParellelRightTop", None)
+
+    @property    
+    def ShapeObjShadowShearLeftBottom(self):
+        return self._app.create_action("ShapeObjShadowShearLeftBottom", None)
+
+    @property    
+    def ShapeObjShadowShearLeftTop(self):
+        return self._app.create_action("ShapeObjShadowShearLeftTop", None)
+
+    @property    
+    def ShapeObjShadowShearRightBottom(self):
+        return self._app.create_action("ShapeObjShadowShearRightBottom", None)
+
+    @property    
+    def ShapeObjShadowShearRightTop(self):
+        return self._app.create_action("ShapeObjShadowShearRightTop", None)
+
+    @property    
+    def ShapeObjShear(self):
+        return self._app.create_action("ShapeObjShear", "ShapeObject")
+
+    @property    
+    def ShapeObjTableSelCell(self):
+        return self._app.create_action("ShapeObjTableSelCell", None)
+
+    @property    
+    def ShapeObjTextBoxEdit(self):
+        return self._app.create_action("ShapeObjTextBoxEdit", None)
+
+    @property    
+    def ShapeObjUngroup(self):
+        return self._app.create_action("ShapeObjUngroup", None)
+
+    @property    
+    def ShapeObjUnlockAll(self):
+        return self._app.create_action("ShapeObjUnlockAll", None)
+
+    @property    
+    def ShapeObjVertFlip(self):
+        return self._app.create_action("ShapeObjVertFlip", None)
+
+    @property    
+    def ShapeObjVertFlipOrgState(self):
+        return self._app.create_action("ShapeObjVertFlipOrgState", None)
+
+    @property    
+    def ShapeObjWrapSquare(self):
+        return self._app.create_action("ShapeObjWrapSquare", None)
+
+    @property    
+    def ShapeObjWrapTopAndBottom(self):
+        return self._app.create_action("ShapeObjWrapTopAndBottom", None)
+
+    @property    
+    def Sort(self):
+        return self._app.create_action("Sort", "Sort")
+
+    @property    
+    def SpellingCheck(self):
+        return self._app.create_action("SpellingCheck", None)
+
+    @property    
+    def SplitMemoOpen(self):
+        return self._app.create_action("SplitMemoOpen", None)
+
+    @property    
+    def Style(self):
+        return self._app.create_action("Style", "Style")
+
+    @property    
+    def StyleAdd(self):
+        return self._app.create_action("StyleAdd", "Style")
+
+    @property    
+    def StyleClearCharStyle(self):
+        return self._app.create_action("StyleClearCharStyle", None)
+
+    @property    
+    def StyleDelete(self):
+        return self._app.create_action("StyleDelete", "StyleDelete")
+
+    @property    
+    def StyleEdit(self):
+        return self._app.create_action("StyleEdit", "Style")
+
+    @property    
+    def StyleEx(self):
+        return self._app.create_action("StyleEx", "Style")
+
+    @property    
+    def StyleParaNumberBullet(self):
+        return self._app.create_action("StyleParaNumberBullet", "ParaShape")
+
+    @property    
+    def StyleShortcut1(self):
+        return self._app.create_action("StyleShortcut1", None)
+
+    @property    
+    def StyleShortcut10(self):
+        return self._app.create_action("StyleShortcut10", None)
+
+    @property    
+    def StyleShortcut2(self):
+        return self._app.create_action("StyleShortcut2", None)
+
+    @property    
+    def StyleShortcut3(self):
+        return self._app.create_action("StyleShortcut3", None)
+
+    @property    
+    def StyleShortcut4(self):
+        return self._app.create_action("StyleShortcut4", None)
+
+    @property    
+    def StyleShortcut5(self):
+        return self._app.create_action("StyleShortcut5", None)
+
+    @property    
+    def StyleShortcut6(self):
+        return self._app.create_action("StyleShortcut6", None)
+
+    @property    
+    def StyleShortcut7(self):
+        return self._app.create_action("StyleShortcut7", None)
+
+    @property    
+    def StyleShortcut8(self):
+        return self._app.create_action("StyleShortcut8", None)
+
+    @property    
+    def StyleShortcut9(self):
+        return self._app.create_action("StyleShortcut9", None)
+
+    @property    
+    def StyleTemplate(self):
+        return self._app.create_action("StyleTemplate", "StyleTemplate")
+
+    @property    
+    def Sum(self):
+        return self._app.create_action("Sum", "Sum")
+
+    @property    
+    def TableAppendRow(self):
+        return self._app.create_action("TableAppendRow", None)
+
+    @property    
+    def TableAutoDrawPenStyleWidthDlg(self):
+        return self._app.create_action("TableAutoDrawPenStyleWidthDlg", "TableDrawPen")
+
+    @property    
+    def TableAutoFill(self):
+        return self._app.create_action("TableAutoFill", "AutoFill")
+
+    @property    
+    def TableAutoFillDlg(self):
+        return self._app.create_action("TableAutoFillDlg", "AutoFill")
+
+    @property    
+    def TableCellBlock(self):
+        return self._app.create_action("TableCellBlock", None)
+
+    @property    
+    def TableCellBlockCol(self):
+        return self._app.create_action("TableCellBlockCol", None)
+
+    @property    
+    def TableCellBlockExtend(self):
+        return self._app.create_action("TableCellBlockExtend", None)
+
+    @property    
+    def TableCellBlockExtendAbs(self):
+        return self._app.create_action("TableCellBlockExtendAbs", None)
+
+    @property    
+    def TableCellBlockRow(self):
+        return self._app.create_action("TableCellBlockRow", None)
+
+    @property    
+    def TableCellBorderAll(self):
+        return self._app.create_action("TableCellBorderAll", None)
+
+    @property    
+    def TableCellBorderBottom(self):
+        return self._app.create_action("TableCellBorderBottom", None)
+
+    @property    
+    def TableCellBorderDiagonalDown(self):
+        return self._app.create_action("TableCellBorderDiagonalDown", None)
+
+    @property    
+    def TableCellBorderDiagonalUp(self):
+        return self._app.create_action("TableCellBorderDiagonalUp", None)
+
+    @property    
+    def TableCellBorderInside(self):
+        return self._app.create_action("TableCellBorderInside", None)
+
+    @property    
+    def TableCellBorderInsideHorz(self):
+        return self._app.create_action("TableCellBorderInsideHorz", None)
+
+    @property    
+    def TableCellBorderInsideVert(self):
+        return self._app.create_action("TableCellBorderInsideVert", None)
+
+    @property    
+    def TableCellBorderLeft(self):
+        return self._app.create_action("TableCellBorderLeft", None)
+
+    @property    
+    def TableCellBorderNo(self):
+        return self._app.create_action("TableCellBorderNo", None)
+
+    @property    
+    def TableCellBorderOutside(self):
+        return self._app.create_action("TableCellBorderOutside", None)
+
+    @property    
+    def TableCellBorderRight(self):
+        return self._app.create_action("TableCellBorderRight", None)
+
+    @property    
+    def TableCellBorderTop(self):
+        return self._app.create_action("TableCellBorderTop", None)
+
+    @property    
+    def TableCellShadeDec(self):
+        return self._app.create_action("TableCellShadeDec", "CellBorderFill")
+
+    @property    
+    def TableCellShadeInc(self):
+        return self._app.create_action("TableCellShadeInc", "CellBorderFill")
+
+    @property    
+    def TableColBegin(self):
+        return self._app.create_action("TableColBegin", None)
+
+    @property    
+    def TableColEnd(self):
+        return self._app.create_action("TableColEnd", None)
+
+    @property    
+    def TableColPageDown(self):
+        return self._app.create_action("TableColPageDown", None)
+
+    @property    
+    def TableColPageUp(self):
+        return self._app.create_action("TableColPageUp", None)
+
+    @property    
+    def TableCreate(self):
+        return self._app.create_action("TableCreate", "TableCreation")
+
+    @property    
+    def TableDeleteCell(self):
+        return self._app.create_action("TableDeleteCell", None)
+
+    @property    
+    def TableDeleteColumn(self):
+        return self._app.create_action("TableDeleteColumn", "TableDeleteLine")
+
+    @property    
+    def TableDeleteRow(self):
+        return self._app.create_action("TableDeleteRow", "TableDeleteLine")
+
+    @property    
+    def TableDeleteRowColumn(self):
+        return self._app.create_action("TableDeleteRowColumn", "TableDeleteLine")
+
+    @property    
+    def TableDistributeCellHeight(self):
+        return self._app.create_action("TableDistributeCellHeight", None)
+
+    @property    
+    def TableDistributeCellWidth(self):
+        return self._app.create_action("TableDistributeCellWidth", None)
+
+    @property    
+    def TableDrawPen(self):
+        return self._app.create_action("TableDrawPen", None)
+
+    @property    
+    def TableEraser(self):
+        return self._app.create_action("TableEraser", None)
+
+    @property    
+    def TableFormula(self):
+        return self._app.create_action("TableFormula", "FieldCtrl")
+
+    @property    
+    def TableFormulaAvgAuto(self):
+        return self._app.create_action("TableFormulaAvgAuto", None)
+
+    @property    
+    def TableFormulaAvgHor(self):
+        return self._app.create_action("TableFormulaAvgHor", None)
+
+    @property    
+    def TableFormulaAvgVer(self):
+        return self._app.create_action("TableFormulaAvgVer", None)
+
+    @property    
+    def TableFormulaProAuto(self):
+        return self._app.create_action("TableFormulaProAuto", None)
+
+    @property    
+    def TableFormulaProHor(self):
+        return self._app.create_action("TableFormulaProHor", None)
+
+    @property    
+    def TableFormulaProVer(self):
+        return self._app.create_action("TableFormulaProVer", None)
+
+    @property    
+    def TableFormulaSumAuto(self):
+        return self._app.create_action("TableFormulaSumAuto", None)
+
+    @property    
+    def TableFormulaSumHor(self):
+        return self._app.create_action("TableFormulaSumHor", None)
+
+    @property    
+    def TableFormulaSumVer(self):
+        return self._app.create_action("TableFormulaSumVer", None)
+
+    @property    
+    def TableInsertLeftColumn(self):
+        return self._app.create_action("TableInsertLeftColumn", "TableInsertLine")
+
+    @property    
+    def TableInsertLowerRow(self):
+        return self._app.create_action("TableInsertLowerRow", "TableInsertLine")
+
+    @property    
+    def TableInsertRightColumn(self):
+        return self._app.create_action("TableInsertRightColumn", "TableInsertLine")
+
+    @property    
+    def TableInsertRowColumn(self):
+        return self._app.create_action("TableInsertRowColumn", "TableInsertLine")
+
+    @property    
+    def TableInsertUpperRow(self):
+        return self._app.create_action("TableInsertUpperRow", "TableInsertLine")
+
+    @property    
+    def TableLeftCell(self):
+        return self._app.create_action("TableLeftCell", None)
+
+    @property    
+    def TableLowerCell(self):
+        return self._app.create_action("TableLowerCell", None)
+
+    @property    
+    def TableMergeCell(self):
+        return self._app.create_action("TableMergeCell", None)
+
+    @property    
+    def TableMergeTable(self):
+        return self._app.create_action("TableMergeTable", None)
+
+    @property    
+    def TablePropertyDialog(self):
+        return self._app.create_action("TablePropertyDialog", "ShapeObject")
+
+    @property    
+    def TableResizeCellDown(self):
+        return self._app.create_action("TableResizeCellDown", None)
+
+    @property    
+    def TableResizeCellLeft(self):
+        return self._app.create_action("TableResizeCellLeft", None)
+
+    @property    
+    def TableResizeCellRight(self):
+        return self._app.create_action("TableResizeCellRight", None)
+
+    @property    
+    def TableResizeCellUp(self):
+        return self._app.create_action("TableResizeCellUp", None)
+
+    @property    
+    def TableResizeDown(self):
+        return self._app.create_action("TableResizeDown", None)
+
+    @property    
+    def TableResizeExDown(self):
+        return self._app.create_action("TableResizeExDown", None)
+
+    @property    
+    def TableResizeExLeft(self):
+        return self._app.create_action("TableResizeExLeft", None)
+
+    @property    
+    def TableResizeExRight(self):
+        return self._app.create_action("TableResizeExRight", None)
+
+    @property    
+    def TableResizeExUp(self):
+        return self._app.create_action("TableResizeExUp", None)
+
+    @property    
+    def TableResizeLeft(self):
+        return self._app.create_action("TableResizeLeft", None)
+
+    @property    
+    def TableResizeLineDown(self):
+        return self._app.create_action("TableResizeLineDown", None)
+
+    @property    
+    def TableResizeLineLeft(self):
+        return self._app.create_action("TableResizeLineLeft", None)
+
+    @property    
+    def TableResizeLineRight(self):
+        return self._app.create_action("TableResizeLineRight", None)
+
+    @property    
+    def TableResizeLineUp(self):
+        return self._app.create_action("TableResizeLineUp", None)
+
+    @property    
+    def TableResizeRight(self):
+        return self._app.create_action("TableResizeRight", None)
+
+    @property    
+    def TableResizeUp(self):
+        return self._app.create_action("TableResizeUp", None)
+
+    @property    
+    def TableRightCell(self):
+        return self._app.create_action("TableRightCell", None)
+
+    @property    
+    def TableRightCellAppend(self):
+        return self._app.create_action("TableRightCellAppend", None)
+
+    @property    
+    def TableSplitCell(self):
+        return self._app.create_action("TableSplitCell", "TableSplitCell")
+
+    @property    
+    def TableSplitCellCol2(self):
+        return self._app.create_action("TableSplitCellCol2", "TableSplitCell")
+
+    @property    
+    def TableSplitCellRow2(self):
+        return self._app.create_action("TableSplitCellRow2", "TableSplitCell")
+
+    @property    
+    def TableSplitTable(self):
+        return self._app.create_action("TableSplitTable", None)
+
+    @property    
+    def TableStringToTable(self):
+        return self._app.create_action("TableStringToTable", "TableStrToTbl")
+
+    @property    
+    def TableSubtractRow(self):
+        return self._app.create_action("TableSubtractRow", "TableDeleteLine")
+
+    @property    
+    def TableSwap(self):
+        return self._app.create_action("TableSwap", "TableSwap")
+
+    @property    
+    def TableTableToString(self):
+        return self._app.create_action("TableTableToString", "TableTblToStr")
+
+    @property    
+    def TableTemplate(self):
+        return self._app.create_action("TableTemplate", "TableTemplate")
+
+    @property    
+    def TableUpperCell(self):
+        return self._app.create_action("TableUpperCell", None)
+
+    @property    
+    def TableVAlignBottom(self):
+        return self._app.create_action("TableVAlignBottom", None)
+
+    @property    
+    def TableVAlignCenter(self):
+        return self._app.create_action("TableVAlignCenter", None)
+
+    @property    
+    def TableVAlignTop(self):
+        return self._app.create_action("TableVAlignTop", None)
+
+    @property    
+    def TextArtCreate(self):
+        return self._app.create_action("TextArtCreate", None)
+
+    @property    
+    def TextArtModify(self):
+        return self._app.create_action("TextArtModify", None)
+
+    @property    
+    def TextArtShadow(self):
+        return self._app.create_action("TextArtShadow", None)
+
+    @property    
+    def ToggleOverwrite(self):
+        return self._app.create_action("ToggleOverwrite", None)
+
+    @property    
+    def Undo(self):
+        return self._app.create_action("Undo", None)
+
+    @property    
+    def UnlinkTextBox(self):
+        return self._app.create_action("UnlinkTextBox", None)
+
+    @property    
+    def UserAutoFill(self):
+        return self._app.create_action("UserAutoFill", "AutoFill")
+
+    @property    
+    def VersionDelete(self):
+        return self._app.create_action("VersionDelete", "VersionInfo")
+
+    @property    
+    def VersionDeleteAll(self):
+        return self._app.create_action("VersionDeleteAll", None)
+
+    @property    
+    def VersionInfo(self):
+        return self._app.create_action("VersionInfo", "VersionInfo")
+
+    @property    
+    def VersionSave(self):
+        return self._app.create_action("VersionSave", "VersionInfo")
+
+    @property    
+    def VerticalText(self):
+        return self._app.create_action("VerticalText", "TextVertical")
+
+    @property    
+    def ViewGridOption(self):
+        return self._app.create_action("ViewGridOption", "GridInfo")
+
+    @property    
+    def ViewIdiom(self):
+        return self._app.create_action("ViewIdiom", None)
+
+    @property    
+    def ViewOptionCtrlMark(self):
+        return self._app.create_action("ViewOptionCtrlMark", None)
+
+    @property    
+    def ViewOptionGuideLine(self):
+        return self._app.create_action("ViewOptionGuideLine", None)
+
+    @property    
+    def ViewOptionMemo(self):
+        return self._app.create_action("ViewOptionMemo", None)
+
+    @property    
+    def ViewOptionMemoGuideline(self):
+        return self._app.create_action("ViewOptionMemoGuideline", None)
+
+    @property    
+    def ViewOptionPaper(self):
+        return self._app.create_action("ViewOptionPaper", None)
+
+    @property    
+    def ViewOptionParaMark(self):
+        return self._app.create_action("ViewOptionParaMark", None)
+
+    @property    
+    def ViewOptionPicture(self):
+        return self._app.create_action("ViewOptionPicture", None)
+
+    @property    
+    def ViewOptionRevision(self):
+        return self._app.create_action("ViewOptionRevision", None)
+
+    @property    
+    def ViewShowGrid(self):
+        return self._app.create_action("ViewShowGrid", "GridInfo")
+
+    @property    
+    def ViewZoom(self):
+        return self._app.create_action("ViewZoom", "ViewProperties")
+
+    @property    
+    def ViewZoomFitPage(self):
+        return self._app.create_action("ViewZoomFitPage", "ViewProperties")
+
+    @property    
+    def ViewZoomFitWidth(self):
+        return self._app.create_action("ViewZoomFitWidth", "ViewProperties")
+
+    @property    
+    def ViewZoomNormal(self):
+        return self._app.create_action("ViewZoomNormal", "ViewProperties")
+
+    @property    
+    def VoiceCommand(self):
+        return self._app.create_action("VoiceCommand", None)
+
