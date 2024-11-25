@@ -937,6 +937,9 @@ class _Action:
         pset = self.act.CreateSet()
         self.act.GetDefault(pset)
         return pset
+    
+    def __call__(self, pset=None):
+        self.run(pset)
 
 # %% ../nbs/02_api/01_actions.ipynb 10
 def create_action_wrapper(app, action_key, pset_key=None):
