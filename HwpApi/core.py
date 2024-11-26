@@ -12,7 +12,7 @@ from fastcore.basics import patch
 
 # %% ../nbs/02_api/00_core.ipynb 5
 from .actions import _Action, _Actions
-from .dataclasses import CharShape, ParaShape
+from .classes import MoveAccessor, CharShape, ParaShape
 from hwpapi.functions import (
     check_dll,
     get_hwp_objects,
@@ -438,6 +438,7 @@ class App:
         self.actions = _Actions(self)
         self.parameters = self.api.HParameterSet
         self.set_visible(is_visible)
+        self.move = MoveAccessor(self)
 
     def _load(self, new_app, engine, dll_path):
         if new_app:
@@ -491,7 +492,6 @@ class App:
     insert_file = 'patch'
     insert_picture = 'patch'
     insert_text = 'patch'
-    move = 'patch'
     open = 'patch'
     quit = 'patch'
     reload = 'patch'
@@ -1130,39 +1130,7 @@ def move_to_line(app: App, text):
                 return app.move(key=const.MoveID.ScanPos)
     return False
 
-# %% ../nbs/02_api/00_core.ipynb 46
-@patch
-def move(app: App, key=const.MoveId.ScanPos, para=None, pos=None):
-    """
-    Moves the caret position based on the specified key.
-
-    Parameters
-    ----------
-    app : App
-        The `App` object associated with the Hancom Office Hwp program.
-    key : MoveId, optional
-        The movement option, as defined in the `MoveId` Enum. Defaults to MoveId.ScanPos.
-    para : int, optional
-        The paragraph number to move to, if applicable. Defaults to None.
-    pos : int, optional
-        The position within the paragraph to move to, if applicable. Defaults to None.
-    
-    Returns
-    -------
-    bool
-        True if the movement was successful, False otherwise.
-
-    Examples
-    --------
-    >>> app = App()
-    >>> move(app, key=MoveId.TopOfFile)
-    """
-
-    move_id = key.value if isinstance(key, const.MoveId) else const.MoveId[key].value
-    return app.api.MovePos(moveID=move_id, Para=para, pos=pos)
-
-
-# %% ../nbs/02_api/00_core.ipynb 47
+# %% ../nbs/02_api/00_core.ipynb 48
 @patch(as_prop=True)
 def page(app:App):
     action = app.actions.PageSetup
@@ -1172,7 +1140,7 @@ def page(app:App):
     properties.update({name: pset.Item("PageDef").Item(name) for name in property_names})
     return properties
 
-# %% ../nbs/02_api/00_core.ipynb 49
+# %% ../nbs/02_api/00_core.ipynb 50
 @patch
 def setup_page(
     app: App,  # 앱 인스턴스
@@ -1235,7 +1203,7 @@ def setup_page(
     return action.run()  # 페이지 설정 실행
 
 
-# %% ../nbs/02_api/00_core.ipynb 50
+# %% ../nbs/02_api/00_core.ipynb 51
 @patch
 def insert_picture(
     app: App,
@@ -1296,7 +1264,7 @@ def insert_picture(
     )
 
 
-# %% ../nbs/02_api/00_core.ipynb 51
+# %% ../nbs/02_api/00_core.ipynb 52
 @patch
 def select_text(app: App, option=const.SelectionOption.Line):
     """
@@ -1327,7 +1295,7 @@ def select_text(app: App, option=const.SelectionOption.Line):
     return begin_action().run(), end_action().run()  # 작업 실행 후 결과 반환
 
 
-# %% ../nbs/02_api/00_core.ipynb 54
+# %% ../nbs/02_api/00_core.ipynb 55
 @patch
 def get_selected_text(app: App):
     """
@@ -1358,7 +1326,7 @@ def get_selected_text(app: App):
     return text  # 결합된 텍스트 반환
 
 
-# %% ../nbs/02_api/00_core.ipynb 56
+# %% ../nbs/02_api/00_core.ipynb 57
 # 리팩터링된 get_text 함수
 @patch
 def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosition.Line):
@@ -1391,7 +1359,7 @@ def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosi
     return text  # 결합된 텍스트 반환
 
 
-# %% ../nbs/02_api/00_core.ipynb 59
+# %% ../nbs/02_api/00_core.ipynb 60
 @patch
 def find_text(
     app: App,
@@ -1466,7 +1434,7 @@ def find_text(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 63
+# %% ../nbs/02_api/00_core.ipynb 64
 @patch
 def replace_all(
     app: App,
@@ -1548,7 +1516,7 @@ def replace_all(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 67
+# %% ../nbs/02_api/00_core.ipynb 68
 @patch
 def insert_file(
     app: App,
@@ -1602,7 +1570,7 @@ def insert_file(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 68
+# %% ../nbs/02_api/00_core.ipynb 69
 @patch
 def set_cell_border(
     app: App,
@@ -1700,7 +1668,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 69
+# %% ../nbs/02_api/00_core.ipynb 70
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None
@@ -1765,7 +1733,7 @@ def set_cell_color(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 83
+# %% ../nbs/02_api/00_core.ipynb 84
 def get_cell_property(app:App):
     action = app.actions.TablePropertyDialog
     pset = action.create_pset()
