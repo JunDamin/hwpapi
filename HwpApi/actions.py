@@ -892,22 +892,22 @@ _action_info = {
     # "VoiceCommand Stop": [None, "음성 명령 레코딩 중지"],
 }
 
-# %% ../nbs/02_api/01_actions.ipynb 7
+# %% ../nbs/02_api/01_actions.ipynb 6
 class _Action:
     """한글 Action 클래스 입니다. 엑션의 기능을 사용하기 쉽게 만들고자 했습니다."""
 
-    def __init__(self, app, action_key: str, pset_key=None):
-        _pset_key, description = _action_info.get(action_key, (None, None))
-
-        self.action_key = action_key
-        self.description = description
+    def __init__(self, app, action_key: str):
         self.App = app
-        if not pset_key:
-            pset_key = _pset_key
-        self.pset_key = pset_key
-
-        # create action and set
+        self.action_key = action_key
         self.act = app.api.CreateAction(action_key)
+
+        # create pset and description
+        pset_key, description = _action_info.get(action_key, (None, None))
+        self.description = description if description else "Description is Not Available"
+        pset = self.create_pset()
+        if pset:
+            pset_key = pset.SetID
+        self.pset_key = pset_key
         self.pset = self.get_pset(pset_key if pset_key else None)
 
     def __str__(self):
