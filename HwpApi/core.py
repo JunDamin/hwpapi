@@ -596,7 +596,7 @@ def get_filepath(app: App):
 
 # %% ../nbs/02_api/00_core.ipynb 14
 @patch
-def create_action(app: App, action_key: str, pset_key=None):
+def create_action(app: App, action_key: str):
     """
     Creates and returns an instance of the `_Action` class.
 
@@ -621,44 +621,10 @@ def create_action(app: App, action_key: str, pset_key=None):
     >>> action = create_action(app, 'some_action_key')
     >>> print(action)
     """
-    return _Action(app, action_key, pset_key=pset_key)
+    return _Action(app, action_key)
 
 
-# %% ../nbs/02_api/00_core.ipynb 15
-@patch
-def create_parameterset(app: App, action_key: str):
-    """
-    Creates and returns a parameter set for a specific action within the application.
-
-    This function utilizes the `_action_info` dictionary to look up the parameter set information for the given action key.
-    If the parameter set information exists for the specified action key, it creates and returns the corresponding parameter set object.
-
-    Parameters
-    ----------
-    app : App
-        The application object for which the parameter set is being created.
-    action_key : str
-        The key of the action for which the parameter set is being created.
-
-    Returns
-    -------
-    HParameterSet object or None
-        The parameter set object for the specified action key. 
-        If there is no parameter set information for the given action key, None is returned.
-
-    Examples
-    --------
-    >>> app = App()
-    >>> params = create_parameterset(app, 'some_action_key')
-    >>> print(params)
-    """
-    pset_key, description = _action_info.get(action_key, (None, None))
-    if not pset_key:
-        return None
-    return getattr(app.api.HParameterSet, f"H{pset_key}")
-
-
-# %% ../nbs/02_api/00_core.ipynb 17
+# %% ../nbs/02_api/00_core.ipynb 16
 @patch
 def open(app: App, path: str):
     """
@@ -690,7 +656,7 @@ def open(app: App, path: str):
     return name
 
 
-# %% ../nbs/02_api/00_core.ipynb 19
+# %% ../nbs/02_api/00_core.ipynb 18
 @patch
 def get_hwnd(app: App):
     """
@@ -719,7 +685,7 @@ def get_hwnd(app: App):
     return app.api.XHwpWindows.Active_XHwpWindow.WindowHandle
 
 
-# %% ../nbs/02_api/00_core.ipynb 21
+# %% ../nbs/02_api/00_core.ipynb 20
 @patch
 def save(app: App, path=None):
     """
@@ -766,7 +732,7 @@ def save(app: App, path=None):
     return name
 
 
-# %% ../nbs/02_api/00_core.ipynb 23
+# %% ../nbs/02_api/00_core.ipynb 22
 @patch
 def save_block(app: App, path: Path):
     """
@@ -813,7 +779,7 @@ def save_block(app: App, path: Path):
     return name if Path(name).exists() else None
 
 
-# %% ../nbs/02_api/00_core.ipynb 25
+# %% ../nbs/02_api/00_core.ipynb 24
 @patch
 def close(app: App):
     """
@@ -836,7 +802,7 @@ def close(app: App):
     app.api.Run("FileClose")
 
 
-# %% ../nbs/02_api/00_core.ipynb 27
+# %% ../nbs/02_api/00_core.ipynb 26
 @patch
 def quit(app: App):
     """
@@ -859,7 +825,7 @@ def quit(app: App):
     app.api.Run("FileQuit")
 
 
-# %% ../nbs/02_api/00_core.ipynb 28
+# %% ../nbs/02_api/00_core.ipynb 27
 @patch
 def get_font_list(app:App):
     """
@@ -892,7 +858,7 @@ def get_font_list(app:App):
         ))
     return output
 
-# %% ../nbs/02_api/00_core.ipynb 29
+# %% ../nbs/02_api/00_core.ipynb 28
 @patch
 def get_charshape(app: App):
     """
@@ -922,7 +888,7 @@ def get_charshape(app: App):
     return CharShape(p)
 
 
-# %% ../nbs/02_api/00_core.ipynb 31
+# %% ../nbs/02_api/00_core.ipynb 30
 @patch
 def set_charshape(app: App, charshape: CharShape=None, **kwargs):
     """
@@ -964,7 +930,7 @@ def set_charshape(app: App, charshape: CharShape=None, **kwargs):
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 35
+# %% ../nbs/02_api/00_core.ipynb 34
 @patch
 def get_parashape(app: App):
     """
@@ -995,7 +961,7 @@ def get_parashape(app: App):
     return ParaShape(p)
 
 
-# %% ../nbs/02_api/00_core.ipynb 37
+# %% ../nbs/02_api/00_core.ipynb 36
 @patch
 def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     """
@@ -1037,7 +1003,7 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 39
+# %% ../nbs/02_api/00_core.ipynb 38
 @patch
 def insert_text(
     app: App,
@@ -1082,7 +1048,7 @@ def insert_text(
     return
 
 
-# %% ../nbs/02_api/00_core.ipynb 44
+# %% ../nbs/02_api/00_core.ipynb 43
 def _get_text(app):
     """스캔한 텍스트 텍스트 제너레이터"""
     flag, text = 2, ""
@@ -1121,7 +1087,7 @@ def scan(
     app.api.ReleaseScan()
 
 
-# %% ../nbs/02_api/00_core.ipynb 45
+# %% ../nbs/02_api/00_core.ipynb 44
 def move_to_line(app: App, text):
     """인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다."""
     with app.scan(scan_spos="Line") as scan:
@@ -1130,7 +1096,7 @@ def move_to_line(app: App, text):
                 return app.move(key=const.MoveID.ScanPos)
     return False
 
-# %% ../nbs/02_api/00_core.ipynb 48
+# %% ../nbs/02_api/00_core.ipynb 47
 @patch(as_prop=True)
 def page(app:App):
     action = app.actions.PageSetup
@@ -1140,7 +1106,7 @@ def page(app:App):
     properties.update({name: pset.Item("PageDef").Item(name) for name in property_names})
     return properties
 
-# %% ../nbs/02_api/00_core.ipynb 50
+# %% ../nbs/02_api/00_core.ipynb 49
 @patch
 def setup_page(
     app: App,  # 앱 인스턴스
@@ -1203,7 +1169,7 @@ def setup_page(
     return action.run()  # 페이지 설정 실행
 
 
-# %% ../nbs/02_api/00_core.ipynb 51
+# %% ../nbs/02_api/00_core.ipynb 50
 @patch
 def insert_picture(
     app: App,
@@ -1264,7 +1230,7 @@ def insert_picture(
     )
 
 
-# %% ../nbs/02_api/00_core.ipynb 52
+# %% ../nbs/02_api/00_core.ipynb 51
 @patch
 def select_text(app: App, option=const.SelectionOption.Line):
     """
@@ -1295,7 +1261,7 @@ def select_text(app: App, option=const.SelectionOption.Line):
     return begin_action().run(), end_action().run()  # 작업 실행 후 결과 반환
 
 
-# %% ../nbs/02_api/00_core.ipynb 55
+# %% ../nbs/02_api/00_core.ipynb 54
 @patch
 def get_selected_text(app: App):
     """
@@ -1326,7 +1292,7 @@ def get_selected_text(app: App):
     return text  # 결합된 텍스트 반환
 
 
-# %% ../nbs/02_api/00_core.ipynb 57
+# %% ../nbs/02_api/00_core.ipynb 56
 # 리팩터링된 get_text 함수
 @patch
 def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosition.Line):
@@ -1359,7 +1325,7 @@ def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosi
     return text  # 결합된 텍스트 반환
 
 
-# %% ../nbs/02_api/00_core.ipynb 60
+# %% ../nbs/02_api/00_core.ipynb 59
 @patch
 def find_text(
     app: App,
@@ -1434,7 +1400,7 @@ def find_text(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 64
+# %% ../nbs/02_api/00_core.ipynb 63
 @patch
 def replace_all(
     app: App,
@@ -1516,7 +1482,7 @@ def replace_all(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 68
+# %% ../nbs/02_api/00_core.ipynb 67
 @patch
 def insert_file(
     app: App,
@@ -1570,7 +1536,7 @@ def insert_file(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 69
+# %% ../nbs/02_api/00_core.ipynb 68
 @patch
 def set_cell_border(
     app: App,
@@ -1668,7 +1634,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 70
+# %% ../nbs/02_api/00_core.ipynb 69
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None
@@ -1733,7 +1699,7 @@ def set_cell_color(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 84
+# %% ../nbs/02_api/00_core.ipynb 83
 def get_cell_property(app:App):
     action = app.actions.TablePropertyDialog
     pset = action.create_pset()
