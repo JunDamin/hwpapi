@@ -221,7 +221,7 @@ class MoveAccessor:
         return self._app.api.MovePos(moveID=const.MoveId.ScanPos.value)
 
 
-# %% ../nbs/02_api/03_classes.ipynb 5
+# %% ../nbs/02_api/03_classes.ipynb 6
 class CellAccessor:
     """
     셀의 속성을 접근하고 수정할 수 있는 클래스입니다.
@@ -356,7 +356,7 @@ class CellAccessor:
         return app.cell.height == height
 
 
-# %% ../nbs/02_api/03_classes.ipynb 6
+# %% ../nbs/02_api/03_classes.ipynb 7
 class TableAccessor:
     """
     테이블 속성에 접근하고 조작할 수 있는 클래스입니다.
@@ -566,7 +566,7 @@ class TableAccessor:
         self._set_shape_property("NumberingType", value)
 
 
-# %% ../nbs/02_api/03_classes.ipynb 8
+# %% ../nbs/02_api/03_classes.ipynb 9
 class PageAccessor:
     
     def __init__(self, app):
@@ -689,7 +689,7 @@ class PageAccessor:
         properties.update({name: pset.Item("PageDef").Item(name) for name in property_names})
         return properties
 
-# %% ../nbs/02_api/03_classes.ipynb 10
+# %% ../nbs/02_api/03_classes.ipynb 11
 @dataclass
 class Character:
     Bold: Optional[int] = None
@@ -759,7 +759,7 @@ class Character:
     UseFontSpace: Optional[int] = None
     UseKerning: Optional[int] = None
 
-# %% ../nbs/02_api/03_classes.ipynb 11
+# %% ../nbs/02_api/03_classes.ipynb 12
 import inspect
 
 
@@ -1164,7 +1164,7 @@ class CharShape:
 
         return self
 
-# %% ../nbs/02_api/03_classes.ipynb 15
+# %% ../nbs/02_api/03_classes.ipynb 16
 @dataclass
 class Paragraph:
     AlignType: Optional[int] = None
@@ -1200,7 +1200,7 @@ class Paragraph:
     TextAlignment: Optional[int] = None
     WidowOrphan: Optional[int] = None
 
-# %% ../nbs/02_api/03_classes.ipynb 16
+# %% ../nbs/02_api/03_classes.ipynb 17
 class ParaShape:
     """
     ParaShape 클래스는 문단 모양을 다룹니다. ParaShape는 문단에 적용되는 스타일링 속성을 나타냅니다.
@@ -1560,7 +1560,7 @@ class ParaShape:
         
         return self
 
-# %% ../nbs/02_api/03_classes.ipynb 19
+# %% ../nbs/02_api/03_classes.ipynb 20
 @dataclass
 class PageShape:
     MarginLeft: int
