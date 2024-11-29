@@ -362,31 +362,6 @@ class TableAccessor:
     테이블 속성에 접근하고 조작할 수 있는 클래스입니다.
 
     이 클래스는 HWP 문서의 테이블과 관련된 속성에 접근하거나 수정할 수 있는 기능을 제공합니다.
-    테이블의 너비와 높이를 포함한 다양한 속성들을 읽고 쓸 수 있습니다.
-
-    속성(Property)
-    -------------
-    width : float
-        테이블의 너비를 밀리미터(mm) 단위로 반환합니다.
-    height : float
-        테이블의 높이를 밀리미터(mm) 단위로 반환합니다.
-
-    메서드(Method)
-    -------------
-    _get_shape_properties() -> dict
-        테이블의 모양과 관련된 속성 정보를 딕셔너리로 반환합니다.
-
-    __call__() -> dict
-        _get_shape_properties 메서드를 호출하여 테이블 속성 정보를 반환합니다.
-
-    사용 예시
-    --------
-    >>> app = App()  # HWP API 객체
-    >>> table = TableAccessor(app)
-    >>> print(table.width)  # 테이블의 현재 너비 출력
-    >>> table.width = 100  # 테이블의 너비를 100mm로 설정
-    >>> print(table.height)  # 테이블의 현재 높이 출력
-    >>> table.height = 50  # 테이블의 높이를 50mm로 설정
     """
 
     def __init__(self, app):
@@ -408,50 +383,36 @@ class TableAccessor:
         -------
         dict
             테이블의 속성 정보를 포함하는 딕셔너리입니다.
-            포함된 속성:
-            - TreatAsChar: 문자로 간주 여부
-            - AffectsLine: 줄에 영향을 미치는지 여부
-            - VertRelTo: 수직 기준
-            - VertAlign: 수직 정렬
-            - VertOffset: 수직 오프셋
-            - HorzRelTo: 수평 기준
-            - HorzAlign: 수평 정렬
-            - HorzOffset: 수평 오프셋
-            - FlowWithText: 텍스트 흐름과 함께 이동 여부
-            - AllowOverlap: 겹치기 허용 여부
-            - WidthRelTo: 너비 기준
-            - Width: 테이블의 너비
-            - HeightRelTo: 높이 기준
-            - Height: 테이블의 높이
-            - ProtectSize: 크기 보호 여부
-            - TextWrap: 텍스트 감싸기 설정
-            - TextFlow: 텍스트 흐름 설정
-            - OutsideMarginLeft: 왼쪽 외부 여백
-            - OutsideMarginRight: 오른쪽 외부 여백
-            - OutsideMarginTop: 위쪽 외부 여백
-            - OutsideMarginBottom: 아래쪽 외부 여백
-            - NumberingType: 번호 매기기 유형
-            - LayoutWidth: 레이아웃 너비
-            - LayoutHeight: 레이아웃 높이
-            - Lock: 잠금 여부
-            - HoldAnchorObj: 앵커 객체 유지 여부
-            - PageNumber: 페이지 번호
-            - AdjustSelection: 선택 영역 조정
-            - AdjustTextBox: 텍스트 박스 조정
-            - AdjustPrevObjAttr: 이전 객체 속성 조정
         """
         app = self._app
         property_names = (
-            "TreatAsChar", "AffectsLine", "VertRelTo", "VertAlign", "VertOffset", "HorzRelTo", 
-            "HorzAlign", "HorzOffset", "FlowWithText", "AllowOverlap", "WidthRelTo", "Width", 
-            "HeightRelTo", "Height", "ProtectSize", "TextWrap", "TextFlow", "OutsideMarginLeft", 
-            "OutsideMarginRight", "OutsideMarginTop", "OutsideMarginBottom", "NumberingType", 
-            "LayoutWidth", "LayoutHeight", "Lock", "HoldAnchorObj", "PageNumber", "AdjustSelection", 
+            "TreatAsChar", "AffectsLine", "VertRelTo", "VertAlign", "VertOffset", "HorzRelTo",
+            "HorzAlign", "HorzOffset", "FlowWithText", "AllowOverlap", "WidthRelTo", "Width",
+            "HeightRelTo", "Height", "ProtectSize", "TextWrap", "TextFlow", "OutsideMarginLeft",
+            "OutsideMarginRight", "OutsideMarginTop", "OutsideMarginBottom", "NumberingType",
+            "LayoutWidth", "LayoutHeight", "Lock", "HoldAnchorObj", "PageNumber", "AdjustSelection",
             "AdjustTextBox", "AdjustPrevObjAttr"
         )
         action = app.actions.TablePropertyDialog
         pset = action.create_pset()
         return {name: pset.Item(name) for name in property_names}
+
+    def _set_shape_property(self, name, value):
+        """
+        테이블의 특정 속성을 설정합니다.
+
+        Parameters
+        ----------
+        name : str
+            설정하려는 속성 이름.
+        value : Any
+            설정하려는 값.
+        """
+        app = self._app
+        action = app.actions.TablePropertyDialog
+        pset = action.create_pset()
+        pset.SetItem(name, mili2unit(value) if name in ["Width", "Height"] else value)
+        action.run(pset)
 
     def __call__(self):
         """
@@ -466,29 +427,143 @@ class TableAccessor:
 
     @property
     def width(self):
-        """
-        테이블의 너비를 반환합니다.
+        """테이블의 너비를 반환하거나 설정합니다."""
+        return unit2mili(self._get_shape_properties().get("Width"))
 
-        Returns
-        -------
-        float
-            테이블의 너비 (밀리미터 단위).
-        """
-        table_properties = self._get_shape_properties()
-        return unit2mili(table_properties.get("Width"))
+    @width.setter
+    def width(self, value):
+        """테이블의 너비를 설정합니다."""
+        self._set_shape_property("Width", value)
 
     @property
     def height(self):
-        """
-        테이블의 높이를 반환합니다.
+        """테이블의 높이를 반환하거나 설정합니다."""
+        return unit2mili(self._get_shape_properties().get("Height"))
 
-        Returns
-        -------
-        float
-            테이블의 높이 (밀리미터 단위).
-        """
-        table_properties = self._get_shape_properties()
-        return unit2mili(table_properties.get("Height"))
+    @height.setter
+    def height(self, value):
+        """테이블의 높이를 설정합니다."""
+        self._set_shape_property("Height", value)
+
+    @property
+    def treat_as_char(self):
+        """테이블을 문자로 간주할지 여부를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("TreatAsChar")
+
+    @treat_as_char.setter
+    def treat_as_char(self, value):
+        """테이블을 문자로 간주할지 여부를 설정합니다."""
+        self._set_shape_property("TreatAsChar", value)
+
+    @property
+    def affects_line(self):
+        """테이블이 줄에 영향을 미치는지 여부를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("AffectsLine")
+
+    @affects_line.setter
+    def affects_line(self, value):
+        """테이블이 줄에 영향을 미치는지 여부를 설정합니다."""
+        self._set_shape_property("AffectsLine", value)
+
+    @property
+    def vert_rel_to(self):
+        """테이블의 수직 기준을 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("VertRelTo")
+
+    @vert_rel_to.setter
+    def vert_rel_to(self, value):
+        """테이블의 수직 기준을 설정합니다."""
+        self._set_shape_property("VertRelTo", value)
+
+    @property
+    def vert_align(self):
+        """테이블의 수직 정렬 상태를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("VertAlign")
+
+    @vert_align.setter
+    def vert_align(self, value):
+        """테이블의 수직 정렬 상태를 설정합니다."""
+        self._set_shape_property("VertAlign", value)
+
+    @property
+    def vert_offset(self):
+        """테이블의 수직 오프셋을 반환하거나 설정합니다."""
+        return unit2mili(self._get_shape_properties().get("VertOffset"))
+
+    @vert_offset.setter
+    def vert_offset(self, value):
+        """테이블의 수직 오프셋을 설정합니다."""
+        self._set_shape_property("VertOffset", value)
+
+    @property
+    def horz_rel_to(self):
+        """테이블의 수평 기준을 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("HorzRelTo")
+
+    @horz_rel_to.setter
+    def horz_rel_to(self, value):
+        """테이블의 수평 기준을 설정합니다."""
+        self._set_shape_property("HorzRelTo", value)
+
+    @property
+    def horz_align(self):
+        """테이블의 수평 정렬 상태를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("HorzAlign")
+
+    @horz_align.setter
+    def horz_align(self, value):
+        """테이블의 수평 정렬 상태를 설정합니다."""
+        self._set_shape_property("HorzAlign", value)
+
+    @property
+    def horz_offset(self):
+        """테이블의 수평 오프셋을 반환하거나 설정합니다."""
+        return unit2mili(self._get_shape_properties().get("HorzOffset"))
+
+    @horz_offset.setter
+    def horz_offset(self, value):
+        """테이블의 수평 오프셋을 설정합니다."""
+        self._set_shape_property("HorzOffset", value)
+
+    @property
+    def lock(self):
+        """테이블의 잠금 상태를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("Lock")
+
+    @lock.setter
+    def lock(self, value):
+        """테이블의 잠금 상태를 설정합니다."""
+        self._set_shape_property("Lock", value)
+
+    @property
+    def flow_with_text(self):
+        """테이블의 텍스트와 함께 이동 여부를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("FlowWithText")
+
+    @flow_with_text.setter
+    def flow_with_text(self, value):
+        """테이블의 텍스트와 함께 이동 여부를 설정합니다."""
+        self._set_shape_property("FlowWithText", value)
+
+    @property
+    def allow_overlap(self):
+        """테이블의 겹치기 허용 여부를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("AllowOverlap")
+
+    @allow_overlap.setter
+    def allow_overlap(self, value):
+        """테이블의 겹치기 허용 여부를 설정합니다."""
+        self._set_shape_property("AllowOverlap", value)
+
+    @property
+    def numbering_type(self):
+        """테이블의 번호 매기기 유형을 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("NumberingType")
+
+    @numbering_type.setter
+    def numbering_type(self, value):
+        """테이블의 번호 매기기 유형을 설정합니다."""
+        self._set_shape_property("NumberingType", value)
 
 
 # %% ../nbs/02_api/03_classes.ipynb 8
