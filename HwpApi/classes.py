@@ -332,8 +332,7 @@ class CellAccessor:
         action = app.actions.TablePropertyDialog
         action.pset.ShapeTableCell.Width = mili2unit(width)
         action.run()
-        print(app.cell_width, width)
-        return app.cell_width == width
+        return app.cell.width == width
 
     @height.setter
     def height(self, height):
@@ -354,7 +353,7 @@ class CellAccessor:
         action = app.actions.TablePropertyDialog
         action.pset.ShapeTableCell.Height = mili2unit(height)
         action.run()
-        return app.cell_height == height
+        return app.cell.height == height
 
 
 # %% ../nbs/02_api/03_classes.ipynb 6
