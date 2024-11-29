@@ -943,7 +943,7 @@ class _Action:
     def __call__(self, pset=None):
         self.run(pset)
 
-# %% ../nbs/02_api/01_actions.ipynb 9
+# %% ../nbs/02_api/01_actions.ipynb 11
 class _Actions:
     """
     Dynamically generates and registers actions for the application.
@@ -951,730 +951,2868 @@ class _Actions:
 
     def __init__(self, app):
         self._app = app
-        self._actions = [
-            "AddHanjaWord",
-            "AllReplace",
-            "AQcommandMerge",
-            "AutoChangeHangul",
-            "AutoChangeRun",
-            "Average",
-            "BackwardFind",
-            "Bookmark",
-            "BreakColDef",
-            "BreakColumn",
-            "BreakLine",
-            "BreakPage",
-            "BreakPara",
-            "BreakSection",
-            "Cancel",
-            "CaptureDialog",
-            "CaptureHandler",
-            "CellBorder",
-            "CellBorderFill",
-            "CellFill",
-            "CellZoneBorder",
-            "CellZoneBorderFill",
-            "CellZoneFill",
-            "ChangeRome",
-            "CharShape",
-            "CharShapeBold",
-            "CharShapeCenterline",
-            "CharShapeDialog",
-            "CharShapeDialogWithoutBorder",
-            "CharShapeEmboss",
-            "CharShapeEngrave",
-            "CharShapeHeight",
-            "CharShapeHeightDecrease",
-            "CharShapeHeightIncrease",
-            "CharShapeItalic",
-            "CharShapeLang",
-            "CharShapeNextFaceName",
-            "CharShapeNormal",
-            "CharShapeOutline",
-            "CharShapePrevFaceName",
-            "CharShapeShadow",
-            "CharShapeSpacing",
-            "CharShapeSpacingDecrease",
-            "CharShapeSpacingIncrease",
-            "CharShapeSubscript",
-            "CharShapeSuperscript",
-            "CharShapeSuperSubscript",
-            "CharShapeTextColorBlack",
-            "CharShapeTextColorBlue",
-            "CharShapeTextColorBluish",
-            "CharShapeTextColorGreen",
-            "CharShapeTextColorRed",
-            "CharShapeTextColorViolet",
-            "CharShapeTextColorWhite",
-            "CharShapeTextColorYellow",
-            "CharShapeTypeFace",
-            "CharShapeUnderline",
-            "CharShapeWidth",
-            "CharShapeWidthDecrease",
-            "CharShapeWidthIncrease",
-            "Close",
-            "CloseEx",
-            "Comment",
-            "CommentDelete",
-            "CommentModify",
-            "ComposeChars",
-            "ConvertCase",
-            "ConvertFullHalfWidth",
-            "ConvertHiraGata",
-            "ConvertJianFan",
-            "ConvertToHangul",
-            "Copy",
-            "CopyPage",
-            "Cut",
-            "Delete",
-            "DeleteBack",
-            "DeleteCtrls",
-            "DeleteDutmal",
-            "DeleteField",
-            "DeleteFieldMemo",
-            "DeleteLine",
-            "DeleteLineEnd",
-            "DeleteWord",
-            "DeleteWordBack",
-            "DocFindEnd",
-            "DocFindInit",
-            "DocFindNext",
-            "DocSummaryInfo",
-            "DocumentInfo",
-            "DrawObjCancelOneStep",
-            "DrawObjCreatorArc",
-            "DrawObjCreatorCanvas",
-            "DrawObjCreatorCurve",
-            "DrawObjCreatorEllipse",
-            "DrawObjCreatorFreeDrawing",
-            "DrawObjCreatorLine",
-            "DrawObjCreatorMultiArc",
-            "DrawObjCreatorMultiCanvas",
-            "DrawObjCreatorMultiCurve",
-            "DrawObjCreatorMultiEllipse",
-            "DrawObjCreatorMultiFreeDrawing",
-            "DrawObjCreatorMultiLine",
-            "DrawObjCreatorMultiPolygon",
-            "DrawObjCreatorMultiRectangle",
-            "DrawObjCreatorMultiTextBox",
-            "DrawObjCreatorObject",
-            "DrawObjCreatorPolygon",
-            "DrawObjCreatorRectangle",
-            "DrawObjCreatorTextBox",
-            "DrawObjEditDetail",
-            "DrawObjOpenClosePolygon",
-            "DrawObjTemplateLoad",
-            "DrawObjTemplateSave",
-            "DrawShapeObjShadow",
-            "DropCap",
-            "DutmalChars",
-            "EditFieldMemo",
-            "EquationCreate",
-            "EquationModify",
-            "EquationPropertyDialog",
-            "Erase",
-            "ExchangeFootnoteEndnote",
-            "ExecReplace",
-            "FileClose",
-            "FileNew",
-            "FileOpen",
-            "FileOpenMRU",
-            "FilePassword",
-            "FilePreview",
-            "FileQuit",
-            "FileSave",
-            "FileSaveAs",
-            "FileSetSecurity",
-            "FileTemplate",
-            "FindAll",
-            "FindDlg",
-            "FindForeBackBookmark",
-            "FindForeBackCtrl",
-            "FindForeBackFind",
-            "FindForeBackLine",
-            "FindForeBackPage",
-            "FindForeBackSection",
-            "FindForeBackStyle",
-            "FootnoteOption",
-            "ForwardFind",
-            "FrameStatusBar",
-            "FtpUpload",
-            "FtpDownload",
-            "GetDefaultBullet",
-            "GetDefaultParaNumber",
-            "GetDocFilters",
-            "GetSectionApplyString",
-            "GetSectionApplyTo",
-            "GetVersionItemInfo",
-            "Goto",
-            "GotoStyle",
-            "HanThDIC",
-            "HeaderFooter",
-            "HeaderFooterDelete",
-            "HeaderFooterInsField",
-            "HeaderFooterModify",
-            "HeaderFooterToNext",
-            "HeaderFooterToPrev",
-            "HiddenCredits",
-            "HideTitle",
-            "HimKbdChange",
-            "HwpCtrlEquationCreate97",
-            "HwpCtrlFileNew",
-            "HwpCtrlFileOpen",
-            "HwpCtrlFileSave",
-            "HwpCtrlFileSaveAs",
-            "HwpCtrlFileSaveAsAutoBlock",
-            "HwpCtrlFileSaveAutoBlock",
-            "HwpCtrlFindDlg",
-            "HwpCtrlReplaceDlg",
-            "HwpDic",
-            "Hyperlink",
-            "HyperlinkBackward",
-            "HyperlinkForward",
-            "HyperlinkJump",
-            "Idiom",
-            "ImageFindPath",
-            "IndexMark",
-            "IndexMarkModify",
-            "InputCodeChange",
-            "InputCodeTable",
-            "InputDateStyle",
-            "InputHanja",
-            "InputHanjaBusu",
-            "InputHanjaMean",
-            "InsertAutoNum",
-            "InsertCCLMark",
-            "InsertChart",
-            "InsertConnectLineArcBoth",
-            "InsertConnectLineArcNoArrow",
-            "InsertConnectLineArcOneWay",
-            "InsertConnectLineMultiArcBoth",
-            "InsertConnectLineMultiArcNoArrow",
-            "InsertConnectLineMultiArcOneWay",
-            "InsertConnectLineMultiStraightBoth",
-            "InsertConnectLineMultiStraightNoArrow",
-            "InsertConnectLineMultiStraightOneWay",
-            "InsertConnectLineMultiStrokeBoth",
-            "InsertConnectLineMultiStrokeNoArrow",
-            "InsertConnectLineMultiStrokeOneWay",
-            "InsertConnectLineStraightBoth",
-            "InsertConnectLineStraightNoArrow",
-            "InsertConnectLineStraightOneWay",
-            "InsertConnectLineStrokeBoth",
-            "InsertConnectLineStrokeNoArrow",
-            "InsertConnectLineStrokeOneWay",
-            "InsertCpNo",
-            "InsertCpTpNo",
-            "InsertCrossReference",
-            "InsertDateCode",
-            "InsertDocInfo",
-            "InsertDocTitle",
-            "InsertEndnote",
-            "InsertFieldDateTime",
-            "InsertFieldFileName",
-            "InsertFieldMemo",
-            "InsertFieldRevisionChagne",
-            "InsertFieldTemplate",
-            "InsertFile",
-            "InsertFileName",
-            "InsertFilePath",
-            "InsertFixedWidthSpace",
-            "InsertFootnote",
-            "InsertHyperlink",
-            "InsertIdiom",
-            "InsertLastPrintDate",
-            "InsertLastSaveBy",
-            "InsertLastSaveDate",
-            "InsertLine",
-            "InsertNonBreakingSpace",
-            "InsertPageNum",
-            "InsertRevision",
-            "InsertRevisionAttach",
-            "InsertRevisionClipping",
-            "InsertRevisionDelete",
-            "InsertRevisionHyperlink",
-            "InsertRevisionInsert",
-            "InsertRevisionLeftMove",
-            "InsertRevisionLine",
-            "InsertRevisionLineAttach",
-            "InsertRevisionLineInsert",
-            "InsertRevisionLineLink",
-            "InsertRevisionLineSeparate",
-            "InsertRevisionLineTransfer",
-            "InsertRevisionLineTransferSplit",
-            "InsertRevisionPraise",
-            "InsertRevisionRightMove",
-            "InsertRevisionSawTooth",
-            "InsertRevisionSimpleChange",
-            "InsertRevisionSpace",
-            "InsertRevisionSymbol",
-            "InsertRevisionThinking",
-            "InsertRevisionTransfer",
-            "InsertRevisionTransferSplit",
-            "InsertSoftHyphen",
-            "InsertSpace",
-            "InsertStringDateTime",
-            "InsertTab",
-            "InsertText",
-            "InsertTpNo",
-            "InsertUserName",
-            "InsertVoice",
-            "Jajun",
-            "LabelAdd",
-            "LabelTemplate",
-            "LinkDocument",
-            "LinkTextBox",
-            "MacroDefine",
-            "MacroPause",
-            "MacroPlay1",
-            "MacroPlay10",
-            "MacroPlay11",
-            "MacroPlay2",
-            "MacroPlay3",
-            "MacroPlay4",
-            "MacroPlay5",
-            "MacroPlay6",
-            "MacroPlay7",
-            "MacroPlay8",
-            "MacroPlay9",
-            "MacroRepeat",
-            "MacroRepeatDlg",
-            "MacroStop",
-            "MailMergeField",
-            "MailMergeGenerate",
-            "MailMergeInsert",
-            "MailMergeModify",
-            "MakeAllVersionDiffs",
-            "MakeContents",
-            "MakeIndex",
-            "ManualChangeHangul",
-            "ManuScriptTemplate",
-            "MarkPenShape",
-            "MarkTitle",
-            "MasterPage",
-            "MasterPageDelete",
-            "MasterPageDuplicate",
-            "MasterPageEntry",
-            "MasterPageExcept",
-            "MasterPageFront",
-            "MasterPagePrevSection",
-            "MasterPageToNext",
-            "MasterPageToPrevious",
-            "MasterPageTypeDlg",
-            "MemoShape",
-            "MessageBox",
-            "ModifyBookmark",
-            "ModifyComposeChars",
-            "ModifyCrossReference",
-            "ModifyCtrl",
-            "ModifyDutmal",
-            "ModifyFieldClickhere",
-            "ModifyFieldDate",
-            "ModifyFieldDateTime",
-            "ModifyFieldPath",
-            "ModifyFieldSummary",
-            "ModifyFieldUserInfo",
-            "ModifyFillProperty",
-            "ModifyHyperlink",
-            "ModifyLineProperty",
-            "ModifyRevision",
-            "ModifyRevisionHyperlink",
-            "ModifySection",
-            "ModifyShapeObject",
-            "MoveColumnBegin",
-            "MoveColumnEnd",
-            "MoveDocBegin",
-            "MoveDocEnd",
-            "MoveDown",
-            "MoveLeft",
-            "MoveLineBegin",
-            "MoveLineDown",
-            "MoveLineEnd",
-            "MoveLineUp",
-            "MoveListBegin",
-            "MoveListEnd",
-            "MoveNextChar",
-            "MoveNextColumn",
-            "MoveNextParaBegin",
-            "MoveNextPos",
-            "MoveNextPosEx",
-            "MoveNextWord",
-            "MovePageBegin",
-            "MovePageDown",
-            "MovePageEnd",
-            "MovePageUp",
-            "MoveParaBegin",
-            "MoveParaEnd",
-            "MoveParentList",
-            "MovePrevChar",
-            "MovePrevColumn",
-            "MovePrevParaBegin",
-            "MovePrevParaEnd",
-            "MovePrevPos",
-            "MovePrevPosEx",
-            "MovePrevWord",
-            "MoveRight",
-            "MoveRootList",
-            "MoveScrollDown",
-            "MoveScrollNext",
-            "MoveScrollPrev",
-            "MoveScrollUp",
-            "MoveSectionDown",
-            "MoveSectionUp",
-            "MoveSelDocBegin",
-            "MoveSelDocEnd",
-            "MoveSelDown",
-            "MoveSelLeft",
-            "MoveSelLineBegin",
-            "MoveSelLineDown",
-            "MoveSelLineEnd",
-            "MoveSelLineUp",
-            "MoveSelListBegin",
-            "MoveSelListEnd",
-            "MoveSelNextChar",
-            "MoveSelNextParaBegin",
-            "MoveSelNextPos",
-            "MoveSelNextWord",
-            "MoveSelPageDown",
-            "MoveSelPageUp",
-            "MoveSelParaBegin",
-            "MoveSelParaEnd",
-            "MoveSelPrevChar",
-            "MoveSelPrevParaBegin",
-            "MoveSelPrevParaEnd",
-            "MoveSelPrevPos",
-            "MoveSelPrevWord",
-            "MoveSelRight",
-            "MoveSelTopLevelBegin",
-            "MoveSelTopLevelEnd",
-            "MoveSelUp",
-            "MoveSelViewDown",
-            "MoveSelViewUp",
-            "MoveSelWordBegin",
-            "MoveSelWordEnd",
-            "MoveTopLevelBegin",
-            "MoveTopLevelEnd",
-            "MoveTopLevelList",
-            "MoveUp",
-            "MoveViewBegin",
-            "MoveViewDown",
-            "MoveViewEnd",
-            "MoveViewUp",
-            "MoveWordBegin",
-            "MoveWordEnd",
-            "MPSectionToNext",
-            "MPSectionToPrevious",
-            "MultiColumn",
-            "NewNumber",
-            "NewNumberModify",
-            "NextTextBoxLinked",
-            "NoteDelete",
-            "NoteModify",
-            "NoteNumProperty",
-            "NoteToNext",
-            "NoteToPrev",
-            "OleCreateNew",
-            "OutlineNumber",
-            "PageBorder",
-            "PageHiding",
-            "PageHidingModify",
-            "PageNumPos",
-            "PageNumPosModify",
-            "PageSetup",
-            "ParagraphShape",
-            "ParagraphShapeAlignCenter",
-            "ParagraphShapeAlignDistribute",
-            "ParagraphShapeAlignDivision",
-            "ParagraphShapeAlignJustify",
-            "ParagraphShapeAlignLeft",
-            "ParagraphShapeAlignRight",
-            "ParagraphShapeDecreaseLeftMargin",
-            "ParagraphShapeDecreaseLineSpacing",
-            "ParagraphShapeDecreaseMargin",
-            "ParagraphShapeDecreaseRightMargin",
-            "ParagraphShapeIncreaseLeftMargin",
-            "ParagraphShapeIncreaseLineSpacing",
-            "ParagraphShapeIncreaseMargin",
-            "ParagraphShapeIncreaseRightMargin",
-            "ParagraphShapeIndentAtCaret",
-            "ParagraphShapeIndentNegative",
-            "ParagraphShapeIndentPositive",
-            "ParagraphShapeProtect",
-            "ParagraphShapeWithNext",
-            "ParaNumberBullet",
-            "ParaNumberBulletLevelDown",
-            "ParaNumberBulletLevelUp",
-            "ParaShapeDialog",
-            "Paste",
-            "PastePage",
-            "PasteSpecial",
-            "PictureEffect1",
-            "PictureEffect2",
-            "PictureEffect3",
-            "PictureEffect4",
-            "PictureEffect5",
-            "PictureEffect6",
-            "PictureEffect7",
-            "PictureEffect8",
-            "PictureInsertDialog",
-            "PictureLinkedToEmbedded",
-            "PictureSave",
-            "PictureScissor",
-            "PictureToOriginal",
-            "Preference",
-            "Presentation",
-            "PresentationSetup",
-            "PrevTextBoxLinked",
-            "Print",
-            "PrintToImage",
-            "PutBullet",
-            "PutNewParaNumber",
-            "PutOutlineNumber",
-            "PutParaNumber",
-            "QuickCorrect",
-            "RecalcPageCount",
-            "RecentCode",
-            "Redo",
-            "RepeatFind",
-            "ReplaceDlg",
-            "ReturnKeyInField",
-            "ReturnPrevPos",
-            "ReverseFind",
-            "SaveBlockAction",
-            "SaveFootnote",
-            "SaveHistoryItem",
-            "ScrMacroDefine",
-            "ScrMacroPause",
-            "ScrMacroRepeatDlg",
-            "ScrMacroSecurityDlg",
-            "ScrMacroStop",
-            "SearchAddress",
-            "SearchForeign",
-            "Select",
-            "SelectAll",
-            "SelectColumn",
-            "SelectCtrlFront",
-            "SelectCtrlReverse",
-            "SendBrowserText",
-            "SendMailAttach",
-            "SendMailText",
-            "ShapeCopyPaste",
-            "ShapeObjAlignBottom",
-            "ShapeObjAlignCenter",
-            "ShapeObjAlignHeight",
-            "ShapeObjAlignHorzSpacing",
-            "ShapeObjAlignLeft",
-            "ShapeObjAlignMiddle",
-            "ShapeObjAlignRight",
-            "ShapeObjAlignSize",
-            "ShapeObjAlignTop",
-            "ShapeObjAlignVertSpacing",
-            "ShapeObjAlignWidth",
-            "ShapeObjAttachCaption",
-            "ShapeObjAttachTextBox",
-            "ShapeObjAttrDialog",
-            "ShapeObjBringForward",
-            "ShapeObjBringInFrontOfText",
-            "ShapeObjBringToFront",
-            "ShapeObjCtrlSendBehindText",
-            "ShapeObjDetachCaption",
-            "ShapeObjDetachTextBox",
-            "ShapeObjDialog",
-            "ShapeObjectCopy",
-            "ShapeObjectPaste",
-            "ShapeObjFillProperty",
-            "ShapeObjGroup",
-            "ShapeObjHorzFlip",
-            "ShapeObjHorzFlipOrgState",
-            "ShapeObjInsertCaptionNum",
-            "ShapeObjLineProperty",
-            "ShapeObjLock",
-            "ShapeObjMoveDown",
-            "ShapeObjMoveLeft",
-            "ShapeObjMoveRight",
-            "ShapeObjMoveUp",
-            "ShapeObjNextObject",
-            "ShapeObjNorm",
-            "ShapeObjPrevObject",
-            "ShapeObjRandomAngleRotater",
-            "ShapeObjResizeDown",
-            "ShapeObjResizeLeft",
-            "ShapeObjResizeRight",
-            "ShapeObjResizeUp",
-            "ShapeObjRightAngleRotater",
-            "ShapeObjRightAngleRotaterAnticlockwise",
-            "ShapeObjRotater",
-            "ShapeObjSaveAsPicture",
-            "ShapeObjSelect",
-            "ShapeObjSendBack",
-            "ShapeObjSendToBack",
-            "ShapeObjShadowEnlarge",
-            "ShapeObjShadowMoveDown",
-            "ShapeObjShadowMoveLeft",
-            "ShapeObjShadowMoveRight",
-            "ShapeObjShadowMoveUp",
-            "ShapeObjShadowNarrow",
-            "ShapeObjShadowParellelLeftBottom",
-            "ShapeObjShadowParellelLeftTop",
-            "ShapeObjShadowParellelRightBottom",
-            "ShapeObjShadowParellelRightTop",
-            "ShapeObjShadowShearLeftBottom",
-            "ShapeObjShadowShearLeftTop",
-            "ShapeObjShadowShearRightBottom",
-            "ShapeObjShadowShearRightTop",
-            "ShapeObjShear",
-            "ShapeObjTableSelCell",
-            "ShapeObjTextBoxEdit",
-            "ShapeObjUngroup",
-            "ShapeObjUnlockAll",
-            "ShapeObjVertFlip",
-            "ShapeObjVertFlipOrgState",
-            "ShapeObjWrapSquare",
-            "ShapeObjWrapTopAndBottom",
-            "Sort",
-            "SpellingCheck",
-            "SplitMemoOpen",
-            "Style",
-            "StyleAdd",
-            "StyleClearCharStyle",
-            "StyleDelete",
-            "StyleEdit",
-            "StyleEx",
-            "StyleParaNumberBullet",
-            "StyleShortcut1",
-            "StyleShortcut10",
-            "StyleShortcut2",
-            "StyleShortcut3",
-            "StyleShortcut4",
-            "StyleShortcut5",
-            "StyleShortcut6",
-            "StyleShortcut7",
-            "StyleShortcut8",
-            "StyleShortcut9",
-            "StyleTemplate",
-            "Sum",
-            "TableAppendRow",
-            "TableAutoDrawPenStyleWidthDlg",
-            "TableAutoFill",
-            "TableAutoFillDlg",
-            "TableCellBlock",
-            "TableCellBlockCol",
-            "TableCellBlockExtend",
-            "TableCellBlockExtendAbs",
-            "TableCellBlockRow",
-            "TableCellBorderAll",
-            "TableCellBorderBottom",
-            "TableCellBorderDiagonalDown",
-            "TableCellBorderDiagonalUp",
-            "TableCellBorderInside",
-            "TableCellBorderInsideHorz",
-            "TableCellBorderInsideVert",
-            "TableCellBorderLeft",
-            "TableCellBorderNo",
-            "TableCellBorderOutside",
-            "TableCellBorderRight",
-            "TableCellBorderTop",
-            "TableCellShadeDec",
-            "TableCellShadeInc",
-            "TableColBegin",
-            "TableColEnd",
-            "TableColPageDown",
-            "TableColPageUp",
-            "TableCreate",
-            "TableDeleteCell",
-            "TableDeleteColumn",
-            "TableDeleteRow",
-            "TableDeleteRowColumn",
-            "TableDistributeCellHeight",
-            "TableDistributeCellWidth",
-            "TableDrawPen",
-            "TableEraser",
-            "TableFormula",
-            "TableFormulaAvgAuto",
-            "TableFormulaAvgHor",
-            "TableFormulaAvgVer",
-            "TableFormulaProAuto",
-            "TableFormulaProHor",
-            "TableFormulaProVer",
-            "TableFormulaSumAuto",
-            "TableFormulaSumHor",
-            "TableFormulaSumVer",
-            "TableInsertLeftColumn",
-            "TableInsertLowerRow",
-            "TableInsertRightColumn",
-            "TableInsertRowColumn",
-            "TableInsertUpperRow",
-            "TableLeftCell",
-            "TableLowerCell",
-            "TableMergeCell",
-            "TableMergeTable",
-            "TablePropertyDialog",
-            "TableResizeCellDown",
-            "TableResizeCellLeft",
-            "TableResizeCellRight",
-            "TableResizeCellUp",
-            "TableResizeDown",
-            "TableResizeExDown",
-            "TableResizeExLeft",
-            "TableResizeExRight",
-            "TableResizeExUp",
-            "TableResizeLeft",
-            "TableResizeLineDown",
-            "TableResizeLineLeft",
-            "TableResizeLineRight",
-            "TableResizeLineUp",
-            "TableResizeRight",
-            "TableResizeUp",
-            "TableRightCell",
-            "TableRightCellAppend",
-            "TableSplitCell",
-            "TableSplitCellCol2",
-            "TableSplitCellRow2",
-            "TableSplitTable",
-            "TableStringToTable",
-            "TableSubtractRow",
-            "TableSwap",
-            "TableTableToString",
-            "TableTemplate",
-            "TableUpperCell",
-            "TableVAlignBottom",
-            "TableVAlignCenter",
-            "TableVAlignTop",
-            "TextArtCreate",
-            "TextArtModify",
-            "TextArtShadow",
-            "ToggleOverwrite",
-            "Undo",
-            "UnlinkTextBox",
-            "UserAutoFill",
-            "VersionDelete",
-            "VersionDeleteAll",
-            "VersionInfo",
-            "VersionSave",
-            "VerticalText",
-            "ViewGridOption",
-            "ViewIdiom",
-            "ViewOptionCtrlMark",
-            "ViewOptionGuideLine",
-            "ViewOptionMemo",
-            "ViewOptionMemoGuideline",
-            "ViewOptionPaper",
-            "ViewOptionParaMark",
-            "ViewOptionPicture",
-            "ViewOptionRevision",
-            "ViewShowGrid",
-            "ViewZoom",
-            "ViewZoomFitPage",
-            "ViewZoomFitWidth",
-            "ViewZoomNormal",
-            "VoiceCommand",
-        ]
+        
+    @property    
+    def AddHanjaWord(self):
+        return _Action(self._app, "AddHanjaWord")
 
-    def __getattr__(self, name):
-        if name in self._actions:
-            return _Action(self._app, name)
-        raise AttributeError(
-            f"'{type(self).__name__}' object has no attribute '{name}'"
-        )
+    @property    
+    def AllReplace(self):
+        return _Action(self._app, "AllReplace")
 
+    @property    
+    def AQcommandMerge(self):
+        return _Action(self._app, "AQcommandMerge")
+
+    @property    
+    def AutoChangeHangul(self):
+        return _Action(self._app, "AutoChangeHangul")
+
+    @property    
+    def AutoChangeRun(self):
+        return _Action(self._app, "AutoChangeRun")
+
+    @property    
+    def Average(self):
+        return _Action(self._app, "Average")
+
+    @property    
+    def BackwardFind(self):
+        return _Action(self._app, "BackwardFind")
+
+    @property    
+    def Bookmark(self):
+        return _Action(self._app, "Bookmark")
+
+    @property    
+    def BreakColDef(self):
+        return _Action(self._app, "BreakColDef")
+
+    @property    
+    def BreakColumn(self):
+        return _Action(self._app, "BreakColumn")
+
+    @property    
+    def BreakLine(self):
+        return _Action(self._app, "BreakLine")
+
+    @property    
+    def BreakPage(self):
+        return _Action(self._app, "BreakPage")
+
+    @property    
+    def BreakPara(self):
+        return _Action(self._app, "BreakPara")
+
+    @property    
+    def BreakSection(self):
+        return _Action(self._app, "BreakSection")
+
+    @property    
+    def Cancel(self):
+        return _Action(self._app, "Cancel")
+
+    @property    
+    def CaptureDialog(self):
+        return _Action(self._app, "CaptureDialog")
+
+    @property    
+    def CaptureHandler(self):
+        return _Action(self._app, "CaptureHandler")
+
+    @property    
+    def CellBorder(self):
+        return _Action(self._app, "CellBorder")
+
+    @property    
+    def CellBorderFill(self):
+        return _Action(self._app, "CellBorderFill")
+
+    @property    
+    def CellFill(self):
+        return _Action(self._app, "CellFill")
+
+    @property    
+    def CellZoneBorder(self):
+        return _Action(self._app, "CellZoneBorder")
+
+    @property    
+    def CellZoneBorderFill(self):
+        return _Action(self._app, "CellZoneBorderFill")
+
+    @property    
+    def CellZoneFill(self):
+        return _Action(self._app, "CellZoneFill")
+
+    @property    
+    def ChangeRome(self):
+        return _Action(self._app, "ChangeRome")
+
+    @property    
+    def CharShape(self):
+        return _Action(self._app, "CharShape")
+
+    @property    
+    def CharShapeBold(self):
+        return _Action(self._app, "CharShapeBold")
+
+    @property    
+    def CharShapeCenterline(self):
+        return _Action(self._app, "CharShapeCenterline")
+
+    @property    
+    def CharShapeDialog(self):
+        return _Action(self._app, "CharShapeDialog")
+
+    @property    
+    def CharShapeDialogWithoutBorder(self):
+        return _Action(self._app, "CharShapeDialogWithoutBorder")
+
+    @property    
+    def CharShapeEmboss(self):
+        return _Action(self._app, "CharShapeEmboss")
+
+    @property    
+    def CharShapeEngrave(self):
+        return _Action(self._app, "CharShapeEngrave")
+
+    @property    
+    def CharShapeHeight(self):
+        return _Action(self._app, "CharShapeHeight")
+
+    @property    
+    def CharShapeHeightDecrease(self):
+        return _Action(self._app, "CharShapeHeightDecrease")
+
+    @property    
+    def CharShapeHeightIncrease(self):
+        return _Action(self._app, "CharShapeHeightIncrease")
+
+    @property    
+    def CharShapeItalic(self):
+        return _Action(self._app, "CharShapeItalic")
+
+    @property    
+    def CharShapeLang(self):
+        return _Action(self._app, "CharShapeLang")
+
+    @property    
+    def CharShapeNextFaceName(self):
+        return _Action(self._app, "CharShapeNextFaceName")
+
+    @property    
+    def CharShapeNormal(self):
+        return _Action(self._app, "CharShapeNormal")
+
+    @property    
+    def CharShapeOutline(self):
+        return _Action(self._app, "CharShapeOutline")
+
+    @property    
+    def CharShapePrevFaceName(self):
+        return _Action(self._app, "CharShapePrevFaceName")
+
+    @property    
+    def CharShapeShadow(self):
+        return _Action(self._app, "CharShapeShadow")
+
+    @property    
+    def CharShapeSpacing(self):
+        return _Action(self._app, "CharShapeSpacing")
+
+    @property    
+    def CharShapeSpacingDecrease(self):
+        return _Action(self._app, "CharShapeSpacingDecrease")
+
+    @property    
+    def CharShapeSpacingIncrease(self):
+        return _Action(self._app, "CharShapeSpacingIncrease")
+
+    @property    
+    def CharShapeSubscript(self):
+        return _Action(self._app, "CharShapeSubscript")
+
+    @property    
+    def CharShapeSuperscript(self):
+        return _Action(self._app, "CharShapeSuperscript")
+
+    @property    
+    def CharShapeSuperSubscript(self):
+        return _Action(self._app, "CharShapeSuperSubscript")
+
+    @property    
+    def CharShapeTextColorBlack(self):
+        return _Action(self._app, "CharShapeTextColorBlack")
+
+    @property    
+    def CharShapeTextColorBlue(self):
+        return _Action(self._app, "CharShapeTextColorBlue")
+
+    @property    
+    def CharShapeTextColorBluish(self):
+        return _Action(self._app, "CharShapeTextColorBluish")
+
+    @property    
+    def CharShapeTextColorGreen(self):
+        return _Action(self._app, "CharShapeTextColorGreen")
+
+    @property    
+    def CharShapeTextColorRed(self):
+        return _Action(self._app, "CharShapeTextColorRed")
+
+    @property    
+    def CharShapeTextColorViolet(self):
+        return _Action(self._app, "CharShapeTextColorViolet")
+
+    @property    
+    def CharShapeTextColorWhite(self):
+        return _Action(self._app, "CharShapeTextColorWhite")
+
+    @property    
+    def CharShapeTextColorYellow(self):
+        return _Action(self._app, "CharShapeTextColorYellow")
+
+    @property    
+    def CharShapeTypeFace(self):
+        return _Action(self._app, "CharShapeTypeFace")
+
+    @property    
+    def CharShapeUnderline(self):
+        return _Action(self._app, "CharShapeUnderline")
+
+    @property    
+    def CharShapeWidth(self):
+        return _Action(self._app, "CharShapeWidth")
+
+    @property    
+    def CharShapeWidthDecrease(self):
+        return _Action(self._app, "CharShapeWidthDecrease")
+
+    @property    
+    def CharShapeWidthIncrease(self):
+        return _Action(self._app, "CharShapeWidthIncrease")
+
+    @property    
+    def Close(self):
+        return _Action(self._app, "Close")
+
+    @property    
+    def CloseEx(self):
+        return _Action(self._app, "CloseEx")
+
+    @property    
+    def Comment(self):
+        return _Action(self._app, "Comment")
+
+    @property    
+    def CommentDelete(self):
+        return _Action(self._app, "CommentDelete")
+
+    @property    
+    def CommentModify(self):
+        return _Action(self._app, "CommentModify")
+
+    @property    
+    def ComposeChars(self):
+        return _Action(self._app, "ComposeChars")
+
+    @property    
+    def ConvertCase(self):
+        return _Action(self._app, "ConvertCase")
+
+    @property    
+    def ConvertFullHalfWidth(self):
+        return _Action(self._app, "ConvertFullHalfWidth")
+
+    @property    
+    def ConvertHiraGata(self):
+        return _Action(self._app, "ConvertHiraGata")
+
+    @property    
+    def ConvertJianFan(self):
+        return _Action(self._app, "ConvertJianFan")
+
+    @property    
+    def ConvertToHangul(self):
+        return _Action(self._app, "ConvertToHangul")
+
+    @property    
+    def Copy(self):
+        return _Action(self._app, "Copy")
+
+    @property    
+    def CopyPage(self):
+        return _Action(self._app, "CopyPage")
+
+    @property    
+    def Cut(self):
+        return _Action(self._app, "Cut")
+
+    @property    
+    def Delete(self):
+        return _Action(self._app, "Delete")
+
+    @property    
+    def DeleteBack(self):
+        return _Action(self._app, "DeleteBack")
+
+    @property    
+    def DeleteCtrls(self):
+        return _Action(self._app, "DeleteCtrls")
+
+    @property    
+    def DeleteDutmal(self):
+        return _Action(self._app, "DeleteDutmal")
+
+    @property    
+    def DeleteField(self):
+        return _Action(self._app, "DeleteField")
+
+    @property    
+    def DeleteFieldMemo(self):
+        return _Action(self._app, "DeleteFieldMemo")
+
+    @property    
+    def DeleteLine(self):
+        return _Action(self._app, "DeleteLine")
+
+    @property    
+    def DeleteLineEnd(self):
+        return _Action(self._app, "DeleteLineEnd")
+
+    @property    
+    def DeleteWord(self):
+        return _Action(self._app, "DeleteWord")
+
+    @property    
+    def DeleteWordBack(self):
+        return _Action(self._app, "DeleteWordBack")
+
+    @property    
+    def DocFindEnd(self):
+        return _Action(self._app, "DocFindEnd")
+
+    @property    
+    def DocFindInit(self):
+        return _Action(self._app, "DocFindInit")
+
+    @property    
+    def DocFindNext(self):
+        return _Action(self._app, "DocFindNext")
+
+    @property    
+    def DocSummaryInfo(self):
+        return _Action(self._app, "DocSummaryInfo")
+
+    @property    
+    def DocumentInfo(self):
+        return _Action(self._app, "DocumentInfo")
+
+    @property    
+    def DrawObjCancelOneStep(self):
+        return _Action(self._app, "DrawObjCancelOneStep")
+
+    @property    
+    def DrawObjCreatorArc(self):
+        return _Action(self._app, "DrawObjCreatorArc")
+
+    @property    
+    def DrawObjCreatorCanvas(self):
+        return _Action(self._app, "DrawObjCreatorCanvas")
+
+    @property    
+    def DrawObjCreatorCurve(self):
+        return _Action(self._app, "DrawObjCreatorCurve")
+
+    @property    
+    def DrawObjCreatorEllipse(self):
+        return _Action(self._app, "DrawObjCreatorEllipse")
+
+    @property    
+    def DrawObjCreatorFreeDrawing(self):
+        return _Action(self._app, "DrawObjCreatorFreeDrawing")
+
+    @property    
+    def DrawObjCreatorLine(self):
+        return _Action(self._app, "DrawObjCreatorLine")
+
+    @property    
+    def DrawObjCreatorMultiArc(self):
+        return _Action(self._app, "DrawObjCreatorMultiArc")
+
+    @property    
+    def DrawObjCreatorMultiCanvas(self):
+        return _Action(self._app, "DrawObjCreatorMultiCanvas")
+
+    @property    
+    def DrawObjCreatorMultiCurve(self):
+        return _Action(self._app, "DrawObjCreatorMultiCurve")
+
+    @property    
+    def DrawObjCreatorMultiEllipse(self):
+        return _Action(self._app, "DrawObjCreatorMultiEllipse")
+
+    @property    
+    def DrawObjCreatorMultiFreeDrawing(self):
+        return _Action(self._app, "DrawObjCreatorMultiFreeDrawing")
+
+    @property    
+    def DrawObjCreatorMultiLine(self):
+        return _Action(self._app, "DrawObjCreatorMultiLine")
+
+    @property    
+    def DrawObjCreatorMultiPolygon(self):
+        return _Action(self._app, "DrawObjCreatorMultiPolygon")
+
+    @property    
+    def DrawObjCreatorMultiRectangle(self):
+        return _Action(self._app, "DrawObjCreatorMultiRectangle")
+
+    @property    
+    def DrawObjCreatorMultiTextBox(self):
+        return _Action(self._app, "DrawObjCreatorMultiTextBox")
+
+    @property    
+    def DrawObjCreatorObject(self):
+        return _Action(self._app, "DrawObjCreatorObject")
+
+    @property    
+    def DrawObjCreatorPolygon(self):
+        return _Action(self._app, "DrawObjCreatorPolygon")
+
+    @property    
+    def DrawObjCreatorRectangle(self):
+        return _Action(self._app, "DrawObjCreatorRectangle")
+
+    @property    
+    def DrawObjCreatorTextBox(self):
+        return _Action(self._app, "DrawObjCreatorTextBox")
+
+    @property    
+    def DrawObjEditDetail(self):
+        return _Action(self._app, "DrawObjEditDetail")
+
+    @property    
+    def DrawObjOpenClosePolygon(self):
+        return _Action(self._app, "DrawObjOpenClosePolygon")
+
+    @property    
+    def DrawObjTemplateLoad(self):
+        return _Action(self._app, "DrawObjTemplateLoad")
+
+    @property    
+    def DrawObjTemplateSave(self):
+        return _Action(self._app, "DrawObjTemplateSave")
+
+    @property    
+    def DrawShapeObjShadow(self):
+        return _Action(self._app, "DrawShapeObjShadow")
+
+    @property    
+    def DropCap(self):
+        return _Action(self._app, "DropCap")
+
+    @property    
+    def DutmalChars(self):
+        return _Action(self._app, "DutmalChars")
+
+    @property    
+    def EditFieldMemo(self):
+        return _Action(self._app, "EditFieldMemo")
+
+    @property    
+    def EquationCreate(self):
+        return _Action(self._app, "EquationCreate")
+
+    @property    
+    def EquationModify(self):
+        return _Action(self._app, "EquationModify")
+
+    @property    
+    def EquationPropertyDialog(self):
+        return _Action(self._app, "EquationPropertyDialog")
+
+    @property    
+    def Erase(self):
+        return _Action(self._app, "Erase")
+
+    @property    
+    def ExchangeFootnoteEndnote(self):
+        return _Action(self._app, "ExchangeFootnoteEndnote")
+
+    @property    
+    def ExecReplace(self):
+        return _Action(self._app, "ExecReplace")
+
+    @property    
+    def FileClose(self):
+        return _Action(self._app, "FileClose")
+
+    @property    
+    def FileNew(self):
+        return _Action(self._app, "FileNew")
+
+    @property    
+    def FileOpen(self):
+        return _Action(self._app, "FileOpen")
+
+    @property    
+    def FileOpenMRU(self):
+        return _Action(self._app, "FileOpenMRU")
+
+    @property    
+    def FilePassword(self):
+        return _Action(self._app, "FilePassword")
+
+    @property    
+    def FilePreview(self):
+        return _Action(self._app, "FilePreview")
+
+    @property    
+    def FileQuit(self):
+        return _Action(self._app, "FileQuit")
+
+    @property    
+    def FileSave(self):
+        return _Action(self._app, "FileSave")
+
+    @property    
+    def FileSaveAs(self):
+        return _Action(self._app, "FileSaveAs")
+
+    @property    
+    def FileSetSecurity(self):
+        return _Action(self._app, "FileSetSecurity")
+
+    @property    
+    def FileTemplate(self):
+        return _Action(self._app, "FileTemplate")
+
+    @property    
+    def FindAll(self):
+        return _Action(self._app, "FindAll")
+
+    @property    
+    def FindDlg(self):
+        return _Action(self._app, "FindDlg")
+
+    @property    
+    def FindForeBackBookmark(self):
+        return _Action(self._app, "FindForeBackBookmark")
+
+    @property    
+    def FindForeBackCtrl(self):
+        return _Action(self._app, "FindForeBackCtrl")
+
+    @property    
+    def FindForeBackFind(self):
+        return _Action(self._app, "FindForeBackFind")
+
+    @property    
+    def FindForeBackLine(self):
+        return _Action(self._app, "FindForeBackLine")
+
+    @property    
+    def FindForeBackPage(self):
+        return _Action(self._app, "FindForeBackPage")
+
+    @property    
+    def FindForeBackSection(self):
+        return _Action(self._app, "FindForeBackSection")
+
+    @property    
+    def FindForeBackStyle(self):
+        return _Action(self._app, "FindForeBackStyle")
+
+    @property    
+    def FootnoteOption(self):
+        return _Action(self._app, "FootnoteOption")
+
+    @property    
+    def ForwardFind(self):
+        return _Action(self._app, "ForwardFind")
+
+    @property    
+    def FrameStatusBar(self):
+        return _Action(self._app, "FrameStatusBar")
+
+    @property    
+    def FtpUpload(self):
+        return _Action(self._app, "FtpUpload")
+
+    @property    
+    def FtpDownload(self):
+        return _Action(self._app, "FtpDownload")
+
+    @property    
+    def GetDefaultBullet(self):
+        return _Action(self._app, "GetDefaultBullet")
+
+    @property    
+    def GetDefaultParaNumber(self):
+        return _Action(self._app, "GetDefaultParaNumber")
+
+    @property    
+    def GetDocFilters(self):
+        return _Action(self._app, "GetDocFilters")
+
+    @property    
+    def GetSectionApplyString(self):
+        return _Action(self._app, "GetSectionApplyString")
+
+    @property    
+    def GetSectionApplyTo(self):
+        return _Action(self._app, "GetSectionApplyTo")
+
+    @property    
+    def GetVersionItemInfo(self):
+        return _Action(self._app, "GetVersionItemInfo")
+
+    @property    
+    def Goto(self):
+        return _Action(self._app, "Goto")
+
+    @property    
+    def GotoStyle(self):
+        return _Action(self._app, "GotoStyle")
+
+    @property    
+    def HanThDIC(self):
+        return _Action(self._app, "HanThDIC")
+
+    @property    
+    def HeaderFooter(self):
+        return _Action(self._app, "HeaderFooter")
+
+    @property    
+    def HeaderFooterDelete(self):
+        return _Action(self._app, "HeaderFooterDelete")
+
+    @property    
+    def HeaderFooterInsField(self):
+        return _Action(self._app, "HeaderFooterInsField")
+
+    @property    
+    def HeaderFooterModify(self):
+        return _Action(self._app, "HeaderFooterModify")
+
+    @property    
+    def HeaderFooterToNext(self):
+        return _Action(self._app, "HeaderFooterToNext")
+
+    @property    
+    def HeaderFooterToPrev(self):
+        return _Action(self._app, "HeaderFooterToPrev")
+
+    @property    
+    def HiddenCredits(self):
+        return _Action(self._app, "HiddenCredits")
+
+    @property    
+    def HideTitle(self):
+        return _Action(self._app, "HideTitle")
+
+    @property    
+    def HimKbdChange(self):
+        return _Action(self._app, "HimKbdChange")
+
+    @property    
+    def HwpCtrlEquationCreate97(self):
+        return _Action(self._app, "HwpCtrlEquationCreate97")
+
+    @property    
+    def HwpCtrlFileNew(self):
+        return _Action(self._app, "HwpCtrlFileNew")
+
+    @property    
+    def HwpCtrlFileOpen(self):
+        return _Action(self._app, "HwpCtrlFileOpen")
+
+    @property    
+    def HwpCtrlFileSave(self):
+        return _Action(self._app, "HwpCtrlFileSave")
+
+    @property    
+    def HwpCtrlFileSaveAs(self):
+        return _Action(self._app, "HwpCtrlFileSaveAs")
+
+    @property    
+    def HwpCtrlFileSaveAsAutoBlock(self):
+        return _Action(self._app, "HwpCtrlFileSaveAsAutoBlock")
+
+    @property    
+    def HwpCtrlFileSaveAutoBlock(self):
+        return _Action(self._app, "HwpCtrlFileSaveAutoBlock")
+
+    @property    
+    def HwpCtrlFindDlg(self):
+        return _Action(self._app, "HwpCtrlFindDlg")
+
+    @property    
+    def HwpCtrlReplaceDlg(self):
+        return _Action(self._app, "HwpCtrlReplaceDlg")
+
+    @property    
+    def HwpDic(self):
+        return _Action(self._app, "HwpDic")
+
+    @property    
+    def Hyperlink(self):
+        return _Action(self._app, "Hyperlink")
+
+    @property    
+    def HyperlinkBackward(self):
+        return _Action(self._app, "HyperlinkBackward")
+
+    @property    
+    def HyperlinkForward(self):
+        return _Action(self._app, "HyperlinkForward")
+
+    @property    
+    def HyperlinkJump(self):
+        return _Action(self._app, "HyperlinkJump")
+
+    @property    
+    def Idiom(self):
+        return _Action(self._app, "Idiom")
+
+    @property    
+    def ImageFindPath(self):
+        return _Action(self._app, "ImageFindPath")
+
+    @property    
+    def IndexMark(self):
+        return _Action(self._app, "IndexMark")
+
+    @property    
+    def IndexMarkModify(self):
+        return _Action(self._app, "IndexMarkModify")
+
+    @property    
+    def InputCodeChange(self):
+        return _Action(self._app, "InputCodeChange")
+
+    @property    
+    def InputCodeTable(self):
+        return _Action(self._app, "InputCodeTable")
+
+    @property    
+    def InputDateStyle(self):
+        return _Action(self._app, "InputDateStyle")
+
+    @property    
+    def InputHanja(self):
+        return _Action(self._app, "InputHanja")
+
+    @property    
+    def InputHanjaBusu(self):
+        return _Action(self._app, "InputHanjaBusu")
+
+    @property    
+    def InputHanjaMean(self):
+        return _Action(self._app, "InputHanjaMean")
+
+    @property    
+    def InsertAutoNum(self):
+        return _Action(self._app, "InsertAutoNum")
+
+    @property    
+    def InsertCCLMark(self):
+        return _Action(self._app, "InsertCCLMark")
+
+    @property    
+    def InsertChart(self):
+        return _Action(self._app, "InsertChart")
+
+    @property    
+    def InsertConnectLineArcBoth(self):
+        return _Action(self._app, "InsertConnectLineArcBoth")
+
+    @property    
+    def InsertConnectLineArcNoArrow(self):
+        return _Action(self._app, "InsertConnectLineArcNoArrow")
+
+    @property    
+    def InsertConnectLineArcOneWay(self):
+        return _Action(self._app, "InsertConnectLineArcOneWay")
+
+    @property    
+    def InsertConnectLineMultiArcBoth(self):
+        return _Action(self._app, "InsertConnectLineMultiArcBoth")
+
+    @property    
+    def InsertConnectLineMultiArcNoArrow(self):
+        return _Action(self._app, "InsertConnectLineMultiArcNoArrow")
+
+    @property    
+    def InsertConnectLineMultiArcOneWay(self):
+        return _Action(self._app, "InsertConnectLineMultiArcOneWay")
+
+    @property    
+    def InsertConnectLineMultiStraightBoth(self):
+        return _Action(self._app, "InsertConnectLineMultiStraightBoth")
+
+    @property    
+    def InsertConnectLineMultiStraightNoArrow(self):
+        return _Action(self._app, "InsertConnectLineMultiStraightNoArrow")
+
+    @property    
+    def InsertConnectLineMultiStraightOneWay(self):
+        return _Action(self._app, "InsertConnectLineMultiStraightOneWay")
+
+    @property    
+    def InsertConnectLineMultiStrokeBoth(self):
+        return _Action(self._app, "InsertConnectLineMultiStrokeBoth")
+
+    @property    
+    def InsertConnectLineMultiStrokeNoArrow(self):
+        return _Action(self._app, "InsertConnectLineMultiStrokeNoArrow")
+
+    @property    
+    def InsertConnectLineMultiStrokeOneWay(self):
+        return _Action(self._app, "InsertConnectLineMultiStrokeOneWay")
+
+    @property    
+    def InsertConnectLineStraightBoth(self):
+        return _Action(self._app, "InsertConnectLineStraightBoth")
+
+    @property    
+    def InsertConnectLineStraightNoArrow(self):
+        return _Action(self._app, "InsertConnectLineStraightNoArrow")
+
+    @property    
+    def InsertConnectLineStraightOneWay(self):
+        return _Action(self._app, "InsertConnectLineStraightOneWay")
+
+    @property    
+    def InsertConnectLineStrokeBoth(self):
+        return _Action(self._app, "InsertConnectLineStrokeBoth")
+
+    @property    
+    def InsertConnectLineStrokeNoArrow(self):
+        return _Action(self._app, "InsertConnectLineStrokeNoArrow")
+
+    @property    
+    def InsertConnectLineStrokeOneWay(self):
+        return _Action(self._app, "InsertConnectLineStrokeOneWay")
+
+    @property    
+    def InsertCpNo(self):
+        return _Action(self._app, "InsertCpNo")
+
+    @property    
+    def InsertCpTpNo(self):
+        return _Action(self._app, "InsertCpTpNo")
+
+    @property    
+    def InsertCrossReference(self):
+        return _Action(self._app, "InsertCrossReference")
+
+    @property    
+    def InsertDateCode(self):
+        return _Action(self._app, "InsertDateCode")
+
+    @property    
+    def InsertDocInfo(self):
+        return _Action(self._app, "InsertDocInfo")
+
+    @property    
+    def InsertDocTitle(self):
+        return _Action(self._app, "InsertDocTitle")
+
+    @property    
+    def InsertEndnote(self):
+        return _Action(self._app, "InsertEndnote")
+
+    @property    
+    def InsertFieldDateTime(self):
+        return _Action(self._app, "InsertFieldDateTime")
+
+    @property    
+    def InsertFieldFileName(self):
+        return _Action(self._app, "InsertFieldFileName")
+
+    @property    
+    def InsertFieldMemo(self):
+        return _Action(self._app, "InsertFieldMemo")
+
+    @property    
+    def InsertFieldRevisionChagne(self):
+        return _Action(self._app, "InsertFieldRevisionChagne")
+
+    @property    
+    def InsertFieldTemplate(self):
+        return _Action(self._app, "InsertFieldTemplate")
+
+    @property    
+    def InsertFile(self):
+        return _Action(self._app, "InsertFile")
+
+    @property    
+    def InsertFileName(self):
+        return _Action(self._app, "InsertFileName")
+
+    @property    
+    def InsertFilePath(self):
+        return _Action(self._app, "InsertFilePath")
+
+    @property    
+    def InsertFixedWidthSpace(self):
+        return _Action(self._app, "InsertFixedWidthSpace")
+
+    @property    
+    def InsertFootnote(self):
+        return _Action(self._app, "InsertFootnote")
+
+    @property    
+    def InsertHyperlink(self):
+        return _Action(self._app, "InsertHyperlink")
+
+    @property    
+    def InsertIdiom(self):
+        return _Action(self._app, "InsertIdiom")
+
+    @property    
+    def InsertLastPrintDate(self):
+        return _Action(self._app, "InsertLastPrintDate")
+
+    @property    
+    def InsertLastSaveBy(self):
+        return _Action(self._app, "InsertLastSaveBy")
+
+    @property    
+    def InsertLastSaveDate(self):
+        return _Action(self._app, "InsertLastSaveDate")
+
+    @property    
+    def InsertLine(self):
+        return _Action(self._app, "InsertLine")
+
+    @property    
+    def InsertNonBreakingSpace(self):
+        return _Action(self._app, "InsertNonBreakingSpace")
+
+    @property    
+    def InsertPageNum(self):
+        return _Action(self._app, "InsertPageNum")
+
+    @property    
+    def InsertRevision(self):
+        return _Action(self._app, "InsertRevision")
+
+    @property    
+    def InsertRevisionAttach(self):
+        return _Action(self._app, "InsertRevisionAttach")
+
+    @property    
+    def InsertRevisionClipping(self):
+        return _Action(self._app, "InsertRevisionClipping")
+
+    @property    
+    def InsertRevisionDelete(self):
+        return _Action(self._app, "InsertRevisionDelete")
+
+    @property    
+    def InsertRevisionHyperlink(self):
+        return _Action(self._app, "InsertRevisionHyperlink")
+
+    @property    
+    def InsertRevisionInsert(self):
+        return _Action(self._app, "InsertRevisionInsert")
+
+    @property    
+    def InsertRevisionLeftMove(self):
+        return _Action(self._app, "InsertRevisionLeftMove")
+
+    @property    
+    def InsertRevisionLine(self):
+        return _Action(self._app, "InsertRevisionLine")
+
+    @property    
+    def InsertRevisionLineAttach(self):
+        return _Action(self._app, "InsertRevisionLineAttach")
+
+    @property    
+    def InsertRevisionLineInsert(self):
+        return _Action(self._app, "InsertRevisionLineInsert")
+
+    @property    
+    def InsertRevisionLineLink(self):
+        return _Action(self._app, "InsertRevisionLineLink")
+
+    @property    
+    def InsertRevisionLineSeparate(self):
+        return _Action(self._app, "InsertRevisionLineSeparate")
+
+    @property    
+    def InsertRevisionLineTransfer(self):
+        return _Action(self._app, "InsertRevisionLineTransfer")
+
+    @property    
+    def InsertRevisionLineTransferSplit(self):
+        return _Action(self._app, "InsertRevisionLineTransferSplit")
+
+    @property    
+    def InsertRevisionPraise(self):
+        return _Action(self._app, "InsertRevisionPraise")
+
+    @property    
+    def InsertRevisionRightMove(self):
+        return _Action(self._app, "InsertRevisionRightMove")
+
+    @property    
+    def InsertRevisionSawTooth(self):
+        return _Action(self._app, "InsertRevisionSawTooth")
+
+    @property    
+    def InsertRevisionSimpleChange(self):
+        return _Action(self._app, "InsertRevisionSimpleChange")
+
+    @property    
+    def InsertRevisionSpace(self):
+        return _Action(self._app, "InsertRevisionSpace")
+
+    @property    
+    def InsertRevisionSymbol(self):
+        return _Action(self._app, "InsertRevisionSymbol")
+
+    @property    
+    def InsertRevisionThinking(self):
+        return _Action(self._app, "InsertRevisionThinking")
+
+    @property    
+    def InsertRevisionTransfer(self):
+        return _Action(self._app, "InsertRevisionTransfer")
+
+    @property    
+    def InsertRevisionTransferSplit(self):
+        return _Action(self._app, "InsertRevisionTransferSplit")
+
+    @property    
+    def InsertSoftHyphen(self):
+        return _Action(self._app, "InsertSoftHyphen")
+
+    @property    
+    def InsertSpace(self):
+        return _Action(self._app, "InsertSpace")
+
+    @property    
+    def InsertStringDateTime(self):
+        return _Action(self._app, "InsertStringDateTime")
+
+    @property    
+    def InsertTab(self):
+        return _Action(self._app, "InsertTab")
+
+    @property    
+    def InsertText(self):
+        return _Action(self._app, "InsertText")
+
+    @property    
+    def InsertTpNo(self):
+        return _Action(self._app, "InsertTpNo")
+
+    @property    
+    def InsertUserName(self):
+        return _Action(self._app, "InsertUserName")
+
+    @property    
+    def InsertVoice(self):
+        return _Action(self._app, "InsertVoice")
+
+    @property    
+    def Jajun(self):
+        return _Action(self._app, "Jajun")
+
+    @property    
+    def LabelAdd(self):
+        return _Action(self._app, "LabelAdd")
+
+    @property    
+    def LabelTemplate(self):
+        return _Action(self._app, "LabelTemplate")
+
+    @property    
+    def LinkDocument(self):
+        return _Action(self._app, "LinkDocument")
+
+    @property    
+    def LinkTextBox(self):
+        return _Action(self._app, "LinkTextBox")
+
+    @property    
+    def MacroDefine(self):
+        return _Action(self._app, "MacroDefine")
+
+    @property    
+    def MacroPause(self):
+        return _Action(self._app, "MacroPause")
+
+    @property    
+    def MacroPlay1(self):
+        return _Action(self._app, "MacroPlay1")
+
+    @property    
+    def MacroPlay10(self):
+        return _Action(self._app, "MacroPlay10")
+
+    @property    
+    def MacroPlay11(self):
+        return _Action(self._app, "MacroPlay11")
+
+    @property    
+    def MacroPlay2(self):
+        return _Action(self._app, "MacroPlay2")
+
+    @property    
+    def MacroPlay3(self):
+        return _Action(self._app, "MacroPlay3")
+
+    @property    
+    def MacroPlay4(self):
+        return _Action(self._app, "MacroPlay4")
+
+    @property    
+    def MacroPlay5(self):
+        return _Action(self._app, "MacroPlay5")
+
+    @property    
+    def MacroPlay6(self):
+        return _Action(self._app, "MacroPlay6")
+
+    @property    
+    def MacroPlay7(self):
+        return _Action(self._app, "MacroPlay7")
+
+    @property    
+    def MacroPlay8(self):
+        return _Action(self._app, "MacroPlay8")
+
+    @property    
+    def MacroPlay9(self):
+        return _Action(self._app, "MacroPlay9")
+
+    @property    
+    def MacroRepeat(self):
+        return _Action(self._app, "MacroRepeat")
+
+    @property    
+    def MacroRepeatDlg(self):
+        return _Action(self._app, "MacroRepeatDlg")
+
+    @property    
+    def MacroStop(self):
+        return _Action(self._app, "MacroStop")
+
+    @property    
+    def MailMergeField(self):
+        return _Action(self._app, "MailMergeField")
+
+    @property    
+    def MailMergeGenerate(self):
+        return _Action(self._app, "MailMergeGenerate")
+
+    @property    
+    def MailMergeInsert(self):
+        return _Action(self._app, "MailMergeInsert")
+
+    @property    
+    def MailMergeModify(self):
+        return _Action(self._app, "MailMergeModify")
+
+    @property    
+    def MakeAllVersionDiffs(self):
+        return _Action(self._app, "MakeAllVersionDiffs")
+
+    @property    
+    def MakeContents(self):
+        return _Action(self._app, "MakeContents")
+
+    @property    
+    def MakeIndex(self):
+        return _Action(self._app, "MakeIndex")
+
+    @property    
+    def ManualChangeHangul(self):
+        return _Action(self._app, "ManualChangeHangul")
+
+    @property    
+    def ManuScriptTemplate(self):
+        return _Action(self._app, "ManuScriptTemplate")
+
+    @property    
+    def MarkPenShape(self):
+        return _Action(self._app, "MarkPenShape")
+
+    @property    
+    def MarkTitle(self):
+        return _Action(self._app, "MarkTitle")
+
+    @property    
+    def MasterPage(self):
+        return _Action(self._app, "MasterPage")
+
+    @property    
+    def MasterPageDelete(self):
+        return _Action(self._app, "MasterPageDelete")
+
+    @property    
+    def MasterPageDuplicate(self):
+        return _Action(self._app, "MasterPageDuplicate")
+
+    @property    
+    def MasterPageEntry(self):
+        return _Action(self._app, "MasterPageEntry")
+
+    @property    
+    def MasterPageExcept(self):
+        return _Action(self._app, "MasterPageExcept")
+
+    @property    
+    def MasterPageFront(self):
+        return _Action(self._app, "MasterPageFront")
+
+    @property    
+    def MasterPagePrevSection(self):
+        return _Action(self._app, "MasterPagePrevSection")
+
+    @property    
+    def MasterPageToNext(self):
+        return _Action(self._app, "MasterPageToNext")
+
+    @property    
+    def MasterPageToPrevious(self):
+        return _Action(self._app, "MasterPageToPrevious")
+
+    @property    
+    def MasterPageTypeDlg(self):
+        return _Action(self._app, "MasterPageTypeDlg")
+
+    @property    
+    def MemoShape(self):
+        return _Action(self._app, "MemoShape")
+
+    @property    
+    def MessageBox(self):
+        return _Action(self._app, "MessageBox")
+
+    @property    
+    def ModifyBookmark(self):
+        return _Action(self._app, "ModifyBookmark")
+
+    @property    
+    def ModifyComposeChars(self):
+        return _Action(self._app, "ModifyComposeChars")
+
+    @property    
+    def ModifyCrossReference(self):
+        return _Action(self._app, "ModifyCrossReference")
+
+    @property    
+    def ModifyCtrl(self):
+        return _Action(self._app, "ModifyCtrl")
+
+    @property    
+    def ModifyDutmal(self):
+        return _Action(self._app, "ModifyDutmal")
+
+    @property    
+    def ModifyFieldClickhere(self):
+        return _Action(self._app, "ModifyFieldClickhere")
+
+    @property    
+    def ModifyFieldDate(self):
+        return _Action(self._app, "ModifyFieldDate")
+
+    @property    
+    def ModifyFieldDateTime(self):
+        return _Action(self._app, "ModifyFieldDateTime")
+
+    @property    
+    def ModifyFieldPath(self):
+        return _Action(self._app, "ModifyFieldPath")
+
+    @property    
+    def ModifyFieldSummary(self):
+        return _Action(self._app, "ModifyFieldSummary")
+
+    @property    
+    def ModifyFieldUserInfo(self):
+        return _Action(self._app, "ModifyFieldUserInfo")
+
+    @property    
+    def ModifyFillProperty(self):
+        return _Action(self._app, "ModifyFillProperty")
+
+    @property    
+    def ModifyHyperlink(self):
+        return _Action(self._app, "ModifyHyperlink")
+
+    @property    
+    def ModifyLineProperty(self):
+        return _Action(self._app, "ModifyLineProperty")
+
+    @property    
+    def ModifyRevision(self):
+        return _Action(self._app, "ModifyRevision")
+
+    @property    
+    def ModifyRevisionHyperlink(self):
+        return _Action(self._app, "ModifyRevisionHyperlink")
+
+    @property    
+    def ModifySection(self):
+        return _Action(self._app, "ModifySection")
+
+    @property    
+    def ModifyShapeObject(self):
+        return _Action(self._app, "ModifyShapeObject")
+
+    @property    
+    def MoveColumnBegin(self):
+        return _Action(self._app, "MoveColumnBegin")
+
+    @property    
+    def MoveColumnEnd(self):
+        return _Action(self._app, "MoveColumnEnd")
+
+    @property    
+    def MoveDocBegin(self):
+        return _Action(self._app, "MoveDocBegin")
+
+    @property    
+    def MoveDocEnd(self):
+        return _Action(self._app, "MoveDocEnd")
+
+    @property    
+    def MoveDown(self):
+        return _Action(self._app, "MoveDown")
+
+    @property    
+    def MoveLeft(self):
+        return _Action(self._app, "MoveLeft")
+
+    @property    
+    def MoveLineBegin(self):
+        return _Action(self._app, "MoveLineBegin")
+
+    @property    
+    def MoveLineDown(self):
+        return _Action(self._app, "MoveLineDown")
+
+    @property    
+    def MoveLineEnd(self):
+        return _Action(self._app, "MoveLineEnd")
+
+    @property    
+    def MoveLineUp(self):
+        return _Action(self._app, "MoveLineUp")
+
+    @property    
+    def MoveListBegin(self):
+        return _Action(self._app, "MoveListBegin")
+
+    @property    
+    def MoveListEnd(self):
+        return _Action(self._app, "MoveListEnd")
+
+    @property    
+    def MoveNextChar(self):
+        return _Action(self._app, "MoveNextChar")
+
+    @property    
+    def MoveNextColumn(self):
+        return _Action(self._app, "MoveNextColumn")
+
+    @property    
+    def MoveNextParaBegin(self):
+        return _Action(self._app, "MoveNextParaBegin")
+
+    @property    
+    def MoveNextPos(self):
+        return _Action(self._app, "MoveNextPos")
+
+    @property    
+    def MoveNextPosEx(self):
+        return _Action(self._app, "MoveNextPosEx")
+
+    @property    
+    def MoveNextWord(self):
+        return _Action(self._app, "MoveNextWord")
+
+    @property    
+    def MovePageBegin(self):
+        return _Action(self._app, "MovePageBegin")
+
+    @property    
+    def MovePageDown(self):
+        return _Action(self._app, "MovePageDown")
+
+    @property    
+    def MovePageEnd(self):
+        return _Action(self._app, "MovePageEnd")
+
+    @property    
+    def MovePageUp(self):
+        return _Action(self._app, "MovePageUp")
+
+    @property    
+    def MoveParaBegin(self):
+        return _Action(self._app, "MoveParaBegin")
+
+    @property    
+    def MoveParaEnd(self):
+        return _Action(self._app, "MoveParaEnd")
+
+    @property    
+    def MoveParentList(self):
+        return _Action(self._app, "MoveParentList")
+
+    @property    
+    def MovePrevChar(self):
+        return _Action(self._app, "MovePrevChar")
+
+    @property    
+    def MovePrevColumn(self):
+        return _Action(self._app, "MovePrevColumn")
+
+    @property    
+    def MovePrevParaBegin(self):
+        return _Action(self._app, "MovePrevParaBegin")
+
+    @property    
+    def MovePrevParaEnd(self):
+        return _Action(self._app, "MovePrevParaEnd")
+
+    @property    
+    def MovePrevPos(self):
+        return _Action(self._app, "MovePrevPos")
+
+    @property    
+    def MovePrevPosEx(self):
+        return _Action(self._app, "MovePrevPosEx")
+
+    @property    
+    def MovePrevWord(self):
+        return _Action(self._app, "MovePrevWord")
+
+    @property    
+    def MoveRight(self):
+        return _Action(self._app, "MoveRight")
+
+    @property    
+    def MoveRootList(self):
+        return _Action(self._app, "MoveRootList")
+
+    @property    
+    def MoveScrollDown(self):
+        return _Action(self._app, "MoveScrollDown")
+
+    @property    
+    def MoveScrollNext(self):
+        return _Action(self._app, "MoveScrollNext")
+
+    @property    
+    def MoveScrollPrev(self):
+        return _Action(self._app, "MoveScrollPrev")
+
+    @property    
+    def MoveScrollUp(self):
+        return _Action(self._app, "MoveScrollUp")
+
+    @property    
+    def MoveSectionDown(self):
+        return _Action(self._app, "MoveSectionDown")
+
+    @property    
+    def MoveSectionUp(self):
+        return _Action(self._app, "MoveSectionUp")
+
+    @property    
+    def MoveSelDocBegin(self):
+        return _Action(self._app, "MoveSelDocBegin")
+
+    @property    
+    def MoveSelDocEnd(self):
+        return _Action(self._app, "MoveSelDocEnd")
+
+    @property    
+    def MoveSelDown(self):
+        return _Action(self._app, "MoveSelDown")
+
+    @property    
+    def MoveSelLeft(self):
+        return _Action(self._app, "MoveSelLeft")
+
+    @property    
+    def MoveSelLineBegin(self):
+        return _Action(self._app, "MoveSelLineBegin")
+
+    @property    
+    def MoveSelLineDown(self):
+        return _Action(self._app, "MoveSelLineDown")
+
+    @property    
+    def MoveSelLineEnd(self):
+        return _Action(self._app, "MoveSelLineEnd")
+
+    @property    
+    def MoveSelLineUp(self):
+        return _Action(self._app, "MoveSelLineUp")
+
+    @property    
+    def MoveSelListBegin(self):
+        return _Action(self._app, "MoveSelListBegin")
+
+    @property    
+    def MoveSelListEnd(self):
+        return _Action(self._app, "MoveSelListEnd")
+
+    @property    
+    def MoveSelNextChar(self):
+        return _Action(self._app, "MoveSelNextChar")
+
+    @property    
+    def MoveSelNextParaBegin(self):
+        return _Action(self._app, "MoveSelNextParaBegin")
+
+    @property    
+    def MoveSelNextPos(self):
+        return _Action(self._app, "MoveSelNextPos")
+
+    @property    
+    def MoveSelNextWord(self):
+        return _Action(self._app, "MoveSelNextWord")
+
+    @property    
+    def MoveSelPageDown(self):
+        return _Action(self._app, "MoveSelPageDown")
+
+    @property    
+    def MoveSelPageUp(self):
+        return _Action(self._app, "MoveSelPageUp")
+
+    @property    
+    def MoveSelParaBegin(self):
+        return _Action(self._app, "MoveSelParaBegin")
+
+    @property    
+    def MoveSelParaEnd(self):
+        return _Action(self._app, "MoveSelParaEnd")
+
+    @property    
+    def MoveSelPrevChar(self):
+        return _Action(self._app, "MoveSelPrevChar")
+
+    @property    
+    def MoveSelPrevParaBegin(self):
+        return _Action(self._app, "MoveSelPrevParaBegin")
+
+    @property    
+    def MoveSelPrevParaEnd(self):
+        return _Action(self._app, "MoveSelPrevParaEnd")
+
+    @property    
+    def MoveSelPrevPos(self):
+        return _Action(self._app, "MoveSelPrevPos")
+
+    @property    
+    def MoveSelPrevWord(self):
+        return _Action(self._app, "MoveSelPrevWord")
+
+    @property    
+    def MoveSelRight(self):
+        return _Action(self._app, "MoveSelRight")
+
+    @property    
+    def MoveSelTopLevelBegin(self):
+        return _Action(self._app, "MoveSelTopLevelBegin")
+
+    @property    
+    def MoveSelTopLevelEnd(self):
+        return _Action(self._app, "MoveSelTopLevelEnd")
+
+    @property    
+    def MoveSelUp(self):
+        return _Action(self._app, "MoveSelUp")
+
+    @property    
+    def MoveSelViewDown(self):
+        return _Action(self._app, "MoveSelViewDown")
+
+    @property    
+    def MoveSelViewUp(self):
+        return _Action(self._app, "MoveSelViewUp")
+
+    @property    
+    def MoveSelWordBegin(self):
+        return _Action(self._app, "MoveSelWordBegin")
+
+    @property    
+    def MoveSelWordEnd(self):
+        return _Action(self._app, "MoveSelWordEnd")
+
+    @property    
+    def MoveTopLevelBegin(self):
+        return _Action(self._app, "MoveTopLevelBegin")
+
+    @property    
+    def MoveTopLevelEnd(self):
+        return _Action(self._app, "MoveTopLevelEnd")
+
+    @property    
+    def MoveTopLevelList(self):
+        return _Action(self._app, "MoveTopLevelList")
+
+    @property    
+    def MoveUp(self):
+        return _Action(self._app, "MoveUp")
+
+    @property    
+    def MoveViewBegin(self):
+        return _Action(self._app, "MoveViewBegin")
+
+    @property    
+    def MoveViewDown(self):
+        return _Action(self._app, "MoveViewDown")
+
+    @property    
+    def MoveViewEnd(self):
+        return _Action(self._app, "MoveViewEnd")
+
+    @property    
+    def MoveViewUp(self):
+        return _Action(self._app, "MoveViewUp")
+
+    @property    
+    def MoveWordBegin(self):
+        return _Action(self._app, "MoveWordBegin")
+
+    @property    
+    def MoveWordEnd(self):
+        return _Action(self._app, "MoveWordEnd")
+
+    @property    
+    def MPSectionToNext(self):
+        return _Action(self._app, "MPSectionToNext")
+
+    @property    
+    def MPSectionToPrevious(self):
+        return _Action(self._app, "MPSectionToPrevious")
+
+    @property    
+    def MultiColumn(self):
+        return _Action(self._app, "MultiColumn")
+
+    @property    
+    def NewNumber(self):
+        return _Action(self._app, "NewNumber")
+
+    @property    
+    def NewNumberModify(self):
+        return _Action(self._app, "NewNumberModify")
+
+    @property    
+    def NextTextBoxLinked(self):
+        return _Action(self._app, "NextTextBoxLinked")
+
+    @property    
+    def NoteDelete(self):
+        return _Action(self._app, "NoteDelete")
+
+    @property    
+    def NoteModify(self):
+        return _Action(self._app, "NoteModify")
+
+    @property    
+    def NoteNumProperty(self):
+        return _Action(self._app, "NoteNumProperty")
+
+    @property    
+    def NoteToNext(self):
+        return _Action(self._app, "NoteToNext")
+
+    @property    
+    def NoteToPrev(self):
+        return _Action(self._app, "NoteToPrev")
+
+    @property    
+    def OleCreateNew(self):
+        return _Action(self._app, "OleCreateNew")
+
+    @property    
+    def OutlineNumber(self):
+        return _Action(self._app, "OutlineNumber")
+
+    @property    
+    def PageBorder(self):
+        return _Action(self._app, "PageBorder")
+
+    @property    
+    def PageHiding(self):
+        return _Action(self._app, "PageHiding")
+
+    @property    
+    def PageHidingModify(self):
+        return _Action(self._app, "PageHidingModify")
+
+    @property    
+    def PageNumPos(self):
+        return _Action(self._app, "PageNumPos")
+
+    @property    
+    def PageNumPosModify(self):
+        return _Action(self._app, "PageNumPosModify")
+
+    @property    
+    def PageSetup(self):
+        return _Action(self._app, "PageSetup")
+
+    @property    
+    def ParagraphShape(self):
+        return _Action(self._app, "ParagraphShape")
+
+    @property    
+    def ParagraphShapeAlignCenter(self):
+        return _Action(self._app, "ParagraphShapeAlignCenter")
+
+    @property    
+    def ParagraphShapeAlignDistribute(self):
+        return _Action(self._app, "ParagraphShapeAlignDistribute")
+
+    @property    
+    def ParagraphShapeAlignDivision(self):
+        return _Action(self._app, "ParagraphShapeAlignDivision")
+
+    @property    
+    def ParagraphShapeAlignJustify(self):
+        return _Action(self._app, "ParagraphShapeAlignJustify")
+
+    @property    
+    def ParagraphShapeAlignLeft(self):
+        return _Action(self._app, "ParagraphShapeAlignLeft")
+
+    @property    
+    def ParagraphShapeAlignRight(self):
+        return _Action(self._app, "ParagraphShapeAlignRight")
+
+    @property    
+    def ParagraphShapeDecreaseLeftMargin(self):
+        return _Action(self._app, "ParagraphShapeDecreaseLeftMargin")
+
+    @property    
+    def ParagraphShapeDecreaseLineSpacing(self):
+        return _Action(self._app, "ParagraphShapeDecreaseLineSpacing")
+
+    @property    
+    def ParagraphShapeDecreaseMargin(self):
+        return _Action(self._app, "ParagraphShapeDecreaseMargin")
+
+    @property    
+    def ParagraphShapeDecreaseRightMargin(self):
+        return _Action(self._app, "ParagraphShapeDecreaseRightMargin")
+
+    @property    
+    def ParagraphShapeIncreaseLeftMargin(self):
+        return _Action(self._app, "ParagraphShapeIncreaseLeftMargin")
+
+    @property    
+    def ParagraphShapeIncreaseLineSpacing(self):
+        return _Action(self._app, "ParagraphShapeIncreaseLineSpacing")
+
+    @property    
+    def ParagraphShapeIncreaseMargin(self):
+        return _Action(self._app, "ParagraphShapeIncreaseMargin")
+
+    @property    
+    def ParagraphShapeIncreaseRightMargin(self):
+        return _Action(self._app, "ParagraphShapeIncreaseRightMargin")
+
+    @property    
+    def ParagraphShapeIndentAtCaret(self):
+        return _Action(self._app, "ParagraphShapeIndentAtCaret")
+
+    @property    
+    def ParagraphShapeIndentNegative(self):
+        return _Action(self._app, "ParagraphShapeIndentNegative")
+
+    @property    
+    def ParagraphShapeIndentPositive(self):
+        return _Action(self._app, "ParagraphShapeIndentPositive")
+
+    @property    
+    def ParagraphShapeProtect(self):
+        return _Action(self._app, "ParagraphShapeProtect")
+
+    @property    
+    def ParagraphShapeWithNext(self):
+        return _Action(self._app, "ParagraphShapeWithNext")
+
+    @property    
+    def ParaNumberBullet(self):
+        return _Action(self._app, "ParaNumberBullet")
+
+    @property    
+    def ParaNumberBulletLevelDown(self):
+        return _Action(self._app, "ParaNumberBulletLevelDown")
+
+    @property    
+    def ParaNumberBulletLevelUp(self):
+        return _Action(self._app, "ParaNumberBulletLevelUp")
+
+    @property    
+    def ParaShapeDialog(self):
+        return _Action(self._app, "ParaShapeDialog")
+
+    @property    
+    def Paste(self):
+        return _Action(self._app, "Paste")
+
+    @property    
+    def PastePage(self):
+        return _Action(self._app, "PastePage")
+
+    @property    
+    def PasteSpecial(self):
+        return _Action(self._app, "PasteSpecial")
+
+    @property    
+    def PictureEffect1(self):
+        return _Action(self._app, "PictureEffect1")
+
+    @property    
+    def PictureEffect2(self):
+        return _Action(self._app, "PictureEffect2")
+
+    @property    
+    def PictureEffect3(self):
+        return _Action(self._app, "PictureEffect3")
+
+    @property    
+    def PictureEffect4(self):
+        return _Action(self._app, "PictureEffect4")
+
+    @property    
+    def PictureEffect5(self):
+        return _Action(self._app, "PictureEffect5")
+
+    @property    
+    def PictureEffect6(self):
+        return _Action(self._app, "PictureEffect6")
+
+    @property    
+    def PictureEffect7(self):
+        return _Action(self._app, "PictureEffect7")
+
+    @property    
+    def PictureEffect8(self):
+        return _Action(self._app, "PictureEffect8")
+
+    @property    
+    def PictureInsertDialog(self):
+        return _Action(self._app, "PictureInsertDialog")
+
+    @property    
+    def PictureLinkedToEmbedded(self):
+        return _Action(self._app, "PictureLinkedToEmbedded")
+
+    @property    
+    def PictureSave(self):
+        return _Action(self._app, "PictureSave")
+
+    @property    
+    def PictureScissor(self):
+        return _Action(self._app, "PictureScissor")
+
+    @property    
+    def PictureToOriginal(self):
+        return _Action(self._app, "PictureToOriginal")
+
+    @property    
+    def Preference(self):
+        return _Action(self._app, "Preference")
+
+    @property    
+    def Presentation(self):
+        return _Action(self._app, "Presentation")
+
+    @property    
+    def PresentationSetup(self):
+        return _Action(self._app, "PresentationSetup")
+
+    @property    
+    def PrevTextBoxLinked(self):
+        return _Action(self._app, "PrevTextBoxLinked")
+
+    @property    
+    def Print(self):
+        return _Action(self._app, "Print")
+
+    @property    
+    def PrintToImage(self):
+        return _Action(self._app, "PrintToImage")
+
+    @property    
+    def PutBullet(self):
+        return _Action(self._app, "PutBullet")
+
+    @property    
+    def PutNewParaNumber(self):
+        return _Action(self._app, "PutNewParaNumber")
+
+    @property    
+    def PutOutlineNumber(self):
+        return _Action(self._app, "PutOutlineNumber")
+
+    @property    
+    def PutParaNumber(self):
+        return _Action(self._app, "PutParaNumber")
+
+    @property    
+    def QuickCorrect(self):
+        return _Action(self._app, "QuickCorrect")
+
+    @property    
+    def RecalcPageCount(self):
+        return _Action(self._app, "RecalcPageCount")
+
+    @property    
+    def RecentCode(self):
+        return _Action(self._app, "RecentCode")
+
+    @property    
+    def Redo(self):
+        return _Action(self._app, "Redo")
+
+    @property    
+    def RepeatFind(self):
+        return _Action(self._app, "RepeatFind")
+
+    @property    
+    def ReplaceDlg(self):
+        return _Action(self._app, "ReplaceDlg")
+
+    @property    
+    def ReturnKeyInField(self):
+        return _Action(self._app, "ReturnKeyInField")
+
+    @property    
+    def ReturnPrevPos(self):
+        return _Action(self._app, "ReturnPrevPos")
+
+    @property    
+    def ReverseFind(self):
+        return _Action(self._app, "ReverseFind")
+
+    @property    
+    def SaveBlockAction(self):
+        return _Action(self._app, "SaveBlockAction")
+
+    @property    
+    def SaveFootnote(self):
+        return _Action(self._app, "SaveFootnote")
+
+    @property    
+    def SaveHistoryItem(self):
+        return _Action(self._app, "SaveHistoryItem")
+
+    @property    
+    def ScrMacroDefine(self):
+        return _Action(self._app, "ScrMacroDefine")
+
+    @property    
+    def ScrMacroPause(self):
+        return _Action(self._app, "ScrMacroPause")
+
+    @property    
+    def ScrMacroRepeatDlg(self):
+        return _Action(self._app, "ScrMacroRepeatDlg")
+
+    @property    
+    def ScrMacroSecurityDlg(self):
+        return _Action(self._app, "ScrMacroSecurityDlg")
+
+    @property    
+    def ScrMacroStop(self):
+        return _Action(self._app, "ScrMacroStop")
+
+    @property    
+    def SearchAddress(self):
+        return _Action(self._app, "SearchAddress")
+
+    @property    
+    def SearchForeign(self):
+        return _Action(self._app, "SearchForeign")
+
+    @property    
+    def Select(self):
+        return _Action(self._app, "Select")
+
+    @property    
+    def SelectAll(self):
+        return _Action(self._app, "SelectAll")
+
+    @property    
+    def SelectColumn(self):
+        return _Action(self._app, "SelectColumn")
+
+    @property    
+    def SelectCtrlFront(self):
+        return _Action(self._app, "SelectCtrlFront")
+
+    @property    
+    def SelectCtrlReverse(self):
+        return _Action(self._app, "SelectCtrlReverse")
+
+    @property    
+    def SendBrowserText(self):
+        return _Action(self._app, "SendBrowserText")
+
+    @property    
+    def SendMailAttach(self):
+        return _Action(self._app, "SendMailAttach")
+
+    @property    
+    def SendMailText(self):
+        return _Action(self._app, "SendMailText")
+
+    @property    
+    def ShapeCopyPaste(self):
+        return _Action(self._app, "ShapeCopyPaste")
+
+    @property    
+    def ShapeObjAlignBottom(self):
+        return _Action(self._app, "ShapeObjAlignBottom")
+
+    @property    
+    def ShapeObjAlignCenter(self):
+        return _Action(self._app, "ShapeObjAlignCenter")
+
+    @property    
+    def ShapeObjAlignHeight(self):
+        return _Action(self._app, "ShapeObjAlignHeight")
+
+    @property    
+    def ShapeObjAlignHorzSpacing(self):
+        return _Action(self._app, "ShapeObjAlignHorzSpacing")
+
+    @property    
+    def ShapeObjAlignLeft(self):
+        return _Action(self._app, "ShapeObjAlignLeft")
+
+    @property    
+    def ShapeObjAlignMiddle(self):
+        return _Action(self._app, "ShapeObjAlignMiddle")
+
+    @property    
+    def ShapeObjAlignRight(self):
+        return _Action(self._app, "ShapeObjAlignRight")
+
+    @property    
+    def ShapeObjAlignSize(self):
+        return _Action(self._app, "ShapeObjAlignSize")
+
+    @property    
+    def ShapeObjAlignTop(self):
+        return _Action(self._app, "ShapeObjAlignTop")
+
+    @property    
+    def ShapeObjAlignVertSpacing(self):
+        return _Action(self._app, "ShapeObjAlignVertSpacing")
+
+    @property    
+    def ShapeObjAlignWidth(self):
+        return _Action(self._app, "ShapeObjAlignWidth")
+
+    @property    
+    def ShapeObjAttachCaption(self):
+        return _Action(self._app, "ShapeObjAttachCaption")
+
+    @property    
+    def ShapeObjAttachTextBox(self):
+        return _Action(self._app, "ShapeObjAttachTextBox")
+
+    @property    
+    def ShapeObjAttrDialog(self):
+        return _Action(self._app, "ShapeObjAttrDialog")
+
+    @property    
+    def ShapeObjBringForward(self):
+        return _Action(self._app, "ShapeObjBringForward")
+
+    @property    
+    def ShapeObjBringInFrontOfText(self):
+        return _Action(self._app, "ShapeObjBringInFrontOfText")
+
+    @property    
+    def ShapeObjBringToFront(self):
+        return _Action(self._app, "ShapeObjBringToFront")
+
+    @property    
+    def ShapeObjCtrlSendBehindText(self):
+        return _Action(self._app, "ShapeObjCtrlSendBehindText")
+
+    @property    
+    def ShapeObjDetachCaption(self):
+        return _Action(self._app, "ShapeObjDetachCaption")
+
+    @property    
+    def ShapeObjDetachTextBox(self):
+        return _Action(self._app, "ShapeObjDetachTextBox")
+
+    @property    
+    def ShapeObjDialog(self):
+        return _Action(self._app, "ShapeObjDialog")
+
+    @property    
+    def ShapeObjectCopy(self):
+        return _Action(self._app, "ShapeObjectCopy")
+
+    @property    
+    def ShapeObjectPaste(self):
+        return _Action(self._app, "ShapeObjectPaste")
+
+    @property    
+    def ShapeObjFillProperty(self):
+        return _Action(self._app, "ShapeObjFillProperty")
+
+    @property    
+    def ShapeObjGroup(self):
+        return _Action(self._app, "ShapeObjGroup")
+
+    @property    
+    def ShapeObjHorzFlip(self):
+        return _Action(self._app, "ShapeObjHorzFlip")
+
+    @property    
+    def ShapeObjHorzFlipOrgState(self):
+        return _Action(self._app, "ShapeObjHorzFlipOrgState")
+
+    @property    
+    def ShapeObjInsertCaptionNum(self):
+        return _Action(self._app, "ShapeObjInsertCaptionNum")
+
+    @property    
+    def ShapeObjLineProperty(self):
+        return _Action(self._app, "ShapeObjLineProperty")
+
+    @property    
+    def ShapeObjLock(self):
+        return _Action(self._app, "ShapeObjLock")
+
+    @property    
+    def ShapeObjMoveDown(self):
+        return _Action(self._app, "ShapeObjMoveDown")
+
+    @property    
+    def ShapeObjMoveLeft(self):
+        return _Action(self._app, "ShapeObjMoveLeft")
+
+    @property    
+    def ShapeObjMoveRight(self):
+        return _Action(self._app, "ShapeObjMoveRight")
+
+    @property    
+    def ShapeObjMoveUp(self):
+        return _Action(self._app, "ShapeObjMoveUp")
+
+    @property    
+    def ShapeObjNextObject(self):
+        return _Action(self._app, "ShapeObjNextObject")
+
+    @property    
+    def ShapeObjNorm(self):
+        return _Action(self._app, "ShapeObjNorm")
+
+    @property    
+    def ShapeObjPrevObject(self):
+        return _Action(self._app, "ShapeObjPrevObject")
+
+    @property    
+    def ShapeObjRandomAngleRotater(self):
+        return _Action(self._app, "ShapeObjRandomAngleRotater")
+
+    @property    
+    def ShapeObjResizeDown(self):
+        return _Action(self._app, "ShapeObjResizeDown")
+
+    @property    
+    def ShapeObjResizeLeft(self):
+        return _Action(self._app, "ShapeObjResizeLeft")
+
+    @property    
+    def ShapeObjResizeRight(self):
+        return _Action(self._app, "ShapeObjResizeRight")
+
+    @property    
+    def ShapeObjResizeUp(self):
+        return _Action(self._app, "ShapeObjResizeUp")
+
+    @property    
+    def ShapeObjRightAngleRotater(self):
+        return _Action(self._app, "ShapeObjRightAngleRotater")
+
+    @property    
+    def ShapeObjRightAngleRotaterAnticlockwise(self):
+        return _Action(self._app, "ShapeObjRightAngleRotaterAnticlockwise")
+
+    @property    
+    def ShapeObjRotater(self):
+        return _Action(self._app, "ShapeObjRotater")
+
+    @property    
+    def ShapeObjSaveAsPicture(self):
+        return _Action(self._app, "ShapeObjSaveAsPicture")
+
+    @property    
+    def ShapeObjSelect(self):
+        return _Action(self._app, "ShapeObjSelect")
+
+    @property    
+    def ShapeObjSendBack(self):
+        return _Action(self._app, "ShapeObjSendBack")
+
+    @property    
+    def ShapeObjSendToBack(self):
+        return _Action(self._app, "ShapeObjSendToBack")
+
+    @property    
+    def ShapeObjShadowEnlarge(self):
+        return _Action(self._app, "ShapeObjShadowEnlarge")
+
+    @property    
+    def ShapeObjShadowMoveDown(self):
+        return _Action(self._app, "ShapeObjShadowMoveDown")
+
+    @property    
+    def ShapeObjShadowMoveLeft(self):
+        return _Action(self._app, "ShapeObjShadowMoveLeft")
+
+    @property    
+    def ShapeObjShadowMoveRight(self):
+        return _Action(self._app, "ShapeObjShadowMoveRight")
+
+    @property    
+    def ShapeObjShadowMoveUp(self):
+        return _Action(self._app, "ShapeObjShadowMoveUp")
+
+    @property    
+    def ShapeObjShadowNarrow(self):
+        return _Action(self._app, "ShapeObjShadowNarrow")
+
+    @property    
+    def ShapeObjShadowParellelLeftBottom(self):
+        return _Action(self._app, "ShapeObjShadowParellelLeftBottom")
+
+    @property    
+    def ShapeObjShadowParellelLeftTop(self):
+        return _Action(self._app, "ShapeObjShadowParellelLeftTop")
+
+    @property    
+    def ShapeObjShadowParellelRightBottom(self):
+        return _Action(self._app, "ShapeObjShadowParellelRightBottom")
+
+    @property    
+    def ShapeObjShadowParellelRightTop(self):
+        return _Action(self._app, "ShapeObjShadowParellelRightTop")
+
+    @property    
+    def ShapeObjShadowShearLeftBottom(self):
+        return _Action(self._app, "ShapeObjShadowShearLeftBottom")
+
+    @property    
+    def ShapeObjShadowShearLeftTop(self):
+        return _Action(self._app, "ShapeObjShadowShearLeftTop")
+
+    @property    
+    def ShapeObjShadowShearRightBottom(self):
+        return _Action(self._app, "ShapeObjShadowShearRightBottom")
+
+    @property    
+    def ShapeObjShadowShearRightTop(self):
+        return _Action(self._app, "ShapeObjShadowShearRightTop")
+
+    @property    
+    def ShapeObjShear(self):
+        return _Action(self._app, "ShapeObjShear")
+
+    @property    
+    def ShapeObjTableSelCell(self):
+        return _Action(self._app, "ShapeObjTableSelCell")
+
+    @property    
+    def ShapeObjTextBoxEdit(self):
+        return _Action(self._app, "ShapeObjTextBoxEdit")
+
+    @property    
+    def ShapeObjUngroup(self):
+        return _Action(self._app, "ShapeObjUngroup")
+
+    @property    
+    def ShapeObjUnlockAll(self):
+        return _Action(self._app, "ShapeObjUnlockAll")
+
+    @property    
+    def ShapeObjVertFlip(self):
+        return _Action(self._app, "ShapeObjVertFlip")
+
+    @property    
+    def ShapeObjVertFlipOrgState(self):
+        return _Action(self._app, "ShapeObjVertFlipOrgState")
+
+    @property    
+    def ShapeObjWrapSquare(self):
+        return _Action(self._app, "ShapeObjWrapSquare")
+
+    @property    
+    def ShapeObjWrapTopAndBottom(self):
+        return _Action(self._app, "ShapeObjWrapTopAndBottom")
+
+    @property    
+    def Sort(self):
+        return _Action(self._app, "Sort")
+
+    @property    
+    def SpellingCheck(self):
+        return _Action(self._app, "SpellingCheck")
+
+    @property    
+    def SplitMemoOpen(self):
+        return _Action(self._app, "SplitMemoOpen")
+
+    @property    
+    def Style(self):
+        return _Action(self._app, "Style")
+
+    @property    
+    def StyleAdd(self):
+        return _Action(self._app, "StyleAdd")
+
+    @property    
+    def StyleClearCharStyle(self):
+        return _Action(self._app, "StyleClearCharStyle")
+
+    @property    
+    def StyleDelete(self):
+        return _Action(self._app, "StyleDelete")
+
+    @property    
+    def StyleEdit(self):
+        return _Action(self._app, "StyleEdit")
+
+    @property    
+    def StyleEx(self):
+        return _Action(self._app, "StyleEx")
+
+    @property    
+    def StyleParaNumberBullet(self):
+        return _Action(self._app, "StyleParaNumberBullet")
+
+    @property    
+    def StyleShortcut1(self):
+        return _Action(self._app, "StyleShortcut1")
+
+    @property    
+    def StyleShortcut10(self):
+        return _Action(self._app, "StyleShortcut10")
+
+    @property    
+    def StyleShortcut2(self):
+        return _Action(self._app, "StyleShortcut2")
+
+    @property    
+    def StyleShortcut3(self):
+        return _Action(self._app, "StyleShortcut3")
+
+    @property    
+    def StyleShortcut4(self):
+        return _Action(self._app, "StyleShortcut4")
+
+    @property    
+    def StyleShortcut5(self):
+        return _Action(self._app, "StyleShortcut5")
+
+    @property    
+    def StyleShortcut6(self):
+        return _Action(self._app, "StyleShortcut6")
+
+    @property    
+    def StyleShortcut7(self):
+        return _Action(self._app, "StyleShortcut7")
+
+    @property    
+    def StyleShortcut8(self):
+        return _Action(self._app, "StyleShortcut8")
+
+    @property    
+    def StyleShortcut9(self):
+        return _Action(self._app, "StyleShortcut9")
+
+    @property    
+    def StyleTemplate(self):
+        return _Action(self._app, "StyleTemplate")
+
+    @property    
+    def Sum(self):
+        return _Action(self._app, "Sum")
+
+    @property    
+    def TableAppendRow(self):
+        return _Action(self._app, "TableAppendRow")
+
+    @property    
+    def TableAutoDrawPenStyleWidthDlg(self):
+        return _Action(self._app, "TableAutoDrawPenStyleWidthDlg")
+
+    @property    
+    def TableAutoFill(self):
+        return _Action(self._app, "TableAutoFill")
+
+    @property    
+    def TableAutoFillDlg(self):
+        return _Action(self._app, "TableAutoFillDlg")
+
+    @property    
+    def TableCellBlock(self):
+        return _Action(self._app, "TableCellBlock")
+
+    @property    
+    def TableCellBlockCol(self):
+        return _Action(self._app, "TableCellBlockCol")
+
+    @property    
+    def TableCellBlockExtend(self):
+        return _Action(self._app, "TableCellBlockExtend")
+
+    @property    
+    def TableCellBlockExtendAbs(self):
+        return _Action(self._app, "TableCellBlockExtendAbs")
+
+    @property    
+    def TableCellBlockRow(self):
+        return _Action(self._app, "TableCellBlockRow")
+
+    @property    
+    def TableCellBorderAll(self):
+        return _Action(self._app, "TableCellBorderAll")
+
+    @property    
+    def TableCellBorderBottom(self):
+        return _Action(self._app, "TableCellBorderBottom")
+
+    @property    
+    def TableCellBorderDiagonalDown(self):
+        return _Action(self._app, "TableCellBorderDiagonalDown")
+
+    @property    
+    def TableCellBorderDiagonalUp(self):
+        return _Action(self._app, "TableCellBorderDiagonalUp")
+
+    @property    
+    def TableCellBorderInside(self):
+        return _Action(self._app, "TableCellBorderInside")
+
+    @property    
+    def TableCellBorderInsideHorz(self):
+        return _Action(self._app, "TableCellBorderInsideHorz")
+
+    @property    
+    def TableCellBorderInsideVert(self):
+        return _Action(self._app, "TableCellBorderInsideVert")
+
+    @property    
+    def TableCellBorderLeft(self):
+        return _Action(self._app, "TableCellBorderLeft")
+
+    @property    
+    def TableCellBorderNo(self):
+        return _Action(self._app, "TableCellBorderNo")
+
+    @property    
+    def TableCellBorderOutside(self):
+        return _Action(self._app, "TableCellBorderOutside")
+
+    @property    
+    def TableCellBorderRight(self):
+        return _Action(self._app, "TableCellBorderRight")
+
+    @property    
+    def TableCellBorderTop(self):
+        return _Action(self._app, "TableCellBorderTop")
+
+    @property    
+    def TableCellShadeDec(self):
+        return _Action(self._app, "TableCellShadeDec")
+
+    @property    
+    def TableCellShadeInc(self):
+        return _Action(self._app, "TableCellShadeInc")
+
+    @property    
+    def TableColBegin(self):
+        return _Action(self._app, "TableColBegin")
+
+    @property    
+    def TableColEnd(self):
+        return _Action(self._app, "TableColEnd")
+
+    @property    
+    def TableColPageDown(self):
+        return _Action(self._app, "TableColPageDown")
+
+    @property    
+    def TableColPageUp(self):
+        return _Action(self._app, "TableColPageUp")
+
+    @property    
+    def TableCreate(self):
+        return _Action(self._app, "TableCreate")
+
+    @property    
+    def TableDeleteCell(self):
+        return _Action(self._app, "TableDeleteCell")
+
+    @property    
+    def TableDeleteColumn(self):
+        return _Action(self._app, "TableDeleteColumn")
+
+    @property    
+    def TableDeleteRow(self):
+        return _Action(self._app, "TableDeleteRow")
+
+    @property    
+    def TableDeleteRowColumn(self):
+        return _Action(self._app, "TableDeleteRowColumn")
+
+    @property    
+    def TableDistributeCellHeight(self):
+        return _Action(self._app, "TableDistributeCellHeight")
+
+    @property    
+    def TableDistributeCellWidth(self):
+        return _Action(self._app, "TableDistributeCellWidth")
+
+    @property    
+    def TableDrawPen(self):
+        return _Action(self._app, "TableDrawPen")
+
+    @property    
+    def TableEraser(self):
+        return _Action(self._app, "TableEraser")
+
+    @property    
+    def TableFormula(self):
+        return _Action(self._app, "TableFormula")
+
+    @property    
+    def TableFormulaAvgAuto(self):
+        return _Action(self._app, "TableFormulaAvgAuto")
+
+    @property    
+    def TableFormulaAvgHor(self):
+        return _Action(self._app, "TableFormulaAvgHor")
+
+    @property    
+    def TableFormulaAvgVer(self):
+        return _Action(self._app, "TableFormulaAvgVer")
+
+    @property    
+    def TableFormulaProAuto(self):
+        return _Action(self._app, "TableFormulaProAuto")
+
+    @property    
+    def TableFormulaProHor(self):
+        return _Action(self._app, "TableFormulaProHor")
+
+    @property    
+    def TableFormulaProVer(self):
+        return _Action(self._app, "TableFormulaProVer")
+
+    @property    
+    def TableFormulaSumAuto(self):
+        return _Action(self._app, "TableFormulaSumAuto")
+
+    @property    
+    def TableFormulaSumHor(self):
+        return _Action(self._app, "TableFormulaSumHor")
+
+    @property    
+    def TableFormulaSumVer(self):
+        return _Action(self._app, "TableFormulaSumVer")
+
+    @property    
+    def TableInsertLeftColumn(self):
+        return _Action(self._app, "TableInsertLeftColumn")
+
+    @property    
+    def TableInsertLowerRow(self):
+        return _Action(self._app, "TableInsertLowerRow")
+
+    @property    
+    def TableInsertRightColumn(self):
+        return _Action(self._app, "TableInsertRightColumn")
+
+    @property    
+    def TableInsertRowColumn(self):
+        return _Action(self._app, "TableInsertRowColumn")
+
+    @property    
+    def TableInsertUpperRow(self):
+        return _Action(self._app, "TableInsertUpperRow")
+
+    @property    
+    def TableLeftCell(self):
+        return _Action(self._app, "TableLeftCell")
+
+    @property    
+    def TableLowerCell(self):
+        return _Action(self._app, "TableLowerCell")
+
+    @property    
+    def TableMergeCell(self):
+        return _Action(self._app, "TableMergeCell")
+
+    @property    
+    def TableMergeTable(self):
+        return _Action(self._app, "TableMergeTable")
+
+    @property    
+    def TablePropertyDialog(self):
+        return _Action(self._app, "TablePropertyDialog")
+
+    @property    
+    def TableResizeCellDown(self):
+        return _Action(self._app, "TableResizeCellDown")
+
+    @property    
+    def TableResizeCellLeft(self):
+        return _Action(self._app, "TableResizeCellLeft")
+
+    @property    
+    def TableResizeCellRight(self):
+        return _Action(self._app, "TableResizeCellRight")
+
+    @property    
+    def TableResizeCellUp(self):
+        return _Action(self._app, "TableResizeCellUp")
+
+    @property    
+    def TableResizeDown(self):
+        return _Action(self._app, "TableResizeDown")
+
+    @property    
+    def TableResizeExDown(self):
+        return _Action(self._app, "TableResizeExDown")
+
+    @property    
+    def TableResizeExLeft(self):
+        return _Action(self._app, "TableResizeExLeft")
+
+    @property    
+    def TableResizeExRight(self):
+        return _Action(self._app, "TableResizeExRight")
+
+    @property    
+    def TableResizeExUp(self):
+        return _Action(self._app, "TableResizeExUp")
+
+    @property    
+    def TableResizeLeft(self):
+        return _Action(self._app, "TableResizeLeft")
+
+    @property    
+    def TableResizeLineDown(self):
+        return _Action(self._app, "TableResizeLineDown")
+
+    @property    
+    def TableResizeLineLeft(self):
+        return _Action(self._app, "TableResizeLineLeft")
+
+    @property    
+    def TableResizeLineRight(self):
+        return _Action(self._app, "TableResizeLineRight")
+
+    @property    
+    def TableResizeLineUp(self):
+        return _Action(self._app, "TableResizeLineUp")
+
+    @property    
+    def TableResizeRight(self):
+        return _Action(self._app, "TableResizeRight")
+
+    @property    
+    def TableResizeUp(self):
+        return _Action(self._app, "TableResizeUp")
+
+    @property    
+    def TableRightCell(self):
+        return _Action(self._app, "TableRightCell")
+
+    @property    
+    def TableRightCellAppend(self):
+        return _Action(self._app, "TableRightCellAppend")
+
+    @property    
+    def TableSplitCell(self):
+        return _Action(self._app, "TableSplitCell")
+
+    @property    
+    def TableSplitCellCol2(self):
+        return _Action(self._app, "TableSplitCellCol2")
+
+    @property    
+    def TableSplitCellRow2(self):
+        return _Action(self._app, "TableSplitCellRow2")
+
+    @property    
+    def TableSplitTable(self):
+        return _Action(self._app, "TableSplitTable")
+
+    @property    
+    def TableStringToTable(self):
+        return _Action(self._app, "TableStringToTable")
+
+    @property    
+    def TableSubtractRow(self):
+        return _Action(self._app, "TableSubtractRow")
+
+    @property    
+    def TableSwap(self):
+        return _Action(self._app, "TableSwap")
+
+    @property    
+    def TableTableToString(self):
+        return _Action(self._app, "TableTableToString")
+
+    @property    
+    def TableTemplate(self):
+        return _Action(self._app, "TableTemplate")
+
+    @property    
+    def TableUpperCell(self):
+        return _Action(self._app, "TableUpperCell")
+
+    @property    
+    def TableVAlignBottom(self):
+        return _Action(self._app, "TableVAlignBottom")
+
+    @property    
+    def TableVAlignCenter(self):
+        return _Action(self._app, "TableVAlignCenter")
+
+    @property    
+    def TableVAlignTop(self):
+        return _Action(self._app, "TableVAlignTop")
+
+    @property    
+    def TextArtCreate(self):
+        return _Action(self._app, "TextArtCreate")
+
+    @property    
+    def TextArtModify(self):
+        return _Action(self._app, "TextArtModify")
+
+    @property    
+    def TextArtShadow(self):
+        return _Action(self._app, "TextArtShadow")
+
+    @property    
+    def ToggleOverwrite(self):
+        return _Action(self._app, "ToggleOverwrite")
+
+    @property    
+    def Undo(self):
+        return _Action(self._app, "Undo")
+
+    @property    
+    def UnlinkTextBox(self):
+        return _Action(self._app, "UnlinkTextBox")
+
+    @property    
+    def UserAutoFill(self):
+        return _Action(self._app, "UserAutoFill")
+
+    @property    
+    def VersionDelete(self):
+        return _Action(self._app, "VersionDelete")
+
+    @property    
+    def VersionDeleteAll(self):
+        return _Action(self._app, "VersionDeleteAll")
+
+    @property    
+    def VersionInfo(self):
+        return _Action(self._app, "VersionInfo")
+
+    @property    
+    def VersionSave(self):
+        return _Action(self._app, "VersionSave")
+
+    @property    
+    def VerticalText(self):
+        return _Action(self._app, "VerticalText")
+
+    @property    
+    def ViewGridOption(self):
+        return _Action(self._app, "ViewGridOption")
+
+    @property    
+    def ViewIdiom(self):
+        return _Action(self._app, "ViewIdiom")
+
+    @property    
+    def ViewOptionCtrlMark(self):
+        return _Action(self._app, "ViewOptionCtrlMark")
+
+    @property    
+    def ViewOptionGuideLine(self):
+        return _Action(self._app, "ViewOptionGuideLine")
+
+    @property    
+    def ViewOptionMemo(self):
+        return _Action(self._app, "ViewOptionMemo")
+
+    @property    
+    def ViewOptionMemoGuideline(self):
+        return _Action(self._app, "ViewOptionMemoGuideline")
+
+    @property    
+    def ViewOptionPaper(self):
+        return _Action(self._app, "ViewOptionPaper")
+
+    @property    
+    def ViewOptionParaMark(self):
+        return _Action(self._app, "ViewOptionParaMark")
+
+    @property    
+    def ViewOptionPicture(self):
+        return _Action(self._app, "ViewOptionPicture")
+
+    @property    
+    def ViewOptionRevision(self):
+        return _Action(self._app, "ViewOptionRevision")
+
+    @property    
+    def ViewShowGrid(self):
+        return _Action(self._app, "ViewShowGrid")
+
+    @property    
+    def ViewZoom(self):
+        return _Action(self._app, "ViewZoom")
+
+    @property    
+    def ViewZoomFitPage(self):
+        return _Action(self._app, "ViewZoomFitPage")
+
+    @property    
+    def ViewZoomFitWidth(self):
+        return _Action(self._app, "ViewZoomFitWidth")
+
+    @property    
+    def ViewZoomNormal(self):
+        return _Action(self._app, "ViewZoomNormal")
+
+    @property    
+    def VoiceCommand(self):
+        return _Action(self._app, "VoiceCommand")
 
