@@ -329,7 +329,7 @@ class CellAccessor:
             너비 설정이 성공했는지 여부.
         """
         app = self._app
-        action = app.actions.TablePropertyDialog()
+        action = app.actions.TablePropertyDialog
         action.pset.ShapeTableCell.Width = mili2unit(width)
         action.run()
         print(app.cell_width, width)
@@ -351,7 +351,7 @@ class CellAccessor:
             높이 설정이 성공했는지 여부.
         """
         app = self._app
-        action = app.actions.TablePropertyDialog()
+        action = app.actions.TablePropertyDialog
         action.pset.ShapeTableCell.Height = mili2unit(height)
         action.run()
         return app.cell_height == height
