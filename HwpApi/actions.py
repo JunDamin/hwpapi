@@ -190,28 +190,28 @@ _action_info = {
     "HeaderFooterModify": [None, "머리말/꼬리말 고치기 \t(조판부호 상태에서만 사용가능)"],
     "HeaderFooterToNext": [None, "이후 머리말"],
     "HeaderFooterToPrev": [None, "이전 머리말"],
-    "HiddenCredits": [None, "인터넷 정보"],
+    # "HiddenCredits": [None, "인터넷 정보"],
     "HideTitle": [
         None,
         "차례 숨기기([도구-차례/찾아보기-차례 숨기기] 메뉴에 대응). \t적용여부는 Ctrl+G,C를 이용해 조판부호를 확인하면 알 수 있다.",
     ],
     # "Him Config": [None, "입력기 언어별 환경설정"],
     "HimKbdChange": [None, "바꾸기"],
-    "HwpCtrlEquationCreate97": [None, "수식 만들기(한글97버전)"],
-    "HwpCtrlFileNew": [None, "새문서"],
-    "HwpCtrlFileOpen": [None, "파일 열기"],
-    "HwpCtrlFileSave": [None, "파일 저장"],
-    "HwpCtrlFileSaveAs": [None, "다른 이름으로 저장"],
-    "HwpCtrlFileSaveAsAutoBlock": [
-        None,
-        "블록 저장 (한글 컨트롤 전용). \t만약 텍스트가 선택되지 않은 경우에는 다른 이름으로 저장이 실행된다.",
-    ],
-    "HwpCtrlFileSaveAutoBlock": [
-        None,
-        "블록 저장 (한글 컨트롤 전용). \t만약 텍스트가 선택되지 않은 경우에는 저장하기가 실행된다.",
-    ],
-    "HwpCtrlFindDlg": [None, "찾기 대화상자"],
-    "HwpCtrlReplaceDlg": [None, "바꾸기 대화상자"],
+    # "HwpCtrlEquationCreate97": [None, "수식 만들기(한글97버전)"],
+    # "HwpCtrlFileNew": [None, "새문서"],
+    # "HwpCtrlFileOpen": [None, "파일 열기"],
+    # "HwpCtrlFileSave": [None, "파일 저장"],
+    # "HwpCtrlFileSaveAs": [None, "다른 이름으로 저장"],
+    # "HwpCtrlFileSaveAsAutoBlock": [
+    #     None,
+    #     "블록 저장 (한글 컨트롤 전용). \t만약 텍스트가 선택되지 않은 경우에는 다른 이름으로 저장이 실행된다.",
+    # ],
+    # "HwpCtrlFileSaveAutoBlock": [
+    #     None,
+    #     "블록 저장 (한글 컨트롤 전용). \t만약 텍스트가 선택되지 않은 경우에는 저장하기가 실행된다.",
+    # ],
+    # "HwpCtrlFindDlg": [None, "찾기 대화상자"],
+    # "HwpCtrlReplaceDlg": [None, "바꾸기 대화상자"],
     "HwpDic": [None, "한컴 사전"],
     "Hyperlink": ["HyperLink", "캐럿이 필드 안에 위치했는지 여부에 따라 Insert 또는 Modify 하이퍼링크 액션"],
     "HyperlinkBackward": [None, "하이퍼링크 뒤로"],
@@ -389,7 +389,7 @@ _action_info = {
     "MasterPageToPrevious": [None, "이전 바탕쪽"],
     "MasterPageTypeDlg": ["MasterPage", "바탕쪽 종류 다이얼로그 띄움"],
     "MemoShape": ["SecDef", "메모 모양([입력-메모-메모 모양]메뉴와 동일함)"],
-    "MessageBox": [None, "메시지 박스"],
+    # "MessageBox": [None, "메시지 박스"],
     "ModifyBookmark": ["BookMark", "책갈피 고치기"],
     "ModifyComposeChars": [None, "고치기 - 글자 겹침"],
     "ModifyCrossReference": ["ActionCrossRef", "상호 참조 고치기"],
@@ -636,7 +636,7 @@ _action_info = {
     ],
     "ScrMacroSecurityDlg": [None, "스크립트 매크로 보안 설정 대화상자([도구-매크로-스크립트 매크로 보안]메뉴와 동일)"],
     "ScrMacroStop": [None, "매크로 기록 중지"],
-    "SearchAddress": [None, "주소 검색"],
+    # "SearchAddress": [None, "주소 검색"],
     "SearchForeign": [None, "외래어사전검색"],
     "Select": [None, "선택 (F3 Key를 누른 효과)"],
     "SelectAll": [None, "모두 선택"],
@@ -943,7 +943,7 @@ class _Action:
     def __call__(self, pset=None):
         self.run(pset)
 
-# %% ../nbs/02_api/01_actions.ipynb 11
+# %% ../nbs/02_api/01_actions.ipynb 13
 class _Actions:
     """
     Dynamically generates and registers actions for the application.
@@ -951,7 +951,7 @@ class _Actions:
 
     def __init__(self, app):
         self._app = app
-        
+
     @property    
     def AddHanjaWord(self):
         return _Action(self._app, "AddHanjaWord")
@@ -1605,52 +1605,12 @@ class _Actions:
         return _Action(self._app, "HeaderFooterToPrev")
 
     @property    
-    def HiddenCredits(self):
-        return _Action(self._app, "HiddenCredits")
-
-    @property    
     def HideTitle(self):
         return _Action(self._app, "HideTitle")
 
     @property    
     def HimKbdChange(self):
         return _Action(self._app, "HimKbdChange")
-
-    @property    
-    def HwpCtrlEquationCreate97(self):
-        return _Action(self._app, "HwpCtrlEquationCreate97")
-
-    @property    
-    def HwpCtrlFileNew(self):
-        return _Action(self._app, "HwpCtrlFileNew")
-
-    @property    
-    def HwpCtrlFileOpen(self):
-        return _Action(self._app, "HwpCtrlFileOpen")
-
-    @property    
-    def HwpCtrlFileSave(self):
-        return _Action(self._app, "HwpCtrlFileSave")
-
-    @property    
-    def HwpCtrlFileSaveAs(self):
-        return _Action(self._app, "HwpCtrlFileSaveAs")
-
-    @property    
-    def HwpCtrlFileSaveAsAutoBlock(self):
-        return _Action(self._app, "HwpCtrlFileSaveAsAutoBlock")
-
-    @property    
-    def HwpCtrlFileSaveAutoBlock(self):
-        return _Action(self._app, "HwpCtrlFileSaveAutoBlock")
-
-    @property    
-    def HwpCtrlFindDlg(self):
-        return _Action(self._app, "HwpCtrlFindDlg")
-
-    @property    
-    def HwpCtrlReplaceDlg(self):
-        return _Action(self._app, "HwpCtrlReplaceDlg")
 
     @property    
     def HwpDic(self):
@@ -2191,10 +2151,6 @@ class _Actions:
     @property    
     def MemoShape(self):
         return _Action(self._app, "MemoShape")
-
-    @property    
-    def MessageBox(self):
-        return _Action(self._app, "MessageBox")
 
     @property    
     def ModifyBookmark(self):
@@ -2935,10 +2891,6 @@ class _Actions:
     @property    
     def ScrMacroStop(self):
         return _Action(self._app, "ScrMacroStop")
-
-    @property    
-    def SearchAddress(self):
-        return _Action(self._app, "SearchAddress")
 
     @property    
     def SearchForeign(self):
