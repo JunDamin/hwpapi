@@ -430,26 +430,7 @@ class TableAccessor:
         """
         return self._get_shape_properties()
 
-    @property
-    def width(self):
-        """테이블의 너비를 반환하거나 설정합니다."""
-        return unit2mili(self._get_shape_properties().get("Width"))
-
-    @width.setter
-    def width(self, value):
-        """테이블의 너비를 설정합니다."""
-        self._set_shape_property("Width", value)
-
-    @property
-    def height(self):
-        """테이블의 높이를 반환하거나 설정합니다."""
-        return unit2mili(self._get_shape_properties().get("Height"))
-
-    @height.setter
-    def height(self, value):
-        """테이블의 높이를 설정합니다."""
-        self._set_shape_property("Height", value)
-
+    # Property methods for all property names
     @property
     def treat_as_char(self):
         """테이블을 문자로 간주할지 여부를 반환하거나 설정합니다."""
@@ -498,7 +479,7 @@ class TableAccessor:
     @vert_offset.setter
     def vert_offset(self, value):
         """테이블의 수직 오프셋을 설정합니다."""
-        self._set_shape_property("VertOffset", value)
+        self._set_shape_property("VertOffset", mili2unit(value))
 
     @property
     def horz_rel_to(self):
@@ -528,17 +509,7 @@ class TableAccessor:
     @horz_offset.setter
     def horz_offset(self, value):
         """테이블의 수평 오프셋을 설정합니다."""
-        self._set_shape_property("HorzOffset", value)
-
-    @property
-    def lock(self):
-        """테이블의 잠금 상태를 반환하거나 설정합니다."""
-        return self._get_shape_properties().get("Lock")
-
-    @lock.setter
-    def lock(self, value):
-        """테이블의 잠금 상태를 설정합니다."""
-        self._set_shape_property("Lock", value)
+        self._set_shape_property("HorzOffset", mili2unit(value))
 
     @property
     def flow_with_text(self):
@@ -561,6 +532,116 @@ class TableAccessor:
         self._set_shape_property("AllowOverlap", value)
 
     @property
+    def width_rel_to(self):
+        """테이블의 너비 기준을 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("WidthRelTo")
+
+    @width_rel_to.setter
+    def width_rel_to(self, value):
+        """테이블의 너비 기준을 설정합니다."""
+        self._set_shape_property("WidthRelTo", value)
+
+    @property
+    def width(self):
+        """테이블의 너비를 반환하거나 설정합니다."""
+        return unit2mili(self._get_shape_properties().get("Width"))
+
+    @width.setter
+    def width(self, value):
+        """테이블의 너비를 설정합니다."""
+        self._set_shape_property("Width", mili2unit(value))
+
+    @property
+    def height_rel_to(self):
+        """테이블의 높이 기준을 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("HeightRelTo")
+
+    @height_rel_to.setter
+    def height_rel_to(self, value):
+        """테이블의 높이 기준을 설정합니다."""
+        self._set_shape_property("HeightRelTo", value)
+
+    @property
+    def height(self):
+        """테이블의 높이를 반환하거나 설정합니다."""
+        return unit2mili(self._get_shape_properties().get("Height"))
+
+    @height.setter
+    def height(self, value):
+        """테이블의 높이를 설정합니다."""
+        self._set_shape_property("Height", mili2unit(value))
+
+    @property
+    def protect_size(self):
+        """테이블의 크기 보호 상태를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("ProtectSize")
+
+    @protect_size.setter
+    def protect_size(self, value):
+        """테이블의 크기 보호 상태를 설정합니다."""
+        self._set_shape_property("ProtectSize", value)
+
+    @property
+    def text_wrap(self):
+        """테이블의 텍스트 줄바꿈 상태를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("TextWrap")
+
+    @text_wrap.setter
+    def text_wrap(self, value):
+        """테이블의 텍스트 줄바꿈 상태를 설정합니다."""
+        self._set_shape_property("TextWrap", value)
+
+    @property
+    def text_flow(self):
+        """테이블의 텍스트 흐름 상태를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("TextFlow")
+
+    @text_flow.setter
+    def text_flow(self, value):
+        """테이블의 텍스트 흐름 상태를 설정합니다."""
+        self._set_shape_property("TextFlow", value)
+
+    @property
+    def outside_margin_left(self):
+        """테이블의 왼쪽 외부 여백을 반환하거나 설정합니다."""
+        return unit2mili(self._get_shape_properties().get("OutsideMarginLeft"))
+
+    @outside_margin_left.setter
+    def outside_margin_left(self, value):
+        """테이블의 왼쪽 외부 여백을 설정합니다."""
+        self._set_shape_property("OutsideMarginLeft", mili2unit(value))
+
+    @property
+    def outside_margin_right(self):
+        """테이블의 오른쪽 외부 여백을 반환하거나 설정합니다."""
+        return unit2mili(self._get_shape_properties().get("OutsideMarginRight"))
+
+    @outside_margin_right.setter
+    def outside_margin_right(self, value):
+        """테이블의 오른쪽 외부 여백을 설정합니다."""
+        self._set_shape_property("OutsideMarginRight", mili2unit(value))
+
+    @property
+    def outside_margin_top(self):
+        """테이블의 위쪽 외부 여백을 반환하거나 설정합니다."""
+        return unit2mili(self._get_shape_properties().get("OutsideMarginTop"))
+
+    @outside_margin_top.setter
+    def outside_margin_top(self, value):
+        """테이블의 위쪽 외부 여백을 설정합니다."""
+        self._set_shape_property("OutsideMarginTop", mili2unit(value))
+
+    @property
+    def outside_margin_bottom(self):
+        """테이블의 아래쪽 외부 여백을 반환하거나 설정합니다."""
+        return unit2mili(self._get_shape_properties().get("OutsideMarginBottom"))
+
+    @outside_margin_bottom.setter
+    def outside_margin_bottom(self, value):
+        """테이블의 아래쪽 외부 여백을 설정합니다."""
+        self._set_shape_property("OutsideMarginBottom", mili2unit(value))
+
+    @property
     def numbering_type(self):
         """테이블의 번호 매기기 유형을 반환하거나 설정합니다."""
         return self._get_shape_properties().get("NumberingType")
@@ -569,6 +650,86 @@ class TableAccessor:
     def numbering_type(self, value):
         """테이블의 번호 매기기 유형을 설정합니다."""
         self._set_shape_property("NumberingType", value)
+
+    @property
+    def layout_width(self):
+        """테이블의 레이아웃 너비를 반환하거나 설정합니다."""
+        return unit2mili(self._get_shape_properties().get("LayoutWidth"))
+
+    @layout_width.setter
+    def layout_width(self, value):
+        """테이블의 레이아웃 너비를 설정합니다."""
+        self._set_shape_property("LayoutWidth", mili2unit(value))
+
+    @property
+    def layout_height(self):
+        """테이블의 레이아웃 높이를 반환하거나 설정합니다."""
+        return unit2mili(self._get_shape_properties().get("LayoutHeight"))
+
+    @layout_height.setter
+    def layout_height(self, value):
+        """테이블의 레이아웃 높이를 설정합니다."""
+        self._set_shape_property("LayoutHeight", mili2unit(value))
+
+    @property
+    def lock(self):
+        """테이블의 잠금 상태를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("Lock")
+
+    @lock.setter
+    def lock(self, value):
+        """테이블의 잠금 상태를 설정합니다."""
+        self._set_shape_property("Lock", value)
+
+    @property
+    def hold_anchor_obj(self):
+        """테이블의 고정 앵커 개체 상태를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("HoldAnchorObj")
+
+    @hold_anchor_obj.setter
+    def hold_anchor_obj(self, value):
+        """테이블의 고정 앵커 개체 상태를 설정합니다."""
+        self._set_shape_property("HoldAnchorObj", value)
+
+    @property
+    def page_number(self):
+        """테이블의 페이지 번호를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("PageNumber")
+
+    @page_number.setter
+    def page_number(self, value):
+        """테이블의 페이지 번호를 설정합니다."""
+        self._set_shape_property("PageNumber", value)
+
+    @property
+    def adjust_selection(self):
+        """테이블 선택 조정 상태를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("AdjustSelection")
+
+    @adjust_selection.setter
+    def adjust_selection(self, value):
+        """테이블 선택 조정 상태를 설정합니다."""
+        self._set_shape_property("AdjustSelection", value)
+
+    @property
+    def adjust_text_box(self):
+        """테이블 텍스트 상자 조정 상태를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("AdjustTextBox")
+
+    @adjust_text_box.setter
+    def adjust_text_box(self, value):
+        """테이블 텍스트 상자 조정 상태를 설정합니다."""
+        self._set_shape_property("AdjustTextBox", value)
+
+    @property
+    def adjust_prev_obj_attr(self):
+        """이전 개체 속성 조정 상태를 반환하거나 설정합니다."""
+        return self._get_shape_properties().get("AdjustPrevObjAttr")
+
+    @adjust_prev_obj_attr.setter
+    def adjust_prev_obj_attr(self, value):
+        """이전 개체 속성 조정 상태를 설정합니다."""
+        self._set_shape_property("AdjustPrevObjAttr", value)
 
 
 # %% ../nbs/02_api/03_classes.ipynb 11
