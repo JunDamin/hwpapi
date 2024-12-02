@@ -33,7 +33,7 @@ import hwpapi.constants as const
 
 
 
-# %% ../nbs/02_api/03_classes.ipynb 4
+# %% ../nbs/02_api/03_classes.ipynb 5
 class MoveAccessor:
     """
     Wrap MovePos for easier use.
@@ -221,7 +221,7 @@ class MoveAccessor:
         return self._app.api.MovePos(moveID=const.MoveId.ScanPos.value)
 
 
-# %% ../nbs/02_api/03_classes.ipynb 6
+# %% ../nbs/02_api/03_classes.ipynb 7
 class CellAccessor:
     """
     셀의 속성을 접근하고 수정할 수 있는 클래스입니다.
@@ -287,6 +287,9 @@ class CellAccessor:
         property_names = ("HasMargin", "Protected", "Header", "Width", "Height", "Editable", "Dirty", "CellCtrlData")
         return {name: cell.Item(name) for name in property_names} if cell else {}
 
+    def __call__(self):
+        return self._get_cell_property()
+    
     @property
     def width(self):
         """
@@ -356,13 +359,15 @@ class CellAccessor:
         return app.cell.height == height
 
 
-# %% ../nbs/02_api/03_classes.ipynb 7
+# %% ../nbs/02_api/03_classes.ipynb 9
 class TableAccessor:
     """
     테이블 속성에 접근하고 조작할 수 있는 클래스입니다.
 
     이 클래스는 HWP 문서의 테이블과 관련된 속성에 접근하거나 수정할 수 있는 기능을 제공합니다.
     """
+
+    miliunits = ["Width", "Height", "LayoutWidth", "LayoutHeight", "OutsideMarginLeft", "OutsideMarginRight", "OutsideMarginTop", "OutsideMarginBottom",]
 
     def __init__(self, app):
         """
@@ -395,7 +400,7 @@ class TableAccessor:
         )
         action = app.actions.TablePropertyDialog
         pset = action.create_pset()
-        return {name: pset.Item(name) for name in property_names}
+        return {name: unit2mili(pset.Item(name)) if name in TableAccessor.miliunits else pset.Item(name) for name in property_names }
 
     def _set_shape_property(self, name, value):
         """
@@ -411,7 +416,7 @@ class TableAccessor:
         app = self._app
         action = app.actions.TablePropertyDialog
         pset = action.create_pset()
-        pset.SetItem(name, mili2unit(value) if name in ["Width", "Height"] else value)
+        pset.SetItem(name, mili2unit(value) if name in TableAccessor.miliunits else value)
         action.run(pset)
 
     def __call__(self):
@@ -566,7 +571,7 @@ class TableAccessor:
         self._set_shape_property("NumberingType", value)
 
 
-# %% ../nbs/02_api/03_classes.ipynb 9
+# %% ../nbs/02_api/03_classes.ipynb 11
 class PageAccessor:
     
     def __init__(self, app):
@@ -689,7 +694,7 @@ class PageAccessor:
         properties.update({name: pset.Item("PageDef").Item(name) for name in property_names})
         return properties
 
-# %% ../nbs/02_api/03_classes.ipynb 11
+# %% ../nbs/02_api/03_classes.ipynb 13
 @dataclass
 class Character:
     Bold: Optional[int] = None
@@ -759,7 +764,7 @@ class Character:
     UseFontSpace: Optional[int] = None
     UseKerning: Optional[int] = None
 
-# %% ../nbs/02_api/03_classes.ipynb 12
+# %% ../nbs/02_api/03_classes.ipynb 14
 import inspect
 
 
@@ -1164,7 +1169,7 @@ class CharShape:
 
         return self
 
-# %% ../nbs/02_api/03_classes.ipynb 16
+# %% ../nbs/02_api/03_classes.ipynb 18
 @dataclass
 class Paragraph:
     AlignType: Optional[int] = None
@@ -1200,7 +1205,7 @@ class Paragraph:
     TextAlignment: Optional[int] = None
     WidowOrphan: Optional[int] = None
 
-# %% ../nbs/02_api/03_classes.ipynb 17
+# %% ../nbs/02_api/03_classes.ipynb 19
 class ParaShape:
     """
     ParaShape 클래스는 문단 모양을 다룹니다. ParaShape는 문단에 적용되는 스타일링 속성을 나타냅니다.
@@ -1560,7 +1565,7 @@ class ParaShape:
         
         return self
 
-# %% ../nbs/02_api/03_classes.ipynb 20
+# %% ../nbs/02_api/03_classes.ipynb 22
 @dataclass
 class PageShape:
     MarginLeft: int
