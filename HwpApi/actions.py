@@ -900,12 +900,14 @@ class _Action:
         self.App = app
         self.action_key = action_key
         self.act = app.api.CreateAction(action_key)
-
         # create pset and description
         pset_key, description = _action_info.get(action_key, (None, None))
         self.description = description if description else "Description is Not Available"
+        
+        #check pset ID
         pset = self.create_pset()
         if pset:
+            assert pset_key == pset.SetID, f"({pset_key}), ({pset.SetID}) parameter set 정보에 대한 오류 발생"
             pset_key = pset.SetID
         self.pset_key = pset_key
         self.pset = self.get_pset(pset_key if pset_key else None)
@@ -943,7 +945,7 @@ class _Action:
     def __call__(self, pset=None):
         self.run(pset)
 
-# %% ../nbs/02_api/01_actions.ipynb 13
+# %% ../nbs/02_api/01_actions.ipynb 14
 class _Actions:
     """
     Dynamically generates and registers actions for the application.

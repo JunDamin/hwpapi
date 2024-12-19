@@ -1,7 +1,37 @@
 ### Change Log
 
-- add create_set method for action
+- [x] add create_set method for action
    - some parameterset need to deal with parameterset directly 
-- add constants
-- add get table width, height
-- add get cell width, hegiht and etc
+- [x] add constants
+- [x] add get table width, height
+- [x] add get cell width, hegiht and etc
+- [x] add page property
+- [x] change actions using property function
+- [x] add action call as an alias of run
+- [x] create MoveAccessor for Move method
+- [ ] keyindicator parser
+- [ ] improve scan function 
+- [ ] insert picture
+- [ ] insert table
+- [ ] modify table and cell
+- [x] cell Accessor
+- [x] table Accessor
+- [x] add page setting along with page property(as Accessor)
+- [ ] convert markdown to styled text
+  - [ ] add markdown parser
+  - [ ] add method for each markdown types
+- [ ] refactor table and cell controls
+- [ ] add tutorials for more
+- [ ] refactor dataclasses
+- [ ] reorganize core
+- [ ] add comments for each functions
+- [ ] test pandas table insert using clipboard
+- [ ] Add ParameterSet Properties
+    - FindReplace
+    - CharShape
+    - ParaShape
+    - BorderFill
+    - TabDef
+    - NumberingShape
+    - BulletShape
+    - DrawImageAttr
