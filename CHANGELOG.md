@@ -32,6 +32,6 @@
     - ParaShape
     - BorderFill
     - TabDef
-    - NumberingShape
+    - NumberingShape : needed to fix
     - BulletShape
     - DrawImageAttr

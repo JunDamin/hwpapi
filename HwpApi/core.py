@@ -1362,7 +1362,7 @@ def find_text(
 
     # 반복 검색 액션 생성
     action = app.actions.RepeatFind
-    p = action.pset
+    p = action._get_hset()
     p.FindCharShape = action.act.CreateSet()
 
     # 옵션 설정

@@ -4,6 +4,9 @@
 __all__ = []
 
 # %% ../nbs/02_api/01_actions.ipynb 4
+import hwpapi.parametersets as parameterpsets
+
+
 # preset action data <Action key>: [<parameter key>, <description>]
 
 _action_info = {
@@ -905,12 +908,12 @@ class _Action:
         self.description = description if description else "Description is Not Available"
         
         #check pset ID
-        pset = self.create_pset()
+        pset = self._create_pset()
         if pset:
             assert pset_key == pset.SetID, f"({pset_key}), ({pset.SetID}) parameter set 정보에 대한 오류 발생"
             pset_key = pset.SetID
         self.pset_key = pset_key
-        self.pset = self.get_pset(pset_key if pset_key else None)
+        self.pset = self.get_pset()
 
     def __str__(self):
         return f"<Action {self.action_key}: {self.description}>"
@@ -921,26 +924,48 @@ class _Action:
         self.pset.HSet.SetItem(key, value)
         return self
 
-    def run(self, pset=None):
-        if pset:
-            return self.act.Execute(pset)
-        if self.pset:
-            return self.act.Execute(self.pset.HSet)
-        return self.act.Execute(None)
+    def run(self, parameterset=None):
+        if parameterset:
+            return self.act.Execute(parameterset)
+        if not self.pset:
+            self.act.Execute(None)
+        if self.pset.is_pset:
+            return self.act.Execute(self.pset.parameterset)
+        return self.act.Execute(self.pset.parameterset.HSet)
 
-    def get_pset(self, pset_key=None):
+    def _get_hset(self, pset_key=None):
         if not self.pset_key:
             return None
-        pset = getattr(self.App.api.HParameterSet, f"H{self.pset_key}")
+        hset = getattr(self.App.api.HParameterSet, f"H{self.pset_key}")
         self.App.api.HAction.GetDefault(
-            pset_key if pset_key else self.action_key, pset.HSet
+            pset_key if pset_key else self.action_key, hset.HSet
         )
-        return pset
+        return hset
 
-    def create_pset(self):
+    def _create_pset(self):
         pset = self.act.CreateSet()
         self.act.GetDefault(pset)
         return pset
+
+    def _get_sets(self, pset_key=None):
+        """
+        HParameterset의 값과 해당 Action의 ParameterSet 값을 반환합니다.
+        """
+        return {"hset": self._get_hset(pset_key), "pset": self._create_pset()}
+
+    def get_pset(self):
+        if not self.pset_key:
+            return None
+        pset_class = getattr(parameterpsets, self.pset_key, None)
+        # Hset반환
+        if not pset_class:
+            return self._get_hset()
+        # Hset 기반 액션
+        if self.pset_key in ["FindReplace", "FindDlg", "FindAll"]:
+            return pset_class(self._get_hset())
+        # 일반 Action
+        return pset_class(self._create_pset())
+        
 
     def __call__(self, pset=None):
         self.run(pset)
