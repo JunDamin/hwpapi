@@ -9,6 +9,8 @@ from pathlib import Path
 import numbers
 import hwpapi.constants as const
 from fastcore.basics import patch
+import sys
+import warnings
 
 # %% ../nbs/02_api/00_core.ipynb 5
 from .actions import _Action, _Actions
@@ -447,8 +449,35 @@ class App:
             engines = Engines()
             engine = engines[-1] if len(engines) > 0 else Engine()
         self.engine = engine
-        check_dll(dll_path)
-        self.api.RegisterModule("FilePathCheckDLL", "FilePathCheckerModule")
+        # Try multiple locations for DLL file
+        if dll_path is None:
+            # First try the bundled DLL path
+            if hasattr(sys, '_MEIPASS'):  # Check if running as PyInstaller bundle
+                bundled_dll = Path(sys._MEIPASS) / 'FilePathCheckerModuleExample.dll'
+                if bundled_dll.exists():
+                    dll_path = bundled_dll
+            
+            # Then try current directory
+            if dll_path is None:
+                local_dll = Path.cwd() / 'FilePathCheckerModuleExample.dll'
+                if local_dll.exists():
+                    dll_path = local_dll
+                
+            # Finally try package directory
+            if dll_path is None:
+                package_dir = Path(__file__).parent
+                package_dll = package_dir / 'FilePathCheckerModuleExample.dll'
+                if package_dll.exists():
+                    dll_path = package_dll
+        
+        # Register DLL if found
+        if dll_path is not None:
+            check_dll(dll_path)
+        
+        try:
+            self.api.RegisterModule("FilePathCheckDLL", "FilePathCheckerModule")
+        except Exception as e:
+            warnings.warn(f"Failed to register FilePathCheckDLL module: {e}")
         
 
     @property
