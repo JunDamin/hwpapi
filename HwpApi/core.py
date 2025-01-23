@@ -916,6 +916,7 @@ def get_charshape(app: App):
 
 
 # %% ../nbs/02_api/00_core.ipynb 31
+from .parametersets import CharShape
 @patch
 def set_charshape(app: App, charshape: CharShape=None, **kwargs):
     """
@@ -942,22 +943,23 @@ def set_charshape(app: App, charshape: CharShape=None, **kwargs):
     Examples
     --------
     >>> app = App()
-    >>> char_shape = CharShape()
+    >>> char_shape = app.get_charshape()
     >>> success = set_charshape(app, charshape=char_shape, fontName='Arial', fontSize=10)
     >>> print(success)
     """
-    if charshape is None:
-        charshape = CharShape()
+    action = app.actions.CharShape
+    pset = action.pset
+    # charshape를 전달하면 반영해야 함
+    if not charshape:
+        pset.update(charshape)
 
     for key, value in kwargs.items():
         setattr(charshape, key, value)
         
-    action = app.actions.CharShape
-    set_pset(action.pset, charshape.todict())
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 35
+# %% ../nbs/02_api/00_core.ipynb 36
 @patch
 def get_parashape(app: App):
     """
@@ -982,13 +984,9 @@ def get_parashape(app: App):
     >>> para_shape = get_parashape(app)
     >>> print(para_shape)
     """
-    action = app.actions.ParagraphShape
-    p = action.pset
+    return app.actions.ParagraphShape.pset
 
-    return ParaShape(p)
-
-
-# %% ../nbs/02_api/00_core.ipynb 37
+# %% ../nbs/02_api/00_core.ipynb 38
 @patch
 def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     """
@@ -1006,31 +1004,30 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
         The `ParaShape` object to be used for setting paragraph shapes in Hancom Office Hwp. Defaults to `None`.
     **kwargs
         Additional keyword arguments assigned as properties of `parashape`.
+    if parashape:
+        pset.update(parashape)
 
-    Returns
-    -------
     bool
         A boolean value indicating the success of the `set_parashape` operation.
 
     Examples
     --------
     >>> app = App()
-    >>> para_shape = ParaShape()
     >>> success = set_parashape(app, parashape=para_shape, align='Left', indent=10)
     >>> print(success)
     """
-    if parashape is None:
-        parashape = ParaShape()
+    action = app.actions.ParagraphShape
+    pset = action.pset
+    if parashape:
+        pset.update(parashape)
 
     for key, value in kwargs.items():
         setattr(parashape, key, value)
 
-    action = app.actions.ParagraphShape
-    set_pset(action.pset, parashape.todict())
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 39
+# %% ../nbs/02_api/00_core.ipynb 40
 @patch
 def insert_text(
     app: App,
@@ -1075,7 +1072,7 @@ def insert_text(
     return
 
 
-# %% ../nbs/02_api/00_core.ipynb 45
+# %% ../nbs/02_api/00_core.ipynb 46
 def _get_text(app):
     """스캔한 텍스트 텍스트 제너레이터"""
     flag, text = 2, ""
@@ -1114,7 +1111,7 @@ def scan(
     app.api.ReleaseScan()
 
 
-# %% ../nbs/02_api/00_core.ipynb 46
+# %% ../nbs/02_api/00_core.ipynb 47
 def move_to_line(app: App, text):
     """인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다."""
     with app.scan(scan_spos="Line") as scan:
@@ -1123,7 +1120,7 @@ def move_to_line(app: App, text):
                 return app.move(key=const.MoveID.ScanPos)
     return False
 
-# %% ../nbs/02_api/00_core.ipynb 51
+# %% ../nbs/02_api/00_core.ipynb 52
 @patch
 def setup_page(
     app: App,  # 앱 인스턴스
@@ -1186,7 +1183,7 @@ def setup_page(
     return action.run()  # 페이지 설정 실행
 
 
-# %% ../nbs/02_api/00_core.ipynb 52
+# %% ../nbs/02_api/00_core.ipynb 53
 @patch
 def insert_picture(
     app: App,
@@ -1247,7 +1244,7 @@ def insert_picture(
     )
 
 
-# %% ../nbs/02_api/00_core.ipynb 53
+# %% ../nbs/02_api/00_core.ipynb 54
 @patch
 def select_text(app: App, option=const.SelectionOption.Line):
     """
@@ -1278,7 +1275,7 @@ def select_text(app: App, option=const.SelectionOption.Line):
     return begin_action().run(), end_action().run()  # 작업 실행 후 결과 반환
 
 
-# %% ../nbs/02_api/00_core.ipynb 56
+# %% ../nbs/02_api/00_core.ipynb 57
 @patch
 def get_selected_text(app: App):
     """
@@ -1309,7 +1306,7 @@ def get_selected_text(app: App):
     return text  # 결합된 텍스트 반환
 
 
-# %% ../nbs/02_api/00_core.ipynb 58
+# %% ../nbs/02_api/00_core.ipynb 59
 # 리팩터링된 get_text 함수
 @patch
 def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosition.Line):
@@ -1342,12 +1339,12 @@ def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosi
     return text  # 결합된 텍스트 반환
 
 
-# %% ../nbs/02_api/00_core.ipynb 61
+# %% ../nbs/02_api/00_core.ipynb 62
 @patch
 def find_text(
     app: App,
     text="",  # 찾을 텍스트
-    charshape: CharShape = CharShape(),  # 문자 모양 설정
+    charshape: CharShape = None,  # 문자 모양 설정
     ignore_message=True,  # 메시지 무시 여부
     direction=const.Direction.Forward,  # 검색 방향
     match_case=False,  # 대소문자 구분
@@ -1417,14 +1414,14 @@ def find_text(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 65
+# %% ../nbs/02_api/00_core.ipynb 66
 @patch
 def replace_all(
     app: App,
     old_text="",
     new_text="",
-    old_charshape=CharShape(),  # 기존 문자 모양
-    new_charshape=CharShape(),  # 새로운 문자 모양
+    old_charshape=None,  # 기존 문자 모양
+    new_charshape=None,  # 새로운 문자 모양
     ignore_message=True,  # 메시지 무시 여부
     direction=const.Direction.All,  # 검색 방향
     match_case=False,  # 대소문자 구분
@@ -1499,7 +1496,7 @@ def replace_all(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 69
+# %% ../nbs/02_api/00_core.ipynb 70
 @patch
 def insert_file(
     app: App,
@@ -1553,7 +1550,7 @@ def insert_file(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 70
+# %% ../nbs/02_api/00_core.ipynb 71
 @patch
 def set_cell_border(
     app: App,
@@ -1651,7 +1648,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 71
+# %% ../nbs/02_api/00_core.ipynb 72
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None

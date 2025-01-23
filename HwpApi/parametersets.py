@@ -837,7 +837,7 @@ class CharShape(ParameterSet):
 | BorderFill | PIT\_SET | BorderFill | 테두리/배경 (한글2007에 새로 추가) |
 
     """
-
+    
     def __str__(self):
         return f"""<CharShape
 | FaceName |  {self.facename}
@@ -870,6 +870,15 @@ class CharShape(ParameterSet):
 | Height | {self.height}
 | BorderFill | {self.border_fill}
         """
+    
+    def __repr__(self):
+        return self.__str__()
+
+    def update(self, charshape):
+        for key in ['bold', 'border_fill', 'diac_sym_mark', 'emboss', 'engrave', 'facename', 'facename_hangul', 'facename_hanja', 'facename_japanese', 'facename_latin', 'facename_other', 'facename_symbol', 'facename_user', 'fonttype', 'fonttype_hangul', 'fonttype_hanja', 'fonttype_japanese', 'fonttype_latin', 'fonttype_other', 'fonttype_symbol', 'fonttype_user', 'height', 'is_pset', 'italic', 'offset', 'offset_hangul', 'offset_hanja', 'offset_japanese', 'offset_latin', 'offset_other', 'offset_symbol', 'offset_user', 'outline_type', 'parameterset', 'ratio', 'ratio_hangul', 'ratio_hanja', 'ratio_japanese', 'ratio_latin', 'ratio_other', 'ratio_symbol', 'ratio_user', 'shade_color', 'shadow_color', 'shadow_offset_x', 'shadow_offset_y', 'shadow_type', 'size', 'size_hangul', 'size_hanja', 'size_japanese', 'size_latin', 'size_other', 'size_symbol', 'size_user', 'small_caps', 'spacing', 'spacing_hangul', 'spacing_hanja', 'spacing_japanese', 'spacing_latin', 'spacing_other', 'spacing_symbol', 'spacing_user', 'strikeout_color', 'strikeout_shape', 'strikeout_type', 'subscript', 'superscript', 'text_color', 'underline_color', 'underline_shape', 'underline_type', 'use_font_space', 'use_kerning']:
+            value = getattr(charshape, key)
+            if value:
+                setattr(self, key, value)
 
     @property
     def facename(self):
@@ -4738,6 +4747,46 @@ class ParaShape(ParameterSet):
 
 
     """
+
+    def update(self, parashape):
+
+        for key in [ 'align_type',
+            'border_connect',
+            'border_fill',
+            'border_offset_bottom',
+            'border_offset_left',
+            'border_offset_right',
+            'border_offset_top',
+            'border_text',
+            'break_latin_word',
+            'break_non_latin_word',
+            'bullet',
+            'condense',
+            'font_line_height',
+            'heading_type',
+            'indentation',
+            'is_pset',
+            'keep_lines_together',
+            'keep_with_next',
+            'left_margin',
+            'level',
+            'line_spacing',
+            'line_spacing_type',
+            'line_wrap',
+            'next_spacing',
+            'numbering',
+            'pagebreak_before',
+            'parameterset',
+            'prev_spacing',
+            'right_margin',
+            'snap_to_grid',
+            'tab_def',
+            'tail_type',
+            'text_alignment',
+            'widow_orphan']:
+            value = getattr(parashape, key)
+            if value:
+                setattr(self.pset, key, value)
 
     @property
     def left_margin(self):
