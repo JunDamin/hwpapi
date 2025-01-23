@@ -761,7 +761,7 @@ def save(app: App, path=None):
     return name
 
 
-# %% ../nbs/02_api/00_core.ipynb 24
+# %% ../nbs/02_api/00_core.ipynb 23
 @patch
 def save_block(app: App, path: Path):
     """
@@ -808,7 +808,7 @@ def save_block(app: App, path: Path):
     return name if Path(name).exists() else None
 
 
-# %% ../nbs/02_api/00_core.ipynb 26
+# %% ../nbs/02_api/00_core.ipynb 25
 @patch
 def close(app: App):
     """
@@ -831,7 +831,7 @@ def close(app: App):
     app.api.Run("FileClose")
 
 
-# %% ../nbs/02_api/00_core.ipynb 28
+# %% ../nbs/02_api/00_core.ipynb 27
 @patch
 def quit(app: App):
     """
@@ -854,7 +854,7 @@ def quit(app: App):
     app.api.Run("FileQuit")
 
 
-# %% ../nbs/02_api/00_core.ipynb 29
+# %% ../nbs/02_api/00_core.ipynb 28
 @patch
 def get_font_list(app:App):
     """
@@ -887,7 +887,7 @@ def get_font_list(app:App):
         ))
     return output
 
-# %% ../nbs/02_api/00_core.ipynb 30
+# %% ../nbs/02_api/00_core.ipynb 29
 @patch
 def get_charshape(app: App):
     """
@@ -912,12 +912,10 @@ def get_charshape(app: App):
     >>> char_shape = get_charshape(app)
     >>> print(char_shape)
     """
-    action = app.actions.CharShape
-    p = action.pset
-    return CharShape(p)
+    return app.actions.CharShape.pset
 
 
-# %% ../nbs/02_api/00_core.ipynb 32
+# %% ../nbs/02_api/00_core.ipynb 31
 @patch
 def set_charshape(app: App, charshape: CharShape=None, **kwargs):
     """
@@ -959,7 +957,7 @@ def set_charshape(app: App, charshape: CharShape=None, **kwargs):
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 36
+# %% ../nbs/02_api/00_core.ipynb 35
 @patch
 def get_parashape(app: App):
     """
@@ -990,7 +988,7 @@ def get_parashape(app: App):
     return ParaShape(p)
 
 
-# %% ../nbs/02_api/00_core.ipynb 38
+# %% ../nbs/02_api/00_core.ipynb 37
 @patch
 def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     """
@@ -1032,7 +1030,7 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 40
+# %% ../nbs/02_api/00_core.ipynb 39
 @patch
 def insert_text(
     app: App,
