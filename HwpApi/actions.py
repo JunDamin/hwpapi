@@ -4,7 +4,7 @@
 __all__ = []
 
 # %% ../nbs/02_api/01_actions.ipynb 4
-import hwpapi.parametersets as parameterpsets
+import hwpapi.parametersets as parametersets
 
 
 # preset action data <Action key>: [<parameter key>, <description>]
@@ -925,13 +925,26 @@ class _Action:
         return self
 
     def run(self, parameterset=None):
+        # 외부에서 파라미터를 직접 주입하면 기준이 되는 파라미터를 변경한다 
+        pset = self.pset
         if parameterset:
-            return self.act.Execute(parameterset)
-        if not self.pset:
+            pset = parameterset
+
+        # 파라미터가 불요한 액션이면 그대로 실행
+        if not pset:
             self.act.Execute(None)
-        if self.pset.is_pset:
-            return self.act.Execute(self.pset.parameterset)
-        return self.act.Execute(self.pset.parameterset.HSet)
+        # parametersets에서 정의된 파라미터가 아니라면 HSet으로 바로 연결
+        if not isinstance(pset, parametersets.ParameterSet):
+            return self.act.Execute(pset.HSet)
+        # 커스텀 플래그를 만든 것이라면 parameterset으로 실행
+        # 왜 이렇게 설계했냐면 하위 컨셉들이 있을 수 있기 때문 
+        if pset.is_pset:
+            return self.act.Execute(pset.parameterset)
+        # 그렇지 않다면 HSet으로 보고 실행
+        # 이렇게 복잡하게 나눠서 진행하는 이유는 Find and Replace와 관련된 기능은 
+        # action과 같이 전달한 parameterset을 사용하지 않고
+        # 프로그램에 저장된 상태값을 사용하기 때문임 
+        return self.act.Execute(pset.parameterset.HSet)
 
     def _get_hset(self, pset_key=None):
         if not self.pset_key:
@@ -954,9 +967,15 @@ class _Action:
         return {"hset": self._get_hset(pset_key), "pset": self._create_pset()}
 
     def get_pset(self):
+        """범용성을 높이기 위해서 이런 구조를 잡음
+        일단 개발매뉴얼 문서에 모든 parameterset이 적시되어 있다는 건 확인할 수 없었음
+        따라서 알지 못하는 파라미터가 나오는 것에 대한 대비는 필요함
+        또한 사용성 향상을 위해 생성한 wrapper를 사용할 수 있도록 하고자 함
+        마지막으로 예상치 못한 Hset으로만 작동하는 Action을 위해 특별한 파라미터를 설정할 수 있는 파라미터를 지정함
+        """
         if not self.pset_key:
             return None
-        pset_class = getattr(parameterpsets, self.pset_key, None)
+        pset_class = getattr(parametersets, self.pset_key, None)
         # Hset반환
         if not pset_class:
             return self._get_hset()
