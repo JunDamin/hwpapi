@@ -8,6 +8,9 @@ __all__ = ['ParameterSet', 'BorderFill', 'Caption', 'BulletShape', 'Cell', 'Char
            'ShapeObject', 'TabDef', 'Table']
 
 # %% ../nbs/02_api/02_parameters.ipynb 4
+from .functions import unit2mili, unit2point, mili2unit, point2unit
+
+
 class ParameterSet:
 
     def __init__(self, parameterset):
@@ -457,39 +460,74 @@ class Caption(ParameterSet):
     @property
     def width(self):
         """캡션 폭 (단위: HWPUNIT)"""
-        return self._get_value("Width")
+        value = self._get_value("Width")
+        return unit2mili(value)
 
     @width.setter
     def width(self, value):
         if value is None:
             return self._del_value("Width")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("Width", value)
+        assert isinstance(value, (int, float)), "값은 정수 또는 실수이어야 합니다."
+        unit_value = mili2unit(float(value))  # 정수도 변환 가능하도록 float(value) 사용
+        self._set_value("Width", unit_value)
 
     @property
     def gap(self):
         """캡션과의 간격 (단위: HWPUNIT)"""
-        return self._get_value("Gap")
+        value = self._get_value("Gap")
+        return unit2mili(value)  # HWPUNIT 값을 밀리미터 단위로 변환하여 반환
 
     @gap.setter
     def gap(self, value):
         if value is None:
             return self._del_value("Gap")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("Gap", value)
+        assert isinstance(value, (int, float)), "값은 정수 또는 실수이어야 합니다."
+        unit_value = mili2unit(value)  # 밀리미터 단위를 HWPUNIT으로 변환
+        self._set_value("Gap", unit_value)
+
+
+    _cap_full_size_map = {
+        0: "exclude",
+        1: "include"
+    }
+
+    _cap_full_size_reverse_map = {v: k for k, v in _cap_full_size_map.items()}  # 문자열 → 숫자 변환
 
     @property
     def cap_full_size(self):
-        """캡션 폭에 여백 포함 여부: 0 = 포함 안 함, 1 = 포함함"""
-        return self._get_value("CapFullSize")
+        """
+        캡션 폭에 여백 포함 여부 (CapFullSize):
+        - 0 = exclude (포함 안 함)
+        - 1 = include (포함함)
+
+        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
+        """
+        value = self._get_value("CapFullSize")
+        return self._cap_full_size_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
 
     @cap_full_size.setter
     def cap_full_size(self, value):
         if value is None:
             return self._del_value("CapFullSize")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        self._set_value("CapFullSize", value)
 
+        # 입력값이 숫자인 경우
+        if isinstance(value, int):
+            if value not in self._cap_full_size_map:
+                valid_options = " | ".join([f"{k} ({v})" for k, v in self._cap_full_size_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = value  # 그대로 숫자로 저장
+
+        # 입력값이 문자열인 경우
+        elif isinstance(value, str):
+            if value not in self._cap_full_size_reverse_map:
+                valid_options = " | ".join([f"{v} ({k})" for k, v in self._cap_full_size_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = self._cap_full_size_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
+
+        else:
+            raise TypeError("값은 정수(0 또는 1) 또는 문자열(exclude, include)이어야 합니다.")
+
+        return self._set_value("CapFullSize", numeric_value)
 
 # %% ../nbs/02_api/02_parameters.ipynb 10
 class BulletShape(ParameterSet):
@@ -1094,17 +1132,51 @@ class CharShape(ParameterSet):
         assert isinstance(value, str), "값은 문자열이어야 합니다."
         return self._set_value("FaceNameUser", value)
 
+    _fonttype_hangul_map = {
+        0: "don't care",
+        1: "TTF",
+        2: "HFT"
+    }
+
+    _fonttype_hangul_reverse_map = {v: k for k, v in _fonttype_hangul_map.items()}  # 문자열 → 숫자 변환
+
     @property
     def fonttype_hangul(self):
-        """폰트 종류 (한글): 0 = don't care, 1 = TTF, 2 = HFT"""
-        return self._get_value("FontTypeHangul")
+        """
+        폰트 종류 (한글) (FontTypeHangul):
+        - 0 = don't care
+        - 1 = TTF
+        - 2 = HFT
+
+        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
+        """
+        value = self._get_value("FontTypeHangul")
+        return self._fonttype_hangul_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
 
     @fonttype_hangul.setter
     def fonttype_hangul(self, value):
         if value is None:
             return self._del_value("FontTypeHangul")
-        assert value in [0, 1, 2], "값은 0, 1, 2 중 하나여야 합니다."
-        return self._set_value("FontTypeHangul", value)
+
+        # 입력값이 숫자인 경우
+        if isinstance(value, int):
+            if value not in self._fonttype_hangul_map:
+                valid_options = " | ".join([f"{k} ({v})" for k, v in self._fonttype_hangul_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = value  # 그대로 숫자로 저장
+
+        # 입력값이 문자열인 경우
+        elif isinstance(value, str):
+            if value not in self._fonttype_hangul_reverse_map:
+                valid_options = " | ".join([f"{v} ({k})" for k, v in self._fonttype_hangul_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = self._fonttype_hangul_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
+
+        else:
+            raise TypeError("값은 정수(0, 1, 2) 또는 문자열(don't care, TTF, HFT)이어야 합니다.")
+
+        return self._set_value("FontTypeHangul", numeric_value)
+
 
     @property
     def fonttype_latin(self):
@@ -1597,41 +1669,152 @@ class CharShape(ParameterSet):
         assert value in [0, 1], "값은 0 또는 1이어야 합니다."
         return self._set_value("SubScript", value)
 
+    _underline_type_map = {
+        0: "none",
+        1: "bottom",
+        2: "center",
+        3: "top"
+    }
+
+    _underline_type_reverse_map = {v: k for k, v in _underline_type_map.items()}  # 문자열 → 숫자 변환
+
     @property
     def underline_type(self):
-        """밑줄 종류: 0 = none, 1 = bottom, 2 = center, 3 = top"""
-        return self._get_value("UnderlineType")
+        """
+        밑줄 종류 (UnderlineType):
+        - 0 = none
+        - 1 = bottom
+        - 2 = center
+        - 3 = top
+
+        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
+        """
+        value = self._get_value("UnderlineType")
+        return self._underline_type_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
 
     @underline_type.setter
     def underline_type(self, value):
         if value is None:
             return self._del_value("UnderlineType")
-        assert value in [0, 1, 2, 3], "값은 0, 1, 2, 3 중 하나여야 합니다."
-        return self._set_value("UnderlineType", value)
+
+        # 입력값이 숫자인 경우
+        if isinstance(value, int):
+            if value not in self._underline_type_map:
+                valid_options = " | ".join([f"{k} ({v})" for k, v in self._underline_type_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = value  # 그대로 숫자로 저장
+
+        # 입력값이 문자열인 경우
+        elif isinstance(value, str):
+            if value not in self._underline_type_reverse_map:
+                valid_options = " | ".join([f"{v} ({k})" for k, v in self._underline_type_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = self._underline_type_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
+
+        else:
+            raise TypeError("값은 정수(0, 1, 2, 3) 또는 문자열(none, bottom, center, top)이어야 합니다.")
+
+        return self._set_value("UnderlineType", numeric_value)
+
+
+    _outline_type_map = {
+        0: "none",
+        1: "solid",
+        2: "dot",
+        3: "thick",
+        4: "dash",
+        5: "dashdot",
+        6: "dashdotdot"
+    }
+
+    _outline_type_reverse_map = {v: k for k, v in _outline_type_map.items()}  # 문자열 → 숫자 변환
 
     @property
     def outline_type(self):
-        """외곽선 종류: 0 = none, 1 = solid, 2 = dot, 3 = thick, 4 = dash, 5 = dashdot, 6 = dashdotdot"""
-        return self._get_value("OutLineType")
+        """
+        외곽선 종류 (OutLineType):
+        - 0 = none
+        - 1 = solid
+        - 2 = dot
+        - 3 = thick
+        - 4 = dash
+        - 5 = dashdot
+        - 6 = dashdotdot
+
+        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
+        """
+        value = self._get_value("OutLineType")
+        return self._outline_type_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
 
     @outline_type.setter
     def outline_type(self, value):
         if value is None:
             return self._del_value("OutLineType")
-        assert value in [0, 1, 2, 3, 4, 5, 6], "값은 0에서 6 사이여야 합니다."
-        return self._set_value("OutLineType", value)
+
+        # 입력값이 숫자인 경우
+        if isinstance(value, int):
+            if value not in self._outline_type_map:
+                valid_options = " | ".join([f"{k} ({v})" for k, v in self._outline_type_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = value  # 그대로 숫자로 저장
+
+        # 입력값이 문자열인 경우
+        elif isinstance(value, str):
+            if value not in self._outline_type_reverse_map:
+                valid_options = " | ".join([f"{v} ({k})" for k, v in self._outline_type_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = self._outline_type_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
+
+        else:
+            raise TypeError("값은 정수(0~6) 또는 문자열(none, solid, dot, thick, dash, dashdot, dashdotdot)이어야 합니다.")
+
+        return self._set_value("OutLineType", numeric_value)
+
+    _shadow_type_map = {
+        0: "none",
+        1: "drop",
+        2: "continuous"
+    }
+
+    _shadow_type_reverse_map = {v: k for k, v in _shadow_type_map.items()}  # 문자열 → 숫자 변환
 
     @property
     def shadow_type(self):
-        """그림자 종류: 0 = none, 1 = drop, 2 = continuous"""
-        return self._get_value("ShadowType")
+        """
+        그림자 종류 (ShadowType):
+        - 0 = none
+        - 1 = drop
+        - 2 = continuous
+
+        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
+        """
+        value = self._get_value("ShadowType")
+        return self._shadow_type_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
 
     @shadow_type.setter
     def shadow_type(self, value):
         if value is None:
             return self._del_value("ShadowType")
-        assert value in [0, 1, 2], "값은 0, 1, 2 중 하나여야 합니다."
-        return self._set_value("ShadowType", value)
+
+        # 입력값이 숫자인 경우
+        if isinstance(value, int):
+            if value not in self._shadow_type_map:
+                valid_options = " | ".join([f"{k} ({v})" for k, v in self._shadow_type_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = value  # 그대로 숫자로 저장
+
+        # 입력값이 문자열인 경우
+        elif isinstance(value, str):
+            if value not in self._shadow_type_reverse_map:
+                valid_options = " | ".join([f"{v} ({k})" for k, v in self._shadow_type_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = self._shadow_type_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
+
+        else:
+            raise TypeError("값은 정수(0~2) 또는 문자열(none, drop, continuous)이어야 합니다.")
+
+        return self._set_value("ShadowType", numeric_value)
+
 
     @property
     def text_color(self):
@@ -1741,53 +1924,175 @@ class CharShape(ParameterSet):
         assert isinstance(value, int), "값은 정수이어야 합니다."
         return self._set_value("StrikeOutColor", value)
 
+    _strikeout_type_map = {
+        0: "none",
+        1: "red single",
+        2: "red double",
+        3: "text single",
+        4: "text double"
+    }
+
+    _strikeout_type_reverse_map = {v: k for k, v in _strikeout_type_map.items()}  # 문자열 → 숫자 변환
+
     @property
     def strikeout_type(self):
-        """취소선 종류: 0 = none, 1 = red single, 2 = red double, 3 = text single, 4 = text double"""
-        return self._get_value("StrikeOutType")
+        """
+        취소선 종류 (StrikeOutType):
+        - 0 = none
+        - 1 = red single
+        - 2 = red double
+        - 3 = text single
+        - 4 = text double
+
+        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
+        """
+        value = self._get_value("StrikeOutType")
+        return self._strikeout_type_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
 
     @strikeout_type.setter
     def strikeout_type(self, value):
         if value is None:
             return self._del_value("StrikeOutType")
-        assert value in [0, 1, 2, 3, 4], "값은 0에서 4 사이여야 합니다."
-        return self._set_value("StrikeOutType", value)
+
+        # 입력값이 숫자인 경우
+        if isinstance(value, int):
+            if value not in self._strikeout_type_map:
+                valid_options = " | ".join([f"{k} ({v})" for k, v in self._strikeout_type_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = value  # 그대로 숫자로 저장
+
+        # 입력값이 문자열인 경우
+        elif isinstance(value, str):
+            if value not in self._strikeout_type_reverse_map:
+                valid_options = " | ".join([f"{v} ({k})" for k, v in self._strikeout_type_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = self._strikeout_type_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
+
+        else:
+            raise TypeError("값은 정수(0~4) 또는 문자열(none, red single, red double, text single, text double)이어야 합니다.")
+
+        return self._set_value("StrikeOutType", numeric_value)
+
+    _diac_sym_mark_map = {
+        0: "none",
+        1: "black circle",
+        2: "empty circle",
+    }
+
+    _diac_sym_mark_reverse_map = {v: k for k, v in _diac_sym_mark_map.items()}  # 문자열 → 숫자 변환
+
 
     @property
     def diac_sym_mark(self):
-        """강조점 종류: 0 = none, 1 = 검정 동그라미, 2 = 속 빈 동그라미"""
-        return self._get_value("DiacSymMark")
+        """강조점 종류: 0 = none, 1 = 검정 동그라미(black circle), 2 = 속 빈 동그라미(empty circle)"""
+        value = self._get_value("DiacSymMark")
+        return self._diac_sym_mark_map.get(value, "unknown")  # 알 수 없는 값이 저장된 경우 대비
 
     @diac_sym_mark.setter
     def diac_sym_mark(self, value):
         if value is None:
             return self._del_value("DiacSymMark")
-        assert value in [0, 1, 2], "값은 0에서 2 사이여야 합니다."
-        return self._set_value("DiacSymMark", value)
+
+        # 입력값이 숫자인 경우
+        if isinstance(value, int):
+            if value not in self._diac_sym_mark_map:
+                valid_options = " | ".join([f"{k} ({v})" for k, v in self._diac_sym_mark_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = value  # 그대로 숫자로 저장
+
+        # 입력값이 문자열인 경우
+        elif isinstance(value, str):
+            if value not in self._diac_sym_mark_map:
+                valid_options = " | ".join([f"{v} ({k})" for k, v in self._diac_sym_mark_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = self._diac_sym_mark_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
+        return self._set_value("DiacSymMark", numeric_value)
+
+    _use_font_space_map = {
+        0: "off",
+        1: "on"
+    }
+
+    _use_font_space_reverse_map = {v: k for k, v in _use_font_space_map.items()}  # 문자열 → 숫자 변환
 
     @property
     def use_font_space(self):
-        """글꼴에 어울리는 빈칸: 0 = off, 1 = on"""
-        return self._get_value("UseFontSpace")
+        """
+        글꼴에 어울리는 빈칸 설정 (UseFontSpace):
+        - 0 = off
+        - 1 = on
+
+        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
+        """
+        value = self._get_value("UseFontSpace")
+        return self._use_font_space_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
 
     @use_font_space.setter
     def use_font_space(self, value):
         if value is None:
             return self._del_value("UseFontSpace")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("UseFontSpace", value)
+
+        # 입력값이 숫자인 경우
+        if isinstance(value, int):
+            if value not in self._use_font_space_map:
+                valid_options = " | ".join([f"{k} ({v})" for k, v in self._use_font_space_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = value  # 그대로 숫자로 저장
+
+        # 입력값이 문자열인 경우
+        elif isinstance(value, str):
+            if value not in self._use_font_space_reverse_map:
+                valid_options = " | ".join([f"{v} ({k})" for k, v in self._use_font_space_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = self._use_font_space_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
+
+        else:
+            raise TypeError("값은 정수(0 또는 1) 또는 문자열(off, on)이어야 합니다.")
+
+        return self._set_value("UseFontSpace", numeric_value)
+
+    _use_kerning_map = {
+        0: "off",
+        1: "on"
+    }
+
+    _use_kerning_reverse_map = {v: k for k, v in _use_kerning_map.items()}  # 문자열 → 숫자 변환
 
     @property
     def use_kerning(self):
-        """커닝: 0 = off, 1 = on"""
-        return self._get_value("UseKerning")
+        """
+        커닝 설정 (UseKerning):
+        - 0 = off
+        - 1 = on
+
+        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
+        """
+        value = self._get_value("UseKerning")
+        return self._use_kerning_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
 
     @use_kerning.setter
     def use_kerning(self, value):
         if value is None:
             return self._del_value("UseKerning")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("UseKerning", value)
+
+        # 입력값이 숫자인 경우
+        if isinstance(value, int):
+            if value not in self._use_kerning_map:
+                valid_options = " | ".join([f"{k} ({v})" for k, v in self._use_kerning_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = value  # 그대로 숫자로 저장
+
+        # 입력값이 문자열인 경우
+        elif isinstance(value, str):
+            if value not in self._use_kerning_reverse_map:
+                valid_options = " | ".join([f"{v} ({k})" for k, v in self._use_kerning_map.items()])
+                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+            numeric_value = self._use_kerning_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
+
+        else:
+            raise TypeError("값은 정수(0 또는 1) 또는 문자열(off, on)이어야 합니다.")
+
+        return self._set_value("UseKerning", numeric_value)
 
     @property
     def height(self):
@@ -4786,7 +5091,7 @@ class ParaShape(ParameterSet):
             'widow_orphan']:
             value = getattr(parashape, key)
             if value:
-                setattr(self.pset, key, value)
+                setattr(self, key, value)
 
     @property
     def left_margin(self):
