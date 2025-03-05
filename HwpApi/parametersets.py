@@ -3,431 +3,300 @@
 # %% auto 0
 __all__ = ['ParameterSet', 'BorderFill', 'Caption', 'BulletShape', 'Cell', 'CharShape', 'CtrlData', 'DrawArcType',
            'DrawCoordInfo', 'DrawCtrlHyperlink', 'DrawEditDetail', 'DrawFillAttr', 'DrawImageAttr',
-           'DrawImageScissoring', 'DrawLayout', 'DrawRectType', 'DrawResize', 'DrawRotate', 'DrawScAction',
-           'DrawShadow', 'DrawShear', 'DrawTextart', 'FindReplace', 'ListProperties', 'NumberingShape', 'ParaShape',
-           'ShapeObject', 'TabDef', 'Table']
+           'DrawImageScissoring', 'DrawLayout', 'DrawLineAttr', 'DrawRectType', 'DrawResize', 'DrawRotate',
+           'DrawScAction', 'DrawShadow', 'DrawShear', 'DrawTextart', 'FindReplace', 'ListProperties', 'NumberingShape',
+           'ParaShape', 'ShapeObject', 'TabDef', 'Table']
 
 # %% ../nbs/02_api/02_parameters.ipynb 4
-from .functions import unit2mili, unit2point, mili2unit, point2unit
+from .functions import unit2mili, unit2point, mili2unit, point2unit, convert_hwp_color_to_hex, convert_to_hwp_color
 
 
 class ParameterSet:
 
     def __init__(self, parameterset):
-        self.is_pset = getattr(parameterset, "SetID", None)
         self._pset = parameterset
+        self._is_pset = hasattr(parameterset, "SetID")
 
     @property
     def parameterset(self):
         return self._pset
 
-    def _get_value(self, value_name):
+    def _get_value(self, name):
         if self.is_pset:
-            return self._pset.Item(value_name)
-        return getattr(self._pset, value_name)
+            return self._pset.Item(name)
+        return getattr(self._pset, name)
     
-    def _set_value(self, value_name, value):
+    def _set_value(self, name, value):
         if self.is_pset:
-             return self._pset.SetItem(value_name, value)
-        return setattr(self._pset, value_name, value)
+             return self._pset.SetItem(name, value)
+        return setattr(self._pset, name, value)
 
-    def _del_value(self, value_name):
+    def _del_value(self, name):
         if self.is_pset:
-            return self._pset.RemoveItem(value_name)
+            return self._pset.RemoveItem(name)
         return False
 
-    def _get_property(self, item_id, value_range=None, value_type=None):
-        value = self._get_value(item_id)
-        if value_type and value is not None:
-            assert isinstance(value, value_type), f"{item_id} 값은 {value_type.__name__}이어야 합니다."
-        if value_range:
-            assert value in value_range, f"{item_id} 값은 {value_range} 중 하나여야 합니다."
+    def _get_property(self, name, value_range=None, value_type=None):
+        value = self._get_value(name)
+        if value is not None:
+            if value_type and not isinstance(value, value_type):
+                raise TypeError(f"{name} 값은 {value_type.__name__}이어야 합니다.")
+            if value_range and value not in value_range:
+                raise ValueError(f"{name} 값은 {value_range} 중 하나여야 합니다.")
         return value
 
-    def _set_property(self, item_id, value, value_range=None, value_type=None):
+    def _set_property(self, name, value, value_range=None, value_type=None):
         if value is None:
-            return self._del_value(item_id)
-        if value_type:
-            assert isinstance(value, value_type), f"{item_id} 값은 {value_type.__name__}이어야 합니다."
-        if value_range:
-            assert value in value_range, f"{item_id} 값은 {value_range} 중 하나여야 합니다."
-        self._set_value(item_id, value)
+            return self._del_value(name)
+        if value_type and not isinstance(value, value_type):
+            raise TypeError(f"{name} 값은 {value_type.__name__}이어야 합니다.")
+        if value_range and value not in value_range:
+            raise ValueError(f"{name} 값은 {value_range} 중 하나여야 합니다.")
+        return self._set_value(name, value)
              
+    @staticmethod
+    def _int_prop(key, doc):
+        def getter(self):
+            return self._get_value(key)
+        def setter(self, value):
+            if value is None:
+                return self._del_value(key)
+            assert isinstance(value, int), "값은 정수이어야 합니다."
+            return self._set_value(key, value)
+        return property(getter, setter, doc=doc)
 
+    @staticmethod
+    def _bool_prop(key, doc):
+        def getter(self):
+            return self._get_value(key)
+        def setter(self, value):
+            if value is None:
+                return self._del_value(key)
+            assert value in [0, 1], "값은 0 또는 1이어야 합니다."
+            return self._set_value(key, value)
+        return property(getter, setter, doc=doc)
+
+    @staticmethod
+    def _color_prop(key, doc):
+        def getter(self):
+            return convert_hwp_color_to_hex(self._get_value(key))
+        def setter(self, value):
+            if value is None:
+                return self._del_value(key)
+            return self._set_value(key, convert_to_hwp_color(value))
+        return property(getter, setter, doc=doc)
+
+    @staticmethod
+    def _typed_prop(key, doc, expected_type):
+        def getter(self):
+            return self._get_value(key)
+        def setter(self, value):
+            if value is None:
+                return self._del_value(key)
+            assert isinstance(value, expected_type), f"값은 {expected_type} 객체이어야 합니다."
+            return self._set_value(key, value)
+        return property(getter, setter, doc=doc)
+    
+    @staticmethod
+    def _enum_prop(key, allowed, doc):
+        def getter(self):
+            return self._get_value(key)
+        def setter(self, value):
+            if value is None:
+                return self._del_value(key)
+            if value not in allowed:
+                raise ValueError(f"값은 {allowed} 중 하나여야 합니다.")
+            return self._set_value(key, value)
+        return property(getter, setter, doc=doc)
+
+    @staticmethod
+    def _unit_prop(key, doc):
+        def getter(self):
+            value = self._get_value(key)
+            return unit2mili(value)
+        def setter(self, value):
+            if value is None:
+                return self._del_value(key)
+            if not isinstance(value, (int, float)):
+                raise TypeError("값은 정수 또는 실수이어야 합니다.")
+            unit_value = mili2unit(float(value))
+            return self._set_value(key, unit_value)
+        return property(getter, setter, doc=doc)
+
+    @staticmethod
+    def _mapped_prop(key, mapping, reverse_mapping, doc):
+        def getter(self):
+            value = self._get_value(key)
+            return mapping.get(value, "unknown")
+        def setter(self, value):
+            if value is None:
+                return self._del_value(key)
+            if isinstance(value, int):
+                if value not in mapping:
+                    valid_options = " | ".join(f"{k} ({v})" for k, v in mapping.items())
+                    raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+                numeric_value = value
+            elif isinstance(value, str):
+                if value not in reverse_mapping:
+                    valid_options = " | ".join(f"{v} ({k})" for k, v in mapping.items())
+                    raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+                numeric_value = reverse_mapping[value]
+            else:
+                raise TypeError("값은 정수(0 또는 1) 또는 문자열(exclude, include)이어야 합니다.")
+            return self._set_value(key, numeric_value)
+        return property(getter, setter, doc=doc)
+
+
+    # --- Local helper functions for CharShape ---
+    @staticmethod
+    def _str_prop(key, doc):
+        def getter(self):
+            return self._get_value(key)
+        def setter(self, value):
+            if value is None:
+                return self._del_value(key)
+            if not isinstance(value, str):
+                raise TypeError("값은 문자열이어야 합니다.")
+            return self._set_value(key, value)
+        return property(getter, setter, doc=doc)
+    
+    @staticmethod
+    def _int_range_prop(key, doc, min_val, max_val):
+        def getter(self):
+            return self._get_value(key)
+        def setter(self, value):
+            if value is None:
+                return self._del_value(key)
+            if not isinstance(value, int):
+                raise TypeError("값은 정수이어야 합니다.")
+            if not (min_val <= value <= max_val):
+                raise ValueError(f"값은 {min_val}에서 {max_val} 사이여야 합니다.")
+            return self._set_value(key, value)
+        return property(getter, setter, doc=doc)
+    
+    @staticmethod
+    def _int_list_prop(key, doc):
+        def getter(self):
+            return self._get_value(key)
+        def setter(self, value):
+            if value is None:
+                return self._del_value(key)
+            if not (isinstance(value, list) and all(isinstance(i, int) for i in value)):
+                raise TypeError("값은 정수 배열이어야 합니다.")
+            return self._set_value(key, value)
+        return property(getter, setter, doc=doc)
+    
+    @staticmethod
+    def _tuple_list_prop(key, doc):
+        def getter(self):
+            return self._get_value(key)
+        def setter(self, value):
+            if value is None:
+                return self._del_value(key)
+            # Ensure value is a list of (X, Y) tuples where both X and Y are integers
+            if not (isinstance(value, list) and 
+                    all(isinstance(item, tuple) and len(item) == 2 and all(isinstance(coord, int) for coord in item)
+                        for item in value)):
+                raise TypeError("값은 (X, Y) 튜플의 리스트이어야 합니다.")
+            return self._set_value(key, value)
+        return property(getter, setter, doc=doc)
+    
+
+    @staticmethod
+    def _gradation_color_prop(key, doc):
+        def getter(self):
+            return self._get_value(key)
+        def setter(self, value):
+            if value is None:
+                return self._del_value(key)
+            if not (isinstance(value, list) and 2 <= len(value) <= 10):
+                raise ValueError("값은 길이가 2에서 10 사이인 리스트여야 합니다.")
+            return self._set_value(key, value)
+        return property(getter, setter, doc=doc)
+    gradation_color = _gradation_color_prop("GradationColor", "그라데이션의 색상 (시작색, 중간색들, 끝색)")
 
 # %% ../nbs/02_api/02_parameters.ipynb 6
 class BorderFill(ParameterSet):
     """
     ### BorderFill
 
-5\) BorderFill : 테두리/배경의 일반 속성
+    5) BorderFill : 테두리/배경의 일반 속성
 
- 
+    | Item ID | Type | SubType | Description |
+    | --- | --- | --- | --- |
+    | BorderTypeLeft | PIT_UI2 |  | 4방향 테두리 종류 : 왼쪽 [선 종류] |
+    | BorderTypeRight | PIT_UI2 |  | 4방향 테두리 종류 : 오른쪽 |
+    | BorderTypeTop | PIT_UI2 |  | 4방향 테두리 종류 : 위 |
+    | BorderTypeBottom | PIT_UI2 |  | 4방향 테두리 종류 : 아래 |
+    | BorderWidthLeft | PIT_UI1 |  | 4방향 테두리 두께 : 왼쪽 [선 굵기] |
+    | BorderWidthRight | PIT_UI1 |  | 4방향 테두리 두께 : 오른쪽 |
+    | BorderWidthTop | PIT_UI1 |  | 4방향 테두리 두께 : 위 |
+    | BorderWidthBottom | PIT_UI1 |  | 4방향 테두리 두께 : 아래 |
+    | BorderColorLeft | PIT_UI4 |  | 4방향 테두리 색깔 : 왼쪽 (RGB color: 0x00BBGGRR) |
+    | BorderColorRight | PIT_UI4 |  | 4방향 테두리 색깔 : 오른쪽 (RGB color: 0x00BBGGRR) |
+    | BorderColorTop | PIT_UI4 |  | 4방향 테두리 색깔 : 위 (RGB color: 0x00BBGGRR) |
+    | BorderColorBottom | PIT_UI4 |  | 4방향 테두리 색깔 : 아래 (정수값 그대로 사용) |
+    | SlashFlag | PIT_UI2 |  | 대각선 플래그 (비트 플래그 조합) |
+    | BackSlashFlag | PIT_UI2 |  | 역대각선 플래그 (비트 플래그 조합) |
+    | DiagonalType | PIT_UI2 |  | 대각선 유형 (셀 또는 자동 분할 경계선에 사용) |
+    | DiagonalWidth | PIT_UI1 |  | 대각선 두께 (셀 또는 자동 분할 경계선에 사용) |
+    | DiagonalColor | PIT_UI4 |  | 대각선 색상 (RGB color: 0x00BBGGRR) |
+    | BorderFill3D | PIT_UI1 |  | 3차원 효과: 0 = off, 1 = on |
+    | Shadow | PIT_UI1 |  | 그림자 효과: 0 = off, 1 = on |
+    | FillAttr | PIT_SET | DrawFillAttr | 배경 채우기 속성 |
+    | CrookedSlashFlag | PIT_UI2 |  | 꺾인 대각선 플래그 (bit 0, 1) |
+    | BreakCellSeparateLine | PIT_UI1 |  | 자동으로 나뉜 표의 경계선 설정: 0 = 기본, 1 = 사용자 설정 |
+    | CounterSlashFlag | PIT_UI1 |  | 슬래쉬 대각선 역방향 플래그: 0 = 순방향, 1 = 역방향 |
+    | CounterBackSlashFlag | PIT_UI1 |  | 역슬래쉬 대각선 역방향 플래그: 0 = 순방향, 1 = 역방향 |
+    | CenterLineFlag | PIT_UI1 |  | 중심선 플래그: 0 = 없음, 1 = 있음 |
+    | CrookedSlashFlag1 | PIT_UI1 |  | 슬래쉬 대각선 꺾임 여부 (저바이트) |
+    | CrookedSlashFlag2 | PIT_UI1 |  | 역슬래쉬 대각선 꺾임 여부 (고바이트) |
 
-
-
-| Item ID | Type | SubType | Description |
-| --- | --- | --- | --- |
-| BorderTypeLeft | PIT\_UI2 |  | 4방향 테두리 종류 : 왼쪽 \[선 종류] |
-| BorderTypeRight | PIT\_UI2 |  | 4방향 테두리 종류 : 오른쪽 |
-| BorderTypeTop | PIT\_UI2 |  | 4방향 테두리 종류 : 위 |
-| BorderTypeBottom | PIT\_UI2 |  | 4방향 테두리 종류 : 아래 |
-| BorderWidthLeft | PIT\_UI1 |  | 4방향 테두리 두께 : 왼쪽 \[선 굵기] |
-| BorderWidthRight | PIT\_UI1 |  | 4방향 테두리 두께 : 오른쪽 |
-| BorderWidthTop | PIT\_UI1 |  | 4방향 테두리 두께 : 위 |
-| BorderWidthBottom | PIT\_UI1 |  | 4방향 테두리 두께 : 아래 |
-| BorderCorlorLeft | PIT\_UI4 |  | 4방향 테두리 색깔 : 왼쪽RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| BorderColorRight | PIT\_UI4 |  | 4방향 테두리 색깔 : 오른쪽RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| BorderColorTop | PIT\_UI4 |  | 4방향 테두리 색깔 : 위RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| BorderColorBottom | PIT\_UI4 |  | 4방향 테두리 색깔 :아래RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| SlashFlag | PIT\_UI2 |  | 슬래쉬 대각선 플래그 : 비트 플래그의 조합으로 표현되며 각 위치의 비트는 다음을 나타낸다.bit 0 \= 하단 대각선bit 1 \= 중앙 대각선bit 2 \= 상단 대각선더 자세한 내용은 하단의 ※ 대각선의 형태를 참고한다. |
-| BackSlashFlag | PIT\_UI2 |  | 백슬래쉬 대각선 플래그 : 비트 플래그의 조합으로 표현되며 각 위치의 비트는 다음을 나타낸다.bit 0 \= 하단 대각선bit 1 \= 중앙 대각선bit 2 \= 상단 대각선더 자세한 내용은 하단의 ※ 대각선의 형태를 참고한다. |
-| DiagonalType | PIT\_UI2 |  | 선 종류 셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용 |
-| DiagonalWidth | PIT\_UI1 |  | 선 굵기 셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용 |
-| DiagonalColor | PIT\_UI4 |  | 선 색상RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용 |
-| BorderFill3D | PIT\_UI1 |  | 3차원 효과 : 0 \= off, 1 \= on |
-| Shadow | PIT\_UI1 |  | 그림자 효과 : 0 \= off, 1 \= on |
-| FillAttr | PIT\_SET | DrawFillAttr | 배경 채우기 속성 |
-| CrookedSlashFlag | PIT\_UI2 |  | 꺾인 대각선 플래그 (bit 0, 1이 각각 slash, back slash의 가운데 대각선이 꺾인 대각선임을 나타낸다.) |
-| BreakCellSeparateLine | PIT\_UI1 |  | 자동으로 나뉜 표의 경계선 설정 :0 \= 경계선 설정을 기본 값에 따름, 1 \= 사용자가 경계선 설정 |
-| CounterSlashFlag | PIT\_UI1 |  | 슬래쉬 대각선의 역방향 플래그(우상향 대각선) :0 \= 순방향, 1 \= 역방향 |
-| CounterBackSlashFlag | PIT\_UI1 |  | 역슬래쉬 대각선의 역방향 플래그(좌상향 대각선) :0 \= 순방향, 1 \= 역방향 |
-| CenterLineFlag | PIT\_UI1 |  | 중심선 : ( 0 \= 중심선 없음, 1 \= 중심선 있음)더 자세한 내용은 하단의 ※ 중심선의 형태를 참고한다. |
-| CrookedSlashFlag1 | PIT\_UI1 |  | Low Byte CrookedSlashFlag (슬래쉬 대각선의 꺾임 여부)(CrookedSlashFlag를 쓰기 편하도록 CrookedSlashFlag1,2로 나눔) |
-| CrookedSlashFlag2 | PIT\_UI1 |  | High Byte CrookedSlashFlag (역슬래쉬 대각선의 꺾임 여부)(CrookedSlashFlag를 쓰기 편하도록 CrookedSlashFlag1,2로 나눔) |
-
-
-※ 대각선의 형태는 다음의 3가지의 아이템을 통해서 결정된다.  
-\- SlashFlag(BackSlashFlag) \-\> 괄호 안은 역슬래쉬의 경우  
-\- CrookedSlashFlag1(CrookedSlashFlag2\)  
-\- CounterSlashFlag(CounterBackSlashFlag)  
-
-
+    ※ 대각선의 형태는 다음의 3가지 아이템으로 결정됩니다:
+      - SlashFlag (또는 BackSlashFlag)
+      - CrookedSlashFlag1 (또는 CrookedSlashFlag2)
+      - CounterSlashFlag (또는 CounterBackSlashFlag)
     """
 
-    @property
-    def border_type_left(self):
-        """테두리 유형 (왼쪽): 정수 값을 입력하세요."""
-        return self._get_value("BorderTypeLeft")
+    # Integer properties
+    border_type_left   = ParameterSet._int_prop("BorderTypeLeft",   "테두리 유형 (왼쪽): 정수 값을 입력하세요.")
+    border_type_right  = ParameterSet._int_prop("BorderTypeRight",  "테두리 유형 (오른쪽): 정수 값을 입력하세요.")
+    border_type_top    = ParameterSet._int_prop("BorderTypeTop",    "테두리 유형 (위): 정수 값을 입력하세요.")
+    border_type_bottom = ParameterSet._int_prop("BorderTypeBottom", "테두리 유형 (아래): 정수 값을 입력하세요.")
 
-    @border_type_left.setter
-    def border_type_left(self, value):
-        if value is None:
-            return self._del_value("BorderTypeLeft")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("BorderTypeLeft", value)
+    border_width_left   = ParameterSet._int_prop("BorderWidthLeft",   "테두리 두께 (왼쪽): 정수 값을 입력하세요.")
+    border_width_right  = ParameterSet._int_prop("BorderWidthRight",  "테두리 두께 (오른쪽): 정수 값을 입력하세요.")
+    border_width_top    = ParameterSet._int_prop("BorderWidthTop",    "테두리 두께 (위): 정수 값을 입력하세요.")
+    border_width_bottom = ParameterSet._int_prop("BorderWidthBottom", "테두리 두께 (아래): 정수 값을 입력하세요.")
 
-    @property
-    def border_type_right(self):
-        """테두리 유형 (오른쪽): 정수 값을 입력하세요."""
-        return self._get_value("BorderTypeRight")
+    # Color properties (with conversion)
+    border_color_left   = ParameterSet._color_prop("BorderColorLeft",  "테두리 색상 (왼쪽): 정수 값을 입력하세요.")
+    border_color_right  = ParameterSet._color_prop("BorderColorRight", "테두리 색상 (오른쪽): 정수 값을 입력하세요.")
+    border_color_top    = ParameterSet._color_prop("BorderColorTop",   "테두리 색상 (위): 정수 값을 입력하세요.")
+    border_color_bottom = ParameterSet._int_prop("BorderColorBottom", "테두리 색상 (아래): 정수 값을 입력하세요.")
 
-    @border_type_right.setter
-    def border_type_right(self, value):
-        if value is None:
-            return self._del_value("BorderTypeRight")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("BorderTypeRight", value)
+    # 대각선 색상 (setter now completes properly)
+    diagonal_color      = ParameterSet._int_prop("DiagonalColor",    "대각선 색상: 정수 값을 입력하세요.")
 
-    @property
-    def border_type_top(self):
-        """테두리 유형 (위): 정수 값을 입력하세요."""
-        return self._get_value("BorderTypeTop")
+    # Other integer properties
+    slash_flag          = ParameterSet._int_prop("SlashFlag",        "대각선 플래그: 정수 값을 입력하세요.")
+    backslash_flag      = ParameterSet._int_prop("BackSlashFlag",    "역대각선 플래그: 정수 값을 입력하세요.")
+    diagonal_type       = ParameterSet._int_prop("DiagonalType",     "대각선 유형: 정수 값을 입력하세요.")
+    diagonal_width      = ParameterSet._int_prop("DiagonalWidth",    "대각선 두께: 정수 값을 입력하세요.")
+    crooked_slash_flag  = ParameterSet._int_prop("CrookedSlashFlag", "꺾인 대각선 플래그 (bit 0, 1): 정수 값을 입력하세요.")
 
-    @border_type_top.setter
-    def border_type_top(self, value):
-        if value is None:
-            return self._del_value("BorderTypeTop")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("BorderTypeTop", value)
+    # Boolean properties
+    border_fill_3d         = ParameterSet._bool_prop("BorderFill3D",         "3차원 효과: 0 = off, 1 = on")
+    shadow                 = ParameterSet._bool_prop("Shadow",               "그림자 효과: 0 = off, 1 = on")
+    break_cell_separate_line = ParameterSet._bool_prop("BreakCellSeparateLine", "자동으로 나뉜 표의 경계선 설정: 0 = 기본, 1 = 사용자 설정")
+    counter_slash_flag     = ParameterSet._bool_prop("CounterSlashFlag",     "슬래쉬 대각선의 역방향 플래그: 0 = 순방향, 1 = 역방향")
+    counter_back_slash_flag = ParameterSet._bool_prop("CounterBackSlashFlag", "역슬래쉬 대각선의 역방향 플래그: 0 = 순방향, 1 = 역방향")
+    center_line_flag       = ParameterSet._bool_prop("CenterLineFlag",       "중심선 플래그: 0 = 없음, 1 = 있음")
+    crooked_slash_flag1    = ParameterSet._bool_prop("CrookedSlashFlag1",    "슬래쉬 대각선의 꺾임 여부 (저바이트): 0 = 아니오, 1 = 예")
+    crooked_slash_flag2    = ParameterSet._bool_prop("CrookedSlashFlag2",    "역슬래쉬 대각선의 꺾임 여부 (고바이트): 0 = 아니오, 1 = 예")
 
-    @property
-    def border_type_bottom(self):
-        """테두리 유형 (아래): 정수 값을 입력하세요."""
-        return self._get_value("BorderTypeBottom")
-
-    @border_type_bottom.setter
-    def border_type_bottom(self, value):
-        if value is None:
-            return self._del_value("BorderTypeBottom")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("BorderTypeBottom", value)
-
-    @property
-    def border_width_left(self):
-        """테두리 두께 (왼쪽): 정수 값을 입력하세요."""
-        return self._get_value("BorderWidthLeft")
-
-    @border_width_left.setter
-    def border_width_left(self, value):
-        if value is None:
-            return self._del_value("BorderWidthLeft")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("BorderWidthLeft", value)
-
-    @property
-    def border_width_right(self):
-        """테두리 두께 (오른쪽): 정수 값을 입력하세요."""
-        return self._get_value("BorderWidthRight")
-
-    @border_width_right.setter
-    def border_width_right(self, value):
-        if value is None:
-            return self._del_value("BorderWidthRight")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("BorderWidthRight", value)
-
-    @property
-    def border_width_top(self):
-        """테두리 두께 (위): 정수 값을 입력하세요."""
-        return self._get_value("BorderWidthTop")
-
-    @border_width_top.setter
-    def border_width_top(self, value):
-        if value is None:
-            return self._del_value("BorderWidthTop")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("BorderWidthTop", value)
-
-    @property
-    def border_width_bottom(self):
-        """테두리 두께 (아래): 정수 값을 입력하세요."""
-        return self._get_value("BorderWidthBottom")
-
-    @border_width_bottom.setter
-    def border_width_bottom(self, value):
-        if value is None:
-            return self._del_value("BorderWidthBottom")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("BorderWidthBottom", value)
-
-    @property
-    def border_color_left(self):
-        """테두리 색상 (왼쪽): 정수 값을 입력하세요."""
-        return self._get_value("BorderColorLeft")
-
-    @border_color_left.setter
-    def border_color_left(self, value):
-        if value is None:
-            return self._del_value("BorderColorLeft")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("BorderColorLeft", value)
-
-    @property
-    def border_color_right(self):
-        """테두리 색상 (오른쪽): 정수 값을 입력하세요."""
-        return self._get_value("BorderColorRight")
-
-    @border_color_right.setter
-    def border_color_right(self, value):
-        if value is None:
-            return self._del_value("BorderColorRight")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("BorderColorRight", value)
-
-    @property
-    def border_color_top(self):
-        """테두리 색상 (위): 정수 값을 입력하세요."""
-        return self._get_value("BorderColorTop")
-
-    @border_color_top.setter
-    def border_color_top(self, value):
-        if value is None:
-            return self._del_value("BorderColorTop")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("BorderColorTop", value)
-
-    @property
-    def border_color_bottom(self):
-        """테두리 색상 (아래): 정수 값을 입력하세요."""
-        return self._get_value("BorderColorBottom")
-
-    @border_color_bottom.setter
-    def border_color_bottom(self, value):
-        if value is None:
-            return self._del_value("BorderColorBottom")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("BorderColorBottom", value)
-
-    @property
-    def slash_flag(self):
-        """대각선 플래그: 정수 값을 입력하세요."""
-        return self._get_value("SlashFlag")
-
-    @slash_flag.setter
-    def slash_flag(self, value):
-        if value is None:
-            return self._del_value("SlashFlag")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("SlashFlag", value)
-
-    @property
-    def backslash_flag(self):
-        """역대각선 플래그: 정수 값을 입력하세요."""
-        return self._get_value("BackSlashFlag")
-
-    @backslash_flag.setter
-    def backslash_flag(self, value):
-        if value is None:
-            return self._del_value("BackSlashFlag")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("BackSlashFlag", value)
-
-    @property
-    def diagonal_type(self):
-        """대각선 유형: 정수 값을 입력하세요."""
-        return self._get_value("DiagonalType")
-
-    @diagonal_type.setter
-    def diagonal_type(self, value):
-        if value is None:
-            return self._del_value("DiagonalType")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("DiagonalType", value)
-
-    @property
-    def diagonal_width(self):
-        """대각선 두께: 정수 값을 입력하세요."""
-        return self._get_value("DiagonalWidth")
-
-    @diagonal_width.setter
-    def diagonal_width(self, value):
-        if value is None:
-            return self._del_value("DiagonalWidth")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("DiagonalWidth", value)
-
-    @property
-    def diagonal_color(self):
-        """대각선 색상: 정수 값을 입력하세요."""
-        return self._get_value("DiagonalColor")
-
-    @diagonal_color.setter
-    def diagonal_color(self, value):
-        if value is None:
-            return self._del_value("DiagonalColor")
-        
-    @property
-    def border_fill_3d(self):
-        """3차원 효과: 0 = off, 1 = on"""
-        return self._get_value("BorderFill3D")
-
-    @border_fill_3d.setter
-    def border_fill_3d(self, value):
-        if value is None:
-            return self._del_value("BorderFill3D")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("BorderFill3D", value)
-
-    @property
-    def shadow(self):
-        """그림자 효과: 0 = off, 1 = on"""
-        return self._get_value("Shadow")
-
-    @shadow.setter
-    def shadow(self, value):
-        if value is None:
-            return self._del_value("Shadow")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("Shadow", value)
-
-    @property
-    def fill_attr(self):
-        """배경 채우기 속성"""
-        return self._get_value("FillAttr")
-
-    @fill_attr.setter
-    def fill_attr(self, value):
-        if value is None:
-            return self._del_value("FillAttr")
-        # Assuming `DrawFillAttr` is a class or set object
-        assert isinstance(value, DrawFillAttr), "값은 DrawFillAttr 객체이어야 합니다."
-        return self._set_value("FillAttr", value)
-
-    @property
-    def crooked_slash_flag(self):
-        """꺾인 대각선 플래그 (bit 0, 1)"""
-        return self._get_value("CrookedSlashFlag")
-
-    @crooked_slash_flag.setter
-    def crooked_slash_flag(self, value):
-        if value is None:
-            return self._del_value("CrookedSlashFlag")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("CrookedSlashFlag", value)
-
-    @property
-    def break_cell_separate_line(self):
-        """자동으로 나뉜 표의 경계선 설정: 0 = 기본 값, 1 = 사용자 설정"""
-        return self._get_value("BreakCellSeparateLine")
-
-    @break_cell_separate_line.setter
-    def break_cell_separate_line(self, value):
-        if value is None:
-            return self._del_value("BreakCellSeparateLine")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("BreakCellSeparateLine", value)
-
-    @property
-    def counter_slash_flag(self):
-        """슬래쉬 대각선의 역방향 플래그: 0 = 순방향, 1 = 역방향"""
-        return self._get_value("CounterSlashFlag")
-
-    @counter_slash_flag.setter
-    def counter_slash_flag(self, value):
-        if value is None:
-            return self._del_value("CounterSlashFlag")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("CounterSlashFlag", value)
-
-    @property
-    def counter_back_slash_flag(self):
-        """역슬래쉬 대각선의 역방향 플래그: 0 = 순방향, 1 = 역방향"""
-        return self._get_value("CounterBackSlashFlag")
-
-    @counter_back_slash_flag.setter
-    def counter_back_slash_flag(self, value):
-        if value is None:
-            return self._del_value("CounterBackSlashFlag")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("CounterBackSlashFlag", value)
-
-    @property
-    def center_line_flag(self):
-        """중심선 플래그: 0 = 없음, 1 = 있음"""
-        return self._get_value("CenterLineFlag")
-
-    @center_line_flag.setter
-    def center_line_flag(self, value):
-        if value is None:
-            return self._del_value("CenterLineFlag")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("CenterLineFlag", value)
-
-    @property
-    def crooked_slash_flag1(self):
-        """슬래쉬 대각선의 꺾임 여부 (저바이트)"""
-        return self._get_value("CrookedSlashFlag1")
-
-    @crooked_slash_flag1.setter
-    def crooked_slash_flag1(self, value):
-        if value is None:
-            return self._del_value("CrookedSlashFlag1")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("CrookedSlashFlag1", value)
-
-    @property
-    def crooked_slash_flag2(self):
-        """역슬래쉬 대각선의 꺾임 여부 (고바이트)"""
-        return self._get_value("CrookedSlashFlag2")
-
-    @crooked_slash_flag2.setter
-    def crooked_slash_flag2(self, value):
-        if value is None:
-            return self._del_value("CrookedSlashFlag2")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("CrookedSlashFlag2", value)
-
+    # Typed property for fill attribute
+    fill_attr             = ParameterSet._typed_prop("FillAttr", "배경 채우기 속성", DrawFillAttr)
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 8
@@ -445,89 +314,27 @@ class Caption(ParameterSet):
     | CapFullSize   | PIT_UI1 |         | 캡션 폭에 여백을 포함할지 여부 (0 = 포함 안 함, 1 = 포함함)              |
     """
 
-    @property
-    def side(self):
-        """방향: 0 = 왼쪽, 1 = 오른쪽, 2 = 위, 3 = 아래"""
-        return self._get_value("Side")
+    # 'side' must be one of the allowed values
+    side = ParameterSet._enum_prop(
+        "Side",
+        allowed=[0, 1, 2, 3],
+        doc="방향: 0 = 왼쪽, 1 = 오른쪽, 2 = 위, 3 = 아래"
+    )
 
-    @side.setter
-    def side(self, value):
-        if value is None:
-            return self._del_value("Side")
-        assert value in [0, 1, 2, 3], "값은 0, 1, 2, 3 중 하나여야 합니다."
-        self._set_value("Side", value)
+    # 'width' and 'gap' are stored in HWPUNIT; convert to/from mili
+    width = ParameterSet._unit_prop("Width", doc="캡션 폭 (단위: HWPUNIT)")
+    gap   = ParameterSet._unit_prop("Gap",   doc="캡션과의 간격 (단위: HWPUNIT)")
 
-    @property
-    def width(self):
-        """캡션 폭 (단위: HWPUNIT)"""
-        value = self._get_value("Width")
-        return unit2mili(value)
+    # Mapping for 'cap_full_size': 0 means 'exclude', 1 means 'include'
+    _cap_full_size_map = {0: "exclude", 1: "include"}
+    _cap_full_size_reverse_map = {v: k for k, v in _cap_full_size_map.items()}
+    cap_full_size = ParameterSet._mapped_prop(
+        "CapFullSize",
+        mapping=_cap_full_size_map,
+        reverse_mapping=_cap_full_size_reverse_map,
+        doc="캡션 폭에 여백 포함 여부 (CapFullSize): 0 = exclude, 1 = include"
+    )
 
-    @width.setter
-    def width(self, value):
-        if value is None:
-            return self._del_value("Width")
-        assert isinstance(value, (int, float)), "값은 정수 또는 실수이어야 합니다."
-        unit_value = mili2unit(float(value))  # 정수도 변환 가능하도록 float(value) 사용
-        self._set_value("Width", unit_value)
-
-    @property
-    def gap(self):
-        """캡션과의 간격 (단위: HWPUNIT)"""
-        value = self._get_value("Gap")
-        return unit2mili(value)  # HWPUNIT 값을 밀리미터 단위로 변환하여 반환
-
-    @gap.setter
-    def gap(self, value):
-        if value is None:
-            return self._del_value("Gap")
-        assert isinstance(value, (int, float)), "값은 정수 또는 실수이어야 합니다."
-        unit_value = mili2unit(value)  # 밀리미터 단위를 HWPUNIT으로 변환
-        self._set_value("Gap", unit_value)
-
-
-    _cap_full_size_map = {
-        0: "exclude",
-        1: "include"
-    }
-
-    _cap_full_size_reverse_map = {v: k for k, v in _cap_full_size_map.items()}  # 문자열 → 숫자 변환
-
-    @property
-    def cap_full_size(self):
-        """
-        캡션 폭에 여백 포함 여부 (CapFullSize):
-        - 0 = exclude (포함 안 함)
-        - 1 = include (포함함)
-
-        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
-        """
-        value = self._get_value("CapFullSize")
-        return self._cap_full_size_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
-
-    @cap_full_size.setter
-    def cap_full_size(self, value):
-        if value is None:
-            return self._del_value("CapFullSize")
-
-        # 입력값이 숫자인 경우
-        if isinstance(value, int):
-            if value not in self._cap_full_size_map:
-                valid_options = " | ".join([f"{k} ({v})" for k, v in self._cap_full_size_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = value  # 그대로 숫자로 저장
-
-        # 입력값이 문자열인 경우
-        elif isinstance(value, str):
-            if value not in self._cap_full_size_reverse_map:
-                valid_options = " | ".join([f"{v} ({k})" for k, v in self._cap_full_size_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = self._cap_full_size_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
-
-        else:
-            raise TypeError("값은 정수(0 또는 1) 또는 문자열(exclude, include)이어야 합니다.")
-
-        return self._set_value("CapFullSize", numeric_value)
 
 # %% ../nbs/02_api/02_parameters.ipynb 10
 class BulletShape(ParameterSet):
@@ -536,150 +343,31 @@ class BulletShape(ParameterSet):
 
     | Item ID        | Type     | SubType        | Description |
     |----------------|----------|----------------|-------------|
-    | HasCharShape  | PIT_UI1  |                | 글자 모양 사용 여부: 0 = 기본, 1 = 사용자 정의 |
-    | CharShape     | PIT_SET  | CharShape      | 글자 모양 (HasCharShape가 1일 경우 사용) |
-    | WidthAdjust   | PIT_I    |                | 글자 크기 보정 값 (HWPUNIT) |
-    | TextOffset    | PIT_I    |                | 텍스트 오프셋 (percent or HWPUNIT) |
-    | Alignment     | PIT_UI1  |                | 정렬 방식: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽 |
-    | UseInstWidth  | PIT_UI1  |                | 인스턴스 폭 사용 여부 (on/off) |
-    | AutoIndent    | PIT_UI1  |                | 자동 들여쓰기 (on/off) |
-    | TextOffsetType| PIT_UI1  |                | 텍스트 오프셋 타입: 0 = percent, 1 = HWPUNIT |
-    | BulletChar    | PIT_UI2  |                | 글머리 기호 문자 |
-    | HasImage      | PIT_UI1  |                | 이미지 글머리 기호 여부: 0 = 없음, 1 = 있음 |
-    | BulletImage   | PIT_SET  | DrawImageAttr  | 글머리 기호 이미지 |
+    | HasCharShape   | PIT_UI1  |                | 글자 모양 사용 여부: 0 = 기본, 1 = 사용자 정의 |
+    | CharShape      | PIT_SET  | CharShape      | 글자 모양 (HasCharShape가 1일 경우 사용) |
+    | WidthAdjust    | PIT_I    |                | 글자 크기 보정 값 (HWPUNIT) |
+    | TextOffset     | PIT_I    |                | 텍스트 오프셋 (percent or HWPUNIT) |
+    | Alignment      | PIT_UI1  |                | 정렬 방식: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽 |
+    | UseInstWidth   | PIT_UI1  |                | 인스턴스 폭 사용 여부 (on/off) |
+    | AutoIndent     | PIT_UI1  |                | 자동 들여쓰기 (on/off) |
+    | TextOffsetType | PIT_UI1  |                | 텍스트 오프셋 타입: 0 = percent, 1 = HWPUNIT |
+    | BulletChar     | PIT_UI2  |                | 글머리 기호 문자 |
+    | HasImage       | PIT_UI1  |                | 이미지 글머리 기호 여부: 0 = 없음, 1 = 있음 |
+    | BulletImage    | PIT_SET  | DrawImageAttr  | 글머리 기호 이미지 |
     """
 
-    @property
-    def has_char_shape(self):
-        """글자 모양 사용 여부"""
-        return self._get_value("HasCharShape")
-
-    @has_char_shape.setter
-    def has_char_shape(self, value):
-        if value is None:
-            return self._del_value("HasCharShape")
-        assert value in [0, 1], "값은 0 (기본) 또는 1 (사용자 정의)이어야 합니다."
-        return self._set_value("HasCharShape", value)
-
-    @property
-    def char_shape(self):
-        """글자 모양"""
-        return self._get_value("CharShape")
-
-    @char_shape.setter
-    def char_shape(self, value):
-        if value is None:
-            return self._del_value("CharShape")
-        assert isinstance(value, CharShape), "값은 CharShape 객체여야 합니다."
-        return self._set_value("CharShape", value)
-
-    @property
-    def width_adjust(self):
-        """글자 크기 보정 값"""
-        return self._get_value("WidthAdjust")
-
-    @width_adjust.setter
-    def width_adjust(self, value):
-        if value is None:
-            return self._del_value("WidthAdjust")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("WidthAdjust", value)
-
-    @property
-    def text_offset(self):
-        """텍스트 오프셋"""
-        return self._get_value("TextOffset")
-
-    @text_offset.setter
-    def text_offset(self, value):
-        if value is None:
-            return self._del_value("TextOffset")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("TextOffset", value)
-
-    @property
-    def alignment(self):
-        """정렬 방식"""
-        return self._get_value("Alignment")
-
-    @alignment.setter
-    def alignment(self, value):
-        if value is None:
-            return self._del_value("Alignment")
-        assert value in [0, 1, 2], "값은 0 (왼쪽), 1 (가운데), 2 (오른쪽) 중 하나여야 합니다."
-        return self._set_value("Alignment", value)
-
-    @property
-    def use_inst_width(self):
-        """인스턴스 폭 사용 여부"""
-        return self._get_value("UseInstWidth")
-
-    @use_inst_width.setter
-    def use_inst_width(self, value):
-        if value is None:
-            return self._del_value("UseInstWidth")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("UseInstWidth", value)
-
-    @property
-    def auto_indent(self):
-        """자동 들여쓰기"""
-        return self._get_value("AutoIndent")
-
-    @auto_indent.setter
-    def auto_indent(self, value):
-        if value is None:
-            return self._del_value("AutoIndent")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("AutoIndent", value)
-
-    @property
-    def text_offset_type(self):
-        """텍스트 오프셋 타입"""
-        return self._get_value("TextOffsetType")
-
-    @text_offset_type.setter
-    def text_offset_type(self, value):
-        if value is None:
-            return self._del_value("TextOffsetType")
-        assert value in [0, 1], "값은 0 (percent) 또는 1 (HWPUNIT)이어야 합니다."
-        return self._set_value("TextOffsetType", value)
-
-    @property
-    def bullet_char(self):
-        """글머리 기호 문자"""
-        return self._get_value("BulletChar")
-
-    @bullet_char.setter
-    def bullet_char(self, value):
-        if value is None:
-            return self._del_value("BulletChar")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("BulletChar", value)
-
-    @property
-    def has_image(self):
-        """이미지 글머리 기호 여부"""
-        return self._get_value("HasImage")
-
-    @has_image.setter
-    def has_image(self, value):
-        if value is None:
-            return self._del_value("HasImage")
-        assert value in [0, 1], "값은 0 (없음) 또는 1 (있음)이어야 합니다."
-        return self._set_value("HasImage", value)
-
-    @property
-    def bullet_image(self):
-        """글머리 기호 이미지"""
-        return self._get_value("BulletImage")
-
-    @bullet_image.setter
-    def bullet_image(self, value):
-        if value is None:
-            return self._del_value("BulletImage")
-        assert isinstance(value, DrawImageAttr), "값은 DrawImageAttr 객체여야 합니다."
-        return self._set_value("BulletImage", value)
+    has_char_shape   = ParameterSet._bool_prop("HasCharShape", "글자 모양 사용 여부: 0 = 기본, 1 = 사용자 정의")
+    char_shape       = ParameterSet._typed_prop("CharShape", "글자 모양", CharShape)
+    width_adjust     = ParameterSet._int_prop("WidthAdjust", "글자 크기 보정 값 (HWPUNIT)")
+    text_offset      = ParameterSet._int_prop("TextOffset", "텍스트 오프셋 (percent or HWPUNIT)")
+    alignment        = ParameterSet._enum_prop("Alignment", allowed=[0, 1, 2],
+                                                 doc="정렬 방식: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
+    use_inst_width   = ParameterSet._bool_prop("UseInstWidth", "인스턴스 폭 사용 여부 (on/off)")
+    auto_indent      = ParameterSet._bool_prop("AutoIndent", "자동 들여쓰기 (on/off)")
+    text_offset_type = ParameterSet._bool_prop("TextOffsetType", "텍스트 오프셋 타입: 0 = percent, 1 = HWPUNIT")
+    bullet_char      = ParameterSet._int_prop("BulletChar", "글머리 기호 문자")
+    has_image        = ParameterSet._bool_prop("HasImage", "이미지 글머리 기호 여부: 0 = 없음, 1 = 있음")
+    bullet_image     = ParameterSet._typed_prop("BulletImage", "글머리 기호 이미지", DrawImageAttr)
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 12
@@ -689,1435 +377,388 @@ class Cell(ParameterSet):
 
     10) Cell : 셀 속성 정의
 
-    | Item ID          | Type      | SubType   | Description |
-    |------------------|-----------|-----------|-------------|
-    | HasMargin        | PIT_UI1   |           | 셀 여백 여부 (on / off) |
-    | Protected        | PIT_UI1   |           | 보호 설정 여부: 0 = off, 1 = on |
-    | Header           | PIT_UI1   |           | 헤더 여부: 0 = off, 1 = on |
-    | Width            | PIT_I4    |           | 셀의 너비 (HWPUNIT) |
-    | Height           | PIT_I4    |           | 셀의 높이 (HWPUNIT) |
-    | Editable         | PIT_UI1   |           | 편집 가능 여부: 0 = off, 1 = on |
-    | Dirty            | PIT_UI1   |           | 변경 여부: 0 = off, 1 = on |
-    | CellCtrlData     | PIT_SET   | CtrlData  | 셀 제어 데이터 |
+    | Item ID      | Type     | SubType   | Description                   |
+    |--------------|----------|-----------|-------------------------------|
+    | HasMargin    | PIT_UI1  |           | 셀 여백 여부 (on / off)       |
+    | Protected    | PIT_UI1  |           | 보호 설정 여부: 0 = off, 1 = on|
+    | Header       | PIT_UI1  |           | 헤더 여부: 0 = off, 1 = on     |
+    | Width        | PIT_I4   |           | 셀의 너비 (HWPUNIT)           |
+    | Height       | PIT_I4   |           | 셀의 높이 (HWPUNIT)           |
+    | Editable     | PIT_UI1  |           | 편집 가능 여부: 0 = off, 1 = on|
+    | Dirty        | PIT_UI1  |           | 변경 여부: 0 = off, 1 = on     |
+    | CellCtrlData | PIT_SET  | CtrlData  | 셀 제어 데이터               |
     """
 
-    @property
-    def has_margin(self):
-        """셀 여백 여부 (on / off): 0 또는 1."""
-        return self._get_value("HasMargin")
+    has_margin    = ParameterSet._bool_prop("HasMargin",    "셀 여백 여부 (on / off): 0 또는 1.")
+    protected     = ParameterSet._bool_prop("Protected",    "보호 설정 여부: 0 = off, 1 = on.")
+    header        = ParameterSet._bool_prop("Header",       "헤더 여부: 0 = off, 1 = on.")
+    width         = ParameterSet._int_prop("Width",        "셀의 너비 (HWPUNIT).")
+    height        = ParameterSet._int_prop("Height",       "셀의 높이 (HWPUNIT).")
+    editable      = ParameterSet._bool_prop("Editable",     "편집 가능 여부: 0 = off, 1 = on.")
+    dirty         = ParameterSet._bool_prop("Dirty",        "변경 여부: 0 = off, 1 = on.")
+    cell_ctrl_data = ParameterSet._typed_prop("CellCtrlData", "셀 제어 데이터", CtrlData)
 
-    @has_margin.setter
-    def has_margin(self, value):
-        if value is None:
-            return self._del_value("HasMargin")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        self._set_value("HasMargin", value)
-
-    @property
-    def protected(self):
-        """보호 설정 여부: 0 = off, 1 = on."""
-        return self._get_value("Protected")
-
-    @protected.setter
-    def protected(self, value):
-        if value is None:
-            return self._del_value("Protected")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        self._set_value("Protected", value)
-
-    @property
-    def header(self):
-        """헤더 여부: 0 = off, 1 = on."""
-        return self._get_value("Header")
-
-    @header.setter
-    def header(self, value):
-        if value is None:
-            return self._del_value("Header")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        self._set_value("Header", value)
-
-    @property
-    def width(self):
-        """셀의 너비 (HWPUNIT)."""
-        return self._get_value("Width")
-
-    @width.setter
-    def width(self, value):
-        if value is None:
-            return self._del_value("Width")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("Width", value)
-
-    @property
-    def height(self):
-        """셀의 높이 (HWPUNIT)."""
-        return self._get_value("Height")
-
-    @height.setter
-    def height(self, value):
-        if value is None:
-            return self._del_value("Height")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("Height", value)
-
-    @property
-    def editable(self):
-        """편집 가능 여부: 0 = off, 1 = on."""
-        return self._get_value("Editable")
-
-    @editable.setter
-    def editable(self, value):
-        if value is None:
-            return self._del_value("Editable")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        self._set_value("Editable", value)
-
-    @property
-    def dirty(self):
-        """변경 여부: 0 = off, 1 = on."""
-        return self._get_value("Dirty")
-
-    @dirty.setter
-    def dirty(self, value):
-        if value is None:
-            return self._del_value("Dirty")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        self._set_value("Dirty", value)
-
-    @property
-    def cell_ctrl_data(self):
-        """셀 제어 데이터."""
-        return self._get_value("CellCtrlData")
-
-    @cell_ctrl_data.setter
-    def cell_ctrl_data(self, value):
-        if value is None:
-            return self._del_value("CellCtrlData")
-        # Assuming `CtrlData` is a predefined class or set
-        assert isinstance(value, CtrlData), "값은 CtrlData 객체이어야 합니다."
-        self._set_value("CellCtrlData", value)
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 14
 class CharShape(ParameterSet):
     """
-  ### CharShape
+    ### CharShape
 
-13\) CharShape : 글자 모양
+    13) CharShape : 글자 모양
 
-| Item ID | Type | SubType | Description |
-| --- | --- | --- | --- |
-| FaceNameHangul | PIT\_BSTR |  | 글꼴 이름 (한글) |
-| FaceNameLatin | PIT\_BSTR |  | 글꼴 이름 (영문) |
-| FaceNameHanja | PIT\_BSTR |  | 글꼴 이름 (한자) |
-| FaceNameJapanese | PIT\_BSTR |  | 글꼴 이름 (일본어) |
-| FaceNameOther | PIT\_BSTR |  | 글꼴 이름 (기타) |
-| FaceNameSymbol | PIT\_BSTR |  | 글꼴 이름 (심벌) |
-| FaceNameUser | PIT\_BSTR |  | 글꼴 이름 (사용자) |
-| FontTypeHangul | PIT\_UI1 |  | 폰트 종류 (한글) : 0 \= don't care, 1 \= TTF, 2 \= HFT |
-| FontTypeLatin | PIT\_UI1 |  | 폰트 종류 (영문) : 0 \= don't care, 1 \= TTF, 2 \= HFT |
-| FontTypeHanja | PIT\_UI1 |  | 폰트 종류 (한자) : 0 \= don't care, 1 \= TTF, 2 \= HFT |
-| FontTypeJapanese | PIT\_UI1 |  | 폰트 종류 (일본어) : 0 \= don't care, 1 \= TTF, 2 \= HFT |
-| FontTypeOther | PIT\_UI1 |  | 폰트 종류 (기타) : 0 \= don't care, 1 \= TTF, 2 \= HFT |
-| FontTypeSymbol | PIT\_UI1 |  | 폰트 종류 (심벌) : 0 \= don't care, 1 \= TTF, 2 \= HFT |
-| FontTypeUser | PIT\_UI1 |  | 폰트 종류 (사용자) : 0 \= don't care, 1 \= TTF, 2 \= HFT |
-| SizeHangul | PIT\_UI1 |  | 각 언어별 크기 비율. (한글) 10% \- 250% |
-| SizeLatin | PIT\_UI1 |  | 각 언어별 크기 비율. (영문) 10% \- 250% |
-| SizeHanja | PIT\_UI1 |  | 각 언어별 크기 비율. (한자) 10% \- 250% |
-| SizeJapanese | PIT\_UI1 |  | 각 언어별 크기 비율. (일본어) 10% \- 250% |
-| SizeOther | PIT\_UI1 |  | 각 언어별 크기 비율. (기타) 10% \- 250% |
-| SizeSymbol | PIT\_UI1 |  | 각 언어별 크기 비율. (심벌) 10% \- 250% |
-| SizeUser | PIT\_UI1 |  | 각 언어별 크기 비율. (사용자) 10% \- 250% |
-| RatioHangul | PIT\_UI1 |  | 각 언어별 장평 비율. (한글) 50% \- 200% |
-| RatioLatin | PIT\_UI1 |  | 각 언어별 장평 비율. (영문) 50% \- 200% |
-| RatioHanja | PIT\_UI1 |  | 각 언어별 장평 비율. (한자) 50% \- 200% |
-| RatioJapanese | PIT\_UI1 |  | 각 언어별 장평 비율. (일본어) 50% \- 200% |
-| RatioOther | PIT\_UI1 |  | 각 언어별 장평 비율. (기타) 50% \- 200% |
-| RatioSymbol | PIT\_UI1 |  | 각 언어별 장평 비율. (심벌) 50% \- 200% |
-| RatioUser | PIT\_UI1 |  | 각 언어별 장평 비율. (사용자) 50% \- 200% |
-| SpacingHangul | PIT\_I1 |  | 각 언어별 자간. (한글) \-50% \- 50% |
-| SpacingLatin | PIT\_I1 |  | 각 언어별 자간. (영문) \-50% \- 50% |
-| SpacingHanja | PIT\_I1 |  | 각 언어별 자간. (한자) \-50% \- 50% |
-| SpacingJapanese | PIT\_I1 |  | 각 언어별 자간. (일본어) \-50% \- 50% |
-| SpacingOther | PIT\_I1 |  | 각 언어별 자간. (기타) \-50% \- 50% |
-| SpacingSymbol | PIT\_I1 |  | 각 언어별 자간. (심벌) \-50% \- 50% |
-| SpacingUser | PIT\_I1 |  | 각 언어별 자간. (사용자) \-50% \- 50% |
-| OffsetHangul | PIT\_I1 |  | 각 언어별 오프셋. (한글) \-100% \- 100% |
-| OffsetLatin | PIT\_I1 |  | 각 언어별 오프셋. (영문) \-100% \- 100% |
-| OffsetHanja | PIT\_I1 |  | 각 언어별 오프셋. (한자) \-100% \- 100% |
-| OffsetJapanese | PIT\_I1 |  | 각 언어별 오프셋. (일본어) \-100% \- 100% |
-| OffsetOther | PIT\_I1 |  | 각 언어별 오프셋. (기타) \-100% \- 100% |
-| OffsetSymbol | PIT\_I1 |  | 각 언어별 오프셋. (심벌) \-100% \- 100% |
-| OffsetUser | PIT\_I1 |  | 각 언어별 오프셋. (사용자) \-100% \- 100% |
-| Bold | PIT\_UI1 |  | Bold : 0 \= off, 1 \= on |
-| Italic | PIT\_UI1 |  | Italic : 0 \= off, 1 \= on |
-| SmallCaps | PIT\_UI1 |  | Small Caps : 0 \= off, 1 \= on |
-| Emboss | PIT\_UI1 |  | Emboss : 0 \= off, 1 \= on |
-| Engrave | PIT\_UI1 |  | Engrave : 0 \= off, 1 \= on |
-| SuperScript | PIT\_UI1 |  | Superscript : 0 \= off, 1 \= on |
-| SubScript | PIT\_UI1 |  | Subscript : 0 \= off, 1 \= on |
-| UnderlineType | PIT\_UI1 |  | 밑줄 종류 :  0 \= none, 1 \= bottom, 2 \= center, 3 \= top |
-| OutlineType | PIT\_UI1 |  | 외곽선 종류 : 0 \= none, 1 \= solid, 2 \= dot, 3 \= thick,  4 \= dash, 5 \= dashdot, 6 \= dashdotdot |
-| ShadowType | PIT\_UI1 |  | 그림자 종류 : 0 \= none, 1 \= drop, 2 \= continuous |
-| TextColor | PIT\_UI4 |  | 글자색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| ShadeColor | PIT\_UI4 |  | 음영색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| UnderlineShape | PIT\_UI1 |  | 밑줄 모양 : 선 종류 |
-| UnderlineColor | PIT\_UI4 |  | 밑줄 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| ShadowOffsetX | PIT\_I1 |  | 그림자 간격 (X 방향) \-100% \- 100% |
-| ShadowOffsetY | PIT\_I1 |  | 그림자 간격 (Y 방향) \-100% \- 100% |
-| ShadowColor | PIT\_UI4 |  | 그림자 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| StrikeOutType | PIT\_UI1 |  | 취소선 종류 : 0 \= none, 1 \= red single, 2 \= red double,  3 \= text single, 4 \= text double |
-| DiacSymMark | PIT\_UI1 |  | 강조점 종류 : 0 \= none, 1 \= 검정 동그라미, 2 \= 속 빈 동그라미 |
-| UseFontSpace | PIT\_UI1 |  | 글꼴에 어울리는 빈칸 : 0 \= off, 1 \= on |
-| UseKerning | PIT\_UI1 |  | 커닝 : 0 \= off, 1 \= on |
-| Height | PIT\_I4 |  | 글자 크기 (HWPUNIT) |
-| BorderFill | PIT\_SET | BorderFill | 테두리/배경 (한글2007에 새로 추가) |
-
+    | Item ID          | Type      | SubType | Description |
+    | ---------------- | --------- | ------- | ----------- |
+    | FaceNameHangul   | PIT_BSTR  |         | 글꼴 이름 (한글) |
+    | FaceNameLatin    | PIT_BSTR  |         | 글꼴 이름 (영문) |
+    | FaceNameHanja    | PIT_BSTR  |         | 글꼴 이름 (한자) |
+    | FaceNameJapanese | PIT_BSTR  |         | 글꼴 이름 (일본어) |
+    | FaceNameOther    | PIT_BSTR  |         | 글꼴 이름 (기타) |
+    | FaceNameSymbol   | PIT_BSTR  |         | 글꼴 이름 (심벌) |
+    | FaceNameUser     | PIT_BSTR  |         | 글꼴 이름 (사용자) |
+    | ...              | ...       |         | (많은 속성들) |
+    | BorderFill       | PIT_SET   | BorderFill | 테두리/배경 (한글2007에 새로 추가) |
     """
+
+    # Facename properties (strings)
+    facename_hangul   = ParameterSet._str_prop("FaceNameHangul", "글꼴 이름 (한글)")
+    facename_latin    = ParameterSet._str_prop("FaceNameLatin", "글꼴 이름 (영문)")
+    facename_hanja    = ParameterSet._str_prop("FaceNameHanja", "글꼴 이름 (한자)")
+    facename_japanese = ParameterSet._str_prop("FaceNameJapanese", "글꼴 이름 (일본어)")
+    facename_other    = ParameterSet._str_prop("FaceNameOther", "글꼴 이름 (기타)")
+    facename_symbol   = ParameterSet._str_prop("FaceNameSymbol", "글꼴 이름 (심벌)")
+    facename_user     = ParameterSet._str_prop("FaceNameUser", "글꼴 이름 (사용자)")
+
+    # FontType properties: mapped from numbers to human‐readable strings
+    _fonttype_map = {0: "don't care", 1: "TTF", 2: "HFT"}
+    _fonttype_reverse_map = {v: k for k, v in _fonttype_map.items()}
+    fonttype_hangul   = ParameterSet._mapped_prop("FontTypeHangul", _fonttype_map, _fonttype_reverse_map,
+                                                   "폰트 종류 (한글): 0 = don't care, 1 = TTF, 2 = HFT")
+    fonttype_latin    = ParameterSet._enum_prop("FontTypeLatin", [0, 1, 2],
+                                                 "폰트 종류 (영문): 0 = don't care, 1 = TTF, 2 = HFT")
+    fonttype_hanja    = ParameterSet._enum_prop("FontTypeHanja", [0, 1, 2],
+                                                 "폰트 종류 (한자): 0 = don't care, 1 = TTF, 2 = HFT")
+    fonttype_japanese = ParameterSet._enum_prop("FontTypeJapanese", [0, 1, 2],
+                                                 "폰트 종류 (일본어): 0 = don't care, 1 = TTF, 2 = HFT")
+    fonttype_other    = ParameterSet._enum_prop("FontTypeOther", [0, 1, 2],
+                                                 "폰트 종류 (기타): 0 = don't care, 1 = TTF, 2 = HFT")
+    fonttype_symbol   = ParameterSet._enum_prop("FontTypeSymbol", [0, 1, 2],
+                                                 "폰트 종류 (심벌): 0 = don't care, 1 = TTF, 2 = HFT")
+    fonttype_user     = ParameterSet._enum_prop("FontTypeUser", [0, 1, 2],
+                                                 "폰트 종류 (사용자): 0 = don't care, 1 = TTF, 2 = HFT")
     
-    def __str__(self):
-        return f"""<CharShape
-| FaceName |  {self.facename}
-| FontType | {self.fonttype}
-| Size | {self.size}
-| Ratio | {self.ratio}
-| Spacing | {self.spacing}
-| Offset | {self.offset}
-| Bold | {self.bold}
-| Italic | {self.italic}
-| SmallCaps | {self.small_caps}
-| Emboss | {self.emboss}
-| Engrave | {self.engrave}
-| SuperScript | {self.superscript}
-| SubScript | {self.subscript}
-| UnderlineType | {self.underline_type}
-| OutlineType | {self.outline_type}
-| ShadowType | {self.shadow_type}
-| TextColor | {self.text_color}
-| ShadeColor | {self.shade_color}
-| UnderlineShape | {self.underline_shape}
-| UnderlineColor | {self.underline_color}
-| ShadowOffsetX | {self.shadow_offset_x}
-| ShadowOffsetY | {self.shadow_offset_y}
-| ShadowColor | {self.shadow_color}
-| StrikeOutType | {self.strikeout_type}
-| DiacSymMark | {self.diac_sym_mark}
-| UseFontSpace | {self.use_font_space}
-| UseKerning | {self.use_kerning}
-| Height | {self.height}
-| BorderFill | {self.border_fill}
-        """
+    # Size properties (10% ~ 250%)
+    size_hangul   = ParameterSet._int_range_prop("SizeHangul",   "크기 (한글): 10% - 250%", 10, 250)
+    size_latin    = ParameterSet._int_range_prop("SizeLatin",    "크기 (영문): 10% - 250%", 10, 250)
+    size_hanja    = ParameterSet._int_range_prop("SizeHanja",    "크기 (한자): 10% - 250%", 10, 250)
+    size_japanese = ParameterSet._int_range_prop("SizeJapanese", "크기 (일본어): 10% - 250%", 10, 250)
+    size_other    = ParameterSet._int_range_prop("SizeOther",    "크기 (기타): 10% - 250%", 10, 250)
+    size_symbol   = ParameterSet._int_range_prop("SizeSymbol",   "크기 (심벌): 10% - 250%", 10, 250)
+    size_user     = ParameterSet._int_range_prop("SizeUser",     "크기 (사용자): 10% - 250%", 10, 250)
     
-    def __repr__(self):
-        return self.__str__()
-
-    def update(self, charshape):
-        for key in ['bold', 'border_fill', 'diac_sym_mark', 'emboss', 'engrave', 'facename', 'facename_hangul', 'facename_hanja', 'facename_japanese', 'facename_latin', 'facename_other', 'facename_symbol', 'facename_user', 'fonttype', 'fonttype_hangul', 'fonttype_hanja', 'fonttype_japanese', 'fonttype_latin', 'fonttype_other', 'fonttype_symbol', 'fonttype_user', 'height', 'is_pset', 'italic', 'offset', 'offset_hangul', 'offset_hanja', 'offset_japanese', 'offset_latin', 'offset_other', 'offset_symbol', 'offset_user', 'outline_type', 'parameterset', 'ratio', 'ratio_hangul', 'ratio_hanja', 'ratio_japanese', 'ratio_latin', 'ratio_other', 'ratio_symbol', 'ratio_user', 'shade_color', 'shadow_color', 'shadow_offset_x', 'shadow_offset_y', 'shadow_type', 'size', 'size_hangul', 'size_hanja', 'size_japanese', 'size_latin', 'size_other', 'size_symbol', 'size_user', 'small_caps', 'spacing', 'spacing_hangul', 'spacing_hanja', 'spacing_japanese', 'spacing_latin', 'spacing_other', 'spacing_symbol', 'spacing_user', 'strikeout_color', 'strikeout_shape', 'strikeout_type', 'subscript', 'superscript', 'text_color', 'underline_color', 'underline_shape', 'underline_type', 'use_font_space', 'use_kerning']:
-            value = getattr(charshape, key)
-            if value:
-                setattr(self, key, value)
-
-    @property
-    def facename(self):
-        """폰트 이름"""
-        return {"한글": self.facename_hangul, "영어": self.facename_latin, "한자": self.facename_hanja, "일어": self.facename_japanese, "기타": self.facename_other, "기호": self.facename_symbol, "사용자": self.facename_user}
-
-    @facename.setter
-    def facename(self, value):
-        """문자열일 경우 모두를 반영하며 리스트를 넣을 경우는 순서대로 값을 반영합니다."""
-        if isinstance(value, str):
-            self.facename_hangul = value
-            self.facename_latin = value
-            self.facename_hanja = value
-            self.facename_japanese = value
-            self.facename_other = value
-            self.facename_symbol = value
-            self.facename_user = value
-        
-        if isinstance(value, list):
-            for var_name, facename in zip(["facename_hangul", "facename_latin", "facename_hanja", "facename_japanese", "facename_other", "facename_symbol", "facename_user"], value):
-                setattr(self, var_name, facename)
+    # Ratio properties (50% ~ 200%)
+    ratio_hangul   = ParameterSet._int_range_prop("RatioHangul",   "장평 (한글): 50% - 200%", 50, 200)
+    ratio_latin    = ParameterSet._int_range_prop("RatioLatin",    "장평 (영문): 50% - 200%", 50, 200)
+    ratio_hanja    = ParameterSet._int_range_prop("RatioHanja",    "장평 (한자): 50% - 200%", 50, 200)
+    ratio_japanese = ParameterSet._int_range_prop("RatioJapanese", "장평 (일본어): 50% - 200%", 50, 200)
+    ratio_other    = ParameterSet._int_range_prop("RatioOther",    "장평 (기타): 50% - 200%", 50, 200)
+    ratio_symbol   = ParameterSet._int_range_prop("RatioSymbol",   "장평 (심벌): 50% - 200%", 50, 200)
+    ratio_user     = ParameterSet._int_range_prop("RatioUser",     "장평 (사용자): 50% - 200%", 50, 200)
     
-    @property
-    def fonttype(self):
-        """폰트 종류 : 0 = don't care, 1 = TTF, 2 = HFT"""
-        return {"한글": self.fonttype_hangul, "영어": self.fonttype_latin, "한자": self.fonttype_hanja, "일어": self.fonttype_japanese, "기타": self.fonttype_other, "기호": self.fonttype_symbol, "사용자": self.fonttype_user}
-
-    @fonttype.setter
-    def fonttype(self, value):
-        """int일 경우 모두를 반영하며 리스트를 넣을 경우는 순서대로 값을 반영합니다."""
-        if isinstance(value, int):
-            self.fonttype_hangul = value
-            self.fonttype_latin = value
-            self.fonttype_hanja = value
-            self.fonttype_japanese = value
-            self.fonttype_other = value
-            self.fonttype_symbol = value
-            self.fonttype_user = value
-        
-        if isinstance(value, list):
-            for var_name, fonttype in zip(["fonttype_hangul", "fonttype_latin", "fonttype_hanja", "fonttype_japanese", "fonttype_other", "fonttype_symbol", "fonttype_user"], value):
-                setattr(self, var_name, fonttype)
-
+    # Spacing properties (-50% ~ 50%)
+    spacing_hangul   = ParameterSet._int_range_prop("SpacingHangul",   "자간 (한글): -50% - 50%", -50, 50)
+    spacing_latin    = ParameterSet._int_range_prop("SpacingLatin",    "자간 (영문): -50% - 50%", -50, 50)
+    spacing_hanja    = ParameterSet._int_range_prop("SpacingHanja",    "자간 (한자): -50% - 50%", -50, 50)
+    spacing_japanese = ParameterSet._int_range_prop("SpacingJapanese", "자간 (일본어): -50% - 50%", -50, 50)
+    spacing_other    = ParameterSet._int_range_prop("SpacingOther",    "자간 (기타): -50% - 50%", -50, 50)
+    spacing_symbol   = ParameterSet._int_range_prop("SpacingSymbol",   "자간 (심벌): -50% - 50%", -50, 50)
+    spacing_user     = ParameterSet._int_range_prop("SpacingUser",     "자간 (사용자): -50% - 50%", -50, 50)
     
-    @property
-    def size(self):
-        """언어별 크기 비율. 10% - 250%"""
-        return {"한글": self.size_hangul, "영어": self.size_latin, "한자": self.size_hanja, "일어": self.size_japanese, "기타": self.size_other, "기호": self.size_symbol, "사용자": self.size_user}
-
-    @size.setter
-    def size(self, value):
-        """정수형일 경우 모두를 반영하며 리스트를 넣을 경우는 순서대로 값을 반영합니다."""
-        if isinstance(value, int):
-            self.size_hangul = value
-            self.size_latin = value
-            self.size_hanja = value
-            self.size_japanese = value
-            self.size_other = value
-            self.size_symbol = value
-            self.size_user = value
-        
-        if isinstance(value, list):
-            for var_name, size in zip(["size_hangul", "size_latin", "size_hanja", "size_japanese", "size_other", "size_symbol", "size_user"], value):
-                setattr(self, var_name, size)
-
-
-    @property
-    def ratio(self):
-        """언어별 장평 비율. 50% - 200%"""
-        return {"한글": self.ratio_hangul, "영어": self.ratio_latin, "한자": self.ratio_hanja, "일어": self.ratio_japanese, "기타": self.ratio_other, "기호": self.ratio_symbol, "사용자": self.ratio_user}
-
-    @ratio.setter
-    def ratio(self, value):
-        """정수형일 경우 모두를 반영하며 리스트를 넣을 경우는 순서대로 값을 반영합니다."""
-        if isinstance(value, int):
-            self.ratio_hangul = value
-            self.ratio_latin = value
-            self.ratio_hanja = value
-            self.ratio_japanese = value
-            self.ratio_other = value
-            self.ratio_symbol = value
-            self.ratio_user = value
-        
-        if isinstance(value, list):
-            for var_name, ratio in zip(["ratio_hangul", "ratio_latin", "ratio_hanja", "ratio_japanese", "ratio_other", "ratio_symbol", "ratio_user"], value):
-                setattr(self, var_name, ratio)
-
-
-    @property
-    def spacing(self):
-        """언어별 자간.  -50% - 50%"""
-        return {"한글": self.spacing_hangul, "영어": self.spacing_latin, "한자": self.spacing_hanja, "일어": self.spacing_japanese, "기타": self.spacing_other, "기호": self.spacing_symbol, "사용자": self.spacing_user}
-
-    @spacing.setter
-    def spacing(self, value):
-        """정수형형일 경우 모두를 반영하며 리스트를 넣을 경우는 순서대로 값을 반영합니다."""
-        if isinstance(value, int):
-            self.spacing_hangul = value
-            self.spacing_latin = value
-            self.spacing_hanja = value
-            self.spacing_japanese = value
-            self.spacing_other = value
-            self.spacing_symbol = value
-            self.spacing_user = value
-        
-        if isinstance(value, list):
-            for var_name, spacing in zip(["spacing_hangul", "spacing_latin", "spacing_hanja", "spacing_japanese", "spacing_other", "spacing_symbol", "spacing_user"], value):
-                setattr(self, var_name, spacing)
-
-
-    @property
-    def offset(self):
-        """오프셋. -100% - 100%"""
-        return {"한글": self.offset_hangul, "영어": self.offset_latin, "한자": self.offset_hanja, "일어": self.offset_japanese, "기타": self.offset_other, "기호": self.offset_symbol, "사용자": self.offset_user}
-
-    @offset.setter
-    def offset(self, value):
-        """정수형일 경우 모두를 반영하며 리스트를 넣을 경우는 순서대로 값을 반영합니다."""
-        if isinstance(value, int):
-            self.offset_hangul = value
-            self.offset_latin = value
-            self.offset_hanja = value
-            self.offset_japanese = value
-            self.offset_other = value
-            self.offset_symbol = value
-            self.offset_user = value
-        
-        if isinstance(value, list):
-            for var_name, offset in zip(["offset_hangul", "offset_latin", "offset_hanja", "offset_japanese", "offset_other", "offset_symbol", "offset_user"], value):
-                setattr(self, var_name, offset)
-
-    @property
-    def facename_hangul(self):
-        """폰트 이름 (한글)"""
-        return self._get_value("FaceNameHangul")
-
-    @facename_hangul.setter
-    def facename_hangul(self, value):
-        if value is None:
-            return self._del_value("FaceNameHangul")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        return self._set_value("FaceNameHangul", value)
-
-    @property
-    def facename_latin(self):
-        """폰트 이름 (영문)"""
-        return self._get_value("FaceNameLatin")
-
-    @facename_latin.setter
-    def facename_latin(self, value):
-        if value is None:
-            return self._del_value("FaceNameLatin")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        return self._set_value("FaceNameLatin", value)
-
-    @property
-    def facename_hanja(self):
-        """폰트 이름 (한자)"""
-        return self._get_value("FaceNameHanja")
-
-    @facename_hanja.setter
-    def facename_hanja(self, value):
-        if value is None:
-            return self._del_value("FaceNameHanja")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        return self._set_value("FaceNameHanja", value)
-
-    @property
-    def facename_japanese(self):
-        """폰트 이름 (일본어)"""
-        return self._get_value("FaceNameJapanese")
-
-    @facename_japanese.setter
-    def facename_japanese(self, value):
-        if value is None:
-            return self._del_value("FaceNameJapanese")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        return self._set_value("FaceNameJapanese", value)
-
-    @property
-    def facename_other(self):
-        """폰트 이름 (기타)"""
-        return self._get_value("FaceNameOther")
-
-    @facename_other.setter
-    def facename_other(self, value):
-        if value is None:
-            return self._del_value("FaceNameOther")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        return self._set_value("FaceNameOther", value)
-
-    @property
-    def facename_symbol(self):
-        """폰트 이름 (기호)"""
-        return self._get_value("FaceNameSymbol")
-
-    @facename_symbol.setter
-    def facename_symbol(self, value):
-        if value is None:
-            return self._del_value("FaceNameSymbol")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        return self._set_value("FaceNameSymbol", value)
-
-    @property
-    def facename_user(self):
-        """폰트 이름 (사용자)"""
-        return self._get_value("FaceNameUser")
-
-    @facename_user.setter
-    def facename_user(self, value):
-        if value is None:
-            return self._del_value("FaceNameUser")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        return self._set_value("FaceNameUser", value)
-
-    _fonttype_hangul_map = {
-        0: "don't care",
-        1: "TTF",
-        2: "HFT"
-    }
-
-    _fonttype_hangul_reverse_map = {v: k for k, v in _fonttype_hangul_map.items()}  # 문자열 → 숫자 변환
-
-    @property
-    def fonttype_hangul(self):
-        """
-        폰트 종류 (한글) (FontTypeHangul):
-        - 0 = don't care
-        - 1 = TTF
-        - 2 = HFT
-
-        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
-        """
-        value = self._get_value("FontTypeHangul")
-        return self._fonttype_hangul_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
-
-    @fonttype_hangul.setter
-    def fonttype_hangul(self, value):
-        if value is None:
-            return self._del_value("FontTypeHangul")
-
-        # 입력값이 숫자인 경우
-        if isinstance(value, int):
-            if value not in self._fonttype_hangul_map:
-                valid_options = " | ".join([f"{k} ({v})" for k, v in self._fonttype_hangul_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = value  # 그대로 숫자로 저장
-
-        # 입력값이 문자열인 경우
-        elif isinstance(value, str):
-            if value not in self._fonttype_hangul_reverse_map:
-                valid_options = " | ".join([f"{v} ({k})" for k, v in self._fonttype_hangul_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = self._fonttype_hangul_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
-
-        else:
-            raise TypeError("값은 정수(0, 1, 2) 또는 문자열(don't care, TTF, HFT)이어야 합니다.")
-
-        return self._set_value("FontTypeHangul", numeric_value)
-
-
-    @property
-    def fonttype_latin(self):
-        """폰트 종류 (영문): 0 = don't care, 1 = TTF, 2 = HFT"""
-        return self._get_value("FontTypeLatin")
-
-    @fonttype_latin.setter
-    def fonttype_latin(self, value):
-        if value is None:
-            return self._del_value("FontTypeLatin")
-        assert value in [0, 1, 2], "값은 0, 1, 2 중 하나여야 합니다."
-        return self._set_value("FontTypeLatin", value)
-
-    @property
-    def fonttype_hanja(self):
-        """폰트 종류 (한자): 0 = don't care, 1 = TTF, 2 = HFT"""
-        return self._get_value("FontTypeHanja")
-
-    @fonttype_hanja.setter
-    def fonttype_hanja(self, value):
-        if value is None:
-            return self._del_value("FontTypeHanja")
-        assert value in [0, 1, 2], "값은 0, 1, 2 중 하나여야 합니다."
-        return self._set_value("FontTypeHanja", value)
-
-    @property
-    def fonttype_japanese(self):
-        """폰트 종류 (일본어): 0 = don't care, 1 = TTF, 2 = HFT"""
-        return self._get_value("FontTypeJapanese")
-
-    @fonttype_japanese.setter
-    def fonttype_japanese(self, value):
-        if value is None:
-            return self._del_value("FontTypeJapanese")
-        assert value in [0, 1, 2], "값은 0, 1, 2 중 하나여야 합니다."
-        return self._set_value("FontTypeJapanese", value)
-
-    @property
-    def fonttype_other(self):
-        """폰트 종류 (기타): 0 = don't care, 1 = TTF, 2 = HFT"""
-        return self._get_value("FontTypeOther")
-
-    @fonttype_other.setter
-    def fonttype_other(self, value):
-        if value is None:
-            return self._del_value("FontTypeOther")
-        assert value in [0, 1, 2], "값은 0, 1, 2 중 하나여야 합니다."
-        return self._set_value("FontTypeOther", value)
-
-    @property
-    def fonttype_symbol(self):
-        """폰트 종류 (기호): 0 = don't care, 1 = TTF, 2 = HFT"""
-        return self._get_value("FontTypeSymbol")
-
-    @fonttype_symbol.setter
-    def fonttype_symbol(self, value):
-        if value is None:
-            return self._del_value("FontTypeSymbol")
-        assert value in [0, 1, 2], "값은 0, 1, 2 중 하나여야 합니다."
-        return self._set_value("FontTypeSymbol", value)
-
-    @property
-    def fonttype_user(self):
-        """폰트 종류 (사용자): 0 = don't care, 1 = TTF, 2 = HFT"""
-        return self._get_value("FontTypeUser")
-
-    @fonttype_user.setter
-    def fonttype_user(self, value):
-        if value is None:
-            return self._del_value("FontTypeUser")
-        assert value in [0, 1, 2], "값은 0, 1, 2 중 하나여야 합니다."
-        return self._set_value("FontTypeUser", value)
-
-    @property
-    def size_hangul(self):
-        """크기 설정 비율 (한글): 10% - 250%"""
-        return self._get_value("SizeHangul")
-
-    @size_hangul.setter
-    def size_hangul(self, value):
-        if value is None:
-            return self._del_value("SizeHangul")
-        assert 10 <= value <= 250, "값은 10에서 250 사이여야 합니다."
-        return self._set_value("SizeHangul", value)
-
-    @property
-    def size_latin(self):
-        """크기 설정 비율 (영문): 10% - 250%"""
-        return self._get_value("SizeLatin")
-
-    @size_latin.setter
-    def size_latin(self, value):
-        if value is None:
-            return self._del_value("SizeLatin")
-        assert 10 <= value <= 250, "값은 10에서 250 사이여야 합니다."
-        return self._set_value("SizeLatin", value)
-
-    @property
-    def size_hanja(self):
-        """크기 설정 비율 (한자): 10% - 250%"""
-        return self._get_value("SizeHanja")
-
-    @size_hanja.setter
-    def size_hanja(self, value):
-        if value is None:
-            return self._del_value("SizeHanja")
-        assert 10 <= value <= 250, "값은 10에서 250 사이여야 합니다."
-        return self._set_value("SizeHanja", value)
-
-    @property
-    def size_japanese(self):
-        """크기 설정 비율 (일본어): 10% - 250%"""
-        return self._get_value("SizeJapanese")
-
-    @size_japanese.setter
-    def size_japanese(self, value):
-        if value is None:
-            return self._del_value("SizeJapanese")
-        assert 10 <= value <= 250, "값은 10에서 250 사이여야 합니다."
-        return self._set_value("SizeJapanese", value)
-
-    @property
-    def size_other(self):
-        """크기 설정 비율 (기타): 10% - 250%"""
-        return self._get_value("SizeOther")
-
-    @size_other.setter
-    def size_other(self, value):
-        if value is None:
-            return self._del_value("SizeOther")
-        assert 10 <= value <= 250, "값은 10에서 250 사이여야 합니다."
-        return self._set_value("SizeOther", value)
-
-    @property
-    def size_symbol(self):
-        """크기 설정 비율 (기호): 10% - 250%"""
-        return self._get_value("SizeSymbol")
-
-    @size_symbol.setter
-    def size_symbol(self, value):
-        if value is None:
-            return self._del_value("SizeSymbol")
-        assert 10 <= value <= 250, "값은 10에서 250 사이여야 합니다."
-        return self._set_value("SizeSymbol", value)
-
-    @property
-    def size_user(self):
-        """크기 설정 비율 (사용자): 10% - 250%"""
-        return self._get_value("SizeUser")
-
-    @size_user.setter
-    def size_user(self, value):
-        if value is None:
-            return self._del_value("SizeUser")
-        assert 10 <= value <= 250, "값은 10에서 250 사이여야 합니다."
-
-    @property
-    def ratio_hangul(self):
-        """각 언어별 장평 비율 (한글): 50% - 200%"""
-        return self._get_value("RatioHangul")
-
-    @ratio_hangul.setter
-    def ratio_hangul(self, value):
-        if value is None:
-            return self._del_value("RatioHangul")
-        assert 50 <= value <= 200, "값은 50에서 200 사이여야 합니다."
-        return self._set_value("RatioHangul", value)
-
-    @property
-    def ratio_latin(self):
-        """각 언어별 장평 비율 (영문): 50% - 200%"""
-        return self._get_value("RatioLatin")
-
-    @ratio_latin.setter
-    def ratio_latin(self, value):
-        if value is None:
-            return self._del_value("RatioLatin")
-        assert 50 <= value <= 200, "값은 50에서 200 사이여야 합니다."
-        return self._set_value("RatioLatin", value)
-
-    @property
-    def ratio_hanja(self):
-        """각 언어별 장평 비율 (한자): 50% - 200%"""
-        return self._get_value("RatioHanja")
-
-    @ratio_hanja.setter
-    def ratio_hanja(self, value):
-        if value is None:
-            return self._del_value("RatioHanja")
-        assert 50 <= value <= 200, "값은 50에서 200 사이여야 합니다."
-        return self._set_value("RatioHanja", value)
-
-    @property
-    def ratio_japanese(self):
-        """각 언어별 장평 비율 (일본어): 50% - 200%"""
-        return self._get_value("RatioJapanese")
-
-    @ratio_japanese.setter
-    def ratio_japanese(self, value):
-        if value is None:
-            return self._del_value("RatioJapanese")
-        assert 50 <= value <= 200, "값은 50에서 200 사이여야 합니다."
-        return self._set_value("RatioJapanese", value)
-
-    @property
-    def ratio_other(self):
-        """각 언어별 장평 비율 (기타): 50% - 200%"""
-        return self._get_value("RatioOther")
-
-    @ratio_other.setter
-    def ratio_other(self, value):
-        if value is None:
-            return self._del_value("RatioOther")
-        assert 50 <= value <= 200, "값은 50에서 200 사이여야 합니다."
-        return self._set_value("RatioOther", value)
-
-    @property
-    def ratio_symbol(self):
-        """각 언어별 장평 비율 (심벌): 50% - 200%"""
-        return self._get_value("RatioSymbol")
-
-    @ratio_symbol.setter
-    def ratio_symbol(self, value):
-        if value is None:
-            return self._del_value("RatioSymbol")
-        assert 50 <= value <= 200, "값은 50에서 200 사이여야 합니다."
-        return self._set_value("RatioSymbol", value)
-
-    @property
-    def ratio_user(self):
-        """각 언어별 장평 비율 (사용자): 50% - 200%"""
-        return self._get_value("RatioUser")
-
-    @ratio_user.setter
-    def ratio_user(self, value):
-        if value is None:
-            return self._del_value("RatioUser")
-        assert 50 <= value <= 200, "값은 50에서 200 사이여야 합니다."
-        return self._set_value("RatioUser", value)
-
-    @property
-    def spacing_hangul(self):
-        """각 언어별 자간 (한글): -50% - 50%"""
-        return self._get_value("SpacingHangul")
-
-    @spacing_hangul.setter
-    def spacing_hangul(self, value):
-        if value is None:
-            return self._del_value("SpacingHangul")
-        assert -50 <= value <= 50, "값은 -50에서 50 사이여야 합니다."
-        return self._set_value("SpacingHangul", value)
-
-    @property
-    def spacing_latin(self):
-        """각 언어별 자간 (영문): -50% - 50%"""
-        return self._get_value("SpacingLatin")
-
-    @spacing_latin.setter
-    def spacing_latin(self, value):
-        if value is None:
-            return self._del_value("SpacingLatin")
-        assert -50 <= value <= 50, "값은 -50에서 50 사이여야 합니다."
-        return self._set_value("SpacingLatin", value)
-
-    @property
-    def spacing_hanja(self):
-        """각 언어별 자간 (한자): -50% - 50%"""
-        return self._get_value("SpacingHanja")
-
-    @spacing_hanja.setter
-    def spacing_hanja(self, value):
-        if value is None:
-            return self._del_value("SpacingHanja")
-        assert -50 <= value <= 50, "값은 -50에서 50 사이여야 합니다."
-        return self._set_value("SpacingHanja", value)
-
-    @property
-    def spacing_japanese(self):
-        """각 언어별 자간 (일본어): -50% - 50%"""
-        return self._get_value("SpacingJapanese")
-
-    @spacing_japanese.setter
-    def spacing_japanese(self, value):
-        if value is None:
-            return self._del_value("SpacingJapanese")
-        assert -50 <= value <= 50, "값은 -50에서 50 사이여야 합니다."
-        return self._set_value("SpacingJapanese", value)
-
-    @property
-    def spacing_other(self):
-        """각 언어별 자간 (기타): -50% - 50%"""
-        return self._get_value("SpacingOther")
-
-    @spacing_other.setter
-    def spacing_other(self, value):
-        if value is None:
-            return self._del_value("SpacingOther")
-        assert -50 <= value <= 50, "값은 -50에서 50 사이여야 합니다."
-        return self._set_value("SpacingOther", value)
-
-    @property
-    def spacing_symbol(self):
-        """각 언어별 자간 (심벌): -50% - 50%"""
-        return self._get_value("SpacingSymbol")
-
-    @spacing_symbol.setter
-    def spacing_symbol(self, value):
-        if value is None:
-            return self._del_value("SpacingSymbol")
-        assert -50 <= value <= 50, "값은 -50에서 50 사이여야 합니다."
-        return self._set_value("SpacingSymbol", value)
-
-    @property
-    def spacing_user(self):
-        """각 언어별 자간 (사용자): -50% - 50%"""
-        return self._get_value("SpacingUser")
-
-    @spacing_user.setter
-    def spacing_user(self, value):
-        if value is None:
-            return self._del_value("SpacingUser")
-        assert -50 <= value <= 50, "값은 -50에서 50 사이여야 합니다."
-        return self._set_value("SpacingUser", value)
-
-    @property
-    def offset_hangul(self):
-        """각 언어별 오프셋 (한글): -100% - 100%"""
-        return self._get_value("OffsetHangul")
-
-    @offset_hangul.setter
-    def offset_hangul(self, value):
-        if value is None:
-            return self._del_value("OffsetHangul")
-        assert -100 <= value <= 100, "값은 -100에서 100 사이여야 합니다."
-        return self._set_value("OffsetHangul", value)
+    # Offset properties (-100% ~ 100%)
+    offset_hangul   = ParameterSet._int_range_prop("OffsetHangul",   "오프셋 (한글): -100% - 100%", -100, 100)
+    offset_latin    = ParameterSet._int_range_prop("OffsetLatin",    "오프셋 (영문): -100% - 100%", -100, 100)
+    offset_hanja    = ParameterSet._int_range_prop("OffsetHanja",    "오프셋 (한자): -100% - 100%", -100, 100)
+    offset_japanese = ParameterSet._int_range_prop("OffsetJapanese", "오프셋 (일본어): -100% - 100%", -100, 100)
+    offset_other    = ParameterSet._int_range_prop("OffsetOther",    "오프셋 (기타): -100% - 100%", -100, 100)
+    offset_symbol   = ParameterSet._int_range_prop("OffsetSymbol",   "오프셋 (심벌): -100% - 100%", -100, 100)
+    offset_user     = ParameterSet._int_range_prop("OffsetUser",     "오프셋 (사용자): -100% - 100%", -100, 100)
     
-    @property
-    def offset_latin(self):
-        """각 언어별 오프셋 (영문): -100% - 100%"""
-        return self._get_value("OffsetLatin")
-
-    @offset_latin.setter
-    def offset_latin(self, value):
-        if value is None:
-            return self._del_value("OffsetLatin")
-        assert -100 <= value <= 100, "값은 -100에서 100 사이여야 합니다."
-        return self._set_value("OffsetLatin", value)
-
-    @property
-    def offset_hanja(self):
-        """각 언어별 오프셋 (한자): -100% - 100%"""
-        return self._get_value("OffsetHanja")
-
-    @offset_hanja.setter
-    def offset_hanja(self, value):
-        if value is None:
-            return self._del_value("OffsetHanja")
-        assert -100 <= value <= 100, "값은 -100에서 100 사이여야 합니다."
-        return self._set_value("OffsetHanja", value)
-
-    @property
-    def offset_japanese(self):
-        """각 언어별 오프셋 (일본어): -100% - 100%"""
-        return self._get_value("OffsetJapanese")
-
-    @offset_japanese.setter
-    def offset_japanese(self, value):
-        if value is None:
-            return self._del_value("OffsetJapanese")
-        assert -100 <= value <= 100, "값은 -100에서 100 사이여야 합니다."
-        return self._set_value("OffsetJapanese", value)
-
-    @property
-    def offset_other(self):
-        """각 언어별 오프셋 (기타): -100% - 100%"""
-        return self._get_value("OffsetOther")
-
-    @offset_other.setter
-    def offset_other(self, value):
-        if value is None:
-            return self._del_value("OffsetOther")
-        assert -100 <= value <= 100, "값은 -100에서 100 사이여야 합니다."
-        return self._set_value("OffsetOther", value)
-
-    @property
-    def offset_symbol(self):
-        """각 언어별 오프셋 (심벌): -100% - 100%"""
-        return self._get_value("OffsetSymbol")
-
-    @offset_symbol.setter
-    def offset_symbol(self, value):
-        if value is None:
-            return self._del_value("OffsetSymbol")
-        assert -100 <= value <= 100, "값은 -100에서 100 사이여야 합니다."
-        return self._set_value("OffsetSymbol", value)
-
-    @property
-    def offset_user(self):
-        """각 언어별 오프셋 (사용자): -100% - 100%"""
-        return self._get_value("OffsetUser")
-
-    @offset_user.setter
-    def offset_user(self, value):
-        if value is None:
-            return self._del_value("OffsetUser")
-        assert -100 <= value <= 100, "값은 -100에서 100 사이여야 합니다."
-        return self._set_value("OffsetUser", value)
-
-    @property
-    def bold(self):
-        """Bold: 0 = off, 1 = on"""
-        return self._get_value("Bold")
-
-    @bold.setter
-    def bold(self, value):
-        if value is None:
-            return self._del_value("Bold")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("Bold", value)
-
-    @property
-    def italic(self):
-        """Italic: 0 = off, 1 = on"""
-        return self._get_value("Italic")
-
-    @italic.setter
-    def italic(self, value):
-        if value is None:
-            return self._del_value("Italic")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("Italic", value)
-
-    @property
-    def small_caps(self):
-        """Small Caps: 0 = off, 1 = on"""
-        return self._get_value("SmallCaps")
-
-    @small_caps.setter
-    def small_caps(self, value):
-        if value is None:
-            return self._del_value("SmallCaps")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("SmallCaps", value)
-
-    @property
-    def emboss(self):
-        """Emboss: 0 = off, 1 = on"""
-        return self._get_value("Emboss")
-
-    @emboss.setter
-    def emboss(self, value):
-        if value is None:
-            return self._del_value("Emboss")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("Emboss", value)
-
-    @property
-    def engrave(self):
-        """Engrave: 0 = off, 1 = on"""
-        return self._get_value("Engrave")
-
-    @engrave.setter
-    def engrave(self, value):
-        if value is None:
-            return self._del_value("Engrave")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("Engrave", value)
-
-    @property
-    def superscript(self):
-        """Superscript: 0 = off, 1 = on"""
-        return self._get_value("SuperScript")
-
-    @superscript.setter
-    def superscript(self, value):
-        if value is None:
-            return self._del_value("SuperScript")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("SuperScript", value)
-
-    @property
-    def subscript(self):
-        """Subscript: 0 = off, 1 = on"""
-        return self._get_value("SubScript")
-
-    @subscript.setter
-    def subscript(self, value):
-        if value is None:
-            return self._del_value("SubScript")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("SubScript", value)
-
-    _underline_type_map = {
-        0: "none",
-        1: "bottom",
-        2: "center",
-        3: "top"
-    }
-
-    _underline_type_reverse_map = {v: k for k, v in _underline_type_map.items()}  # 문자열 → 숫자 변환
-
-    @property
-    def underline_type(self):
-        """
-        밑줄 종류 (UnderlineType):
-        - 0 = none
-        - 1 = bottom
-        - 2 = center
-        - 3 = top
-
-        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
-        """
-        value = self._get_value("UnderlineType")
-        return self._underline_type_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
-
-    @underline_type.setter
-    def underline_type(self, value):
-        if value is None:
-            return self._del_value("UnderlineType")
-
-        # 입력값이 숫자인 경우
-        if isinstance(value, int):
-            if value not in self._underline_type_map:
-                valid_options = " | ".join([f"{k} ({v})" for k, v in self._underline_type_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = value  # 그대로 숫자로 저장
-
-        # 입력값이 문자열인 경우
-        elif isinstance(value, str):
-            if value not in self._underline_type_reverse_map:
-                valid_options = " | ".join([f"{v} ({k})" for k, v in self._underline_type_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = self._underline_type_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
-
-        else:
-            raise TypeError("값은 정수(0, 1, 2, 3) 또는 문자열(none, bottom, center, top)이어야 합니다.")
-
-        return self._set_value("UnderlineType", numeric_value)
-
-
-    _outline_type_map = {
-        0: "none",
-        1: "solid",
-        2: "dot",
-        3: "thick",
-        4: "dash",
-        5: "dashdot",
-        6: "dashdotdot"
-    }
-
-    _outline_type_reverse_map = {v: k for k, v in _outline_type_map.items()}  # 문자열 → 숫자 변환
-
-    @property
-    def outline_type(self):
-        """
-        외곽선 종류 (OutLineType):
-        - 0 = none
-        - 1 = solid
-        - 2 = dot
-        - 3 = thick
-        - 4 = dash
-        - 5 = dashdot
-        - 6 = dashdotdot
-
-        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
-        """
-        value = self._get_value("OutLineType")
-        return self._outline_type_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
-
-    @outline_type.setter
-    def outline_type(self, value):
-        if value is None:
-            return self._del_value("OutLineType")
-
-        # 입력값이 숫자인 경우
-        if isinstance(value, int):
-            if value not in self._outline_type_map:
-                valid_options = " | ".join([f"{k} ({v})" for k, v in self._outline_type_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = value  # 그대로 숫자로 저장
-
-        # 입력값이 문자열인 경우
-        elif isinstance(value, str):
-            if value not in self._outline_type_reverse_map:
-                valid_options = " | ".join([f"{v} ({k})" for k, v in self._outline_type_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = self._outline_type_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
-
-        else:
-            raise TypeError("값은 정수(0~6) 또는 문자열(none, solid, dot, thick, dash, dashdot, dashdotdot)이어야 합니다.")
-
-        return self._set_value("OutLineType", numeric_value)
-
-    _shadow_type_map = {
-        0: "none",
-        1: "drop",
-        2: "continuous"
-    }
-
-    _shadow_type_reverse_map = {v: k for k, v in _shadow_type_map.items()}  # 문자열 → 숫자 변환
-
-    @property
-    def shadow_type(self):
-        """
-        그림자 종류 (ShadowType):
-        - 0 = none
-        - 1 = drop
-        - 2 = continuous
-
-        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
-        """
-        value = self._get_value("ShadowType")
-        return self._shadow_type_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
-
-    @shadow_type.setter
-    def shadow_type(self, value):
-        if value is None:
-            return self._del_value("ShadowType")
-
-        # 입력값이 숫자인 경우
-        if isinstance(value, int):
-            if value not in self._shadow_type_map:
-                valid_options = " | ".join([f"{k} ({v})" for k, v in self._shadow_type_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = value  # 그대로 숫자로 저장
-
-        # 입력값이 문자열인 경우
-        elif isinstance(value, str):
-            if value not in self._shadow_type_reverse_map:
-                valid_options = " | ".join([f"{v} ({k})" for k, v in self._shadow_type_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = self._shadow_type_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
-
-        else:
-            raise TypeError("값은 정수(0~2) 또는 문자열(none, drop, continuous)이어야 합니다.")
-
-        return self._set_value("ShadowType", numeric_value)
-
-
-    @property
-    def text_color(self):
-        """글자색 (COLORREF, 0x00BBGGRR)"""
-        return self._get_value("TextColor")
-
-    @text_color.setter
-    def text_color(self, value):
-        if value is None:
-            return self._del_value("TextColor")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("TextColor", value)
-
-    @property
-    def shade_color(self):
-        """음영색 (COLORREF, 0x00BBGGRR)"""
-        return self._get_value("ShadeColor")
-
-    @shade_color.setter
-    def shade_color(self, value):
-        if value is None:
-            return self._del_value("ShadeColor")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("ShadeColor", value)
-
-    @property
-    def underline_shape(self):
-        """밑줄 모양"""
-        return self._get_value("UnderlineShape")
-
-    @underline_shape.setter
-    def underline_shape(self, value):
-        if value is None:
-            return self._del_value("UnderlineShape")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("UnderlineShape", value)
-
-    @property
-    def underline_color(self):
-        """밑줄 색상 (COLORREF, 0x00BBGGRR)"""
-        return self._get_value("UnderlineColor")
-
-    @underline_color.setter
-    def underline_color(self, value):
-        if value is None:
-            return self._del_value("UnderlineColor")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("UnderlineColor", value)
-
-    @property
-    def shadow_offset_x(self):
-        """그림자 간격 (X 방향): -100% - 100%"""
-        return self._get_value("ShadowOffsetX")
-
-    @shadow_offset_x.setter
-    def shadow_offset_x(self, value):
-        if value is None:
-            return self._del_value("ShadowOffsetX")
-        assert -100 <= value <= 100, "값은 -100에서 100 사이여야 합니다."
-        return self._set_value("ShadowOffsetX", value)
-
-    @property
-    def shadow_offset_y(self):
-        """그림자 간격 (Y 방향): -100% - 100%"""
-        return self._get_value("ShadowOffsetY")
-
-    @shadow_offset_y.setter
-    def shadow_offset_y(self, value):
-        if value is None:
-            return self._del_value("ShadowOffsetY")
-        assert -100 <= value <= 100, "값은 -100에서 100 사이여야 합니다."
-        return self._set_value("ShadowOffsetY", value)
-
-    @property
-    def shadow_color(self):
-        """그림자 색 (COLORREF, 0x00BBGGRR)"""
-        return self._get_value("ShadowColor")
-
-    @shadow_color.setter
-    def shadow_color(self, value):
-        if value is None:
-            return self._del_value("ShadowColor")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("ShadowColor", value)
-
-    @property
-    def strikeout_shape(self):
-        """밑줄 모양"""
-        return self._get_value("StrikeOutShape")
-
-    @strikeout_shape.setter
-    def strikeout_shape(self, value):
-        if value is None:
-            return self._del_value("StrikeOutShape")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("StrikeoutShape", value)
-
-    @property
-    def strikeout_color(self):
-        """밑줄 색상 (COLORREF, 0x00BBGGRR)"""
-        return self._get_value("StrikeOutColor")
-
-    @strikeout_color.setter
-    def strikeout_color(self, value):
-        if value is None:
-            return self._del_value("StrikeOutColor")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("StrikeOutColor", value)
-
-    _strikeout_type_map = {
-        0: "none",
-        1: "red single",
-        2: "red double",
-        3: "text single",
-        4: "text double"
-    }
-
-    _strikeout_type_reverse_map = {v: k for k, v in _strikeout_type_map.items()}  # 문자열 → 숫자 변환
-
-    @property
-    def strikeout_type(self):
-        """
-        취소선 종류 (StrikeOutType):
-        - 0 = none
-        - 1 = red single
-        - 2 = red double
-        - 3 = text single
-        - 4 = text double
-
-        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
-        """
-        value = self._get_value("StrikeOutType")
-        return self._strikeout_type_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
-
-    @strikeout_type.setter
-    def strikeout_type(self, value):
-        if value is None:
-            return self._del_value("StrikeOutType")
-
-        # 입력값이 숫자인 경우
-        if isinstance(value, int):
-            if value not in self._strikeout_type_map:
-                valid_options = " | ".join([f"{k} ({v})" for k, v in self._strikeout_type_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = value  # 그대로 숫자로 저장
-
-        # 입력값이 문자열인 경우
-        elif isinstance(value, str):
-            if value not in self._strikeout_type_reverse_map:
-                valid_options = " | ".join([f"{v} ({k})" for k, v in self._strikeout_type_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = self._strikeout_type_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
-
-        else:
-            raise TypeError("값은 정수(0~4) 또는 문자열(none, red single, red double, text single, text double)이어야 합니다.")
-
-        return self._set_value("StrikeOutType", numeric_value)
-
-    _diac_sym_mark_map = {
-        0: "none",
-        1: "black circle",
-        2: "empty circle",
-    }
-
-    _diac_sym_mark_reverse_map = {v: k for k, v in _diac_sym_mark_map.items()}  # 문자열 → 숫자 변환
-
-
-    @property
-    def diac_sym_mark(self):
-        """강조점 종류: 0 = none, 1 = 검정 동그라미(black circle), 2 = 속 빈 동그라미(empty circle)"""
-        value = self._get_value("DiacSymMark")
-        return self._diac_sym_mark_map.get(value, "unknown")  # 알 수 없는 값이 저장된 경우 대비
-
-    @diac_sym_mark.setter
-    def diac_sym_mark(self, value):
-        if value is None:
-            return self._del_value("DiacSymMark")
-
-        # 입력값이 숫자인 경우
-        if isinstance(value, int):
-            if value not in self._diac_sym_mark_map:
-                valid_options = " | ".join([f"{k} ({v})" for k, v in self._diac_sym_mark_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = value  # 그대로 숫자로 저장
-
-        # 입력값이 문자열인 경우
-        elif isinstance(value, str):
-            if value not in self._diac_sym_mark_map:
-                valid_options = " | ".join([f"{v} ({k})" for k, v in self._diac_sym_mark_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = self._diac_sym_mark_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
-        return self._set_value("DiacSymMark", numeric_value)
-
-    _use_font_space_map = {
-        0: "off",
-        1: "on"
-    }
-
-    _use_font_space_reverse_map = {v: k for k, v in _use_font_space_map.items()}  # 문자열 → 숫자 변환
-
-    @property
-    def use_font_space(self):
-        """
-        글꼴에 어울리는 빈칸 설정 (UseFontSpace):
-        - 0 = off
-        - 1 = on
-
-        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
-        """
-        value = self._get_value("UseFontSpace")
-        return self._use_font_space_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
-
-    @use_font_space.setter
-    def use_font_space(self, value):
-        if value is None:
-            return self._del_value("UseFontSpace")
-
-        # 입력값이 숫자인 경우
-        if isinstance(value, int):
-            if value not in self._use_font_space_map:
-                valid_options = " | ".join([f"{k} ({v})" for k, v in self._use_font_space_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = value  # 그대로 숫자로 저장
-
-        # 입력값이 문자열인 경우
-        elif isinstance(value, str):
-            if value not in self._use_font_space_reverse_map:
-                valid_options = " | ".join([f"{v} ({k})" for k, v in self._use_font_space_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = self._use_font_space_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
-
-        else:
-            raise TypeError("값은 정수(0 또는 1) 또는 문자열(off, on)이어야 합니다.")
-
-        return self._set_value("UseFontSpace", numeric_value)
-
-    _use_kerning_map = {
-        0: "off",
-        1: "on"
-    }
-
-    _use_kerning_reverse_map = {v: k for k, v in _use_kerning_map.items()}  # 문자열 → 숫자 변환
-
-    @property
-    def use_kerning(self):
-        """
-        커닝 설정 (UseKerning):
-        - 0 = off
-        - 1 = on
-
-        값을 읽을 때는 사람이 이해할 수 있는 문자열로 변환하여 반환합니다.
-        """
-        value = self._get_value("UseKerning")
-        return self._use_kerning_map.get(value, "unknown")  # 숫자를 문자열로 변환하여 반환
-
-    @use_kerning.setter
-    def use_kerning(self, value):
-        if value is None:
-            return self._del_value("UseKerning")
-
-        # 입력값이 숫자인 경우
-        if isinstance(value, int):
-            if value not in self._use_kerning_map:
-                valid_options = " | ".join([f"{k} ({v})" for k, v in self._use_kerning_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = value  # 그대로 숫자로 저장
-
-        # 입력값이 문자열인 경우
-        elif isinstance(value, str):
-            if value not in self._use_kerning_reverse_map:
-                valid_options = " | ".join([f"{v} ({k})" for k, v in self._use_kerning_map.items()])
-                raise ValueError(f"올바르지 않은 값입니다. 허용되는 값: {valid_options}")
-            numeric_value = self._use_kerning_reverse_map[value]  # 문자열을 숫자로 변환하여 저장
-
-        else:
-            raise TypeError("값은 정수(0 또는 1) 또는 문자열(off, on)이어야 합니다.")
-
-        return self._set_value("UseKerning", numeric_value)
-
-    @property
-    def height(self):
-        """글자 크기 (HWPUNIT)"""
-        return self._get_value("Height")
-
-    @height.setter
-    def height(self, value):
-        if value is None:
-            return self._del_value("Height")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("Height", value)
-
+    # Boolean properties
+    bold        = ParameterSet._bool_prop("Bold", "Bold: 0 = off, 1 = on")
+    italic      = ParameterSet._bool_prop("Italic", "Italic: 0 = off, 1 = on")
+    small_caps  = ParameterSet._bool_prop("SmallCaps", "Small Caps: 0 = off, 1 = on")
+    emboss      = ParameterSet._bool_prop("Emboss", "Emboss: 0 = off, 1 = on")
+    engrave     = ParameterSet._bool_prop("Engrave", "Engrave: 0 = off, 1 = on")
+    superscript = ParameterSet._bool_prop("SuperScript", "Superscript: 0 = off, 1 = on")
+    subscript   = ParameterSet._bool_prop("SubScript", "Subscript: 0 = off, 1 = on")
+    
+    # Underline type (mapped)
+    _underline_type_map = {0: "none", 1: "bottom", 2: "center", 3: "top"}
+    _underline_type_reverse_map = {v: k for k, v in _underline_type_map.items()}
+    underline_type = ParameterSet._mapped_prop("UnderlineType", _underline_type_map, _underline_type_reverse_map,
+                                                 "밑줄 종류: 0 = none, 1 = bottom, 2 = center, 3 = top")
+    
+    # Outline type (mapped)
+    _outline_type_map = {0: "none", 1: "solid", 2: "dot", 3: "thick", 4: "dash", 5: "dashdot", 6: "dashdotdot"}
+    _outline_type_reverse_map = {v: k for k, v in _outline_type_map.items()}
+    outline_type = ParameterSet._mapped_prop("OutLineType", _outline_type_map, _outline_type_reverse_map,
+                                               "외곽선 종류: 0 = none, 1 = solid, 2 = dot, 3 = thick, 4 = dash, 5 = dashdot, 6 = dashdotdot")
+    
+    # Shadow type (mapped)
+    _shadow_type_map = {0: "none", 1: "drop", 2: "continuous"}
+    _shadow_type_reverse_map = {v: k for k, v in _shadow_type_map.items()}
+    shadow_type = ParameterSet._mapped_prop("ShadowType", _shadow_type_map, _shadow_type_reverse_map,
+                                              "그림자 종류: 0 = none, 1 = drop, 2 = continuous")
+    
+    # Color properties
+    text_color      = ParameterSet._int_prop("TextColor", "글자색 (COLORREF)")
+    shade_color     = ParameterSet._int_prop("ShadeColor", "음영색 (COLORREF)")
+    underline_color = ParameterSet._int_prop("UnderlineColor", "밑줄 색상 (COLORREF)")
+    shadow_color    = ParameterSet._int_prop("ShadowColor", "그림자 색 (COLORREF)")
+    
+    # Shadow offset properties (-100% ~ 100%)
+    shadow_offset_x = ParameterSet._int_range_prop("ShadowOffsetX", "그림자 간격 (X 방향): -100% - 100%", -100, 100)
+    shadow_offset_y = ParameterSet._int_range_prop("ShadowOffsetY", "그림자 간격 (Y 방향): -100% - 100%", -100, 100)
+    
+    # Strikeout properties
+    strikeout_color = ParameterSet._int_prop("StrikeOutColor", "취소선 색 (COLORREF)")
+    _strikeout_type_map = {0: "none", 1: "red single", 2: "red double", 3: "text single", 4: "text double"}
+    _strikeout_type_reverse_map = {v: k for k, v in _strikeout_type_map.items()}
+    strikeout_type = ParameterSet._mapped_prop("StrikeOutType", _strikeout_type_map, _strikeout_type_reverse_map,
+                                                "취소선 종류: 0 = none, 1 = red single, 2 = red double, 3 = text single, 4 = text double")
+    
+    # DiacSymMark (mapped)
+    _diac_sym_mark_map = {0: "none", 1: "black circle", 2: "empty circle"}
+    _diac_sym_mark_reverse_map = {v: k for k, v in _diac_sym_mark_map.items()}
+    diac_sym_mark = ParameterSet._mapped_prop("DiacSymMark", _diac_sym_mark_map, _diac_sym_mark_reverse_map,
+                                               "강조점 종류: 0 = none, 1 = black circle, 2 = empty circle")
+    
+    # UseFontSpace (mapped)
+    _use_font_space_map = {0: "off", 1: "on"}
+    _use_font_space_reverse_map = {v: k for k, v in _use_font_space_map.items()}
+    use_font_space = ParameterSet._mapped_prop("UseFontSpace", _use_font_space_map, _use_font_space_reverse_map,
+                                                "글꼴에 어울리는 빈칸: 0 = off, 1 = on")
+    
+    # UseKerning (mapped)
+    _use_kerning_map = {0: "off", 1: "on"}
+    _use_kerning_reverse_map = {v: k for k, v in _use_kerning_map.items()}
+    use_kerning = ParameterSet._mapped_prop("UseKerning", _use_kerning_map, _use_kerning_reverse_map,
+                                             "커닝: 0 = off, 1 = on")
+    
+    # Height property
+    height = ParameterSet._int_prop("Height", "글자 크기 (HWPUNIT)")
+    
+    # BorderFill property (explicit)
     @property
     def border_fill(self):
-        """테두리/배경 (BorderFill)"""
         return BorderFill(self._get_value("BorderFill"))
-
+    
     @border_fill.setter
     def border_fill(self, value):
         if value is None:
             return self._del_value("BorderFill")
-        # Assuming `BorderFill` is a class or set object
-        assert isinstance(value, BorderFill), "값은 BorderFill 객체이어야 합니다."
+        if not isinstance(value, BorderFill):
+            raise TypeError("값은 BorderFill 객체이어야 합니다.")
         return self._set_value("BorderFill", value)
+    
+    # Aggregated properties for convenience
+    @property
+    def facename(self):
+        return {
+            "한글": self.facename_hangul,
+            "영어": self.facename_latin,
+            "한자": self.facename_hanja,
+            "일어": self.facename_japanese,
+            "기타": self.facename_other,
+            "기호": self.facename_symbol,
+            "사용자": self.facename_user
+        }
+    
+    @facename.setter
+    def facename(self, value):
+        keys = ["facename_hangul", "facename_latin", "facename_hanja",
+                "facename_japanese", "facename_other", "facename_symbol", "facename_user"]
+        if isinstance(value, str):
+            for key in keys:
+                setattr(self, key, value)
+        elif isinstance(value, list):
+            for key, val in zip(keys, value):
+                setattr(self, key, val)
+    
+    @property
+    def fonttype(self):
+        return {
+            "한글": self.fonttype_hangul,
+            "영어": self.fonttype_latin,
+            "한자": self.fonttype_hanja,
+            "일어": self.fonttype_japanese,
+            "기타": self.fonttype_other,
+            "기호": self.fonttype_symbol,
+            "사용자": self.fonttype_user
+        }
+    
+    @fonttype.setter
+    def fonttype(self, value):
+        keys = ["fonttype_hangul", "fonttype_latin", "fonttype_hanja",
+                "fonttype_japanese", "fonttype_other", "fonttype_symbol", "fonttype_user"]
+        if isinstance(value, int):
+            for key in keys:
+                setattr(self, key, value)
+        elif isinstance(value, list):
+            for key, val in zip(keys, value):
+                setattr(self, key, val)
+    
+    @property
+    def size(self):
+        return {
+            "한글": self.size_hangul,
+            "영어": self.size_latin,
+            "한자": self.size_hanja,
+            "일어": self.size_japanese,
+            "기타": self.size_other,
+            "기호": self.size_symbol,
+            "사용자": self.size_user
+        }
+    
+    @size.setter
+    def size(self, value):
+        keys = ["size_hangul", "size_latin", "size_hanja",
+                "size_japanese", "size_other", "size_symbol", "size_user"]
+        if isinstance(value, int):
+            for key in keys:
+                setattr(self, key, value)
+        elif isinstance(value, list):
+            for key, val in zip(keys, value):
+                setattr(self, key, val)
+    
+    @property
+    def ratio(self):
+        return {
+            "한글": self.ratio_hangul,
+            "영어": self.ratio_latin,
+            "한자": self.ratio_hanja,
+            "일어": self.ratio_japanese,
+            "기타": self.ratio_other,
+            "기호": self.ratio_symbol,
+            "사용자": self.ratio_user
+        }
+    
+    @ratio.setter
+    def ratio(self, value):
+        keys = ["ratio_hangul", "ratio_latin", "ratio_hanja",
+                "ratio_japanese", "ratio_other", "ratio_symbol", "ratio_user"]
+        if isinstance(value, int):
+            for key in keys:
+                setattr(self, key, value)
+        elif isinstance(value, list):
+            for key, val in zip(keys, value):
+                setattr(self, key, val)
+    
+    @property
+    def spacing(self):
+        return {
+            "한글": self.spacing_hangul,
+            "영어": self.spacing_latin,
+            "한자": self.spacing_hanja,
+            "일어": self.spacing_japanese,
+            "기타": self.spacing_other,
+            "기호": self.spacing_symbol,
+            "사용자": self.spacing_user
+        }
+    
+    @spacing.setter
+    def spacing(self, value):
+        keys = ["spacing_hangul", "spacing_latin", "spacing_hanja",
+                "spacing_japanese", "spacing_other", "spacing_symbol", "spacing_user"]
+        if isinstance(value, int):
+            for key in keys:
+                setattr(self, key, value)
+        elif isinstance(value, list):
+            for key, val in zip(keys, value):
+                setattr(self, key, val)
+    
+    @property
+    def offset(self):
+        return {
+            "한글": self.offset_hangul,
+            "영어": self.offset_latin,
+            "한자": self.offset_hanja,
+            "일어": self.offset_japanese,
+            "기타": self.offset_other,
+            "기호": self.offset_symbol,
+            "사용자": self.offset_user
+        }
+    
+    @offset.setter
+    def offset(self, value):
+        keys = ["offset_hangul", "offset_latin", "offset_hanja",
+                "offset_japanese", "offset_other", "offset_symbol", "offset_user"]
+        if isinstance(value, int):
+            for key in keys:
+                setattr(self, key, value)
+        elif isinstance(value, list):
+            for key, val in zip(keys, value):
+                setattr(self, key, val)
+    
+    def __str__(self):
+        return f"""<CharShape
+| FaceName      | {self.facename}
+| FontType      | {self.fonttype}
+| Size          | {self.size}
+| Ratio         | {self.ratio}
+| Spacing       | {self.spacing}
+| Offset        | {self.offset}
+| Bold          | {self.bold}
+| Italic        | {self.italic}
+| SmallCaps     | {self.small_caps}
+| Emboss        | {self.emboss}
+| Engrave       | {self.engrave}
+| SuperScript   | {self.superscript}
+| SubScript     | {self.subscript}
+| UnderlineType | {self.underline_type}
+| OutlineType   | {self.outline_type}
+| ShadowType    | {self.shadow_type}
+| TextColor     | {self.text_color}
+| ShadeColor    | {self.shade_color}
+| UnderlineColor| {self.underline_color}
+| ShadowOffsetX | {self.shadow_offset_x}
+| ShadowOffsetY | {self.shadow_offset_y}
+| ShadowColor   | {self.shadow_color}
+| StrikeOutType | {self.strikeout_type}
+| DiacSymMark   | {self.diac_sym_mark}
+| UseFontSpace  | {self.use_font_space}
+| UseKerning    | {self.use_kerning}
+| Height        | {self.height}
+| BorderFill    | {self.border_fill}
+        """
+    
+    def __repr__(self):
+        return self.__str__()
+    
+    def update(self, charshape):
+        keys = [
+            'bold', 'border_fill', 'diac_sym_mark', 'emboss', 'engrave', 'facename', 
+            'facename_hangul', 'facename_hanja', 'facename_japanese', 'facename_latin', 
+            'facename_other', 'facename_symbol', 'facename_user', 'fonttype', 'fonttype_hangul', 
+            'fonttype_hanja', 'fonttype_japanese', 'fonttype_latin', 'fonttype_other', 
+            'fonttype_symbol', 'fonttype_user', 'height', 'is_pset', 'italic', 'offset', 
+            'offset_hangul', 'offset_hanja', 'offset_japanese', 'offset_latin', 'offset_other', 
+            'offset_symbol', 'offset_user', 'outline_type', 'parameterset', 'ratio', 'ratio_hangul', 
+            'ratio_hanja', 'ratio_japanese', 'ratio_latin', 'ratio_other', 'ratio_symbol', 'ratio_user', 
+            'shade_color', 'shadow_color', 'shadow_offset_x', 'shadow_offset_y', 'shadow_type', 
+            'size', 'size_hangul', 'size_hanja', 'size_japanese', 'size_latin', 'size_other', 
+            'size_symbol', 'size_user', 'small_caps', 'spacing', 'spacing_hangul', 'spacing_hanja', 
+            'spacing_japanese', 'spacing_latin', 'spacing_other', 'spacing_symbol', 'spacing_user', 
+            'strikeout_color', 'strikeout_shape', 'strikeout_type', 'subscript', 'superscript', 
+            'text_color', 'underline_color', 'underline_shape', 'underline_type', 'use_font_space', 
+            'use_kerning'
+        ]
+        for key in keys:
+            value = getattr(charshape, key)
+            if value:
+                setattr(self, key, value)
+
+
 
 # %% ../nbs/02_api/02_parameters.ipynb 16
 class CtrlData(ParameterSet):
@@ -2128,20 +769,10 @@ class CtrlData(ParameterSet):
 
     | Item ID | Type      | SubType | Description          |
     |---------|-----------|---------|----------------------|
-    | Name    | PIT_BSTR  |         | 제어 데이터의 이름. |
+    | Name    | PIT_BSTR  |         | 제어 데이터의 이름.  |
     """
+    name = ParameterSet._str_prop("Name", "제어 데이터의 이름.")
 
-    @property
-    def name(self):
-        """제어 데이터의 이름."""
-        return self._get_value("Name")
-
-    @name.setter
-    def name(self, value):
-        if value is None:
-            return self._del_value("Name")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        self._set_value("Name", value)
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 18
@@ -2156,30 +787,10 @@ class DrawArcType(ParameterSet):
     | Type     | PIT_UI     |         | 곡선 유형: 0 = 선, 1 = 필수곡선, 2 = 화살표 |
     | Interval | PIT_ARRAY  | PIT_I   | 곡선의 시작점과 끝점을 나타내는 배열 |
     """
+    type = ParameterSet._enum_prop("Type", allowed=[0, 1, 2],
+                                     doc="곡선 유형: 0 = 선, 1 = 필수곡선, 2 = 화살표")
+    interval = ParameterSet._int_list_prop("Interval", "곡선의 시작점과 끝점을 나타내는 배열")
 
-    @property
-    def type(self):
-        """곡선 유형: 0 = 선, 1 = 필수곡선, 2 = 화살표"""
-        return self._get_value("Type")
-
-    @type.setter
-    def type(self, value):
-        if value is None:
-            return self._del_value("Type")
-        assert value in [0, 1, 2], "값은 0, 1, 2 중 하나여야 합니다."
-        self._set_value("Type", value)
-
-    @property
-    def interval(self):
-        """곡선의 시작점과 끝점을 나타내는 배열"""
-        return self._get_value("Interval")
-
-    @interval.setter
-    def interval(self, value):
-        if value is None:
-            return self._del_value("Interval")
-        assert isinstance(value, list) and all(isinstance(i, int) for i in value), "값은 정수 배열이어야 합니다."
-        self._set_value("Interval", value)
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 20
@@ -2197,46 +808,10 @@ class DrawCoordInfo(ParameterSet):
     | Point   | PIT_ARRAY  | PIT_I   | 좌표 Array (X1,Y1), (X2,Y2), ..., (Xn,Yn)   |
     | Line    | PIT_ARRAY  | PIT_UI1 | 선 정보 Array(점들에서 연결된 형태)          |
     """
+    count = ParameterSet._int_prop("Count", "점의 개수: 정수 값을 입력하세요.")
+    point = ParameterSet._tuple_list_prop("Point", "좌표 배열 (X1, Y1), (X2, Y2), ..., (Xn, Yn): 리스트 값을 입력하세요.")
+    line  = ParameterSet._int_list_prop("Line", "선 정보 배열: 리스트 값을 입력하세요.")
 
-    @property
-    def count(self):
-        """점의 개수: 정수 값을 입력하세요."""
-        return self._get_value("Count")
-
-    @count.setter
-    def count(self, value):
-        if value is None:
-            return self._del_value("Count")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("Count", value)
-
-    @property
-    def point(self):
-        """좌표 배열 (X1, Y1), (X2, Y2), ..., (Xn, Yn): 리스트 값을 입력하세요."""
-        return self._get_value("Point")
-
-    @point.setter
-    def point(self, value):
-        if value is None:
-            return self._del_value("Point")
-        assert isinstance(value, list), "값은 리스트이어야 합니다."
-        for item in value:
-            assert isinstance(item, tuple) and len(item) == 2, "각 항목은 (X, Y) 튜플이어야 합니다."
-        self._set_value("Point", value)
-
-    @property
-    def line(self):
-        """선 정보 배열: 리스트 값을 입력하세요."""
-        return self._get_value("Line")
-
-    @line.setter
-    def line(self, value):
-        if value is None:
-            return self._del_value("Line")
-        assert isinstance(value, list), "값은 리스트이어야 합니다."
-        for item in value:
-            assert isinstance(item, int), "각 항목은 정수이어야 합니다."
-        self._set_value("Line", value)
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 22
@@ -2251,20 +826,9 @@ class DrawCtrlHyperlink(ParameterSet):
     | Item ID | Type      | SubType | Description                          |
     |---------|-----------|---------|--------------------------------------|
     | Command | PIT_BSTR  |         | Command String (명령 문자열)         |
-
     """
+    command = ParameterSet._str_prop("Command", "Command String: 명령 문자열을 입력하세요.")
 
-    @property
-    def command(self):
-        """Command String: 명령 문자열을 입력하세요."""
-        return self._get_value("Command")
-
-    @command.setter
-    def command(self, value):
-        if value is None:
-            return self._del_value("Command")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        self._set_value("Command", value)
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 24
@@ -2281,965 +845,179 @@ class DrawEditDetail(ParameterSet):
     | PointX  | PIT_I  |         | 교점의 X 좌표 |
     | PointY  | PIT_I  |         | 교점의 Y 좌표 |
     """
-
-    @property
-    def command(self):
-        """Command: Reserved."""
-        return self._get_value("Command")
-
-    @command.setter
-    def command(self, value):
-        if value is None:
-            return self._del_value("Command")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("Command", value)
-
-    @property
-    def index(self):
-        """Index: 교점 정의의 인덱스."""
-        return self._get_value("Index")
-
-    @index.setter
-    def index(self, value):
-        if value is None:
-            return self._del_value("Index")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("Index", value)
-
-    @property
-    def point_x(self):
-        """PointX: 교점의 X 좌표."""
-        return self._get_value("PointX")
-
-    @point_x.setter
-    def point_x(self, value):
-        if value is None:
-            return self._del_value("PointX")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("PointX", value)
-
-    @property
-    def point_y(self):
-        """PointY: 교점의 Y 좌표."""
-        return self._get_value("PointY")
-
-    @point_y.setter
-    def point_y(self, value):
-        if value is None:
-            return self._del_value("PointY")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("PointY", value)
+    command = ParameterSet._int_prop("Command", "Command: Reserved.")
+    index   = ParameterSet._int_prop("Index", "Index: 교점 정의의 인덱스.")
+    point_x = ParameterSet._int_prop("PointX", "PointX: 교점의 X 좌표.")
+    point_y = ParameterSet._int_prop("PointY", "PointY: 교점의 Y 좌표.")
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 26
 class DrawFillAttr(ParameterSet):
-    """### DrawFillAttr
-
-31\) DrawFillAttr : 그리기 개체의 채우기 속성
-
-
-| Item ID | Type | SubType | Description |
-| --- | --- | --- | --- |
-| Type | PIT\_UI |  | 배경 유형0 \= 채우기 없음1 \= 면색 또는 무늬색2 \= 그림3 \= 그러데이션 |
-| GradationType | PIT\_I |  | 배경 유형이 그러데이션일 때 그러데이션 형태1 \= 줄무늬형2 \= 원형3 \= 원뿔형4 \= 사각형 |
-| GradationAngle | PIT\_I |  | 그러데이션의 기울임(시작각) |
-| GradationCenterX | PIT\_I |  | 그러데이션의 가로중심(중심 X 좌표) |
-| GradationCenterY | PIT\_I |  | 그러데이션의 가로중심(중심 Y 좌표) |
-| GradationStep | PIT\_I |  | 그러데이션 번짐 정도 (0\..100\) |
-| GradationColorNum | PIT\_I |  | 그러데이션의 색 수 |
-| GradationColor | PIT\_ARRAY | PIT\_I | 그러데이션의 색깔(시작색, 중간색1,..중간색 n\-2, 끝색) 2\<\= n \<\=10 |
-| GradationIndexPos | PIT\_ARRAY | PIT\_I | 그러데이션 다음 색깔과의 거리(얼마나 번지고 나서 다음색깔로 가는가) |
-| GradationStepCenter | PIT\_UI1 |  | 그러데이션 번짐 정도의 중심 (0\..100\) |
-| GradationAlpha | PIT\_UI1 |  | 그러데이션 투명도 (한글2007에 새로 추가) |
-| WinBrushFaceColor | PIT\_UI |  | 면 색 (RGB 0x00BBGGRR) (한글2007에 새로 추가) |
-| WinBrushHatchColor | PIT\_UI |  | 무늬 색 (RGB 0x00BBGGRR) (한글2007에 새로 추가) |
-| WinBrushFaceStyle | PIT\_I1 |  | 무늬 스타일 (한글2007에 새로 추가)  | 0 \= 1 \= 2 \= 3 \= | 4 \= 5 \= 6 \= | | --- | --- | |
-| WinBrushAlpha | PIT\_UI |  | 면/무늬 색 투명도 (한글2007에 새로 추가) |
-| FileName | PIT\_BSTR |  | ShapeObject의 배경을 그림으로 선택했을 경우. 또는 그림개체일 경우의 그림파일 경로 |
-| Embedded | PIT\_UI1 |  | 그림이 문서에 직접 삽입(TRUE) / 파일로 연결(FALSE) |
-| PicEffect | PIT\_UI1 |  | 그림 효과  0 \= 실제 이미지 그대로1 \= 그레이스케일2 \= 흑백 효과 |
-| Brightness | PIT\_I1 |  | 명도 (\-100 \~ 100\) |
-| Contrast | PIT\_I1 |  | 밝기 (\-100 \~ 100\) |
-| Reverse | PIT\_UI1 |  | 반전 유무 |
-| DrawFillImageType | PIT\_I |  | ShapeObject의 배경일 경우에만 의미 있는 아이템, 배경을 채우는 방식을 결정한다. (그림개체에는 해당사항 없음)0 \= 바둑판식으로1 \= 가로/위만 바둑판식으로 배열2 \= 가로/아래만 바둑판식으로 배열3 \= 세로/왼쪽만 바둑판식으로 배열4 \= 세로/오른쪽만 바둑판식으로 배열5 \= 크기에 맞추어6 \= 가운데로7 \= 가운데 위로8 \= 가운데 아래로9 \= 왼쪽 가운데로10 \= 왼쪽 위로11 \= 왼쪽 아래로12 \= 오른쪽 가운데로13 \= 오른쪽 위로14 \= 오른쪽 아래로 |
-| SkipLeft | PIT\_UI |  | 그림 개체일 경우에만 의미 있는 아이템, 왼쪽 자르기 |
-| SkipRight | PIT\_UI |  | 그림 개체일 경우에만 의미 있는 아이템, 오른쪽 자르기 |
-| SkipTop | PIT\_UI |  | 그림 개체일 경우에만 의미 있는 아이템, 위 자르기 |
-| SkipBottom | PIT\_UI |  | 그림 개체일 경우에만 의미 있는 아이템, 아래 자르기 |
-| OriginalSizeX | PIT\_UI |  | 그림 개체일 경우에만 의미 있는 아이템, 이미지 원본 크기 X size |
-| OriginalSizeY | PIT\_UI |  | 그림 개체일 경우에만 의미 있는 아이템, 이미지 원본 크기 Y size |
-| InsideMarginLeft | PIT\_I4 |  | 그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (왼쪽) |
-| InsideMarginRight | PIT\_I4 |  | 그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (오른쪽) |
-| InsideMarginTop | PIT\_I4 |  | 그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (위) |
-| InsideMarginBottom | PIT\_I4 |  | 그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (아래) |
-| WindowsBrush | PIT\_UI1 |  | 현재 선택된 brush의 type이 면/무늬 브러시인가를 나타냄 |
-| GradationBrush | PIT\_UI1 |  | 현재 선택된 brush의 type이 그러데이션 브러시인가를 나타냄 |
-| ImageBrush | PIT\_UI1 |  | 현재 선택된 brush의 type이 그림 브러시인가를 나타냄 |
-| ImageCreateOnDrag | PIT\_UI1 |  | 그림 개체 생성 시 마우스로 끌어 생성할지 여부(한글2007에 새로 추가) |
-| ImageAlpha | PIT\_UI1 |  | 그림 개체/배경 투명도 (한글2007에 새로 추가) |
-
- """
-
-    @property
-    def type(self):
-        """배경 유형: 0 = 채우기 없음, 1 = 단색 또는 무늬 채우기, 2 = 그림, 3 = 그라데이션"""
-        return self._get_value("Type")
-
-    @type.setter
-    def type(self, value):
-        if value is None:
-            return self._del_value("Type")
-        assert value in [0, 1, 2, 3], "값은 0, 1, 2, 3 중 하나여야 합니다."
-        return self._set_value("Type", value)
-    
-    @property
-    def gradation_type(self):
-        """배경 유형이 그라데이션일 때 그라데이션 형태"""
-        return self._get_value("GradationType")
-
-    @gradation_type.setter
-    def gradation_type(self, value):
-        if value is None:
-            return self._del_value("GradationType")
-        assert value in [1, 2, 3, 4], "값은 1=선형, 2=원형, 3=원뿔형, 4=사각형 중 하나여야 합니다."
-        return self._set_value("GradationType", value)
-
-    @property
-    def gradation_angle(self):
-        """그라데이션의 기울기(회전 각도)"""
-        return self._get_value("GradationAngle")
-
-    @gradation_angle.setter
-    def gradation_angle(self, value):
-        if value is None:
-            return self._del_value("GradationAngle")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("GradationAngle", value)
-
-    @property
-    def gradation_center_x(self):
-        """그라데이션의 가로 중심(X 좌표)"""
-        return self._get_value("GradationCenterX")
-
-    @gradation_center_x.setter
-    def gradation_center_x(self, value):
-        if value is None:
-            return self._del_value("GradationCenterX")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("GradationCenterX", value)
-
-    @property
-    def gradation_center_y(self):
-        """그라데이션의 세로 중심(Y 좌표)"""
-        return self._get_value("GradationCenterY")
-
-    @gradation_center_y.setter
-    def gradation_center_y(self, value):
-        if value is None:
-            return self._del_value("GradationCenterY")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("GradationCenterY", value)
-
-    @property
-    def gradation_step(self):
-        """그라데이션 단계 설정 (0..100)"""
-        return self._get_value("GradationStep")
-
-    @gradation_step.setter
-    def gradation_step(self, value):
-        if value is None:
-            return self._del_value("GradationStep")
-        assert 0 <= value <= 100, "값은 0과 100 사이의 정수여야 합니다."
-        return self._set_value("GradationStep", value)
-
-    @property
-    def gradation_color_num(self):
-        """그라데이션의 색 수"""
-        return self._get_value("GradationColorNum")
-
-    @gradation_color_num.setter
-    def gradation_color_num(self, value):
-        if value is None:
-            return self._del_value("GradationColorNum")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("GradationColorNum", value)
-
-    @property
-    def gradation_color(self):
-        """그라데이션의 색상 (시작색, 중간색1,..중간색 n-2, 끝색)"""
-        return self._get_value("GradationColor")
-
-    @gradation_color.setter
-    def gradation_color(self, value):
-        if value is None:
-            return self._del_value("GradationColor")
-        assert isinstance(value, list) and 2 <= len(value) <= 10, "값은 길이가 2에서 10 사이인 리스트여야 합니다."
-        return self._set_value("GradationColor", value)
-
-    @property
-    def gradation_index_pos(self):
-        """그라데이션 단계 색상들과의 위치"""
-        return self._get_value("GradationIndexPos")
-
-    @gradation_index_pos.setter
-    def gradation_index_pos(self, value):
-        if value is None:
-            return self._del_value("GradationIndexPos")
-        assert isinstance(value, list), "값은 리스트여야 합니다."
-        return self._set_value("GradationIndexPos", value)
-
-    @property
-    def gradation_step_center(self):
-        """그라데이션 단계 설정의 중심 (0..100)"""
-        return self._get_value("GradationStepCenter")
-
-    @gradation_step_center.setter
-    def gradation_step_center(self, value):
-        if value is None:
-            return self._del_value("GradationStepCenter")
-        assert 0 <= value <= 100, "값은 0과 100 사이의 정수여야 합니다."
-        return self._set_value("GradationStepCenter", value)
-
-    @property
-    def gradation_alpha(self):
-        """그라데이션 투명도"""
-        return self._get_value("GradationAlpha")
-
-    @gradation_alpha.setter
-    def gradation_alpha(self, value):
-        if value is None:
-            return self._del_value("GradationAlpha")
-        assert 0 <= value <= 255, "값은 0과 255 사이의 정수여야 합니다."
-        return self._set_value("GradationAlpha", value)
-
-    @property
-    def win_brush_face_color(self):
-        """단색 (RGB 0x00BBGGRR)"""
-        return self._get_value("WinBrushFaceColor")
-
-    @win_brush_face_color.setter
-    def win_brush_face_color(self, value):
-        if value is None:
-            return self._del_value("WinBrushFaceColor")
-        assert isinstance(value, int) and 0 <= value <= 0xFFFFFF, "값은 0x00BBGGRR 형식의 정수여야 합니다."
-        return self._set_value("WinBrushFaceColor", value)
-
-    @property
-    def win_brush_hatch_color(self):
-        """무늬 (RGB 0x00BBGGRR)"""
-        return self._get_value("WinBrushHatchColor")
-
-    @win_brush_hatch_color.setter
-    def win_brush_hatch_color(self, value):
-        if value is None:
-            return self._del_value("WinBrushHatchColor")
-        assert isinstance(value, int) and 0 <= value <= 0xFFFFFF, "값은 0x00BBGGRR 형식의 정수여야 합니다."
-        return self._set_value("WinBrushHatchColor", value)
-
-    @property
-    def win_brush_face_style(self):
-        """무늬 스타일"""
-        return self._get_value("WinBrushFaceStyle")
-
-    @win_brush_face_style.setter
-    def win_brush_face_style(self, value):
-        if value is None:
-            return self._del_value("WinBrushFaceStyle")
-        assert 0 <= value <= 6, "값은 0에서 6 사이의 정수여야 합니다."
-        return self._set_value("WinBrushFaceStyle", value)
-
-    @property
-    def win_brush_alpha(self):
-        """단색/무늬 투명도"""
-        return self._get_value("WinBrushAlpha")
-
-    @win_brush_alpha.setter
-    def win_brush_alpha(self, value):
-        if value is None:
-            return self._del_value("WinBrushAlpha")
-        assert 0 <= value <= 255, "값은 0과 255 사이의 정수여야 합니다."
-        return self._set_value("WinBrushAlpha", value)
-    
-    @property
-    def filename(self):
-        """ShapeObject의 배경을 그림으로 선택했을 경우 또는 그림개체일 경우의 그림파일 경로"""
-        return self._get_value("FileName")
-
-    @filename.setter
-    def filename(self, value):
-        if value is None:
-            return self._del_value("FileName")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        return self._set_value("FileName", value)
-
-    @property
-    def embedded(self):
-        """그림이 문서에 직접 삽입(TRUE) / 파일로 연결(FALSE)"""
-        return self._get_value("Embedded")
-
-    @embedded.setter
-    def embedded(self, value):
-        if value is None:
-            return self._del_value("Embedded")
-        assert value in [0, 1], "값은 0(FALSE) 또는 1(TRUE)이어야 합니다."
-        return self._set_value("Embedded", value)
-
-    @property
-    def pic_effect(self):
-        """그림 효과: 0 = 실제 이미지 그대로, 1 = 그레이스케일, 2 = 흑백 효과"""
-        return self._get_value("PicEffect")
-
-    @pic_effect.setter
-    def pic_effect(self, value):
-        if value is None:
-            return self._del_value("PicEffect")
-        assert value in [0, 1, 2], "값은 0, 1, 2 중 하나여야 합니다."
-        return self._set_value("PicEffect", value)
-
-    @property
-    def brightness(self):
-        """명도 (-100 ~ 100)"""
-        return self._get_value("Brightness")
-
-    @brightness.setter
-    def brightness(self, value):
-        if value is None:
-            return self._del_value("Brightness")
-        assert -100 <= value <= 100, "값은 -100과 100 사이의 정수여야 합니다."
-        return self._set_value("Brightness", value)
-
-    @property
-    def contrast(self):
-        """대비 (-100 ~ 100)"""
-        return self._get_value("Contrast")
-
-    @contrast.setter
-    def contrast(self, value):
-        if value is None:
-            return self._del_value("Contrast")
-        assert -100 <= value <= 100, "값은 -100과 100 사이의 정수여야 합니다."
-        return self._set_value("Contrast", value)
-
-    @property
-    def reverse(self):
-        """반전 유무"""
-        return self._get_value("Reverse")
-
-    @reverse.setter
-    def reverse(self, value):
-        if value is None:
-            return self._del_value("Reverse")
-        assert value in [0, 1], "값은 0(FALSE) 또는 1(TRUE)이어야 합니다."
-        return self._set_value("Reverse", value)
-
-    @property
-    def draw_fill_image_type(self):
-        """배경을 채우는 방식"""
-        return self._get_value("DrawFillImageType")
-
-    @draw_fill_image_type.setter
-    def draw_fill_image_type(self, value):
-        if value is None:
-            return self._del_value("DrawFillImageType")
-        assert 0 <= value <= 14, "값은 0에서 14 사이의 정수여야 합니다."
-        return self._set_value("DrawFillImageType", value)
-
-    @property
-    def skip_left(self):
-        """왼쪽 자르기"""
-        return self._get_value("SkipLeft")
-
-    @skip_left.setter
-    def skip_left(self, value):
-        if value is None:
-            return self._del_value("SkipLeft")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("SkipLeft", value)
-
-    @property
-    def skip_right(self):
-        """오른쪽 자르기"""
-        return self._get_value("SkipRight")
-
-    @skip_right.setter
-    def skip_right(self, value):
-        if value is None:
-            return self._del_value("SkipRight")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("SkipRight", value)
-
-    @property
-    def skip_top(self):
-        """위 자르기"""
-        return self._get_value("SkipTop")
-
-    @skip_top.setter
-    def skip_top(self, value):
-        if value is None:
-            return self._del_value("SkipTop")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("SkipTop", value)
-
-    @property
-    def skip_bottom(self):
-        """아래 자르기"""
-        return self._get_value("SkipBottom")
-
-    @skip_bottom.setter
-    def skip_bottom(self, value):
-        if value is None:
-            return self._del_value("SkipBottom")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("SkipBottom", value)
-
-    @property
-    def original_size_x(self):
-        """이미지 원본 크기 X size"""
-        return self._get_value("OriginalSizeX")
-
-    @original_size_x.setter
-    def original_size_x(self, value):
-        if value is None:
-            return self._del_value("OriginalSizeX")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("OriginalSizeX", value)
-
-    @property
-    def original_size_y(self):
-        """이미지 원본 크기 Y size"""
-        return self._get_value("OriginalSizeY")
-
-    @original_size_y.setter
-    def original_size_y(self, value):
-        if value is None:
-            return self._del_value("OriginalSizeY")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("OriginalSizeY", value)
-    
-    @property
-    def inside_margin_left(self):
-        """이미지 안쪽 여백 (왼쪽)"""
-        return self._get_value("InsideMarginLeft")
-
-    @inside_margin_left.setter
-    def inside_margin_left(self, value):
-        if value is None:
-            return self._del_value("InsideMarginLeft")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("InsideMarginLeft", value)
-
-    @property
-    def inside_margin_right(self):
-        """이미지 안쪽 여백 (오른쪽)"""
-        return self._get_value("InsideMarginRight")
-
-    @inside_margin_right.setter
-    def inside_margin_right(self, value):
-        if value is None:
-            return self._del_value("InsideMarginRight")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("InsideMarginRight", value)
-
-    @property
-    def inside_margin_top(self):
-        """이미지 안쪽 여백 (위)"""
-        return self._get_value("InsideMarginTop")
-
-    @inside_margin_top.setter
-    def inside_margin_top(self, value):
-        if value is None:
-            return self._del_value("InsideMarginTop")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("InsideMarginTop", value)
-
-    @property
-    def inside_margin_bottom(self):
-        """이미지 안쪽 여백 (아래)"""
-        return self._get_value("InsideMarginBottom")
-
-    @inside_margin_bottom.setter
-    def inside_margin_bottom(self, value):
-        if value is None:
-            return self._del_value("InsideMarginBottom")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("InsideMarginBottom", value)
-
-    @property
-    def windows_brush(self):
-        """현재 선택된 brush의 type이 면/무늬 브러시인가"""
-        return self._get_value("WindowsBrush")
-
-    @windows_brush.setter
-    def windows_brush(self, value):
-        if value is None:
-            return self._del_value("WindowsBrush")
-        assert value in [0, 1], "값은 0 (아님) 또는 1 (맞음)이어야 합니다."
-        return self._set_value("WindowsBrush", value)
-
-    @property
-    def gradation_brush(self):
-        """현재 선택된 brush의 type이 그러데이션 브러시인가"""
-        return self._get_value("GradationBrush")
-
-    @gradation_brush.setter
-    def gradation_brush(self, value):
-        if value is None:
-            return self._del_value("GradationBrush")
-        assert value in [0, 1], "값은 0 (아님) 또는 1 (맞음)이어야 합니다."
-        return self._set_value("GradationBrush", value)
-
-    @property
-    def image_brush(self):
-        """현재 선택된 brush의 type이 그림 브러시인가"""
-        return self._get_value("ImageBrush")
-
-    @image_brush.setter
-    def image_brush(self, value):
-        if value is None:
-            return self._del_value("ImageBrush")
-        assert value in [0, 1], "값은 0 (아님) 또는 1 (맞음)이어야 합니다."
-        return self._set_value("ImageBrush", value)
-
-    @property
-    def image_create_on_drag(self):
-        """그림 개체 생성 시 마우스로 끌어 생성 여부"""
-        return self._get_value("ImageCreateOnDrag")
-
-    @image_create_on_drag.setter
-    def image_create_on_drag(self, value):
-        if value is None:
-            return self._del_value("ImageCreateOnDrag")
-        assert value in [0, 1], "값은 0 (아님) 또는 1 (맞음)이어야 합니다."
-        return self._set_value("ImageCreateOnDrag", value)
-
-    @property
-    def image_alpha(self):
-        """그림 개체/배경 투명도"""
-        return self._get_value("ImageAlpha")
-
-    @image_alpha.setter
-    def image_alpha(self, value):
-        if value is None:
-            return self._del_value("ImageAlpha")
-        assert isinstance(value, int) and 0 <= value <= 255, "값은 0에서 255 사이의 정수여야 합니다."
-        return self._set_value("ImageAlpha", value)
-
-# %% ../nbs/02_api/02_parameters.ipynb 29
-class DrawFillAttr(ParameterSet):
     """
     ### DrawFillAttr
 
-    31) DrawFillAttr : 그림/배경의 속성 집합
+    31) DrawFillAttr : 그리기 개체의 채우기 속성
+
+    | Item ID               | Type         | SubType   | Description                                                                                         |
+    |-----------------------|--------------|-----------|-----------------------------------------------------------------------------------------------------|
+    | Type                  | PIT_UI       |           | 배경 유형: 0 = 채우기 없음, 1 = 단색 또는 무늬 채우기, 2 = 그림, 3 = 그라데이션                      |
+    | GradationType         | PIT_I        |           | 그라데이션 형태: 1 = 줄무늬형, 2 = 원형, 3 = 원뿔형, 4 = 사각형                                       |
+    | GradationAngle        | PIT_I        |           | 그라데이션의 기울기(회전 각도)                                                                       |
+    | GradationCenterX      | PIT_I        |           | 그라데이션의 가로 중심 (X 좌표)                                                                      |
+    | GradationCenterY      | PIT_I        |           | 그라데이션의 세로 중심 (Y 좌표)                                                                      |
+    | GradationStep         | PIT_I        |           | 그라데이션 단계 설정 (0..100)                                                                        |
+    | GradationColorNum     | PIT_I        |           | 그라데이션의 색 수                                                                                  |
+    | GradationColor        | PIT_ARRAY    | PIT_I     | 그라데이션의 색상 (시작색, 중간색들, 끝색), 길이는 2~10                                               |
+    | GradationIndexPos     | PIT_ARRAY    | PIT_I     | 그라데이션 단계 색상들과의 위치                                                                      |
+    | GradationStepCenter   | PIT_UI1      |           | 그라데이션 단계 설정의 중심 (0..100)                                                                 |
+    | GradationAlpha        | PIT_UI1      |           | 그라데이션 투명도 (0..255)                                                                           |
+    | WinBrushFaceColor     | PIT_UI       |           | 단색 (RGB 0x00BBGGRR)                                                                                |
+    | WinBrushHatchColor    | PIT_UI       |           | 무늬 (RGB 0x00BBGGRR)                                                                                |
+    | WinBrushFaceStyle     | PIT_I1       |           | 무늬 스타일 (0~6)                                                                                   |
+    | WinBrushAlpha         | PIT_UI       |           | 단색/무늬 투명도 (0..255)                                                                             |
+    | FileName              | PIT_BSTR     |           | 그림 파일 경로                                                                                      |
+    | Embedded              | PIT_UI1      |           | 그림이 문서에 직접 삽입(TRUE) / 파일로 연결(FALSE)                                                    |
+    | PicEffect             | PIT_UI1      |           | 그림 효과: 0 = 그대로, 1 = 그레이스케일, 2 = 흑백 효과                                               |
+    | Brightness            | PIT_I1       |           | 명도 (-100 ~ 100)                                                                                   |
+    | Contrast              | PIT_I1       |           | 대비 (-100 ~ 100)                                                                                   |
+    | Reverse               | PIT_UI1      |           | 반전 유무 (0 또는 1)                                                                                |
+    | DrawFillImageType     | PIT_I        |           | 배경 채우는 방식 (0~14)                                                                              |
+    | SkipLeft              | PIT_UI       |           | 왼쪽 자르기                                                                                        |
+    | SkipRight             | PIT_UI       |           | 오른쪽 자르기                                                                                      |
+    | SkipTop               | PIT_UI       |           | 위 자르기                                                                                          |
+    | SkipBottom            | PIT_UI       |           | 아래 자르기                                                                                        |
+    | OriginalSizeX         | PIT_I        |           | 이미지 원본 크기 X                                                                                   |
+    | OriginalSizeY         | PIT_I        |           | 이미지 원본 크기 Y                                                                                   |
+    | InsideMarginLeft      | PIT_I4       |           | 이미지 안쪽 여백 (왼쪽)                                                                              |
+    | InsideMarginRight     | PIT_I4       |           | 이미지 안쪽 여백 (오른쪽)                                                                            |
+    | InsideMarginTop       | PIT_I4       |           | 이미지 안쪽 여백 (위)                                                                                |
+    | InsideMarginBottom    | PIT_I4       |           | 이미지 안쪽 여백 (아래)                                                                              |
+    | WindowsBrush          | PIT_UI1      |           | 면/무늬 브러시 여부 (0 또는 1)                                                                       |
+    | GradationBrush        | PIT_UI1      |           | 그러데이션 브러시 여부 (0 또는 1)                                                                    |
+    | ImageBrush            | PIT_UI1      |           | 그림 브러시 여부 (0 또는 1)                                                                          |
+    | ImageCreateOnDrag     | PIT_UI1      |           | 그림 개체 생성 시 드래그 여부 (0 또는 1)                                                             |
+    | ImageAlpha            | PIT_UI1      |           | 그림 개체/배경 투명도 (0..255)                                                                        |
     """
 
-    @property
-    def type(self):
-        """그림 유형 (0: 없음, 1: 단색, 2: 그림자 등)"""
-        return self._get_value("Type")
-
-    @type.setter
-    def type(self, value):
-        if value is None:
-            return self._del_value("Type")
-        assert isinstance(value, int) and value in [0, 1, 2, 3], "값은 0, 1, 2, 3 중 하나여야 합니다."
-        self._set_value("Type", value)
-
-    @property
-    def gradation_type(self):
-        """그라데이션 유형 (1: 좌->우, 2: 위->아래 등)"""
-        return self._get_value("GradationType")
-
-    @gradation_type.setter
-    def gradation_type(self, value):
-        if value is None:
-            return self._del_value("GradationType")
-        assert isinstance(value, int) and 1 <= value <= 4, "값은 1~4 범위의 정수여야 합니다."
-        self._set_value("GradationType", value)
-
-    @property
-    def gradation_angle(self):
-        """그라데이션 각도"""
-        return self._get_value("GradationAngle")
-
-    @gradation_angle.setter
-    def gradation_angle(self, value):
-        if value is None:
-            return self._del_value("GradationAngle")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("GradationAngle", value)
-
-    @property
-    def gradation_center_x(self):
-        """그라데이션 중심 X 좌표"""
-        return self._get_value("GradationCenterX")
-
-    @gradation_center_x.setter
-    def gradation_center_x(self, value):
-        if value is None:
-            return self._del_value("GradationCenterX")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("GradationCenterX", value)
-
-    @property
-    def gradation_center_y(self):
-        """그라데이션 중심 Y 좌표"""
-        return self._get_value("GradationCenterY")
-
-    @gradation_center_y.setter
-    def gradation_center_y(self, value):
-        if value is None:
-            return self._del_value("GradationCenterY")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("GradationCenterY", value)
-
-    @property
-    def gradation_step(self):
-        """그라데이션 단계 (0~100)"""
-        return self._get_value("GradationStep")
-
-    @gradation_step.setter
-    def gradation_step(self, value):
-        if value is None:
-            return self._del_value("GradationStep")
-        assert isinstance(value, int) and 0 <= value <= 100, "값은 0~100 범위의 정수여야 합니다."
-        self._set_value("GradationStep", value)
-
-    @property
-    def win_brush_face_color(self):
-        """윈도우 브러시 면 색상 (RGB 값)"""
-        return self._get_value("WinBrushFaceColor")
-
-    @win_brush_face_color.setter
-    def win_brush_face_color(self, value):
-        if value is None:
-            return self._del_value("WinBrushFaceColor")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("WinBrushFaceColor", value)
-
-    @property
-    def win_brush_alpha(self):
-        """윈도우 브러시 알파 값"""
-        return self._get_value("WinBrushAlpha")
-
-    @win_brush_alpha.setter
-    def win_brush_alpha(self, value):
-        if value is None:
-            return self._del_value("WinBrushAlpha")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("WinBrushAlpha", value)
-
-    # 필요한 다른 속성도 위와 동일한 방식으로 정의할 수 있습니다.
-
-    def _get_value(self, item_id):
-        """내부 값 가져오기"""
-        # 실제 구현은 데이터를 저장하고 조회하는 로직을 포함해야 합니다.
-        pass
-
-    def _set_value(self, item_id, value):
-        """내부 값 설정"""
-        # 실제 구현은 데이터를 저장하는 로직을 포함해야 합니다.
-        pass
-
-    def _del_value(self, item_id):
-        """내부 값 삭제"""
-        # 실제 구현은 데이터를 삭제하는 로직을 포함해야 합니다.
-        pass
+    # Basic Properties
+    type = ParameterSet._enum_prop("Type", allowed=[0, 1, 2, 3],
+                                     doc="배경 유형: 0 = 채우기 없음, 1 = 단색 또는 무늬 채우기, 2 = 그림, 3 = 그라데이션")
+    gradation_type = ParameterSet._enum_prop("GradationType", allowed=[1, 2, 3, 4],
+                                             doc="그라데이션 형태: 1 = 줄무늬형, 2 = 원형, 3 = 원뿔형, 4 = 사각형")
+    gradation_angle = ParameterSet._int_prop("GradationAngle", "그라데이션의 기울기(회전 각도)")
+    gradation_center_x = ParameterSet._int_prop("GradationCenterX", "그라데이션의 가로 중심 (X 좌표)")
+    gradation_center_y = ParameterSet._int_prop("GradationCenterY", "그라데이션의 세로 중심 (Y 좌표)")
+    gradation_step = ParameterSet._int_range_prop("GradationStep", "그라데이션 단계 설정 (0..100)", 0, 100)
+    gradation_color_num = ParameterSet._int_prop("GradationColorNum", "그라데이션의 색 수")
+    
+    gradation_color = ParameterSet._gradation_color_prop("GradationColor", "그라데이션의 색상 (시작색, 중간색들, 끝색)")
+    
+    gradation_index_pos = ParameterSet._int_list_prop("GradationIndexPos", "그라데이션 단계 색상들과의 위치")
+    gradation_step_center = ParameterSet._int_range_prop("GradationStepCenter", "그라데이션 단계 설정의 중심 (0..100)", 0, 100)
+    gradation_alpha = ParameterSet._int_range_prop("GradationAlpha", "그라데이션 투명도", 0, 255)
+    
+    win_brush_face_color = ParameterSet._int_range_prop("WinBrushFaceColor", "단색 (RGB 0x00BBGGRR)", 0, 0xFFFFFF)
+    win_brush_hatch_color = ParameterSet._int_range_prop("WinBrushHatchColor", "무늬 (RGB 0x00BBGGRR)", 0, 0xFFFFFF)
+    win_brush_face_style = ParameterSet._int_range_prop("WinBrushFaceStyle", "무늬 스타일", 0, 6)
+    win_brush_alpha = ParameterSet._int_range_prop("WinBrushAlpha", "단색/무늬 투명도", 0, 255)
+    
+    filename = ParameterSet._str_prop("FileName", "그림 파일 경로")
+    embedded = ParameterSet._bool_prop("Embedded", "그림이 문서에 직접 삽입(TRUE) / 파일로 연결(FALSE)")
+    pic_effect = ParameterSet._enum_prop("PicEffect", allowed=[0, 1, 2],
+                                           doc="그림 효과: 0 = 실제 이미지 그대로, 1 = 그레이스케일, 2 = 흑백 효과")
+    brightness = ParameterSet._int_range_prop("Brightness", "명도 (-100 ~ 100)", -100, 100)
+    contrast = ParameterSet._int_range_prop("Contrast", "대비 (-100 ~ 100)", -100, 100)
+    reverse = ParameterSet._bool_prop("Reverse", "반전 유무: 0 (FALSE) 또는 1 (TRUE)")
+    draw_fill_image_type = ParameterSet._int_range_prop("DrawFillImageType", "배경을 채우는 방식", 0, 14)
+    
+    skip_left = ParameterSet._int_prop("SkipLeft", "왼쪽 자르기")
+    skip_right = ParameterSet._int_prop("SkipRight", "오른쪽 자르기")
+    skip_top = ParameterSet._int_prop("SkipTop", "위 자르기")
+    skip_bottom = ParameterSet._int_prop("SkipBottom", "아래 자르기")
+    
+    original_size_x = ParameterSet._int_prop("OriginalSizeX", "이미지 원본 크기 X")
+    original_size_y = ParameterSet._int_prop("OriginalSizeY", "이미지 원본 크기 Y")
+    
+    inside_margin_left = ParameterSet._int_prop("InsideMarginLeft", "이미지 안쪽 여백 (왼쪽)")
+    inside_margin_right = ParameterSet._int_prop("InsideMarginRight", "이미지 안쪽 여백 (오른쪽)")
+    inside_margin_top = ParameterSet._int_prop("InsideMarginTop", "이미지 안쪽 여백 (위)")
+    inside_margin_bottom = ParameterSet._int_prop("InsideMarginBottom", "이미지 안쪽 여백 (아래)")
+    
+    windows_brush = ParameterSet._bool_prop("WindowsBrush", "면/무늬 브러시 여부 (0 또는 1)")
+    gradation_brush = ParameterSet._bool_prop("GradationBrush", "그러데이션 브러시 여부 (0 또는 1)")
+    image_brush = ParameterSet._bool_prop("ImageBrush", "그림 브러시 여부 (0 또는 1)")
+    image_create_on_drag = ParameterSet._bool_prop("ImageCreateOnDrag", "마우스로 그림 개체 생성 여부 (0 또는 1)")
+    image_alpha = ParameterSet._int_range_prop("ImageAlpha", "그림 개체/배경 투명도", 0, 255)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 31
+# %% ../nbs/02_api/02_parameters.ipynb 29
 class DrawImageAttr(ParameterSet):
     """
     ### DrawImageAttr
 
-32\) DrawImageAttr : 그림 개체 속성
+    32) DrawImageAttr : 그림 개체 속성
 
-ImageAttr(한글2005)에서 DrawImageAttr로 이름이 변경되었다. 그림 개체의 속성을 지정하기 위한 파라메터셋.
+    ImageAttr(한글2005)에서 DrawImageAttr로 이름이 변경되었다.
+    그림 개체의 속성을 지정하기 위한 파라메터셋.
+    DrawFillAttr에서 그림과 관련된 속성만 빼서 파라메터셋으로 지정되었다.
+    (현재 DrawFillAttr와 상속관계가 지정되지 않음)
 
-DrawFillAttr에서 그림과 관련된 속성만 빼서 파라메터셋으로 지정되었다.
-
-현재 DrawFillAttr와 상속관계가 지정되지 않았다. (차후 상속관계로 묶일 예정)
-
-
-| Item ID | Type | SubType | Description |
-| --- | --- | --- | --- |
-| FileName | PIT\_BSTR |  | ShapeObject의 배경을 그림으로 선택했을 경우 또는 그림개체일 경우의 그림파일 경로 |
-| Embedded | PIT\_UI1 |  | 그림이 문서에 직접 삽입(TRUE) / 파일로 연결(FALSE) |
-| PicEffect | PIT\_UI1 |  | 그림 효과  0 \= 실제 이미지 그대로1 \= 그레이스케일2 \= 흑백 효과 |
-| Brightness | PIT\_I1 |  | 명도 (\-100 \~ 100\) |
-| Contrast | PIT\_I1 |  | 밝기 (\-100 \~ 100\) |
-| Reverse | PIT\_UI1 |  | 반전 유무 |
-| DrawFillImageType | PIT\_I |  | ShapeObject의 배경일 경우에만 의미 있는 아이템, 배경을 채우는 방식을 결정한다. (그림개체에는 해당사항 없음)0 \= 바둑판식으로1 \= 가로/위만 바둑판식으로 배열2 \= 가로/아래만 바둑판식으로 배열3 \= 세로/왼쪽만 바둑판식으로 배열4 \= 세로/오른쪽만 바둑판식으로 배열5 \= 크기에 맞추어6 \= 가운데로7 \= 가운데 위로8 \= 가운데 아래로9 \= 왼쪽 가운데로10 \= 왼쪽 위로11 \= 왼쪽 아래로12 \= 오른쪽 가운데로13 \= 오른쪽 위로14 \= 오른쪽 아래로 |
-| SkipLeft | PIT\_UI |  | 그림 개체일 경우에만 의미 있는 아이템, 왼쪽 자르기 |
-| SkipRight | PIT\_UI |  | 그림 개체일 경우에만 의미 있는 아이템, 오른쪽 자르기 |
-| SkipTop | PIT\_UI |  | 그림 개체일 경우에만 의미 있는 아이템, 위 자르기 |
-| SkipBottom | PIT\_UI |  | 그림 개체일 경우에만 의미 있는 아이템, 아래 자르기 |
-| OriginalSizeX | PIT\_UI |  | 그림 개체일 경우에만 의미 있는 아이템, 이미지 원본 크기 X size |
-| OriginalSizeY | PIT\_UI |  | 그림 개체일 경우에만 의미 있는 아이템, 이미지 원본 크기 Y size |
-| InsideMarginLeft | PIT\_I4 |  | 그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (왼쪽) |
-| InsideMarginRight | PIT\_I4 |  | 그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (오른쪽) |
-| InsideMarginTop | PIT\_I4 |  | 그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (위) |
-| InsideMarginBottom | PIT\_I4 |  | 그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (아래) |
-| WindowsBrush | PIT\_UI1 |  | 현재 선택된 brush의 type이 면/무늬 브러시인가를 나타냄 |
-| GradationBrush | PIT\_UI1 |  | 현재 선택된 brush의 type이 그러데이션 브러시인가를 나타냄 |
-| ImageBrush | PIT\_UI1 |  | 현재 선택된 brush의 type이 그림 브러시인가를 나타냄 |
-| ImageCreateOnDrag | PIT\_UI1 |  | 그림 개체 생성 시 마우스로 끌어 생성할지 여부(한글2007에 새로 추가) |
-
+    | Item ID              | Type     | SubType   | Description                                                                                         |
+    |----------------------|----------|-----------|-----------------------------------------------------------------------------------------------------|
+    | FileName             | PIT_BSTR |           | ShapeObject의 배경을 그림으로 선택했을 경우 또는 그림개체일 경우의 그림파일 경로                    |
+    | Embedded             | PIT_UI1  |           | 그림이 문서에 삽입(T)/링크(F)                                                                         |
+    | PicEffect            | PIT_UI1  |           | 그림 효과: 0 = 그대로, 1 = 흑백, 2 = 세피아 등                                                      |
+    | Brightness           | PIT_I1   |           | 명도 (-100 ~ 100)                                                                                   |
+    | Contrast             | PIT_I1   |           | 밝기 (-100 ~ 100)                                                                                   |
+    | Reverse              | PIT_UI1  |           | 반전 유무                                                                                           |
+    | DrawFillImageType    | PIT_I    |           | 배경을 채우는 방식 (0~14)                                                                             |
+    | SkipLeft             | PIT_UI   |           | 그림 개체일 경우에만 의미 있는 아이템, 왼쪽 자르기                                                  |
+    | SkipRight            | PIT_UI   |           | 그림 개체일 경우에만 의미 있는 아이템, 오른쪽 자르기                                                |
+    | SkipTop              | PIT_UI   |           | 그림 개체일 경우에만 의미 있는 아이템, 위 자르기                                                    |
+    | SkipBottom           | PIT_UI   |           | 그림 개체일 경우에만 의미 있는 아이템, 아래 자르기                                                  |
+    | OriginalSizeX        | PIT_UI   |           | 이미지 원본 크기 X                                                                                   |
+    | OriginalSizeY        | PIT_UI   |           | 이미지 원본 크기 Y                                                                                   |
+    | InsideMarginLeft     | PIT_I4   |           | 이미지 안쪽 여백 (왼쪽)                                                                              |
+    | InsideMarginRight    | PIT_I4   |           | 이미지 안쪽 여백 (오른쪽)                                                                            |
+    | InsideMarginTop      | PIT_I4   |           | 이미지 안쪽 여백 (위)                                                                                |
+    | InsideMarginBottom   | PIT_I4   |           | 이미지 안쪽 여백 (아래)                                                                              |
+    | WindowsBrush         | PIT_UI1  |           | 현재 선택된 brush의 type이 면/무늬 브러시 여부                                                       |
+    | GradationBrush       | PIT_UI1  |           | 현재 선택된 brush의 type이 그러데이션 브러시 여부                                                    |
+    | ImageBrush           | PIT_UI1  |           | 현재 선택된 brush의 type이 그림 브러시 여부                                                          |
+    | ImageCreateOnDrag    | PIT_UI1  |           | 그림 개체 생성 시 마우스로 끌어 생성 여부 (한글2007에 새로 추가)                                      |
+    | ImageAlpha           | PIT_UI1  |           | 그림 개체/배경 투명도 (0~255)                                                                         |
     """
-
-    @property
-    def file_name(self):
-        """ShapeObject의 내용을 그림으로 표현할 경우 그림경로"""
-        return self._get_value("FileName")
-
-    @file_name.setter
-    def file_name(self, value):
-        if value is None:
-            return self._del_value("FileName")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        return self._set_value("FileName", value)
-
-    @property
-    def embedded(self):
-        """그림이 문서에 삽입(T)/링크(F)"""
-        return self._get_value("Embedded")
-
-    @embedded.setter
-    def embedded(self, value):
-        if value is None:
-            return self._del_value("Embedded")
-        assert value in [0, 1], "값은 0 (링크) 또는 1 (삽입)이어야 합니다."
-        return self._set_value("Embedded", value)
-
-    @property
-    def pic_effect(self):
-        """그림 효과 설정 (0: 없음, 1: 흑백, 2: 세피아 등)"""
-        return self._get_value("PicEffect")
-
-    @pic_effect.setter
-    def pic_effect(self, value):
-        if value is None:
-            return self._del_value("PicEffect")
-        assert value in range(3), "값은 0, 1 또는 2이어야 합니다."
-        return self._set_value("PicEffect", value)
-
-    @property
-    def brightness(self):
-        """밝기 조정 (-100 ~ 100)"""
-        return self._get_value("Brightness")
-
-    @brightness.setter
-    def brightness(self, value):
-        if value is None:
-            return self._del_value("Brightness")
-        assert -100 <= value <= 100, "값은 -100에서 100 사이여야 합니다."
-        return self._set_value("Brightness", value)
-
-    @property
-    def contrast(self):
-        """대비 조정 (-100 ~ 100)"""
-        return self._get_value("Contrast")
-
-    @contrast.setter
-    def contrast(self, value):
-        if value is None:
-            return self._del_value("Contrast")
-        assert -100 <= value <= 100, "값은 -100에서 100 사이여야 합니다."
-        return self._set_value("Contrast", value)
-
-    @property
-    def reverse(self):
-        """색 반전"""
-        return self._get_value("Reverse")
-
-    @reverse.setter
-    def reverse(self, value):
-        if value is None:
-            return self._del_value("Reverse")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("Reverse", value)
-
-    @property
-    def draw_fill_image_type(self):
-        """ShapeObject의 배경일 경우에만 의미 있는 아이템, 배경을 채우는 방식을 결정한다."""
-        return self._get_value("DrawFillImageType")
-
-    @draw_fill_image_type.setter
-    def draw_fill_image_type(self, value):
-        if value is None:
-            return self._del_value("DrawFillImageType")
-        assert 0 <= value <= 14, "값은 0에서 14 사이여야 합니다."
-        return self._set_value("DrawFillImageType", value)
-
-    @property
-    def skip_left(self):
-        """왼쪽 자르기"""
-        return self._get_value("SkipLeft")
-
-    @skip_left.setter
-    def skip_left(self, value):
-        if value is None:
-            return self._del_value("SkipLeft")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("SkipLeft", value)
-
-    @property
-    def skip_right(self):
-        """오른쪽 자르기"""
-        return self._get_value("SkipRight")
-
-    @skip_right.setter
-    def skip_right(self, value):
-        if value is None:
-            return self._del_value("SkipRight")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("SkipRight", value)
-
-    @property
-    def skip_top(self):
-        """위 자르기"""
-        return self._get_value("SkipTop")
-
-    @skip_top.setter
-    def skip_top(self, value):
-        if value is None:
-            return self._del_value("SkipTop")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("SkipTop", value)
-
-    @property
-    def skip_bottom(self):
-        """아래 자르기"""
-        return self._get_value("SkipBottom")
-
-    @skip_bottom.setter
-    def skip_bottom(self, value):
-        if value is None:
-            return self._del_value("SkipBottom")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("SkipBottom", value)
-
-    @property
-    def original_size_x(self):
-        """이미지 원본 크기 X size"""
-        return self._get_value("OriginalSizeX")
-
-    @original_size_x.setter
-    def original_size_x(self, value):
-        if value is None:
-            return self._del_value("OriginalSizeX")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("OriginalSizeX", value)
-
-    @property
-    def original_size_y(self):
-        """이미지 원본 크기 Y size"""
-        return self._get_value("OriginalSizeY")
-
-    @original_size_y.setter
-    def original_size_y(self, value):
-        if value is None:
-            return self._del_value("OriginalSizeY")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("OriginalSizeY", value)
-
-    @property
-    def inside_margin_left(self):
-        """이미지 안쪽 여백 (왼쪽)"""
-        return self._get_value("InsideMarginLeft")
-
-    @inside_margin_left.setter
-    def inside_margin_left(self, value):
-        if value is None:
-            return self._del_value("InsideMarginLeft")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("InsideMarginLeft", value)
-
-    @property
-    def inside_margin_right(self):
-        """이미지 안쪽 여백 (오른쪽)"""
-        return self._get_value("InsideMarginRight")
-
-    @inside_margin_right.setter
-    def inside_margin_right(self, value):
-        if value is None:
-            return self._del_value("InsideMarginRight")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("InsideMarginRight", value)
-
-    @property
-    def inside_margin_top(self):
-        """이미지 안쪽 여백 (위)"""
-        return self._get_value("InsideMarginTop")
-
-    @inside_margin_top.setter
-    def inside_margin_top(self, value):
-        if value is None:
-            return self._del_value("InsideMarginTop")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("InsideMarginTop", value)
-
-    @property
-    def inside_margin_bottom(self):
-        """이미지 안쪽 여백 (아래)"""
-        return self._get_value("InsideMarginBottom")
-
-    @inside_margin_bottom.setter
-    def inside_margin_bottom(self, value):
-        if value is None:
-            return self._del_value("InsideMarginBottom")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("InsideMarginBottom", value)
-
-    @property
-    def windows_brush(self):
-        """현재 선택된 brush의 type이 면/무늬 브러시인가를 나타냄"""
-        return self._get_value("WindowsBrush")
-
-    @windows_brush.setter
-    def windows_brush(self, value):
-        if value is None:
-            return self._del_value("WindowsBrush")
-        assert value in [0, 1], "값은 0 (아님) 또는 1 (맞음)이어야 합니다."
-        return self._set_value("WindowsBrush", value)
-
-    @property
-    def gradation_brush(self):
-        """현재 선택된 brush의 type이 그러데이션 브러시인가를 나타냄"""
-        return self._get_value("GradationBrush")
-
-    @gradation_brush.setter
-    def gradation_brush(self, value):
-        if value is None:
-            return self._del_value("GradationBrush")
-        assert value in [0, 1], "값은 0 (아님) 또는 1 (맞음)이어야 합니다."
-        return self._set_value("GradationBrush", value)
-
-    @property
-    def image_brush(self):
-        """현재 선택된 brush의 type이 그림 브러시인가를 나타냄"""
-        return self._get_value("ImageBrush")
-
-    @image_brush.setter
-    def image_brush(self, value):
-        if value is None:
-            return self._del_value("ImageBrush")
-        assert value in [0, 1], "값은 0 (아님) 또는 1 (맞음)이어야 합니다."
-        return self._set_value("ImageBrush", value)
-
-    @property
-    def image_create_on_drag(self):
-        """그림 개체 생성 시 마우스로 끌어 생성할지 여부"""
-        return self._get_value("ImageCreateOnDrag")
-
-    @image_create_on_drag.setter
-    def image_create_on_drag(self, value):
-        if value is None:
-            return self._del_value("ImageCreateOnDrag")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("ImageCreateOnDrag", value)
+    file_name = ParameterSet._str_prop("FileName", "그림 파일 경로")
+    embedded = ParameterSet._bool_prop("Embedded", "그림이 문서에 삽입(T)/링크(F)")
+    pic_effect = ParameterSet._enum_prop("PicEffect", allowed=[0, 1, 2],
+                                           doc="그림 효과: 0 = 그대로, 1 = 흑백, 2 = 세피아 등")
+    brightness = ParameterSet._int_range_prop("Brightness", "명도 (-100 ~ 100)", -100, 100)
+    contrast = ParameterSet._int_range_prop("Contrast", "밝기 (-100 ~ 100)", -100, 100)
+    reverse = ParameterSet._bool_prop("Reverse", "반전 유무: 0 (off) 또는 1 (on)")
+    draw_fill_image_type = ParameterSet._int_range_prop("DrawFillImageType", "배경을 채우는 방식", 0, 14)
+    
+    skip_left = ParameterSet._int_prop("SkipLeft", "왼쪽 자르기")
+    skip_right = ParameterSet._int_prop("SkipRight", "오른쪽 자르기")
+    skip_top = ParameterSet._int_prop("SkipTop", "위 자르기")
+    skip_bottom = ParameterSet._int_prop("SkipBottom", "아래 자르기")
+    
+    original_size_x = ParameterSet._int_prop("OriginalSizeX", "이미지 원본 크기 X")
+    original_size_y = ParameterSet._int_prop("OriginalSizeY", "이미지 원본 크기 Y")
+    
+    inside_margin_left = ParameterSet._int_prop("InsideMarginLeft", "이미지 안쪽 여백 (왼쪽)")
+    inside_margin_right = ParameterSet._int_prop("InsideMarginRight", "이미지 안쪽 여백 (오른쪽)")
+    inside_margin_top = ParameterSet._int_prop("InsideMarginTop", "이미지 안쪽 여백 (위)")
+    inside_margin_bottom = ParameterSet._int_prop("InsideMarginBottom", "이미지 안쪽 여백 (아래)")
+    
+    windows_brush = ParameterSet._bool_prop("WindowsBrush", "면/무늬 브러시 여부: 0 또는 1")
+    gradation_brush = ParameterSet._bool_prop("GradationBrush", "그러데이션 브러시 여부: 0 또는 1")
+    image_brush = ParameterSet._bool_prop("ImageBrush", "그림 브러시 여부: 0 또는 1")
+    image_create_on_drag = ParameterSet._bool_prop("ImageCreateOnDrag", "그림 개체 생성 시 마우스로 끌어 생성 여부: 0 또는 1")
+    image_alpha = ParameterSet._int_range_prop("ImageAlpha", "그림 개체/배경 투명도 (0~255)", 0, 255)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 33
+
+# %% ../nbs/02_api/02_parameters.ipynb 31
 class DrawImageScissoring(ParameterSet):
     """
     ### DrawImageScissoring
@@ -3252,46 +1030,14 @@ class DrawImageScissoring(ParameterSet):
     |---------------|---------|---------|----------------------|
     | Xoffset       | PIT_I   |         | 자를 x좌표 오프셋      |
     | Yoffset       | PIT_I   |         | 자를 y좌표 오프셋      |
-    | HandleIndex   | PIT_UI  |         | Reserved            |
+    | HandleIndex   | PIT_UI  |         | Reserved             |
     """
+    x_offset = ParameterSet._int_prop("Xoffset", "자를 x좌표 오프셋: 정수 값을 입력하세요.")
+    y_offset = ParameterSet._int_prop("Yoffset", "자를 y좌표 오프셋: 정수 값을 입력하세요.")
+    handle_index = ParameterSet._int_prop("HandleIndex", "Reserved: 정수 값을 입력하세요.")
 
-    @property
-    def x_offset(self):
-        """자를 x좌표 오프셋: 정수 값을 입력하세요."""
-        return self._get_value("Xoffset")
 
-    @x_offset.setter
-    def x_offset(self, value):
-        if value is None:
-            return self._del_value("Xoffset")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("Xoffset", value)
-
-    @property
-    def y_offset(self):
-        """자를 y좌표 오프셋: 정수 값을 입력하세요."""
-        return self._get_value("Yoffset")
-
-    @y_offset.setter
-    def y_offset(self, value):
-        if value is None:
-            return self._del_value("Yoffset")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("Yoffset", value)
-
-    @property
-    def handle_index(self):
-        """Reserved: 정수 값을 입력하세요."""
-        return self._get_value("HandleIndex")
-
-    @handle_index.setter
-    def handle_index(self, value):
-        if value is None:
-            return self._del_value("HandleIndex")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("HandleIndex", value)
-
-# %% ../nbs/02_api/02_parameters.ipynb 35
+# %% ../nbs/02_api/02_parameters.ipynb 33
 class DrawLayout(ParameterSet):
     """
     ### DrawLayout
@@ -3304,47 +1050,48 @@ class DrawLayout(ParameterSet):
     | CreatePt         | PIT_ARRAY | PIT_I   | 생성할 점의 좌표정보: POINT(x,y) 형식의 배열로, CreateNumPt * 2 개수만큼 구성 |
     | CurveSegmentInfo | PIT_ARRAY | PIT_UI1 | 곡선 세그먼트 정보 |
     """
-
-    @property
-    def create_num_pt(self):
-        """생성할 점의 수: 정수 값을 입력하세요."""
-        return self._get_value("CreateNumPt")
-
-    @create_num_pt.setter
-    def create_num_pt(self, value):
-        if value is None:
-            return self._del_value("CreateNumPt")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("CreateNumPt", value)
-
-    @property
-    def create_pt(self):
-        """생성할 점의 좌표정보: POINT(x,y) 형식의 배열."""
-        return self._get_value("CreatePt")
-
-    @create_pt.setter
-    def create_pt(self, value):
-        if value is None:
-            return self._del_value("CreatePt")
-        assert isinstance(value, list) and all(isinstance(i, tuple) and len(i) == 2 for i in value), (
-            "값은 (x, y) 형식의 튜플로 구성된 리스트이어야 합니다."
-        )
-        self._set_value("CreatePt", value)
-
-    @property
-    def curve_segment_info(self):
-        """곡선 세그먼트 정보: 정수 배열을 입력하세요."""
-        return self._get_value("CurveSegmentInfo")
-
-    @curve_segment_info.setter
-    def curve_segment_info(self, value):
-        if value is None:
-            return self._del_value("CurveSegmentInfo")
-        assert isinstance(value, list) and all(isinstance(i, int) for i in value), "값은 정수로 구성된 리스트이어야 합니다."
-        self._set_value("CurveSegmentInfo", value)
+    create_num_pt = ParameterSet._int_prop("CreateNumPt", "생성할 점의 수: 정수 값을 입력하세요.")
+    create_pt = ParameterSet._tuple_list_prop("CreatePt", "생성할 점의 좌표정보: (x, y) 튜플의 리스트")
+    curve_segment_info = ParameterSet._int_list_prop("CurveSegmentInfo", "곡선 세그먼트 정보: 정수 리스트")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 39
+# %% ../nbs/02_api/02_parameters.ipynb 35
+class DrawLineAttr(ParameterSet):
+    """
+    ### DrawLineAttr
+
+    35) DrawLineAttr : 도형 선의 속성
+
+    | Item ID        | Type        | SubType | Description                                                 |
+    |----------------|-------------|---------|-------------------------------------------------------------|
+    | Color          | PMT_UINT32  |         | 선 색상, RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)    |
+    | Style          | PMT_INT     |         | 선의 스타일                                                |
+    | Width          | PMT_INT     |         | 선의 두께                                                  |
+    | EndCap         | PMT_INT     |         | 선의 끝단                                                  |
+    | HeadStyle      | PMT_INT     |         | 선의 시작 화살표 형태                                      |
+    | TailStyle      | PMT_INT     |         | 선의 끝 화살표 형태                                        |
+    | HeadSize       | PMT_INT     |         | 선의 시작 화살표 크기                                      |
+    | TailSize       | PMT_INT     |         | 선의 끝 화살표 크기                                        |
+    | HeadFill       | PMT_BOOL    |         | 선의 시작 화살표 채움 여부                                  |
+    | TailFill       | PMT_BOOL    |         | 선의 끝 화살표 채움 여부                                    |
+    | OutLineStyle   | PMT_UINT    |         | 외곽선 (안쪽/바깥쪽/중앙)                                   |
+    | Alpha          | PIT_UI1     |         | 투명도 (한글 2007에 처음 추가됨)                            |
+    """
+    color         = ParameterSet._int_prop("Color", "선 색상 (RGB 0x00BBGGRR): 정수를 입력하세요.")
+    style         = ParameterSet._int_prop("Style", "선의 스타일: 정수를 입력하세요.")
+    width         = ParameterSet._int_prop("Width", "선의 두께: 정수를 입력하세요.")
+    end_cap       = ParameterSet._int_prop("EndCap", "선의 끝단: 정수를 입력하세요.")
+    head_style    = ParameterSet._int_prop("HeadStyle", "선의 시작 화살표 형태: 정수를 입력하세요.")
+    tail_style    = ParameterSet._int_prop("TailStyle", "선의 끝 화살표 형태: 정수를 입력하세요.")
+    head_size     = ParameterSet._int_prop("HeadSize", "선의 시작 화살표 크기: 정수를 입력하세요.")
+    tail_size     = ParameterSet._int_prop("TailSize", "선의 끝 화살표 크기: 정수를 입력하세요.")
+    head_fill     = ParameterSet._bool_prop("HeadFill", "선의 시작 화살표 채움 여부: 0 또는 1을 입력하세요.")
+    tail_fill     = ParameterSet._bool_prop("TailFill", "선의 끝 화살표 채움 여부: 0 또는 1을 입력하세요.")
+    outline_style = ParameterSet._int_prop("OutLineStyle", "외곽선 (안쪽/바깥쪽/중앙): 정수를 입력하세요.")
+    alpha         = ParameterSet._int_prop("Alpha", "투명도: 정수를 입력하세요.")
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 37
 class DrawRectType(ParameterSet):
     """
     ### DrawRectType
@@ -3355,22 +1102,11 @@ class DrawRectType(ParameterSet):
     |---------|---------|---------|---------------------------------------|
     | Type    | PIT_UI  |         | 도형의 종류 지정 (0 ~ 50까지)          |
     """
-
-    @property
-    def type(self):
-        """도형의 종류: 0 ~ 50 사이의 정수 값을 입력하세요."""
-        return self._get_value("Type")
-
-    @type.setter
-    def type(self, value):
-        if value is None:
-            return self._del_value("Type")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        assert 0 <= value <= 50, "값은 0에서 50 사이여야 합니다."
-        self._set_value("Type", value)
+    type = ParameterSet._int_range_prop("Type", "도형의 종류: 0 ~ 50 사이의 정수 값을 입력하세요.", 0, 50)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 41
+
+# %% ../nbs/02_api/02_parameters.ipynb 39
 class DrawResize(ParameterSet):
     """
     ### DrawResize
@@ -3383,59 +1119,14 @@ class DrawResize(ParameterSet):
     | Yoffset      | PIT_I   |         | 도형 크기 조정 Y좌표 오프셋    |
     | HandleIndex  | PIT_UI  |         | Reserved                      |
     | Mode         | PIT_UI  |         | Reserved                      |
-
     """
-
-    @property
-    def x_offset(self):
-        """도형 크기 조정 X좌표 오프셋: 정수 값을 입력하세요."""
-        return self._get_value("Xoffset")
-
-    @x_offset.setter
-    def x_offset(self, value):
-        if value is None:
-            return self._del_value("Xoffset")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("Xoffset", value)
-
-    @property
-    def y_offset(self):
-        """도형 크기 조정 Y좌표 오프셋: 정수 값을 입력하세요."""
-        return self._get_value("Yoffset")
-
-    @y_offset.setter
-    def y_offset(self, value):
-        if value is None:
-            return self._del_value("Yoffset")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("Yoffset", value)
-
-    @property
-    def handle_index(self):
-        """Reserved: 정수 값을 입력하세요."""
-        return self._get_value("HandleIndex")
-
-    @handle_index.setter
-    def handle_index(self, value):
-        if value is None:
-            return self._del_value("HandleIndex")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("HandleIndex", value)
-
-    @property
-    def mode(self):
-        """Reserved: 정수 값을 입력하세요."""
-        return self._get_value("Mode")
-
-    @mode.setter
-    def mode(self, value):
-        if value is None:
-            return self._del_value("Mode")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("Mode", value)
+    x_offset = ParameterSet._int_prop("Xoffset", "도형 크기 조정 X좌표 오프셋: 정수 값을 입력하세요.")
+    y_offset = ParameterSet._int_prop("Yoffset", "도형 크기 조정 Y좌표 오프셋: 정수 값을 입력하세요.")
+    handle_index = ParameterSet._int_prop("HandleIndex", "Reserved: 정수 값을 입력하세요.")
+    mode = ParameterSet._int_prop("Mode", "Reserved: 정수 값을 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 43
+# %% ../nbs/02_api/02_parameters.ipynb 41
 class DrawRotate(ParameterSet):
     """
     ### DrawRotate
@@ -3450,93 +1141,18 @@ class DrawRotate(ParameterSet):
     | Angle           | PIT_I  | 회전 각도                                    |
     | RotateImage     | PIT_UI1| 그림 회전 여부 (0: 회전 안 함, 1: 회전함)     |
     """
-
-    @property
-    def command(self):
-        """회전 설정의 기초 설정 (0: 없음, 1: 설정된 회전, 2: 그림 중심 회전, 3: 회전과 중심)"""
-        return self._get_value("Command")
-
-    @command.setter
-    def command(self, value):
-        if value is None:
-            return self._del_value("Command")
-        assert value in [0, 1, 2, 3], "값은 0, 1, 2 또는 3이어야 합니다."
-        self._set_value("Command", value)
-
-    @property
-    def center_x(self):
-        """회전 중심의 X 좌표."""
-        return self._get_value("CenterX")
-
-    @center_x.setter
-    def center_x(self, value):
-        if value is None:
-            return self._del_value("CenterX")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("CenterX", value)
-
-    @property
-    def center_y(self):
-        """회전 중심의 Y 좌표."""
-        return self._get_value("CenterY")
-
-    @center_y.setter
-    def center_y(self, value):
-        if value is None:
-            return self._del_value("CenterY")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("CenterY", value)
-
-    @property
-    def object_center_x(self):
-        """그림 중심의 X 좌표."""
-        return self._get_value("ObjectCenterX")
-
-    @object_center_x.setter
-    def object_center_x(self, value):
-        if value is None:
-            return self._del_value("ObjectCenterX")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("ObjectCenterX", value)
-
-    @property
-    def object_center_y(self):
-        """그림 중심의 Y 좌표."""
-        return self._get_value("ObjectCenterY")
-
-    @object_center_y.setter
-    def object_center_y(self, value):
-        if value is None:
-            return self._del_value("ObjectCenterY")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("ObjectCenterY", value)
-
-    @property
-    def angle(self):
-        """회전 각도."""
-        return self._get_value("Angle")
-
-    @angle.setter
-    def angle(self, value):
-        if value is None:
-            return self._del_value("Angle")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("Angle", value)
-
-    @property
-    def rotate_image(self):
-        """그림 회전 여부 (0: 회전 안 함, 1: 회전함)."""
-        return self._get_value("RotateImage")
-
-    @rotate_image.setter
-    def rotate_image(self, value):
-        if value is None:
-            return self._del_value("RotateImage")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        self._set_value("RotateImage", value)
+    command         = ParameterSet._enum_prop("Command", allowed=[0, 1, 2, 3],
+                                                doc="회전 설정의 기초 설정 (0: 없음, 1: 설정된 회전, 2: 그림 중심 회전, 3: 회전과 중심)")
+    center_x        = ParameterSet._int_prop("CenterX", "회전 중심의 X 좌표.")
+    center_y        = ParameterSet._int_prop("CenterY", "회전 중심의 Y 좌표.")
+    object_center_x = ParameterSet._int_prop("ObjectCenterX", "그림 중심의 X 좌표.")
+    object_center_y = ParameterSet._int_prop("ObjectCenterY", "그림 중심의 Y 좌표.")
+    angle           = ParameterSet._int_prop("Angle", "회전 각도.")
+    rotate_image    = ParameterSet._bool_prop("RotateImage", "그림 회전 여부 (0: 회전 안 함, 1: 회전함).")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 45
+
+# %% ../nbs/02_api/02_parameters.ipynb 43
 class DrawScAction(ParameterSet):
     """
     ### DrawScAction
@@ -3552,151 +1168,39 @@ class DrawScAction(ParameterSet):
     | RotateAngel    | PIT_I   |         | 회전각                     |
     | HorzFlip       | PIT_UI  |         | 수평 flip (좌우 대칭 설정) |
     | VertFlip       | PIT_UI  |         | 수직 flip (상하 대칭 설정) |
-
     """
-
-    @property
-    def rotate_center_x(self):
-        """회전 중심 X 좌표"""
-        return self._get_value("RotateCenterX")
-
-    @rotate_center_x.setter
-    def rotate_center_x(self, value):
-        if value is None:
-            return self._del_value("RotateCenterX")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("RotateCenterX", value)
-
-    @property
-    def rotate_center_y(self):
-        """회전 중심 Y 좌표"""
-        return self._get_value("RotateCenterY")
-
-    @rotate_center_y.setter
-    def rotate_center_y(self, value):
-        if value is None:
-            return self._del_value("RotateCenterY")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("RotateCenterY", value)
-
-    @property
-    def rotate_angle(self):
-        """회전각"""
-        return self._get_value("RotateAngel")
-
-    @rotate_angle.setter
-    def rotate_angle(self, value):
-        if value is None:
-            return self._del_value("RotateAngel")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("RotateAngel", value)
-
-    @property
-    def horz_flip(self):
-        """수평 flip (좌우 대칭 설정)"""
-        return self._get_value("HorzFlip")
-
-    @horz_flip.setter
-    def horz_flip(self, value):
-        if value is None:
-            return self._del_value("HorzFlip")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        self._set_value("HorzFlip", value)
-
-    @property
-    def vert_flip(self):
-        """수직 flip (상하 대칭 설정)"""
-        return self._get_value("VertFlip")
-
-    @vert_flip.setter
-    def vert_flip(self, value):
-        if value is None:
-            return self._del_value("VertFlip")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        self._set_value("VertFlip", value)
+    rotate_center_x = ParameterSet._int_prop("RotateCenterX", "회전 중심 X 좌표")
+    rotate_center_y = ParameterSet._int_prop("RotateCenterY", "회전 중심 Y 좌표")
+    rotate_angle    = ParameterSet._int_prop("RotateAngel", "회전각")
+    horz_flip       = ParameterSet._bool_prop("HorzFlip", "수평 flip (좌우 대칭 설정)")
+    vert_flip       = ParameterSet._bool_prop("VertFlip", "수직 flip (상하 대칭 설정)")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 47
+
+# %% ../nbs/02_api/02_parameters.ipynb 45
 class DrawShadow(ParameterSet):
     """
     ### DrawShadow
 
     40) DrawShadow : 그림자 효과 정보
 
-    | Item ID          | Type     | SubType | Description                                        |
-    |------------------|----------|---------|----------------------------------------------------|
-    | ShadowType       | PIT_I4   |         | 그림자 종류: 0 = none, 1 = drop, 2 = continuous    |
-    | ShadowColor      | PIT_UI4  |         | 그림자 색상 (COLORREF)                            |
-    | ShadowOffsetX    | PIT_I4   |         | 그림자 X축 오프셋 (-48% ~ 48%)                    |
-    | ShadowOffsetY    | PIT_I4   |         | 그림자 Y축 오프셋 (-48% ~ 48%)                    |
-    | ShadowAlpha      | PIT_UI1  |         | 그림자 투명도                                     |
+    | Item ID       | Type     | SubType | Description                                     |
+    |---------------|----------|---------|-------------------------------------------------|
+    | ShadowType    | PIT_I4   |         | 그림자 종류: 0 = none, 1 = drop, 2 = continuous   |
+    | ShadowColor   | PIT_UI4  |         | 그림자 색상 (COLORREF)                           |
+    | ShadowOffsetX | PIT_I4   |         | 그림자 X축 오프셋 (-48% ~ 48%)                   |
+    | ShadowOffsetY | PIT_I4   |         | 그림자 Y축 오프셋 (-48% ~ 48%)                   |
+    | ShadowAlpha   | PIT_UI1  |         | 그림자 투명도 (0 ~ 255)                          |
     """
-
-    @property
-    def shadow_type(self):
-        """그림자 종류: 0 = none, 1 = drop, 2 = continuous"""
-        return self._get_value("ShadowType")
-
-    @shadow_type.setter
-    def shadow_type(self, value):
-        if value is None:
-            return self._del_value("ShadowType")
-        assert value in [0, 1, 2], "값은 0, 1 또는 2이어야 합니다."
-        self._set_value("ShadowType", value)
-
-    @property
-    def shadow_color(self):
-        """그림자 색상 (COLORREF)"""
-        return self._get_value("ShadowColor")
-
-    @shadow_color.setter
-    def shadow_color(self, value):
-        if value is None:
-            return self._del_value("ShadowColor")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("ShadowColor", value)
-
-    @property
-    def shadow_offset_x(self):
-        """그림자 X축 오프셋 (-48% ~ 48%)"""
-        return self._get_value("ShadowOffsetX")
-
-    @shadow_offset_x.setter
-    def shadow_offset_x(self, value):
-        if value is None:
-            return self._del_value("ShadowOffsetX")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        assert -48 <= value <= 48, "값은 -48에서 48 사이어야 합니다."
-        self._set_value("ShadowOffsetX", value)
-
-    @property
-    def shadow_offset_y(self):
-        """그림자 Y축 오프셋 (-48% ~ 48%)"""
-        return self._get_value("ShadowOffsetY")
-
-    @shadow_offset_y.setter
-    def shadow_offset_y(self, value):
-        if value is None:
-            return self._del_value("ShadowOffsetY")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        assert -48 <= value <= 48, "값은 -48에서 48 사이어야 합니다."
-        self._set_value("ShadowOffsetY", value)
-
-    @property
-    def shadow_alpha(self):
-        """그림자 투명도"""
-        return self._get_value("ShadowAlpha")
-
-    @shadow_alpha.setter
-    def shadow_alpha(self, value):
-        if value is None:
-            return self._del_value("ShadowAlpha")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        assert 0 <= value <= 255, "값은 0에서 255 사이어야 합니다."
-        self._set_value("ShadowAlpha", value)
+    shadow_type    = ParameterSet._enum_prop("ShadowType", allowed=[0, 1, 2],
+                                              doc="그림자 종류: 0 = none, 1 = drop, 2 = continuous")
+    shadow_color   = ParameterSet._int_prop("ShadowColor", "그림자 색상 (COLORREF): 정수를 입력하세요.")
+    shadow_offset_x = ParameterSet._int_range_prop("ShadowOffsetX", "그림자 X축 오프셋 (-48% ~ 48%)", -48, 48)
+    shadow_offset_y = ParameterSet._int_range_prop("ShadowOffsetY", "그림자 Y축 오프셋 (-48% ~ 48%)", -48, 48)
+    shadow_alpha   = ParameterSet._int_range_prop("ShadowAlpha", "그림자 투명도 (0 ~ 255)", 0, 255)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 49
+# %% ../nbs/02_api/02_parameters.ipynb 47
 class DrawShear(ParameterSet):
     """
     ### DrawShear
@@ -3708,2606 +1212,537 @@ class DrawShear(ParameterSet):
     | XFactor | PIT_I  |         | X shear factor     |
     | YFactor | PIT_I  |         | Y shear factor     |
     """
-
-    @property
-    def x_factor(self):
-        """X shear factor: 정수 값을 입력하세요."""
-        return self._get_value("XFactor")
-
-    @x_factor.setter
-    def x_factor(self, value):
-        if value is None:
-            return self._del_value("XFactor")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("XFactor", value)
-
-    @property
-    def y_factor(self):
-        """Y shear factor: 정수 값을 입력하세요."""
-        return self._get_value("YFactor")
-
-    @y_factor.setter
-    def y_factor(self, value):
-        if value is None:
-            return self._del_value("YFactor")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("YFactor", value)
+    x_factor = ParameterSet._int_prop("XFactor", "X shear factor: 정수 값을 입력하세요.")
+    y_factor = ParameterSet._int_prop("YFactor", "Y shear factor: 정수 값을 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 51
+
+# %% ../nbs/02_api/02_parameters.ipynb 49
 class DrawTextart(ParameterSet):
     """
     ### DrawTextart
 
     42) DrawTextart : 텍스트아트 속성
     """
-
-    @property
-    def string(self):
-        """텍스트아트 내용: 문자열 값을 입력하세요."""
-        return self._get_value("String")
-
-    @string.setter
-    def string(self, value):
-        if value is None:
-            return self._del_value("String")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        self._set_value("String", value)
-
-    @property
-    def font_name(self):
-        """폰트 이름."""
-        return self._get_value("FontName")
-
-    @font_name.setter
-    def font_name(self, value):
-        if value is None:
-            return self._del_value("FontName")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        self._set_value("FontName", value)
-
-    @property
-    def font_style(self):
-        """폰트 스타일 (0 = Regular)."""
-        return self._get_value("FontStyle")
-
-    @font_style.setter
-    def font_style(self, value):
-        if value is None:
-            return self._del_value("FontStyle")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        self._set_value("FontStyle", value)
-
-    @property
-    def font_type(self):
-        """폰트 타입: 0 = don't care, 1 = TTF, 2 = HFT."""
-        return self._get_value("FontType")
-
-    @font_type.setter
-    def font_type(self, value):
-        if value is None:
-            return self._del_value("FontType")
-        assert value in [0, 1, 2], "값은 0, 1 또는 2이어야 합니다."
-        self._set_value("FontType", value)
-
-    @property
-    def line_spacing(self):
-        """줄 간격 (50 ~ 500)."""
-        return self._get_value("LineSpacing")
-
-    @line_spacing.setter
-    def line_spacing(self, value):
-        if value is None:
-            return self._del_value("LineSpacing")
-        assert 50 <= value <= 500, "값은 50에서 500 사이의 정수이어야 합니다."
-        self._set_value("LineSpacing", value)
-
-    @property
-    def char_spacing(self):
-        """문자 간격 (50 ~ 500)."""
-        return self._get_value("CharSpacing")
-
-    @char_spacing.setter
-    def char_spacing(self, value):
-        if value is None:
-            return self._del_value("CharSpacing")
-        assert 50 <= value <= 500, "값은 50에서 500 사이의 정수이어야 합니다."
-        self._set_value("CharSpacing", value)
-
-    @property
-    def align_type(self):
-        """정렬 유형."""
-        return self._get_value("AlignType")
-
-    @align_type.setter
-    def align_type(self, value):
-        if value is None:
-            return self._del_value("AlignType")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("AlignType", value)
-
-    @property
-    def shape(self):
-        """형태 (0 ~ 54)."""
-        return self._get_value("Shape")
-
-    @shape.setter
-    def shape(self, value):
-        if value is None:
-            return self._del_value("Shape")
-        assert 0 <= value <= 54, "값은 0에서 54 사이의 정수이어야 합니다."
-        self._set_value("Shape", value)
-
-    @property
-    def shadow_type(self):
-        """그림자 유형: 0 = none, 1 = drop, 2 = continuous."""
-        return self._get_value("ShadowType")
-
-    @shadow_type.setter
-    def shadow_type(self, value):
-        if value is None:
-            return self._del_value("ShadowType")
-        assert value in [0, 1, 2], "값은 0, 1 또는 2이어야 합니다."
-        self._set_value("ShadowType", value)
-
-    @property
-    def shadow_offset_x(self):
-        """그림자 X 오프셋 (-48 ~ 48)."""
-        return self._get_value("ShadowOffsetX")
-
-    @shadow_offset_x.setter
-    def shadow_offset_x(self, value):
-        if value is None:
-            return self._del_value("ShadowOffsetX")
-        assert -48 <= value <= 48, "값은 -48에서 48 사이의 정수이어야 합니다."
-        self._set_value("ShadowOffsetX", value)
-
-    @property
-    def shadow_offset_y(self):
-        """그림자 Y 오프셋 (-48 ~ 48)."""
-        return self._get_value("ShadowOffsetY")
-
-    @shadow_offset_y.setter
-    def shadow_offset_y(self, value):
-        if value is None:
-            return self._del_value("ShadowOffsetY")
-        assert -48 <= value <= 48, "값은 -48에서 48 사이의 정수이어야 합니다."
-        self._set_value("ShadowOffsetY", value)
-
-    @property
-    def shadow_color(self):
-        """그림자 색상 (RGB 32비트)."""
-        return self._get_value("ShadowColor")
-
-    @shadow_color.setter
-    def shadow_color(self, value):
-        if value is None:
-            return self._del_value("ShadowColor")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("ShadowColor", value)
-
-    @property
-    def number_of_lines(self):
-        """텍스트아트의 줄 수."""
-        return self._get_value("NumberOfLines")
-
-    @number_of_lines.setter
-    def number_of_lines(self, value):
-        if value is None:
-            return self._del_value("NumberOfLines")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("NumberOfLines", value)
+    string         = ParameterSet._str_prop("String", "텍스트아트 내용: 문자열 값을 입력하세요.")
+    font_name      = ParameterSet._str_prop("FontName", "폰트 이름.")
+    font_style     = ParameterSet._str_prop("FontStyle", "폰트 스타일 (0 = Regular).")
+    font_type      = ParameterSet._enum_prop("FontType", allowed=[0, 1, 2],
+                                             doc="폰트 타입: 0 = don't care, 1 = TTF, 2 = HFT.")
+    line_spacing   = ParameterSet._int_range_prop("LineSpacing", "줄 간격 (50 ~ 500).", 50, 500)
+    char_spacing   = ParameterSet._int_range_prop("CharSpacing", "문자 간격 (50 ~ 500).", 50, 500)
+    align_type     = ParameterSet._int_prop("AlignType", "정렬 유형.")
+    shape          = ParameterSet._int_range_prop("Shape", "형태 (0 ~ 54).", 0, 54)
+    shadow_type    = ParameterSet._enum_prop("ShadowType", allowed=[0, 1, 2],
+                                              doc="그림자 유형: 0 = none, 1 = drop, 2 = continuous.")
+    shadow_offset_x = ParameterSet._int_range_prop("ShadowOffsetX", "그림자 X 오프셋 (-48 ~ 48).", -48, 48)
+    shadow_offset_y = ParameterSet._int_range_prop("ShadowOffsetY", "그림자 Y 오프셋 (-48 ~ 48).", -48, 48)
+    shadow_color   = ParameterSet._int_prop("ShadowColor", "그림자 색상 (RGB 32비트).")
+    number_of_lines = ParameterSet._int_prop("NumberOfLines", "텍스트아트의 줄 수.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 53
+
+# %% ../nbs/02_api/02_parameters.ipynb 51
 class FindReplace(ParameterSet):
     """
     ### FindReplace
 
-56\) FindReplace : 찾기/찾아 바꾸기
+    56) FindReplace : 찾기/찾아 바꾸기
 
-| Item ID | Type | SubType | Description |
-| --- | --- | --- | --- |
-| FindString | PIT\_BSTR |  | 찾을 문자열 |
-| ReplaceString | PIT\_BSTR |  | 바꿀 문자열 |
-| Direction | PIT\_UI1 |  | 찾을 방향 :0 \= 아래쪽, 1 \= 위쪽, 2 \= 문서 전체 |
-| MatchCase | PIT\_UI1 |  | 대소문자 구별 (on / off) |
-| AllWordForms | PIT\_UI1 |  | 문자열 결합 (on / off) |
-| SeveralWords | PIT\_UI1 |  | 여러 단어 찾기 (on / off) |
-| UseWildCards | PIT\_UI1 |  | 아무개 문자 (on / off) |
-| WholeWordOnly | PIT\_UI1 |  | 온전한 낱말 (on / off) |
-| AutoSpell | PIT\_UI1 |  | 토씨 자동 교정 (on / off) |
-| ReplaceMode | PIT\_UI1 |  | 찾아 바꾸기 모드 (on / off) |
-| IgnoreFindString | PIT\_UI1 |  | 찾을 문자열 무시 (on / off) |
-| IgnoreReplaceString | PIT\_UI1 |  | 바꿀 문자열 무시 (on / off) |
-| FindCharShape | PIT\_SET | CharShape | 찾을 글자 모양 |
-| FindParaShape | PIT\_SET | ParaShape | 찾을 문단 모양 |
-| ReplaceCharShape | PIT\_SET | CharShape | 바꿀 글자 모양 |
-| ReplaceParaShape | PIT\_SET | ParaShape | 바꿀 문단 모양 |
-| FindStyle | PIT\_BSTR |  | 찾을 스타일 |
-| ReplaceStyle | PIT\_BSTR |  | 바꿀 스타일 |
-| IgnoreMessage | PIT\_UI1 |  | 메시지박스 표시 안함. (on / off) |
-| HanjaFromHangul | PIT\_UI1 |  | 한글임으로 한자 차기 |
-| FindJaso | PIT\_UI1 |  | 자소로 찾기 (on / off) |
-| FindRegExp | PIT\_UI1 |  | 정규식(조건식)으로 찾기 (on / off) (ver:0x06050107\) |
-| FindType | PIT\_UI1 |  | 다시 찾기를 할 때 마지막으로 실행한 \[찾기 TRUE]를 할 것인가 \[찾아가기 FALSE]할 것인가의 여부 (ver:0x06050110\) |
-
- 
-
-
-
+    | Item ID           | Type      | SubType | Description                                                               |
+    |-------------------|-----------|---------|---------------------------------------------------------------------------|
+    | FindString        | PIT_BSTR  |         | 찾을 문자열                                                              |
+    | ReplaceString     | PIT_BSTR  |         | 바꿀 문자열                                                              |
+    | Direction         | PIT_UI1   |         | 찾을 방향 : 0 = 아래쪽, 1 = 위쪽, 2 = 문서 전체                           |
+    | MatchCase         | PIT_UI1   |         | 대소문자 구별 (on/off)                                                     |
+    | AllWordForms      | PIT_UI1   |         | 모든 단어 형태 (on/off)                                                   |
+    | SeveralWords      | PIT_UI1   |         | 여러 단어 찾기 (on/off)                                                    |
+    | UseWildCards      | PIT_UI1   |         | 와일드카드 사용 (on/off)                                                   |
+    | WholeWordOnly     | PIT_UI1   |         | 전체 단어만 찾기 (on/off)                                                   |
+    | AutoSpell         | PIT_UI1   |         | 자동 맞춤법 사용 (on/off)                                                  |
+    | ReplaceMode       | PIT_UI1   |         | 찾아 바꾸기 모드 (on/off)                                                  |
+    | IgnoreFindString  | PIT_UI1   |         | 찾을 문자열 무시 (on/off)                                                  |
+    | IgnoreReplaceString| PIT_UI1  |         | 바꿀 문자열 무시 (on/off)                                                   |
+    | FindCharShape     | PIT_SET   | CharShape | 찾을 글자 모양                                                          |
+    | FindParaShape     | PIT_SET   | ParaShape | 찾을 문단 모양                                                          |
+    | ReplaceCharShape  | PIT_SET   | CharShape | 바꿀 글자 모양                                                          |
+    | ReplaceParaShape  | PIT_SET   | ParaShape | 바꿀 문단 모양                                                          |
+    | FindStyle         | PIT_BSTR  |         | 찾을 스타일                                                              |
+    | ReplaceStyle      | PIT_BSTR  |         | 바꿀 스타일                                                              |
+    | IgnoreMessage     | PIT_UI1   |         | 메시지박스 표시 안함 (on/off)                                              |
+    | HanjaFromHangul   | PIT_UI1   |         | 한글임으로 한자 차기                                                      |
+    | FindJaso          | PIT_UI1   |         | 자소로 찾기 (on/off)                                                      |
+    | FindRegExp        | PIT_UI1   |         | 정규식(조건식)으로 찾기 (on/off)                                           |
+    | FindType          | PIT_UI1   |         | 찾기 유형 (on/off)                                                       |
     """
+    # String properties
+    find_string    = ParameterSet._str_prop("FindString", "찾을 문자열")
+    replace_string = ParameterSet._str_prop("ReplaceString", "바꿀 문자열")
+    find_style     = ParameterSet._str_prop("FindStyle", "찾을 스타일")
+    replace_style  = ParameterSet._str_prop("ReplaceStyle", "바꿀 스타일")
 
-    @property
-    def find_string(self):
-        """찾을 문자열"""
-        return self._get_value("FindString")
+    # Enum property for direction
+    direction = ParameterSet._enum_prop("Direction", allowed=[0, 1, 2],
+                                          doc="찾을 방향: 0 = 아래쪽, 1 = 위쪽, 2 = 문서 전체")
 
-    @find_string.setter
-    def find_string(self, value):
-        if value is None:
-            return self._set_value("")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        return self._set_value("FindString", value)
+    # Boolean properties (0 or 1)
+    match_case         = ParameterSet._bool_prop("MatchCase", "대소문자 구별 (on/off)")
+    all_word_forms     = ParameterSet._bool_prop("AllWordForms", "모든 단어 형태 (on/off)")
+    several_words      = ParameterSet._bool_prop("SeveralWords", "여러 단어 찾기 (on/off)")
+    use_wildcards      = ParameterSet._bool_prop("UseWildCards", "와일드카드 사용 (on/off)")
+    whole_word_only    = ParameterSet._bool_prop("WholeWordOnly", "전체 단어만 찾기 (on/off)")
+    auto_spell         = ParameterSet._bool_prop("AutoSpell", "자동 맞춤법 사용 (on/off)")
+    replace_mode       = ParameterSet._bool_prop("ReplaceMode", "찾아 바꾸기 모드 (on/off)")
+    ignore_find_string = ParameterSet._bool_prop("IgnoreFindString", "찾을 문자열 무시 (on/off)")
+    ignore_replace_string = ParameterSet._bool_prop("IgnoreReplaceString", "바꿀 문자열 무시 (on/off)")
+    ignore_message     = ParameterSet._bool_prop("IgnoreMessage", "메시지박스 표시 안함 (on/off)")
+    hanja_from_hangul  = ParameterSet._bool_prop("HanjaFromHangul", "한글임으로 한자 차기")
+    find_jaso          = ParameterSet._bool_prop("FindJaso", "자소로 찾기 (on/off)")
+    find_regexp        = ParameterSet._bool_prop("FindRegExp", "정규식 찾기 (on/off)")
+    find_type          = ParameterSet._bool_prop("FindType", "찾기 유형 (on/off)")
 
-    @property
-    def replace_string(self):
-        """바꿀 문자열"""
-        return self._get_value("ReplaceString")
-
-    @replace_string.setter
-    def replace_string(self, value):
-        if value is None:
-            return self._set_value("")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        return self._set_value("ReplaceString", value)
-
-    @property
-    def direction(self):
-        """
-        찾을 방향 :
-        0 = 아래쪽, 1 = 위쪽, 2 = 문서 전체
-        """
-        return self._get_value("Direction")
-
-    @direction.setter
-    def direction(self, value):
-        if value is None:
-            return self._del_value("Direction")
-        assert value in [0, 1, 2], "값은 0=아래쪽, 1=위쪽, 2=문서 전체 중 하나여야 합니다."
-        return self._set_value("Direction", value)
-
-    @property
-    def match_case(self):
-        """대소문자 구분 (on/off)"""
-        return self._get_value("MatchCase")
-
-    @match_case.setter
-    def match_case(self, value):
-        if value is None:
-            return self._del_value("MatchCase")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("MatchCase", value)
-
-    @property
-    def all_word_forms(self):
-        """모든 단어 형태 (on/off)"""
-        return self._get_value("AllWordForms")
-
-    @all_word_forms.setter
-    def all_word_forms(self, value):
-        if value is None:
-            return self._del_value("AllWordForms")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("AllWordForms", value)
-
-    @property
-    def several_words(self):
-        """여러 단어 찾기 (on/off)"""
-        return self._get_value("SeveralWords")
-
-    @several_words.setter
-    def several_words(self, value):
-        if value is None:
-            return self._del_value("SeveralWords")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("SeveralWords", value)
-
-    @property
-    def use_wildcards(self):
-        """와일드카드 사용 (on/off)"""
-        return self._get_value("UseWildCards")
-
-    @use_wildcards.setter
-    def use_wildcards(self, value):
-        if value is None:
-            return self._del_value("UseWildCards")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("UseWildCards", value)
-
-    @property
-    def whole_word_only(self):
-        """전체 단어만 찾기 (on/off)"""
-        return self._get_value("WholeWordOnly")
-
-    @whole_word_only.setter
-    def whole_word_only(self, value):
-        if value is None:
-            return self._del_value("WholeWordOnly")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("WholeWordOnly", value)
-
-    @property
-    def auto_spell(self):
-        """자동 맞춤법 사용 (on/off)"""
-        return self._get_value("AutoSpell")
-
-    @auto_spell.setter
-    def auto_spell(self, value):
-        if value is None:
-            return self._del_value("AutoSpell")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("AutoSpell", value)
-
-    @property
-    def replace_mode(self):
-        """바꾸기 모드 (on/off)"""
-        return self._get_value("ReplaceMode")
-
-    @replace_mode.setter
-    def replace_mode(self, value):
-        if value is None:
-            return self._del_value("ReplaceMode")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("ReplaceMode", value)
-
-    @property
-    def ignore_find_string(self):
-        """찾을 문자열 무시 (on/off)"""
-        return self._get_value("IgnoreFindString")
-
-    @ignore_find_string.setter
-    def ignore_find_string(self, value):
-        if value is None:
-            return self._del_value("IgnoreFindString")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("IgnoreFindString", value)
-
-    @property
-    def ignore_replace_string(self):
-        """바꿀 문자열 무시 (on/off)"""
-        return self._get_value("IgnoreReplaceString")
-
-    @ignore_replace_string.setter
-    def ignore_replace_string(self, value):
-        if value is None:
-            return self._del_value("IgnoreReplaceString")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("IgnoreReplaceString", value)
-
+    # Custom object properties for shapes:
     @property
     def find_charshape(self):
-        """찾을 글자 모양"""
         pset = self._get_value("FindCharShape")
-        if pset:
-            return CharShape(pset)
-        return CharShape(self._get_value("FindCharShape"))
+        return CharShape(pset) if pset is not None else None
 
     @find_charshape.setter
     def find_charshape(self, value):
         if value is None:
-            self.find_charshape._pset.RemoveAll(self.find_charshape._pset.SetID)
             return self._del_value("FindCharShape")
-        assert isinstance(value, CharShape), "값은 CharShape 객체여야 합니다."
+        if not isinstance(value, CharShape):
+            raise TypeError("값은 CharShape 객체이어야 합니다.")
         return self._set_value("FindCharShape", value)
 
     @property
     def find_parashape(self):
-        """찾을 문단 모양"""
         pset = self._get_value("FindParaShape")
-        if pset:
-            return ParaShape(pset)
-        return ParaShape(self._get_value("FindParaShape"))
+        return ParaShape(pset) if pset is not None else None
 
     @find_parashape.setter
     def find_parashape(self, value):
         if value is None:
             return self._del_value("FindParaShape")
-        assert isinstance(value, ParaShape), "값은 ParaShape 객체여야 합니다."
+        if not isinstance(value, ParaShape):
+            raise TypeError("값은 ParaShape 객체이어야 합니다.")
         return self._set_value("FindParaShape", value)
 
     @property
     def replace_charshape(self):
-        """바꿀 글자 모양"""
         pset = self._get_value("ReplaceCharShape")
-        if pset:
-            return CharShape(pset)
-        return CharShape(self._get_value("ReplaceCharShape"))
-        
+        return CharShape(pset) if pset is not None else None
+
     @replace_charshape.setter
     def replace_charshape(self, value):
         if value is None:
             return self._del_value("ReplaceCharShape")
-        assert isinstance(value, CharShape), "값은 CharShape 객체여야 합니다."
+        if not isinstance(value, CharShape):
+            raise TypeError("값은 CharShape 객체이어야 합니다.")
         return self._set_value("ReplaceCharShape", value)
 
     @property
     def replace_parashape(self):
-        """바꿀 문단 모양"""
         pset = self._get_value("ReplaceParaShape")
-        if pset:
-            return ParaShape(pset)
-        return ParaShape(self._get_value("ReplaceParaShape"))
+        return ParaShape(pset) if pset is not None else None
 
     @replace_parashape.setter
     def replace_parashape(self, value):
         if value is None:
             return self._del_value("ReplaceParaShape")
-        assert isinstance(value, ParaShape), "값은 ParaShape 객체여야 합니다."
+        if not isinstance(value, ParaShape):
+            raise TypeError("값은 ParaShape 객체이어야 합니다.")
         return self._set_value("ReplaceParaShape", value)
 
-    @property
-    def find_style(self):
-        """찾을 스타일"""
-        return self._get_value("FindStyle")
-
-    @find_style.setter
-    def find_style(self, value):
-        if value is None:
-            return self._del_value("FindStyle")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        return self._set_value("FindStyle", value)
-
-    @property
-    def replace_style(self):
-        """바꿀 스타일"""
-        return self._get_value("ReplaceStyle")
-
-    @replace_style.setter
-    def replace_style(self, value):
-        if value is None:
-            return self._del_value("ReplaceStyle")
-        assert isinstance(value, str), "값은 문자열이어야 합니다."
-        return self._set_value("ReplaceStyle", value)
-
-    @property
-    def ignore_message(self):
-        """메시지 무시 (on/off)"""
-        return self._get_value("IgnoreMessage")
-
-    @ignore_message.setter
-    def ignore_message(self, value):
-        if value is None:
-            return self._del_value("IgnoreMessage")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("IgnoreMessage", value)
-
-    @property
-    def hanja_from_hangul(self):
-        """한글에서 한자 변환"""
-        return self._get_value("HanjaFromHangul")
-
-    @hanja_from_hangul.setter
-    def hanja_from_hangul(self, value):
-        if value is None:
-            return self._del_value("HanjaFromHangul")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("HanjaFromHangul", value)
-
-    @property
-    def find_jaso(self):
-        """자소로 찾기 (on/off)"""
-        return self._get_value("FindJaso")
-
-    @find_jaso.setter
-    def find_jaso(self, value):
-        if value is None:
-            return self._del_value("FindJaso")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("FindJaso", value)
-
-    @property
-    def find_regexp(self):
-        """정규식 찾기 (on/off)"""
-        return self._get_value("FindRegExp")
-
-    @find_regexp.setter
-    def find_regexp(self, value):
-        if value is None:
-            return self._del_value("FindRegExp")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("FindRegExp", value)
-
-    @property
-    def find_type(self):
-        """찾기 유형"""
-        return self._get_value("FindType")
-
-    @find_type.setter
-    def find_type(self, value):
-        if value is None:
-            return self._del_value("FindType")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("FindType", value)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 55
+# %% ../nbs/02_api/02_parameters.ipynb 53
 class ListProperties(ParameterSet):
     """
     ### ListProperties
 
     76) ListProperties : 셀 리스트의 속성
 
-    | Item ID        | Type     | SubType | Description                                      |
-    |----------------|----------|---------|--------------------------------------------------|
-    | TextDirection  | PIT_UI1  |         | 글자 방향 (세로 쓰기 여부를 미정)               |
-    | LineWrap       | PIT_UI1  |         | 강제에서 줄 바꿈 0 = 줄바꿈 없는 기본값         |
-    | VertAlign      | PIT_UI1  |         | 세로 정렬 0 = 위 정렬                           |
-    | MarginLeft     | PIT_I4   |         | 왼쪽 여백                                       |
-    | MarginRight    | PIT_I4   |         | 오른쪽 여백                                     |
-    | MarginTop      | PIT_I4   |         | 위쪽 여백                                       |
-    | MarginBottom   | PIT_I4   |         | 아래쪽 여백                                     |
+    | Item ID       | Type     | SubType | Description                                      |
+    |---------------|----------|---------|--------------------------------------------------|
+    | TextDirection | PIT_UI1  |         | 글자 방향 (세로 쓰기 여부를 미정)                |
+    | LineWrap      | PIT_UI1  |         | 강제에서 줄 바꿈 0 = 줄바꿈 없는 기본값           |
+    | VertAlign     | PIT_UI1  |         | 세로 정렬 0 = 위 정렬                             |
+    | MarginLeft    | PIT_I4   |         | 왼쪽 여백                                       |
+    | MarginRight   | PIT_I4   |         | 오른쪽 여백                                     |
+    | MarginTop     | PIT_I4   |         | 위쪽 여백                                       |
+    | MarginBottom  | PIT_I4   |         | 아래쪽 여백                                     |
     """
-
-    @property
-    def text_direction(self):
-        """글자 방향: 0 = 기본값, 1 = 세로 쓰기"""
-        return self._get_value("TextDirection")
-
-    @text_direction.setter
-    def text_direction(self, value):
-        if value is None:
-            return self._del_value("TextDirection")
-        assert isinstance(value, int) and value in [0, 1], "값은 0 또는 1이어야 합니다."
-        self._set_value("TextDirection", value)
-
-    @property
-    def line_wrap(self):
-        """줄 바꿈 옵션: 0 = 기본값, 1 = 줄 바꿈 없음, 2 = 강제 줄 바꿈"""
-        return self._get_value("LineWrap")
-
-    @line_wrap.setter
-    def line_wrap(self, value):
-        if value is None:
-            return self._del_value("LineWrap")
-        assert isinstance(value, int) and value in [0, 1, 2], "값은 0, 1 또는 2이어야 합니다."
-        self._set_value("LineWrap", value)
-
-    @property
-    def vert_align(self):
-        """세로 정렬: 0 = 위, 1 = 가운데, 2 = 아래"""
-        return self._get_value("VertAlign")
-
-    @vert_align.setter
-    def vert_align(self, value):
-        if value is None:
-            return self._del_value("VertAlign")
-        assert isinstance(value, int) and value in [0, 1, 2], "값은 0, 1 또는 2이어야 합니다."
-        self._set_value("VertAlign", value)
-
-    @property
-    def margin_left(self):
-        """왼쪽 여백: 정수 값을 입력하세요."""
-        return self._get_value("MarginLeft")
-
-    @margin_left.setter
-    def margin_left(self, value):
-        if value is None:
-            return self._del_value("MarginLeft")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("MarginLeft", value)
-
-    @property
-    def margin_right(self):
-        """오른쪽 여백: 정수 값을 입력하세요."""
-        return self._get_value("MarginRight")
-
-    @margin_right.setter
-    def margin_right(self, value):
-        if value is None:
-            return self._del_value("MarginRight")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("MarginRight", value)
-
-    @property
-    def margin_top(self):
-        """위쪽 여백: 정수 값을 입력하세요."""
-        return self._get_value("MarginTop")
-
-    @margin_top.setter
-    def margin_top(self, value):
-        if value is None:
-            return self._del_value("MarginTop")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("MarginTop", value)
-
-    @property
-    def margin_bottom(self):
-        """아래쪽 여백: 정수 값을 입력하세요."""
-        return self._get_value("MarginBottom")
-
-    @margin_bottom.setter
-    def margin_bottom(self, value):
-        if value is None:
-            return self._del_value("MarginBottom")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("MarginBottom", value)
+    text_direction = ParameterSet._enum_prop("TextDirection", allowed=[0, 1],
+                                               doc="글자 방향: 0 = 기본값, 1 = 세로 쓰기")
+    line_wrap = ParameterSet._enum_prop("LineWrap", allowed=[0, 1, 2],
+                                          doc="줄 바꿈 옵션: 0 = 기본값, 1 = 줄 바꿈 없음, 2 = 강제 줄 바꿈")
+    vert_align = ParameterSet._enum_prop("VertAlign", allowed=[0, 1, 2],
+                                           doc="세로 정렬: 0 = 위, 1 = 가운데, 2 = 아래")
+    margin_left = ParameterSet._int_prop("MarginLeft", "왼쪽 여백: 정수 값을 입력하세요.")
+    margin_right = ParameterSet._int_prop("MarginRight", "오른쪽 여백: 정수 값을 입력하세요.")
+    margin_top = ParameterSet._int_prop("MarginTop", "위쪽 여백: 정수 값을 입력하세요.")
+    margin_bottom = ParameterSet._int_prop("MarginBottom", "아래쪽 여백: 정수 값을 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 57
+
+# %% ../nbs/02_api/02_parameters.ipynb 55
 class NumberingShape(ParameterSet):
     """
     ### NumberingShape
 
-    | Item ID               | Type      | SubType   | Description |
-    |-----------------------|-----------|-----------|-------------|
-    | HasCharShapeLevel0 ~ HasCharShapeLevel6 | PIT_UI1   |           | 7단 수준별 지정 여부 (0 = 기본값, 1 = 지정) |
-    | CharShapeLevel0 ~ CharShapeLevel6       | PIT_SET   | CharShape | 수준별 글자 모양 지정 |
-    | WidthAdjustLevel0 ~ WidthAdjustLevel6   | PIT_I     |           | 수준별 너비 조정 값 (HWPUNIT) |
-    | TextOffsetLevel0 ~ TextOffsetLevel6     | PIT_I     |           | 수준별 텍스트 오프셋 (percent or HWPUNIT) |
-    | AlignmentLevel0 ~ AlignmentLevel6       | PIT_UI1   |           | 수준별 정렬 (0 = 왼쪽, 1 = 가운데, 2 = 오른쪽) |
-    | UseInstWidthLevel0 ~ UseInstWidthLevel6 | PIT_UI1   |           | 수준별 너비를 문서 내부 너비에 맞출지 여부 |
-    | AutoIndentLevel0 ~ AutoIndentLevel6     | PIT_UI1   |           | 수준별 자동 들여쓰기 여부 |
-    | TextOffsetTypeLevel0 ~ TextOffsetTypeLevel6 | PIT_UI1 |           | 텍스트 오프셋 타입 (0 = 기본값, 1 = HWPUNIT) |
-    | StrFormatLevel0 ~ StrFormatLevel6       | PIT_BSTR  |           | 수준별 문자열 포맷 |
-    | NumFormatLevel0 ~ NumFormatLevel6       | PIT_UI1   |           | 수준별 번호 포맷 |
-    | StartNumber                            | PIT_UI2   |           | 시작 번호 (0 = 기본값, n = 지정 번호) |
-    | NewList                                | PIT_UI1   |           | 새 목록 생성 여부 |
-
+    | Item ID                                  | Type      | SubType   | Description                                           |
+    |------------------------------------------|-----------|-----------|-------------------------------------------------------|
+    | HasCharShapeLevel0 ~ HasCharShapeLevel6   | PIT_UI1   |           | 7단 수준별 지정 여부 (0 = 기본값, 1 = 지정)           |
+    | CharShapeLevel0 ~ CharShapeLevel6         | PIT_SET   | CharShape | 수준별 글자 모양 지정                                 |
+    | WidthAdjustLevel0 ~ WidthAdjustLevel6     | PIT_I     |           | 수준별 너비 조정 값 (HWPUNIT)                         |
+    | TextOffsetLevel0 ~ TextOffsetLevel6       | PIT_I     |           | 수준별 텍스트 오프셋 (percent or HWPUNIT)              |
+    | AlignmentLevel0 ~ AlignmentLevel6         | PIT_UI1   |           | 수준별 정렬 (0 = 왼쪽, 1 = 가운데, 2 = 오른쪽)         |
+    | UseInstWidthLevel0 ~ UseInstWidthLevel6     | PIT_UI1   |           | 수준별 너비를 문서 내부 너비에 맞출지 여부             |
+    | AutoIndentLevel0 ~ AutoIndentLevel6       | PIT_UI1   |           | 수준별 자동 들여쓰기 여부                             |
+    | TextOffsetTypeLevel0 ~ TextOffsetTypeLevel6 | PIT_UI1   |           | 텍스트 오프셋 타입 (0 = 기본값, 1 = HWPUNIT)            |
+    | StrFormatLevel0 ~ StrFormatLevel6         | PIT_BSTR  |           | 수준별 문자열 포맷                                   |
+    | NumFormatLevel0 ~ NumFormatLevel6         | PIT_UI1   |           | 수준별 번호 포맷 (0 또는 1)                            |
+    | StartNumber                              | PIT_UI2   |           | 시작 번호 (0 = 기본값, n = 지정 번호)                 |
+    | NewList                                  | PIT_UI1   |           | 새 목록 생성 여부                                   |
     """
+    start_number = ParameterSet._int_prop("StartNumber", "시작 번호 (0 = 기본값, n = 지정 번호)")
+    new_list     = ParameterSet._bool_prop("NewList", "새 목록 생성 여부 (0 = off, 1 = on)")
+
+    # Level 0 properties
+    has_char_shape_level0  = ParameterSet._bool_prop("HasCharShapeLevel0", "수준0 지정 여부 (0 = 기본값, 1 = 지정)")
+    char_shape_level0      = ParameterSet._typed_prop("CharShapeLevel0", "수준0 글자 모양 지정", CharShape)
+    width_adjust_level0    = ParameterSet._int_prop("WidthAdjustLevel0", "수준0 너비 조정 값 (HWPUNIT)")
+    text_offset_level0     = ParameterSet._int_prop("TextOffsetLevel0", "수준0 텍스트 오프셋 (percent or HWPUNIT)")
+    alignment_level0       = ParameterSet._enum_prop("AlignmentLevel0", allowed=[0, 1, 2],
+                                                     doc="수준0 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
+    use_inst_width_level0  = ParameterSet._bool_prop("UseInstWidthLevel0", "수준0 문서 내부 너비 맞춤 여부")
+    auto_indent_level0     = ParameterSet._bool_prop("AutoIndentLevel0", "수준0 자동 들여쓰기 여부")
+    text_offset_type_level0 = ParameterSet._bool_prop("TextOffsetTypeLevel0", "수준0 텍스트 오프셋 타입 (0 = 기본값, 1 = HWPUNIT)")
+    str_format_level0      = ParameterSet._str_prop("StrFormatLevel0", "수준0 문자열 포맷")
+    num_format_level0      = ParameterSet._enum_prop("NumFormatLevel0", allowed=[0, 1],
+                                                     doc="수준0 번호 포맷 (0 또는 1)")
+
+    # Level 1 properties
+    has_char_shape_level1  = ParameterSet._bool_prop("HasCharShapeLevel1", "수준1 지정 여부")
+    char_shape_level1      = ParameterSet._typed_prop("CharShapeLevel1", "수준1 글자 모양 지정", CharShape)
+    width_adjust_level1    = ParameterSet._int_prop("WidthAdjustLevel1", "수준1 너비 조정 값 (HWPUNIT)")
+    text_offset_level1     = ParameterSet._int_prop("TextOffsetLevel1", "수준1 텍스트 오프셋")
+    alignment_level1       = ParameterSet._enum_prop("AlignmentLevel1", allowed=[0, 1, 2],
+                                                     doc="수준1 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
+    use_inst_width_level1  = ParameterSet._bool_prop("UseInstWidthLevel1", "수준1 문서 내부 너비 맞춤 여부")
+    auto_indent_level1     = ParameterSet._bool_prop("AutoIndentLevel1", "수준1 자동 들여쓰기 여부")
+    text_offset_type_level1 = ParameterSet._bool_prop("TextOffsetTypeLevel1", "수준1 텍스트 오프셋 타입")
+    str_format_level1      = ParameterSet._str_prop("StrFormatLevel1", "수준1 문자열 포맷")
+    num_format_level1      = ParameterSet._enum_prop("NumFormatLevel1", allowed=[0, 1],
+                                                     doc="수준1 번호 포맷")
+
+    # Level 2 properties
+    has_char_shape_level2  = ParameterSet._bool_prop("HasCharShapeLevel2", "수준2 지정 여부")
+    char_shape_level2      = ParameterSet._typed_prop("CharShapeLevel2", "수준2 글자 모양 지정", CharShape)
+    width_adjust_level2    = ParameterSet._int_prop("WidthAdjustLevel2", "수준2 너비 조정 값 (HWPUNIT)")
+    text_offset_level2     = ParameterSet._int_prop("TextOffsetLevel2", "수준2 텍스트 오프셋")
+    alignment_level2       = ParameterSet._enum_prop("AlignmentLevel2", allowed=[0, 1, 2],
+                                                     doc="수준2 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
+    use_inst_width_level2  = ParameterSet._bool_prop("UseInstWidthLevel2", "수준2 문서 내부 너비 맞춤 여부")
+    auto_indent_level2     = ParameterSet._bool_prop("AutoIndentLevel2", "수준2 자동 들여쓰기 여부")
+    text_offset_type_level2 = ParameterSet._bool_prop("TextOffsetTypeLevel2", "수준2 텍스트 오프셋 타입")
+    str_format_level2      = ParameterSet._str_prop("StrFormatLevel2", "수준2 문자열 포맷")
+    num_format_level2      = ParameterSet._enum_prop("NumFormatLevel2", allowed=[0, 1],
+                                                     doc="수준2 번호 포맷")
+
+    # Level 3 properties
+    has_char_shape_level3  = ParameterSet._bool_prop("HasCharShapeLevel3", "수준3 지정 여부")
+    char_shape_level3      = ParameterSet._typed_prop("CharShapeLevel3", "수준3 글자 모양 지정", CharShape)
+    width_adjust_level3    = ParameterSet._int_prop("WidthAdjustLevel3", "수준3 너비 조정 값 (HWPUNIT)")
+    text_offset_level3     = ParameterSet._int_prop("TextOffsetLevel3", "수준3 텍스트 오프셋")
+    alignment_level3       = ParameterSet._enum_prop("AlignmentLevel3", allowed=[0, 1, 2],
+                                                     doc="수준3 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
+    use_inst_width_level3  = ParameterSet._bool_prop("UseInstWidthLevel3", "수준3 문서 내부 너비 맞춤 여부")
+    auto_indent_level3     = ParameterSet._bool_prop("AutoIndentLevel3", "수준3 자동 들여쓰기 여부")
+    text_offset_type_level3 = ParameterSet._bool_prop("TextOffsetTypeLevel3", "수준3 텍스트 오프셋 타입")
+    str_format_level3      = ParameterSet._str_prop("StrFormatLevel3", "수준3 문자열 포맷")
+    num_format_level3      = ParameterSet._enum_prop("NumFormatLevel3", allowed=[0, 1],
+                                                     doc="수준3 번호 포맷")
+
+    # Level 4 properties
+    has_char_shape_level4  = ParameterSet._bool_prop("HasCharShapeLevel4", "수준4 지정 여부")
+    char_shape_level4      = ParameterSet._typed_prop("CharShapeLevel4", "수준4 글자 모양 지정", CharShape)
+    width_adjust_level4    = ParameterSet._int_prop("WidthAdjustLevel4", "수준4 너비 조정 값 (HWPUNIT)")
+    text_offset_level4     = ParameterSet._int_prop("TextOffsetLevel4", "수준4 텍스트 오프셋")
+    alignment_level4       = ParameterSet._enum_prop("AlignmentLevel4", allowed=[0, 1, 2],
+                                                     doc="수준4 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
+    use_inst_width_level4  = ParameterSet._bool_prop("UseInstWidthLevel4", "수준4 문서 내부 너비 맞춤 여부")
+    auto_indent_level4     = ParameterSet._bool_prop("AutoIndentLevel4", "수준4 자동 들여쓰기 여부")
+    text_offset_type_level4 = ParameterSet._bool_prop("TextOffsetTypeLevel4", "수준4 텍스트 오프셋 타입")
+    str_format_level4      = ParameterSet._str_prop("StrFormatLevel4", "수준4 문자열 포맷")
+    num_format_level4      = ParameterSet._enum_prop("NumFormatLevel4", allowed=[0, 1],
+                                                     doc="수준4 번호 포맷")
+
+    # Level 5 properties
+    has_char_shape_level5  = ParameterSet._bool_prop("HasCharShapeLevel5", "수준5 지정 여부")
+    char_shape_level5      = ParameterSet._typed_prop("CharShapeLevel5", "수준5 글자 모양 지정", CharShape)
+    width_adjust_level5    = ParameterSet._int_prop("WidthAdjustLevel5", "수준5 너비 조정 값 (HWPUNIT)")
+    text_offset_level5     = ParameterSet._int_prop("TextOffsetLevel5", "수준5 텍스트 오프셋")
+    alignment_level5       = ParameterSet._enum_prop("AlignmentLevel5", allowed=[0, 1, 2],
+                                                     doc="수준5 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
+    use_inst_width_level5  = ParameterSet._bool_prop("UseInstWidthLevel5", "수준5 문서 내부 너비 맞춤 여부")
+    auto_indent_level5     = ParameterSet._bool_prop("AutoIndentLevel5", "수준5 자동 들여쓰기 여부")
+    text_offset_type_level5 = ParameterSet._bool_prop("TextOffsetTypeLevel5", "수준5 텍스트 오프셋 타입")
+    str_format_level5      = ParameterSet._str_prop("StrFormatLevel5", "수준5 문자열 포맷")
+    num_format_level5      = ParameterSet._enum_prop("NumFormatLevel5", allowed=[0, 1],
+                                                     doc="수준5 번호 포맷")
+
+    # Level 6 properties
+    has_char_shape_level6  = ParameterSet._bool_prop("HasCharShapeLevel6", "수준6 지정 여부")
+    char_shape_level6      = ParameterSet._typed_prop("CharShapeLevel6", "수준6 글자 모양 지정", CharShape)
+    width_adjust_level6    = ParameterSet._int_prop("WidthAdjustLevel6", "수준6 너비 조정 값 (HWPUNIT)")
+    text_offset_level6     = ParameterSet._int_prop("TextOffsetLevel6", "수준6 텍스트 오프셋")
+    alignment_level6       = ParameterSet._enum_prop("AlignmentLevel6", allowed=[0, 1, 2],
+                                                     doc="수준6 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
+    use_inst_width_level6  = ParameterSet._bool_prop("UseInstWidthLevel6", "수준6 문서 내부 너비 맞춤 여부")
+    auto_indent_level6     = ParameterSet._bool_prop("AutoIndentLevel6", "수준6 자동 들여쓰기 여부")
+    text_offset_type_level6 = ParameterSet._bool_prop("TextOffsetTypeLevel6", "수준6 텍스트 오프셋 타입")
+    str_format_level6      = ParameterSet._str_prop("StrFormatLevel6", "수준6 문자열 포맷")
+    num_format_level6      = ParameterSet._enum_prop("NumFormatLevel6", allowed=[0, 1],
+                                                     doc="수준6 번호 포맷")
 
-    def _validate_ui1(self, value):
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-
-    def _validate_alignment(self, value):
-        assert value in [0, 1, 2], "값은 0 (왼쪽), 1 (가운데), 2 (오른쪽)이어야 합니다."
-
-    @property
-    def start_number(self):
-        return self._get_value("StartNumber")
-
-    @start_number.setter
-    def start_number(self, value):
-        if value is None:
-            return self._del_value("StartNumber")
-        assert isinstance(value, int), "값은 정수여야 합니다."
-        return self._set_value("StartNumber", value)
-
-    @property
-    def new_list(self):
-        return self._get_value("NewList")
-
-    @new_list.setter
-    def new_list(self, value):
-        if value is None:
-            return self._del_value("NewList")
-        self._validate_ui1(value)
-        return self._set_value("NewList", value)
-
-    def _get_level_property(self, prefix, level):
-        return self._get_value(f"{prefix}Level{level}")
-
-    def _set_level_property(self, prefix, level, value):
-        if value is None:
-            return self._del_value(f"{prefix}Level{level}")
-        return self._set_value(f"{prefix}Level{level}", value)
-
-    
-    @property
-    def has_char_shape_level0(self):
-        return self._get_level_property('HasCharShape', 0)
-
-    @has_char_shape_level0.setter
-    def has_char_shape_level0(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('HasCharShape', 0, value)
-
-    @property
-    def char_shape_level0(self):
-        return self._get_level_property('CharShape', 0)
-
-    @char_shape_level0.setter
-    def char_shape_level0(self, value):
-        self._set_level_property('CharShape', 0, value)
-
-    @property
-    def width_adjust_level0(self):
-        return self._get_level_property('WidthAdjust', 0)
-
-    @width_adjust_level0.setter
-    def width_adjust_level0(self, value):
-        self._set_level_property('WidthAdjust', 0, value)
-
-    @property
-    def text_offset_level0(self):
-        return self._get_level_property('TextOffset', 0)
-
-    @text_offset_level0.setter
-    def text_offset_level0(self, value):
-        self._set_level_property('TextOffset', 0, value)
-
-    @property
-    def alignment_level0(self):
-        return self._get_level_property('Alignment', 0)
-
-    @alignment_level0.setter
-    def alignment_level0(self, value):
-        self._validate_alignment(value)
-        self._set_level_property('Alignment', 0, value)
-
-    @property
-    def use_inst_width_level0(self):
-        return self._get_level_property('UseInstWidth', 0)
-
-    @use_inst_width_level0.setter
-    def use_inst_width_level0(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('UseInstWidth', 0, value)
-
-    @property
-    def auto_indent_level0(self):
-        return self._get_level_property('AutoIndent', 0)
-
-    @auto_indent_level0.setter
-    def auto_indent_level0(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('AutoIndent', 0, value)
-
-    @property
-    def text_offset_type_level0(self):
-        return self._get_level_property('TextOffsetType', 0)
-
-    @text_offset_type_level0.setter
-    def text_offset_type_level0(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('TextOffsetType', 0, value)
-
-    @property
-    def str_format_level0(self):
-        return self._get_level_property('StrFormat', 0)
-
-    @str_format_level0.setter
-    def str_format_level0(self, value):
-        self._set_level_property('StrFormat', 0, value)
-
-    @property
-    def num_format_level0(self):
-        return self._get_level_property('NumFormat', 0)
-
-    @num_format_level0.setter
-    def num_format_level0(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('NumFormat', 0, value)
-        
-
-    @property
-    def has_char_shape_level1(self):
-        return self._get_level_property('HasCharShape', 1)
-
-    @has_char_shape_level1.setter
-    def has_char_shape_level1(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('HasCharShape', 1, value)
-
-    @property
-    def char_shape_level1(self):
-        return self._get_level_property('CharShape', 1)
-
-    @char_shape_level1.setter
-    def char_shape_level1(self, value):
-        self._set_level_property('CharShape', 1, value)
-
-    @property
-    def width_adjust_level1(self):
-        return self._get_level_property('WidthAdjust', 1)
-
-    @width_adjust_level1.setter
-    def width_adjust_level1(self, value):
-        self._set_level_property('WidthAdjust', 1, value)
-
-    @property
-    def text_offset_level1(self):
-        return self._get_level_property('TextOffset', 1)
-
-    @text_offset_level1.setter
-    def text_offset_level1(self, value):
-        self._set_level_property('TextOffset', 1, value)
-
-    @property
-    def alignment_level1(self):
-        return self._get_level_property('Alignment', 1)
-
-    @alignment_level1.setter
-    def alignment_level1(self, value):
-        self._validate_alignment(value)
-        self._set_level_property('Alignment', 1, value)
-
-    @property
-    def use_inst_width_level1(self):
-        return self._get_level_property('UseInstWidth', 1)
-
-    @use_inst_width_level1.setter
-    def use_inst_width_level1(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('UseInstWidth', 1, value)
-
-    @property
-    def auto_indent_level1(self):
-        return self._get_level_property('AutoIndent', 1)
-
-    @auto_indent_level1.setter
-    def auto_indent_level1(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('AutoIndent', 1, value)
-
-    @property
-    def text_offset_type_level1(self):
-        return self._get_level_property('TextOffsetType', 1)
-
-    @text_offset_type_level1.setter
-    def text_offset_type_level1(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('TextOffsetType', 1, value)
-
-    @property
-    def str_format_level1(self):
-        return self._get_level_property('StrFormat', 1)
-
-    @str_format_level1.setter
-    def str_format_level1(self, value):
-        self._set_level_property('StrFormat', 1, value)
-
-    @property
-    def num_format_level1(self):
-        return self._get_level_property('NumFormat', 1)
-
-    @num_format_level1.setter
-    def num_format_level1(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('NumFormat', 1, value)
-        
-
-    @property
-    def has_char_shape_level2(self):
-        return self._get_level_property('HasCharShape', 2)
-
-    @has_char_shape_level2.setter
-    def has_char_shape_level2(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('HasCharShape', 2, value)
-
-    @property
-    def char_shape_level2(self):
-        return self._get_level_property('CharShape', 2)
-
-    @char_shape_level2.setter
-    def char_shape_level2(self, value):
-        self._set_level_property('CharShape', 2, value)
-
-    @property
-    def width_adjust_level2(self):
-        return self._get_level_property('WidthAdjust', 2)
-
-    @width_adjust_level2.setter
-    def width_adjust_level2(self, value):
-        self._set_level_property('WidthAdjust', 2, value)
-
-    @property
-    def text_offset_level2(self):
-        return self._get_level_property('TextOffset', 2)
-
-    @text_offset_level2.setter
-    def text_offset_level2(self, value):
-        self._set_level_property('TextOffset', 2, value)
-
-    @property
-    def alignment_level2(self):
-        return self._get_level_property('Alignment', 2)
-
-    @alignment_level2.setter
-    def alignment_level2(self, value):
-        self._validate_alignment(value)
-        self._set_level_property('Alignment', 2, value)
-
-    @property
-    def use_inst_width_level2(self):
-        return self._get_level_property('UseInstWidth', 2)
-
-    @use_inst_width_level2.setter
-    def use_inst_width_level2(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('UseInstWidth', 2, value)
-
-    @property
-    def auto_indent_level2(self):
-        return self._get_level_property('AutoIndent', 2)
-
-    @auto_indent_level2.setter
-    def auto_indent_level2(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('AutoIndent', 2, value)
-
-    @property
-    def text_offset_type_level2(self):
-        return self._get_level_property('TextOffsetType', 2)
-
-    @text_offset_type_level2.setter
-    def text_offset_type_level2(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('TextOffsetType', 2, value)
-
-    @property
-    def str_format_level2(self):
-        return self._get_level_property('StrFormat', 2)
-
-    @str_format_level2.setter
-    def str_format_level2(self, value):
-        self._set_level_property('StrFormat', 2, value)
-
-    @property
-    def num_format_level2(self):
-        return self._get_level_property('NumFormat', 2)
-
-    @num_format_level2.setter
-    def num_format_level2(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('NumFormat', 2, value)
-        
-
-    @property
-    def has_char_shape_level3(self):
-        return self._get_level_property('HasCharShape', 3)
-
-    @has_char_shape_level3.setter
-    def has_char_shape_level3(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('HasCharShape', 3, value)
-
-    @property
-    def char_shape_level3(self):
-        return self._get_level_property('CharShape', 3)
-
-    @char_shape_level3.setter
-    def char_shape_level3(self, value):
-        self._set_level_property('CharShape', 3, value)
-
-    @property
-    def width_adjust_level3(self):
-        return self._get_level_property('WidthAdjust', 3)
-
-    @width_adjust_level3.setter
-    def width_adjust_level3(self, value):
-        self._set_level_property('WidthAdjust', 3, value)
-
-    @property
-    def text_offset_level3(self):
-        return self._get_level_property('TextOffset', 3)
-
-    @text_offset_level3.setter
-    def text_offset_level3(self, value):
-        self._set_level_property('TextOffset', 3, value)
-
-    @property
-    def alignment_level3(self):
-        return self._get_level_property('Alignment', 3)
-
-    @alignment_level3.setter
-    def alignment_level3(self, value):
-        self._validate_alignment(value)
-        self._set_level_property('Alignment', 3, value)
-
-    @property
-    def use_inst_width_level3(self):
-        return self._get_level_property('UseInstWidth', 3)
-
-    @use_inst_width_level3.setter
-    def use_inst_width_level3(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('UseInstWidth', 3, value)
-
-    @property
-    def auto_indent_level3(self):
-        return self._get_level_property('AutoIndent', 3)
-
-    @auto_indent_level3.setter
-    def auto_indent_level3(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('AutoIndent', 3, value)
-
-    @property
-    def text_offset_type_level3(self):
-        return self._get_level_property('TextOffsetType', 3)
-
-    @text_offset_type_level3.setter
-    def text_offset_type_level3(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('TextOffsetType', 3, value)
-
-    @property
-    def str_format_level3(self):
-        return self._get_level_property('StrFormat', 3)
-
-    @str_format_level3.setter
-    def str_format_level3(self, value):
-        self._set_level_property('StrFormat', 3, value)
-
-    @property
-    def num_format_level3(self):
-        return self._get_level_property('NumFormat', 3)
-
-    @num_format_level3.setter
-    def num_format_level3(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('NumFormat', 3, value)
-        
-
-    @property
-    def has_char_shape_level4(self):
-        return self._get_level_property('HasCharShape', 4)
-
-    @has_char_shape_level4.setter
-    def has_char_shape_level4(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('HasCharShape', 4, value)
-
-    @property
-    def char_shape_level4(self):
-        return self._get_level_property('CharShape', 4)
-
-    @char_shape_level4.setter
-    def char_shape_level4(self, value):
-        self._set_level_property('CharShape', 4, value)
-
-    @property
-    def width_adjust_level4(self):
-        return self._get_level_property('WidthAdjust', 4)
-
-    @width_adjust_level4.setter
-    def width_adjust_level4(self, value):
-        self._set_level_property('WidthAdjust', 4, value)
-
-    @property
-    def text_offset_level4(self):
-        return self._get_level_property('TextOffset', 4)
-
-    @text_offset_level4.setter
-    def text_offset_level4(self, value):
-        self._set_level_property('TextOffset', 4, value)
-
-    @property
-    def alignment_level4(self):
-        return self._get_level_property('Alignment', 4)
-
-    @alignment_level4.setter
-    def alignment_level4(self, value):
-        self._validate_alignment(value)
-        self._set_level_property('Alignment', 4, value)
-
-    @property
-    def use_inst_width_level4(self):
-        return self._get_level_property('UseInstWidth', 4)
-
-    @use_inst_width_level4.setter
-    def use_inst_width_level4(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('UseInstWidth', 4, value)
-
-    @property
-    def auto_indent_level4(self):
-        return self._get_level_property('AutoIndent', 4)
-
-    @auto_indent_level4.setter
-    def auto_indent_level4(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('AutoIndent', 4, value)
-
-    @property
-    def text_offset_type_level4(self):
-        return self._get_level_property('TextOffsetType', 4)
-
-    @text_offset_type_level4.setter
-    def text_offset_type_level4(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('TextOffsetType', 4, value)
-
-    @property
-    def str_format_level4(self):
-        return self._get_level_property('StrFormat', 4)
-
-    @str_format_level4.setter
-    def str_format_level4(self, value):
-        self._set_level_property('StrFormat', 4, value)
-
-    @property
-    def num_format_level4(self):
-        return self._get_level_property('NumFormat', 4)
-
-    @num_format_level4.setter
-    def num_format_level4(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('NumFormat', 4, value)
-        
-
-    @property
-    def has_char_shape_level5(self):
-        return self._get_level_property('HasCharShape', 5)
-
-    @has_char_shape_level5.setter
-    def has_char_shape_level5(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('HasCharShape', 5, value)
-
-    @property
-    def char_shape_level5(self):
-        return self._get_level_property('CharShape', 5)
-
-    @char_shape_level5.setter
-    def char_shape_level5(self, value):
-        self._set_level_property('CharShape', 5, value)
-
-    @property
-    def width_adjust_level5(self):
-        return self._get_level_property('WidthAdjust', 5)
-
-    @width_adjust_level5.setter
-    def width_adjust_level5(self, value):
-        self._set_level_property('WidthAdjust', 5, value)
-
-    @property
-    def text_offset_level5(self):
-        return self._get_level_property('TextOffset', 5)
-
-    @text_offset_level5.setter
-    def text_offset_level5(self, value):
-        self._set_level_property('TextOffset', 5, value)
-
-    @property
-    def alignment_level5(self):
-        return self._get_level_property('Alignment', 5)
-
-    @alignment_level5.setter
-    def alignment_level5(self, value):
-        self._validate_alignment(value)
-        self._set_level_property('Alignment', 5, value)
-
-    @property
-    def use_inst_width_level5(self):
-        return self._get_level_property('UseInstWidth', 5)
-
-    @use_inst_width_level5.setter
-    def use_inst_width_level5(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('UseInstWidth', 5, value)
-
-    @property
-    def auto_indent_level5(self):
-        return self._get_level_property('AutoIndent', 5)
-
-    @auto_indent_level5.setter
-    def auto_indent_level5(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('AutoIndent', 5, value)
-
-    @property
-    def text_offset_type_level5(self):
-        return self._get_level_property('TextOffsetType', 5)
-
-    @text_offset_type_level5.setter
-    def text_offset_type_level5(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('TextOffsetType', 5, value)
-
-    @property
-    def str_format_level5(self):
-        return self._get_level_property('StrFormat', 5)
-
-    @str_format_level5.setter
-    def str_format_level5(self, value):
-        self._set_level_property('StrFormat', 5, value)
-
-    @property
-    def num_format_level5(self):
-        return self._get_level_property('NumFormat', 5)
-
-    @num_format_level5.setter
-    def num_format_level5(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('NumFormat', 5, value)
-        
-
-    @property
-    def has_char_shape_level6(self):
-        return self._get_level_property('HasCharShape', 6)
-
-    @has_char_shape_level6.setter
-    def has_char_shape_level6(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('HasCharShape', 6, value)
-
-    @property
-    def char_shape_level6(self):
-        return self._get_level_property('CharShape', 6)
-
-    @char_shape_level6.setter
-    def char_shape_level6(self, value):
-        self._set_level_property('CharShape', 6, value)
-
-    @property
-    def width_adjust_level6(self):
-        return self._get_level_property('WidthAdjust', 6)
-
-    @width_adjust_level6.setter
-    def width_adjust_level6(self, value):
-        self._set_level_property('WidthAdjust', 6, value)
-
-    @property
-    def text_offset_level6(self):
-        return self._get_level_property('TextOffset', 6)
-
-    @text_offset_level6.setter
-    def text_offset_level6(self, value):
-        self._set_level_property('TextOffset', 6, value)
-
-    @property
-    def alignment_level6(self):
-        return self._get_level_property('Alignment', 6)
-
-    @alignment_level6.setter
-    def alignment_level6(self, value):
-        self._validate_alignment(value)
-        self._set_level_property('Alignment', 6, value)
-
-    @property
-    def use_inst_width_level6(self):
-        return self._get_level_property('UseInstWidth', 6)
-
-    @use_inst_width_level6.setter
-    def use_inst_width_level6(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('UseInstWidth', 6, value)
-
-    @property
-    def auto_indent_level6(self):
-        return self._get_level_property('AutoIndent', 6)
-
-    @auto_indent_level6.setter
-    def auto_indent_level6(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('AutoIndent', 6, value)
-
-    @property
-    def text_offset_type_level6(self):
-        return self._get_level_property('TextOffsetType', 6)
-
-    @text_offset_type_level6.setter
-    def text_offset_type_level6(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('TextOffsetType', 6, value)
-
-    @property
-    def str_format_level6(self):
-        return self._get_level_property('StrFormat', 6)
-
-    @str_format_level6.setter
-    def str_format_level6(self, value):
-        self._set_level_property('StrFormat', 6, value)
-
-    @property
-    def num_format_level6(self):
-        return self._get_level_property('NumFormat', 6)
-
-    @num_format_level6.setter
-    def num_format_level6(self, value):
-        self._validate_ui1(value)
-        self._set_level_property('NumFormat', 6, value)
         
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 59
+# %% ../nbs/02_api/02_parameters.ipynb 57
 class ParaShape(ParameterSet):
     """
     ### ParaShape
 
-91\) ParaShape : 문단 모양
+    91) ParaShape : 문단 모양
 
-
-| Item ID | Type | SubType | Description |
-| --- | --- | --- | --- |
-| LeftMargin | PIT\_I4 |  | 왼쪽 여백 (URC) |
-| RightMargin | PIT\_I4 |  | 오른쪽 여백 (URC) |
-| Indentation | PIT\_I4 |  | 들여쓰기/내어 쓰기 (URC) |
-| PrevSpacing | PIT\_I4 |  | 문단 간격 위 (URC) |
-| NextSpacing | PIT\_I4 |  | 문단 간격 아래 (URC) |
-| LineSpacingType | PIT\_UI1 |  | 줄 간격 종류 (HWPUNIT)0 \= 글자에 따라1 \= 고정 값2 \= 여백만 지정 |
-| LineSpacing | PIT\_I4 |  | 줄 간격 값. 줄 간격 종류(LineSpacingType)에 따라 :\- "글자에 따라"일 경우(0 \- 500%)\- “고정 값”일 경우(URC)\- “여백만 지정”일 경우(URC) |
-| AlignType | PIT\_UI1 |  | 정렬 방식0 \= 양쪽 정렬1 \= 왼쪽 정렬2 \= 오른쪽 정렬3 \= 가운데 정렬4 \= 배분 정렬5 \= 나눔 정렬 (공백에만 배분) |
-| BreakLatinWord | PIT\_UI1 |  | 줄 나눔 단위 (라틴 문자)0 \= 단어1 \= 하이픈2 \= 글자 |
-| BreakNonLatinWord | PIT\_UI1 |  | 단위 (비 라틴 문자) TRUE \= 글자, FALSE \= 어절 |
-| SnapToGrid | PIT\_UI1 |  | 편집 용지의 줄 격자 사용 (on / off) |
-| Condense | PIT\_UI1 |  | 공백 최소값 (0 \- 75%) |
-| WidowOrphan | PIT\_UI1 |  | 외톨이줄 보호 (on / off) |
-| KeepWithNext | PIT\_UI1 |  | 다음 문단과 함께 (on / off) |
-| KeepLinesTogether | PIT\_UI1 |  | 문단 보호 (on / off) |
-| PagebreakBefore | PIT\_UI1 |  | 문단 앞에서 항상 쪽 나눔 (on / off) |
-| TextAlignment | PIT\_UI1 |  | 세로 정렬0 \= 글꼴기준1 \= 위2 \= 가운데3 \= 아래 |
-| FontLineHeight | PIT\_UI1 |  | 글꼴에 어울리는 줄 높이 (on / off) |
-| HeadingType | PIT\_UI1 |  | 문단 머리 모양0 \= 없음1 \= 개요2 \= 번호3 \= 불릿 |
-| Level | PIT\_UI1 |  | 단계 (0 \- 6\) |
-| BorderConnect | PIT\_UI1 |  | 문단 테두리/배경 \- 테두리 연결 (on / off) |
-| BorderText | PIT\_UI1 |  | 문단 테두리/배경 \- 여백 무시 (0 \= 단, 1 \= 텍스트) |
-| BorderOffsetLeft | PIT\_I |  | 문단 테두리/배경 \- 4방향 간격 (HWPUNIT) : 왼쪽 |
-| BorderOffsetRight | PIT\_I |  | 문단 테두리/배경 \- 4방향 간격 (HWPUNIT) : 오른쪽 |
-| BorderOffsetTop | PIT\_I |  | 문단 테두리/배경 \- 4방향 간격 (HWPUNIT) : 위 |
-| BorderOffsetBottom | PIT\_I |  | 문단 테두리/배경 \- 4방향 간격 (HWPUNIT) : 아래 |
-| TailType | PIT\_UI1 |  | 문단 꼬리 모양 (마지막 꼬리 줄 적용) on/off |
-| LineWrap | PIT\_UI1 |  | 글꼴에 어울리는 줄 높이 (on/off) |
-| TabDef | PIT\_SET | TabDef | 탭 정의 |
-| Numbering | PIT\_SET | NumberingShape | 문단 번호문단 머리 모양(HeadingType)이 ‘개요’, ‘번호’ 일 때 사용 |
-| Bullet | PIT\_SET | BulletShape | 불릿 모양문단 머리 모양(HeadingType)이 ‘불릿’(글머리표) 일 때 사용 |
-| BorderFill | PIT\_SET | BorderFill | 테두리/배경 |
-
- 
-
-
-
+    | Item ID          | Type    | SubType | Description |
+    |------------------|---------|---------|-------------|
+    | LeftMargin       | PIT_I4  |         | 왼쪽 여백 (URC) |
+    | RightMargin      | PIT_I4  |         | 오른쪽 여백 (URC) |
+    | Indentation      | PIT_I4  |         | 들여쓰기/내어 쓰기 (URC) |
+    | PrevSpacing      | PIT_I4  |         | 문단 간격 위 (URC) |
+    | NextSpacing      | PIT_I4  |         | 문단 간격 아래 (URC) |
+    | LineSpacingType  | PIT_UI1 |         | 줄 간격 종류 (HWPUNIT): 0 = 글꼴 기준, 1 = 고정 값, 2 = 여백만 지정 |
+    | LineSpacing      | PIT_I4  |         | 줄 간격 값 |
+    | AlignType        | PIT_UI1 |         | 정렬 방식: 0 = 양쪽 정렬, 1 = 왼쪽 정렬, 2 = 오른쪽 정렬, 3 = 가운데 정렬, 4 = 배분 정렬, 5 = 나눔 정렬 |
+    | BreakLatinWord   | PIT_UI1 |         | 줄 나눔 방식 (라틴): 0 = 단어, 1 = 하이픈, 2 = 글자 |
+    | BreakNonLatinWord| PIT_UI1 |         | 줄 나눔 (비 라틴): 0 = 어절, 1 = 글자 |
+    | SnapToGrid       | PIT_UI1 |         | 편집 용지의 줄 격자 사용 (on/off) |
+    | Condense         | PIT_UI1 |         | 공백 최소값 (0 - 75%) |
+    | WidowOrphan      | PIT_UI1 |         | 외톨이줄 보호 (on/off) |
+    | KeepWithNext     | PIT_UI1 |         | 다음 문단과 함께 (on/off) |
+    | KeepLinesTogether| PIT_UI1 |         | 문단 보호 (on/off) |
+    | PagebreakBefore  | PIT_UI1 |         | 문단 앞에서 항상 쪽 나눔 (on/off) |
+    | TextAlignment    | PIT_UI1 |         | 세로 정렬: 0 = 글꼴 기준, 1 = 위, 2 = 가운데, 3 = 아래 |
+    | FontLineHeight   | PIT_UI1 |         | 글꼴에 어울리는 줄 높이 (on/off) |
+    | HeadingType      | PIT_UI1 |         | 문단 머리 모양: 0 = 없음, 1 = 개요, 2 = 번호, 3 = 불릿 |
+    | Level            | PIT_UI1 |         | 단계 (0 - 6) |
+    | BorderConnect    | PIT_UI1 |         | 문단 테두리/배경 - 테두리 연결 (on/off) |
+    | BorderText       | PIT_UI1 |         | 문단 테두리/배경 - 여백 무시: 0 = 단, 1 = 텍스트 |
+    | BorderOffsetLeft | PIT_I   |         | 문단 테두리/배경 - 4방향 간격 (HWPUNIT): 왼쪽 |
+    | BorderOffsetRight| PIT_I   |         | 문단 테두리/배경 - 4방향 간격 (HWPUNIT): 오른쪽 |
+    | BorderOffsetTop  | PIT_I   |         | 문단 테두리/배경 - 4방향 간격 (HWPUNIT): 위 |
+    | BorderOffsetBottom| PIT_I  |         | 문단 테두리/배경 - 4방향 간격 (HWPUNIT): 아래 |
+    | TailType         | PIT_UI1 |         | 문단 꼬리 모양 (마지막 꼬리 줄 적용) (on/off) |
+    | LineWrap         | PIT_UI1 |         | 글꼴에 어울리는 줄 높이 (on/off) |
+    | TabDef           | PIT_SET | TabDef  | 탭 정의 |
+    | Numbering        | PIT_SET | NumberingShape | 문단 번호 (머리 모양이 ‘개요’, ‘번호’일 때 사용) |
+    | Bullet           | PIT_SET | BulletShape | 불릿 모양 (머리 모양이 ‘불릿’일 때 사용) |
+    | BorderFill       | PIT_SET | BorderFill | 테두리/배경 |
     """
-
-    def update(self, parashape):
-
-        for key in [ 'align_type',
-            'border_connect',
-            'border_fill',
-            'border_offset_bottom',
-            'border_offset_left',
-            'border_offset_right',
-            'border_offset_top',
-            'border_text',
-            'break_latin_word',
-            'break_non_latin_word',
-            'bullet',
-            'condense',
-            'font_line_height',
-            'heading_type',
-            'indentation',
-            'is_pset',
-            'keep_lines_together',
-            'keep_with_next',
-            'left_margin',
-            'level',
-            'line_spacing',
-            'line_spacing_type',
-            'line_wrap',
-            'next_spacing',
-            'numbering',
-            'pagebreak_before',
-            'parameterset',
-            'prev_spacing',
-            'right_margin',
-            'snap_to_grid',
-            'tab_def',
-            'tail_type',
-            'text_alignment',
-            'widow_orphan']:
-            value = getattr(parashape, key)
-            if value:
-                setattr(self, key, value)
-
-    @property
-    def left_margin(self):
-        """왼쪽 여백 (URC)"""
-        return self._get_value("LeftMargin")
-
-    @left_margin.setter
-    def left_margin(self, value):
-        if value is None:
-            return self._del_value("LeftMargin")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("LeftMargin", value)
-
-    @property
-    def right_margin(self):
-        """오른쪽 여백 (URC)"""
-        return self._get_value("RightMargin")
-
-    @right_margin.setter
-    def right_margin(self, value):
-        if value is None:
-            return self._del_value("RightMargin")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("RightMargin", value)
-
-    @property
-    def indentation(self):
-        """들여쓰기/내어쓰기 (URC)"""
-        return self._get_value("Indentation")
-
-    @indentation.setter
-    def indentation(self, value):
-        if value is None:
-            return self._del_value("Indentation")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("Indentation", value)
-
-    @property
-    def prev_spacing(self):
-        """문단 간격 위 (URC)"""
-        return self._get_value("PrevSpacing")
-
-    @prev_spacing.setter
-    def prev_spacing(self, value):
-        if value is None:
-            return self._del_value("PrevSpacing")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("PrevSpacing", value)
-
-    @property
-    def next_spacing(self):
-        """문단 간격 아래 (URC)"""
-        return self._get_value("NextSpacing")
-
-    @next_spacing.setter
-    def next_spacing(self, value):
-        if value is None:
-            return self._del_value("NextSpacing")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("NextSpacing", value)
-
-    @property
-    def line_spacing_type(self):
-        """줄 간격 종류:
-        0 = 글자에 맞춤, 1 = 고정 값, 2 = 여백만 지정"""
-        return self._get_value("LineSpacingType")
-
-    @line_spacing_type.setter
-    def line_spacing_type(self, value):
-        if value is None:
-            return self._del_value("LineSpacingType")
-        assert value in [0, 1, 2], "값은 0, 1, 2 중 하나여야 합니다."
-        return self._set_value("LineSpacingType", value)
-
-    @property
-    def line_spacing(self):
-        """줄 간격 (LineSpacingType에 따라 값 범위가 다름):
-        - "글자에 맞춤": 0 - 500%
-        - "고정 값": 정수 값 (URC)
-        - "여백만 지정": 정수 값 (URC)
-        """
-        return self._get_value("LineSpacing")
-
-    @line_spacing.setter
-    def line_spacing(self, value):
-        if value is None:
-            return self._del_value("LineSpacing")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("LineSpacing", value)
-
-    @property
-    def align_type(self):
-        """정렬 방식:
-        0 = 왼쪽 정렬, 1 = 오른쪽 정렬, 2 = 가운데 정렬, 3 = 양쪽 정렬, 4 = 배분 정렬, 5 = 나눔 정렬
-        """
-        return self._get_value("AlignType")
-
-    @align_type.setter
-    def align_type(self, value):
-        if value is None:
-            return self._del_value("AlignType")
-        assert value in [0, 1, 2, 3, 4, 5], "값은 0에서 5 사이여야 합니다."
-        return self._set_value("AlignType", value)
-
-    @property
-    def break_latin_word(self):
-        """줄 나눔 방식 (라틴 문자):
-        0 = 끊지 않음, 1 = 하이픈, 2 = 글자 단위
-        """
-        return self._get_value("BreakLatinWord")
-
-    @break_latin_word.setter
-    def break_latin_word(self, value):
-        if value is None:
-            return self._del_value("BreakLatinWord")
-        assert value in [0, 1, 2], "값은 0, 1, 2 중 하나여야 합니다."
-        return self._set_value("BreakLatinWord", value)
-
-    @property
-    def break_non_latin_word(self):
-        """줄 나눔 (비 라틴 문자): TRUE = 글자 단위, FALSE = 끊지 않음"""
-        return self._get_value("BreakNonLatinWord")
-
-    @break_non_latin_word.setter
-    def break_non_latin_word(self, value):
-        if value is None:
-            return self._del_value("BreakNonLatinWord")
-        assert value in [0, 1], "값은 0 (FALSE) 또는 1 (TRUE)이어야 합니다."
-        return self._set_value("BreakNonLatinWord", value)
-
-    @property
-    def snap_to_grid(self):
-        """문서 격자 사용 (on/off)"""
-        return self._get_value("SnapToGrid")
-
-    @snap_to_grid.setter
-    def snap_to_grid(self, value):
-        if value is None:
-            return self._del_value("SnapToGrid")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("SnapToGrid", value)
-
-    @property
-    def condense(self):
-        """공백 최소값 (0 - 75%)"""
-        return self._get_value("Condense")
-
-    @condense.setter
-    def condense(self, value):
-        if value is None:
-            return self._del_value("Condense")
-        assert 0 <= value <= 75, "값은 0에서 75 사이여야 합니다."
-        return self._set_value("Condense", value)
-
-    @property
-    def widow_orphan(self):
-        """외톨이줄 보호 (on / off)"""
-        return self._get_value("WidowOrphan")
-
-    @widow_orphan.setter
-    def widow_orphan(self, value):
-        if value is None:
-            return self._del_value("WidowOrphan")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("WidowOrphan", value)
-
-    @property
-    def keep_with_next(self):
-        """다음 문단과 함께 (on / off)"""
-        return self._get_value("KeepWithNext")
-
-    @keep_with_next.setter
-    def keep_with_next(self, value):
-        if value is None:
-            return self._del_value("KeepWithNext")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("KeepWithNext", value)
-
-    @property
-    def keep_lines_together(self):
-        """문단 보호 (on / off)"""
-        return self._get_value("KeepLinesTogether")
-
-    @keep_lines_together.setter
-    def keep_lines_together(self, value):
-        if value is None:
-            return self._del_value("KeepLinesTogether")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("KeepLinesTogether", value)
-
-    @property
-    def pagebreak_before(self):
-        """문단 앞에서 항상 쪽 나눔 (on / off)"""
-        return self._get_value("PagebreakBefore")
-
-    @pagebreak_before.setter
-    def pagebreak_before(self, value):
-        if value is None:
-            return self._del_value("PagebreakBefore")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("PagebreakBefore", value)
-
-    @property
-    def text_alignment(self):
-        """세로 정렬: 0 = 글꼴기준, 1 = 위, 2 = 가운데, 3 = 아래"""
-        return self._get_value("TextAlignment")
-
-    @text_alignment.setter
-    def text_alignment(self, value):
-        if value is None:
-            return self._del_value("TextAlignment")
-        assert value in [0, 1, 2, 3], "값은 0에서 3 사이여야 합니다."
-        return self._set_value("TextAlignment", value)
-
-    @property
-    def font_line_height(self):
-        """글꼴에 어울리는 줄 높이 (on / off)"""
-        return self._get_value("FontLineHeight")
-
-    @font_line_height.setter
-    def font_line_height(self, value):
-        if value is None:
-            return self._del_value("FontLineHeight")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("FontLineHeight", value)
-
-    @property
-    def heading_type(self):
-        """문단 머리 모양: 0 = 없음, 1 = 개요, 2 = 번호, 3 = 불릿"""
-        return self._get_value("HeadingType")
-
-    @heading_type.setter
-    def heading_type(self, value):
-        if value is None:
-            return self._del_value("HeadingType")
-        assert value in [0, 1, 2, 3], "값은 0에서 3 사이여야 합니다."
-        return self._set_value("HeadingType", value)
-
-    @property
-    def level(self):
-        """단계 (0 - 6)"""
-        return self._get_value("Level")
-
-    @level.setter
-    def level(self, value):
-        if value is None:
-            return self._del_value("Level")
-        assert 0 <= value <= 6, "값은 0에서 6 사이여야 합니다."
-        return self._set_value("Level", value)
-
-    @property
-    def border_connect(self):
-        """문단 테두리/배경 - 테두리 연결 (on / off)"""
-        return self._get_value("BorderConnect")
-
-    @border_connect.setter
-    def border_connect(self, value):
-        if value is None:
-            return self._del_value("BorderConnect")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("BorderConnect", value)
-
-    @property
-    def border_text(self):
-        """문단 테두리/배경 - 여백 무시: 0 = 단, 1 = 텍스트"""
-        return self._get_value("BorderText")
-
-    @border_text.setter
-    def border_text(self, value):
-        if value is None:
-            return self._del_value("BorderText")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        return self._set_value("BorderText", value)
-
-    @property
-    def border_offset_left(self):
-        """문단 테두리/배경 - 4방향 간격 (HWPUNIT): 왼쪽"""
-        return self._get_value("BorderOffsetLeft")
-
-    @border_offset_left.setter
-    def border_offset_left(self, value):
-        if value is None:
-            return self._del_value("BorderOffsetLeft")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("BorderOffsetLeft", value)
-
-    @property
-    def border_offset_right(self):
-        """문단 테두리/배경 - 4방향 간격 (HWPUNIT): 오른쪽"""
-        return self._get_value("BorderOffsetRight")
-
-    @border_offset_right.setter
-    def border_offset_right(self, value):
-        if value is None:
-            return self._del_value("BorderOffsetRight")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("BorderOffsetRight", value)
-
-    @property
-    def border_offset_top(self):
-        """문단 테두리/배경 - 4방향 간격 (HWPUNIT): 위"""
-        return self._get_value("BorderOffsetTop")
-
-    @border_offset_top.setter
-    def border_offset_top(self, value):
-        if value is None:
-            return self._del_value("BorderOffsetTop")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("BorderOffsetTop", value)
-
-    @property
-    def border_offset_bottom(self):
-        """문단 테두리/배경 - 4방향 간격 (HWPUNIT): 아래"""
-        return self._get_value("BorderOffsetBottom")
-
-    @border_offset_bottom.setter
-    def border_offset_bottom(self, value):
-        if value is None:
-            return self._del_value("BorderOffsetBottom")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        return self._set_value("BorderOffsetBottom", value)
-
-    @property
-    def tail_type(self):
-        """문단 꼬리 모양 (마지막 꼬리 줄 적용) on/off"""
-        return self._get_value("TailType")
-
-    @tail_type.setter
-    def tail_type(self, value):
-        if value is None:
-            return self._del_value("TailType")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("TailType", value)
-
-    @property
-    def line_wrap(self):
-        """글꼴에 어울리는 줄 높이 (on/off)"""
-        return self._get_value("LineWrap")
-
-    @line_wrap.setter
-    def line_wrap(self, value):
-        if value is None:
-            return self._del_value("LineWrap")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("LineWrap", value)
-
-    @property
-    def tab_def(self):
-        """탭 정의 (TabDef)"""
-        return self._get_value("TabDef")
-
-    @tab_def.setter
-    def tab_def(self, value):
-        if value is None:
-            return self._del_value("TabDef")
-        # Assuming TabDef is a specific object
-        assert isinstance(value, TabDef), "값은 TabDef 객체이어야 합니다."
-        return self._set_value("TabDef", value)
-
-    @property
-    def numbering(self):
-        """문단 번호 (NumberingShape)"""
-        return self._get_value("Numbering")
-
-    @numbering.setter
-    def numbering(self, value):
-        if value is None:
-            return self._del_value("Numbering")
-        # Assuming NumberingShape is a specific object
-        assert isinstance(value, NumberingShape), "값은 NumberingShape 객체이어야 합니다."
-        return self._set_value("Numbering", value)
-
-    @property
-    def bullet(self):
-        """불릿 모양 (BulletShape)"""
-        return self._get_value("Bullet")
-
-    @bullet.setter
-    def bullet(self, value):
-        if value is None:
-            return self._del_value("Bullet")
-        # Assuming BulletShape is a specific object
-        assert isinstance(value, BulletShape), "값은 BulletShape 객체이어야 합니다."
-        return self._set_value("Bullet", value)
-
-    @property
-    def border_fill(self):
-        """테두리/배경 (BorderFill)"""
-        return self._get_value("BorderFill")
-
-    @border_fill.setter
-    def border_fill(self, value):
-        if value is None:
-            return self._del_value("BorderFill")
-        # Assuming BorderFill is a specific object
-        assert isinstance(value, BorderFill), "값은 BorderFill 객체이어야 합니다."
-        return self._set_value("BorderFill", value)
-
-# %% ../nbs/02_api/02_parameters.ipynb 61
+    left_margin    = ParameterSet._int_prop("LeftMargin", "왼쪽 여백 (URC)")
+    right_margin   = ParameterSet._int_prop("RightMargin", "오른쪽 여백 (URC)")
+    indentation    = ParameterSet._int_prop("Indentation", "들여쓰기/내어 쓰기 (URC)")
+    prev_spacing   = ParameterSet._int_prop("PrevSpacing", "문단 간격 위 (URC)")
+    next_spacing   = ParameterSet._int_prop("NextSpacing", "문단 간격 아래 (URC)")
+    line_spacing_type = ParameterSet._enum_prop("LineSpacingType", allowed=[0, 1, 2],
+                                                  doc="줄 간격 종류: 0 = 글꼴 기준, 1 = 고정 값, 2 = 여백만 지정")
+    line_spacing   = ParameterSet._int_prop("LineSpacing", "줄 간격 값")
+    align_type     = ParameterSet._enum_prop("AlignType", allowed=[0, 1, 2, 3, 4, 5],
+                                              doc="정렬 방식: 0 = 양쪽 정렬, 1 = 왼쪽 정렬, 2 = 오른쪽 정렬, 3 = 가운데 정렬, 4 = 배분 정렬, 5 = 나눔 정렬")
+    break_latin_word = ParameterSet._enum_prop("BreakLatinWord", allowed=[0, 1, 2],
+                                                 doc="줄 나눔 (라틴): 0 = 단어, 1 = 하이픈, 2 = 글자")
+    break_non_latin_word = ParameterSet._bool_prop("BreakNonLatinWord", "줄 나눔 (비 라틴): 0 = 어절, 1 = 글자")
+    snap_to_grid   = ParameterSet._bool_prop("SnapToGrid", "편집 용지의 줄 격자 사용 (on/off)")
+    condense       = ParameterSet._int_range_prop("Condense", "공백 최소값 (0 - 75%)", 0, 75)
+    widow_orphan   = ParameterSet._bool_prop("WidowOrphan", "외톨이줄 보호 (on/off)")
+    keep_with_next = ParameterSet._bool_prop("KeepWithNext", "다음 문단과 함께 (on/off)")
+    keep_lines_together = ParameterSet._bool_prop("KeepLinesTogether", "문단 보호 (on/off)")
+    pagebreak_before = ParameterSet._bool_prop("PagebreakBefore", "문단 앞에서 항상 쪽 나눔 (on/off)")
+    text_alignment = ParameterSet._enum_prop("TextAlignment", allowed=[0, 1, 2, 3],
+                                               doc="세로 정렬: 0 = 글꼴 기준, 1 = 위, 2 = 가운데, 3 = 아래")
+    font_line_height = ParameterSet._bool_prop("FontLineHeight", "글꼴에 어울리는 줄 높이 (on/off)")
+    heading_type   = ParameterSet._enum_prop("HeadingType", allowed=[0, 1, 2, 3],
+                                               doc="문단 머리 모양: 0 = 없음, 1 = 개요, 2 = 번호, 3 = 불릿")
+    level          = ParameterSet._int_range_prop("Level", "단계 (0 - 6)", 0, 6)
+    border_connect = ParameterSet._bool_prop("BorderConnect", "문단 테두리/배경 - 테두리 연결 (on/off)")
+    border_text    = ParameterSet._enum_prop("BorderText", allowed=[0, 1],
+                                              doc="문단 테두리/배경 - 여백 무시: 0 = 단, 1 = 텍스트")
+    border_offset_left = ParameterSet._int_prop("BorderOffsetLeft", "문단 테두리/배경 - 4방향 간격 (HWPUNIT): 왼쪽")
+    border_offset_right = ParameterSet._int_prop("BorderOffsetRight", "문단 테두리/배경 - 4방향 간격 (HWPUNIT): 오른쪽")
+    border_offset_top = ParameterSet._int_prop("BorderOffsetTop", "문단 테두리/배경 - 4방향 간격 (HWPUNIT): 위")
+    border_offset_bottom = ParameterSet._int_prop("BorderOffsetBottom", "문단 테두리/배경 - 4방향 간격 (HWPUNIT): 아래")
+    tail_type      = ParameterSet._bool_prop("TailType", "문단 꼬리 모양 (마지막 꼬리 줄 적용) (on/off)")
+    line_wrap      = ParameterSet._bool_prop("LineWrap", "글꼴에 어울리는 줄 높이 (on/off)")
+    tab_def        = ParameterSet._typed_prop("TabDef", "탭 정의", TabDef)
+    numbering      = ParameterSet._typed_prop("Numbering", "문단 번호", NumberingShape)
+    bullet         = ParameterSet._typed_prop("Bullet", "불릿 모양", BulletShape)
+    border_fill    = ParameterSet._typed_prop("BorderFill", "테두리/배경", BorderFill)
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 59
 class ShapeObject(ParameterSet):
     """
     ### ShapeObject
 
     105) ShapeObject : 도형 개체의 속성 정의 (테이블, 수식, 그림 포함)
 
-    ShapeObject는 한글의 도형 관련 속성을 조작하고 정의할 수 있는 객체입니다. 이 객체는
-    도형의 크기, 위치, 스타일 등을 설정할 수 있습니다.
+    이 객체는 한글의 도형 관련 속성을 조작하고 정의할 수 있으며, 도형의 크기, 위치, 스타일 등을 설정할 수 있습니다.
 
-    | Item ID            | Type      | SubType   | Description |
-    |--------------------|-----------|-----------|-------------|
-    | TreatAsChar        | PIT_UI1   |           | 글자처럼 처리 여부 (on / off) |
-    | AffectsLine        | PIT_UI1   |           | 줄에 영향을 미치는지 여부 (on / off) |
-    | VertRelTo          | PIT_UI1   |           | 수직 기준 위치 설정 |
-    | VertAlign          | PIT_UI1   |           | 수직 정렬 방식 |
-    | VertOffset         | PIT_I4    |           | 수직 오프셋 (HWPUNIT) |
-    | HorzRelTo          | PIT_UI1   |           | 수평 기준 위치 설정 |
-    | HorzAlign          | PIT_UI1   |           | 수평 정렬 방식 |
-    | HorzOffset         | PIT_I4    |           | 수평 오프셋 (HWPUNIT) |
-    | FlowWithText       | PIT_UI1   |           | 텍스트 흐름에 따라 이동 여부 (on / off) |
-    | AllowOverlap       | PIT_UI1   |           | 겹침 허용 여부 (on / off) |
-    | WidthRelTo         | PIT_UI1   |           | 너비 기준 위치 설정 |
-    | Width              | PIT_I4    |           | 도형의 너비 |
-    | HeightRelTo        | PIT_UI1   |           | 높이 기준 위치 설정 |
-    | Height             | PIT_I4    |           | 도형의 높이 |
-    | ProtectSize        | PIT_UI1   |           | 크기 보호 여부 (on / off) |
-    | TextWrap           | PIT_UI1   |           | 텍스트 랩 설정 |
-    | TextFlow           | PIT_UI1   |           | 텍스트 흐름 방향 |
-    | OutsideMarginLeft  | PIT_I4    |           | 외부 여백 (왼쪽) |
-    | OutsideMarginRight | PIT_I4    |           | 외부 여백 (오른쪽) |
-    | OutsideMarginTop   | PIT_I4    |           | 외부 여백 (위) |
-    | OutsideMarginBottom| PIT_I4    |           | 외부 여백 (아래) |
-    | NumberingType      | PIT_UI1   |           | 번호 매기기 방식 |
-    | LayoutWidth        | PIT_I4    |           | 레이아웃 너비 |
-    | LayoutHeight       | PIT_I4    |           | 레이아웃 높이 |
-    | Lock               | PIT_UI1   |           | 잠금 여부 (on / off) |
-    | HoldAnchorObj      | PIT_UI1   |           | 기준 객체 고정 여부 |
-    | PageNumber         | PIT_UI    |           | 페이지 번호 |
-    | AdjustSelection    | PIT_UI1   |           | 선택 영역 조정 여부 |
-    | AdjustTextBox      | PIT_UI1   |           | 텍스트 박스 조정 여부 |
-    | AdjustPrevObjAttr  | PIT_UI1   |           | 이전 객체 속성 조정 여부 |
+    | Item ID            | Type      | SubType   | Description                                   |
+    |--------------------|-----------|-----------|-----------------------------------------------|
+    | TreatAsChar        | PIT_UI1   |           | 글자처럼 처리 여부 (on/off)                    |
+    | AffectsLine        | PIT_UI1   |           | 줄에 영향을 미치는지 여부 (on/off)             |
+    | VertRelTo          | PIT_UI1   |           | 수직 기준 위치 설정                           |
+    | VertAlign          | PIT_UI1   |           | 수직 정렬 방식                                |
+    | VertOffset         | PIT_I4    |           | 수직 오프셋 (HWPUNIT)                          |
+    | HorzRelTo          | PIT_UI1   |           | 수평 기준 위치 설정                           |
+    | HorzAlign          | PIT_UI1   |           | 수평 정렬 방식                                |
+    | HorzOffset         | PIT_I4    |           | 수평 오프셋 (HWPUNIT)                          |
+    | FlowWithText       | PIT_UI1   |           | 텍스트 흐름에 따라 이동 여부 (on/off)           |
+    | AllowOverlap       | PIT_UI1   |           | 겹침 허용 여부 (on/off)                        |
+    | WidthRelTo         | PIT_UI1   |           | 너비 기준 위치 설정                           |
+    | Width              | PIT_I4    |           | 도형의 너비                                   |
+    | HeightRelTo        | PIT_UI1   |           | 높이 기준 위치 설정                           |
+    | Height             | PIT_I4    |           | 도형의 높이                                   |
+    | ProtectSize        | PIT_UI1   |           | 크기 보호 여부 (on/off)                        |
+    | TextWrap           | PIT_UI1   |           | 텍스트 랩 설정                                |
+    | TextFlow           | PIT_UI1   |           | 텍스트 흐름 방향                              |
+    | OutsideMarginLeft  | PIT_I4    |           | 외부 여백 (왼쪽)                              |
+    | OutsideMarginRight | PIT_I4    |           | 외부 여백 (오른쪽)                            |
+    | OutsideMarginTop   | PIT_I4    |           | 외부 여백 (위)                                |
+    | OutsideMarginBottom| PIT_I4    |           | 외부 여백 (아래)                              |
+    | NumberingType      | PIT_UI1   |           | 번호 매기기 방식                              |
+    | LayoutWidth        | PIT_I4    |           | 레이아웃 너비                                 |
+    | LayoutHeight       | PIT_I4    |           | 레이아웃 높이                                 |
+    | Lock               | PIT_UI1   |           | 잠금 여부 (on/off)                            |
+    | HoldAnchorObj      | PIT_UI1   |           | 기준 객체 고정 여부                           |
+    | PageNumber         | PIT_UI    |           | 페이지 번호                                   |
+    | AdjustSelection    | PIT_UI1   |           | 선택 영역 조정 여부                           |
+    | AdjustTextBox      | PIT_UI1   |           | 텍스트 박스 조정 여부                         |
+    | AdjustPrevObjAttr  | PIT_UI1   |           | 이전 객체 속성 조정 여부                       |
     """
+    treat_as_char    = ParameterSet._bool_prop("TreatAsChar", "글자처럼 처리 여부 (on/off)")
+    affects_line     = ParameterSet._bool_prop("AffectsLine", "줄에 영향을 미치는지 여부 (on/off)")
+    vert_rel_to      = ParameterSet._enum_prop("VertRelTo", allowed=[0, 1, 2], doc="수직 기준 위치 설정")
+    vert_align       = ParameterSet._enum_prop("VertAlign", allowed=[0, 1, 2], doc="수직 정렬 방식")
+    vert_offset      = ParameterSet._int_prop("VertOffset", "수직 오프셋 (HWPUNIT)")
+    horz_rel_to      = ParameterSet._enum_prop("HorzRelTo", allowed=[0, 1, 2, 3], doc="수평 기준 위치 설정")
+    horz_align       = ParameterSet._enum_prop("HorzAlign", allowed=[0, 1, 2, 3, 4], doc="수평 정렬 방식")
+    horz_offset      = ParameterSet._int_prop("HorzOffset", "수평 오프셋 (HWPUNIT)")
+    flow_with_text   = ParameterSet._bool_prop("FlowWithText", "텍스트 흐름에 따라 이동 여부 (on/off)")
+    allow_overlap    = ParameterSet._bool_prop("AllowOverlap", "겹침 허용 여부 (on/off)")
+    width_rel_to     = ParameterSet._enum_prop("WidthRelTo", allowed=[0, 1, 2, 3, 4], doc="너비 기준 위치 설정")
+    width            = ParameterSet._int_prop("Width", "도형의 너비")
+    height_rel_to    = ParameterSet._enum_prop("HeightRelTo", allowed=[0, 1, 2], doc="높이 기준 위치 설정")
+    height           = ParameterSet._int_prop("Height", "도형의 높이")
+    protect_size     = ParameterSet._bool_prop("ProtectSize", "크기 보호 여부 (on/off)")
+    text_wrap        = ParameterSet._enum_prop("TextWrap", allowed=[0, 1, 2, 3, 4, 5], doc="텍스트 랩 설정")
+    text_flow        = ParameterSet._enum_prop("TextFlow", allowed=[0, 1, 2, 3], doc="텍스트 흐름 방향")
+    outside_margin_left  = ParameterSet._int_prop("OutsideMarginLeft", "외부 여백 (왼쪽)")
+    outside_margin_right = ParameterSet._int_prop("OutsideMarginRight", "외부 여백 (오른쪽)")
+    outside_margin_top   = ParameterSet._int_prop("OutsideMarginTop", "외부 여백 (위)")
+    outside_margin_bottom = ParameterSet._int_prop("OutsideMarginBottom", "외부 여백 (아래)")
+    numbering_type   = ParameterSet._enum_prop("NumberingType", allowed=[0, 1, 2, 3], doc="번호 매기기 방식")
+    layout_width     = ParameterSet._int_prop("LayoutWidth", "레이아웃 너비")
+    layout_height    = ParameterSet._int_prop("LayoutHeight", "레이아웃 높이")
+    lock             = ParameterSet._bool_prop("Lock", "잠금 여부 (on/off)")
+    hold_anchor_obj  = ParameterSet._bool_prop("HoldAnchorObj", "기준 객체 고정 여부")
+    page_number      = ParameterSet._int_prop("PageNumber", "페이지 번호")
+    adjust_selection = ParameterSet._bool_prop("AdjustSelection", "선택 영역 조정 여부")
+    adjust_text_box  = ParameterSet._bool_prop("AdjustTextBox", "텍스트 박스 조정 여부")
+    adjust_prev_obj_attr = ParameterSet._bool_prop("AdjustPrevObjAttr", "이전 객체 속성 조정 여부")
+
+    # Composite properties using _typed_prop
+    shape_draw_layout      = ParameterSet._typed_prop("ShapeDrawLayOut", "그리기 개체의 Layout", DrawLayout)
+    shape_draw_line_attr   = ParameterSet._typed_prop("ShapeDrawLineAttr", "그리기 개체의 Line 속성", DrawLineAttr)
+    shape_draw_fill_attr   = ParameterSet._typed_prop("ShapeDrawFillAttr", "그리기 개체의 Fill 속성", DrawFillAttr)
+    shape_draw_image_attr  = ParameterSet._typed_prop("ShapeDrawImageAttr", "그림 개체 속성", DrawImageAttr)
+    shape_draw_rect_type   = ParameterSet._typed_prop("ShapeDrawRectType", "사각형 그리기 개체 유형", DrawRectType)
+    shape_draw_arc_type    = ParameterSet._typed_prop("ShapeDrawArcType", "호 그리기 개체 유형", DrawArcType)
+    shape_draw_resize      = ParameterSet._typed_prop("ShapeDrawResize", "그리기 개체 리사이징", DrawResize)
+    shape_draw_rotate      = ParameterSet._typed_prop("ShapeDrawRotate", "그리기 개체 회전", DrawRotate)
+    shape_draw_edit_detail = ParameterSet._typed_prop("ShapeDrawEditDetail", "그리기 개체 EditDetail", DrawEditDetail)
+    shape_draw_image_scissoring = ParameterSet._typed_prop("ShapeDrawImageScissoring", "그림 개체 자르기", DrawImageScissoring)
+    shape_draw_sc_action   = ParameterSet._typed_prop("ShapeDrawScAction", "그리기 개체 회전/flip", DrawScAction)
+    shape_draw_ctrl_hyperlink = ParameterSet._typed_prop("ShapeDrawCtrlHyperlink", "그리기 개체 하이퍼링크", DrawCtrlHyperlink)
+    shape_draw_coord_info  = ParameterSet._typed_prop("ShapeDrawCoordInfo", "그리기 개체 좌표정보", DrawCoordInfo)
+    shape_draw_shear       = ParameterSet._typed_prop("ShapeDrawShear", "그리기 개체 기울이기", DrawShear)
+    shape_draw_textart     = ParameterSet._typed_prop("ShapeDrawTextart", "글맵시", DrawTextart)
+
+    shape_table_cell       = ParameterSet._typed_prop("ShapeTableCell", "셀 정보", Cell)
+    shape_list_properties  = ParameterSet._typed_prop("ShapeListProperties", "서브 list 속성", ListProperties)
+    shape_caption          = ParameterSet._typed_prop("ShapeCaption", "캡션", Caption)
+
+
+
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 61
+class TabDef(ParameterSet):
+    """
+    ### TabDef
+
+    113) TabDef : 탭 정의
+
+    | Item ID    | Type      | SubType | Description |
+    |------------|-----------|---------|-------------|
+    | AutoTabLeft| PIT_UI1   |         | 문단 왼쪽 끝 탭 (on / off) |
+    | AutoTabRight| PIT_UI1  |         | 문단 오른쪽 끝 탭 (on / off) |
+    | TabItem    | PIT_ARRAY | PIT_I   | 각각의 탭 정의. 하나의 탭 아이템은 세 개의 인수로 표현됨. (n*3+0: 탭 위치, n*3+1: 채울 모양, n*3+2: 탭 종류) |
+    """
+    auto_tab_left  = ParameterSet._bool_prop("AutoTabLeft", "문단 왼쪽 탭 설정 (on / off)")
+    auto_tab_right = ParameterSet._bool_prop("AutoTabRight", "문단 오른쪽 탭 설정 (on / off)")
+    tab_item       = ParameterSet._int_list_prop("TabItem", "탭 정의 목록 (정수 리스트)")
 
-    @property
-    def treat_as_char(self):
-        return self._get_property("TreatAsChar", value_range=[0, 1])
-
-    @treat_as_char.setter
-    def treat_as_char(self, value):
-        self._set_property("TreatAsChar", value, value_range=[0, 1])
-
-    @property
-    def affects_line(self):
-        return self._get_property("AffectsLine", value_range=[0, 1])
-
-    @affects_line.setter
-    def affects_line(self, value):
-        self._set_property("AffectsLine", value, value_range=[0, 1])
-
-    @property
-    def vert_rel_to(self):
-        return self._get_property("VertRelTo", value_range=[0, 1, 2])
-
-    @vert_rel_to.setter
-    def vert_rel_to(self, value):
-        self._set_property("VertRelTo", value, value_range=[0, 1, 2])
-
-    @property
-    def vert_align(self):
-        return self._get_property("VertAlign", value_range=[0, 1, 2])
-
-    @vert_align.setter
-    def vert_align(self, value):
-        self._set_property("VertAlign", value, value_range=[0, 1, 2])
-
-    @property
-    def vert_offset(self):
-        return self._get_property("VertOffset", value_type=int)
-
-    @vert_offset.setter
-    def vert_offset(self, value):
-        self._set_property("VertOffset", value, value_type=int)
-
-    @property
-    def horz_rel_to(self):
-        return self._get_property("HorzRelTo", value_range=[0, 1, 2, 3])
-
-    @horz_rel_to.setter
-    def horz_rel_to(self, value):
-        self._set_property("HorzRelTo", value, value_range=[0, 1, 2, 3])
-
-    @property
-    def horz_align(self):
-        return self._get_property("HorzAlign", value_range=[0, 1, 2, 3, 4])
-
-    @horz_align.setter
-    def horz_align(self, value):
-        self._set_property("HorzAlign", value, value_range=[0, 1, 2, 3, 4])
-
-    @property
-    def horz_offset(self):
-        return self._get_property("HorzOffset", value_type=int)
-
-    @horz_offset.setter
-    def horz_offset(self, value):
-        self._set_property("HorzOffset", value, value_type=int)
-
-    @property
-    def flow_with_text(self):
-        return self._get_property("FlowWithText", value_range=[0, 1])
-
-    @flow_with_text.setter
-    def flow_with_text(self, value):
-        self._set_property("FlowWithText", value, value_range=[0, 1])
-
-    @property
-    def allow_overlap(self):
-        return self._get_property("AllowOverlap", value_range=[0, 1])
-
-    @allow_overlap.setter
-    def allow_overlap(self, value):
-        self._set_property("AllowOverlap", value, value_range=[0, 1])
-
-    @property
-    def width_rel_to(self):
-        return self._get_property("WidthRelTo", value_range=[0, 1, 2, 3, 4])
-
-    @width_rel_to.setter
-    def width_rel_to(self, value):
-        self._set_property("WidthRelTo", value, value_range=[0, 1, 2, 3, 4])
-
-    @property
-    def width(self):
-        return self._get_property("Width", value_type=int)
-
-    @width.setter
-    def width(self, value):
-        self._set_property("Width", value, value_type=int)
-
-    @property
-    def height_rel_to(self):
-        return self._get_property("HeightRelTo", value_range=[0, 1, 2])
-
-    @height_rel_to.setter
-    def height_rel_to(self, value):
-        self._set_property("HeightRelTo", value, value_range=[0, 1, 2])
-
-    @property
-    def height(self):
-        return self._get_property("Height", value_type=int)
-
-    @height.setter
-    def height(self, value):
-        self._set_property("Height", value, value_type=int)
-
-    @property
-    def protect_size(self):
-        return self._get_property("ProtectSize", value_range=[0, 1])
-
-    @protect_size.setter
-    def protect_size(self, value):
-        self._set_property("ProtectSize", value, value_range=[0, 1])
-
-    @property
-    def text_wrap(self):
-        return self._get_property("TextWrap", value_range=[0, 1, 2, 3, 4, 5])
-
-    @text_wrap.setter
-    def text_wrap(self, value):
-        self._set_property("TextWrap", value, value_range=[0, 1, 2, 3, 4, 5])
-
-    @property
-    def text_flow(self):
-        return self._get_property("TextFlow", value_range=[0, 1, 2, 3])
-
-    @text_flow.setter
-    def text_flow(self, value):
-        self._set_property("TextFlow", value, value_range=[0, 1, 2, 3])
-
-    @property
-    def outside_margin_left(self):
-        return self._get_property("OutsideMarginLeft", value_type=int)
-
-    @outside_margin_left.setter
-    def outside_margin_left(self, value):
-        self._set_property("OutsideMarginLeft", value, value_type=int)
-
-    @property
-    def outside_margin_right(self):
-        return self._get_property("OutsideMarginRight", value_type=int)
-
-    @outside_margin_right.setter
-    def outside_margin_right(self, value):
-        self._set_property("OutsideMarginRight", value, value_type=int)
-
-    @property
-    def outside_margin_top(self):
-        return self._get_property("OutsideMarginTop", value_type=int)
-
-    @outside_margin_top.setter
-    def outside_margin_top(self, value):
-        self._set_property("OutsideMarginTop", value, value_type=int)
-
-    @property
-    def outside_margin_bottom(self):
-        return self._get_property("OutsideMarginBottom", value_type=int)
-
-    @outside_margin_bottom.setter
-    def outside_margin_bottom(self, value):
-        self._set_property("OutsideMarginBottom", value, value_type=int)
-
-    @property
-    def numbering_type(self):
-        return self._get_property("NumberingType", value_range=[0, 1, 2, 3])
-
-    @numbering_type.setter
-    def numbering_type(self, value):
-        self._set_property("NumberingType", value, value_range=[0, 1, 2, 3])
-
-    @property
-    def layout_width(self):
-        return self._get_property("LayoutWidth", value_type=int)
-
-    @layout_width.setter
-    def layout_width(self, value):
-        self._set_property("LayoutWidth", value, value_type=int)
-
-    @property
-    def layout_height(self):
-        return self._get_property("LayoutHeight", value_type=int)
-
-    @layout_height.setter
-    def layout_height(self, value):
-        self._set_property("LayoutHeight", value, value_type=int)
-
-    @property
-    def lock(self):
-        return self._get_property("Lock", value_range=[0, 1])
-
-    @lock.setter
-    def lock(self, value):
-        self._set_property("Lock", value, value_range=[0, 1])
-
-    @property
-    def hold_anchor_obj(self):
-        return self._get_property("HoldAnchorObj", value_range=[0, 1])
-
-    @hold_anchor_obj.setter
-    def hold_anchor_obj(self, value):
-        self._set_property("HoldAnchorObj", value, value_range=[0, 1])
-
-    @property
-    def page_number(self):
-        return self._get_property("PageNumber", value_type=int)
-
-    @page_number.setter
-    def page_number(self, value):
-        self._set_property("PageNumber", value, value_type=int)
-
-    @property
-    def adjust_selection(self):
-        return self._get_property("AdjustSelection", value_range=[0, 1])
-
-    @adjust_selection.setter
-    def adjust_selection(self, value):
-        self._set_property("AdjustSelection", value, value_range=[0, 1])
-
-    @property
-    def adjust_text_box(self):
-        return self._get_property("AdjustTextBox", value_range=[0, 1])
-
-    @adjust_text_box.setter
-    def adjust_text_box(self, value):
-        self._set_property("AdjustTextBox", value, value_range=[0, 1])
-
-    @property
-    def adjust_prev_obj_attr(self):
-        return self._get_property("AdjustPrevObjAttr", value_range=[0, 1])
-
-    @adjust_prev_obj_attr.setter
-    def adjust_prev_obj_attr(self, value):
-        self._set_property("AdjustPrevObjAttr", value, value_range=[0, 1])
-
-    ### 추가 property
-    @property
-    def shape_draw_layout(self):
-        """그리기 개체의 Layout."""
-        value = self._get_value("ShapeDrawLayOut")
-        if value is not None and not isinstance(value, DrawLayout):
-            return DrawLayout(value)
-        return value
-
-    @shape_draw_layout.setter
-    def shape_draw_layout(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawLayOut")
-        assert isinstance(value, DrawLayout), "값은 DrawLayout 객체이어야 합니다."
-        self._set_value("ShapeDrawLayOut", value)
-
-    @property
-    def shape_draw_line_attr(self):
-        """그리기 개체의 Line 속성."""
-        value = self._get_value("ShapeDrawLineAttr")
-        if value is not None and not isinstance(value, DrawLineAttr):
-            return DrawLineAttr(value)
-        return value
-
-    @shape_draw_line_attr.setter
-    def shape_draw_line_attr(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawLineAttr")
-        assert isinstance(value, DrawLineAttr), "값은 DrawLineAttr 객체이어야 합니다."
-        self._set_value("ShapeDrawLineAttr", value)
-
-    @property
-    def shape_draw_fill_attr(self):
-        """그리기 개체의 Fill 속성."""
-        value = self._get_value("ShapeDrawFillAttr")
-        if value is not None and not isinstance(value, DrawFillAttr):
-            return DrawFillAttr(value)
-        return value
-
-    @shape_draw_fill_attr.setter
-    def shape_draw_fill_attr(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawFillAttr")
-        assert isinstance(value, DrawFillAttr), "값은 DrawFillAttr 객체이어야 합니다."
-        self._set_value("ShapeDrawFillAttr", value)
-
-    @property
-    def shape_draw_image_attr(self):
-        """그림 개체 속성."""
-        value = self._get_value("ShapeDrawImageAttr")
-        if value is not None and not isinstance(value, DrawImageAttr):
-            return DrawImageAttr(value)
-        return value
-
-    @shape_draw_image_attr.setter
-    def shape_draw_image_attr(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawImageAttr")
-        assert isinstance(value, DrawImageAttr), "값은 DrawImageAttr 객체이어야 합니다."
-        self._set_value("ShapeDrawImageAttr", value)
-
-    @property
-    def shape_draw_rect_type(self):
-        """사각형 그리기 개체 유형."""
-        value = self._get_value("ShapeDrawRectType")
-        if value is not None and not isinstance(value, DrawRectType):
-            return DrawRectType(value)
-        return value
-
-    @shape_draw_rect_type.setter
-    def shape_draw_rect_type(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawRectType")
-        assert isinstance(value, DrawRectType), "값은 DrawRectType 객체이어야 합니다."
-        self._set_value("ShapeDrawRectType", value)
-
-    @property
-    def shape_draw_arc_type(self):
-        """호 그리기 개체 유형."""
-        value = self._get_value("ShapeDrawArcType")
-        if value is not None and not isinstance(value, DrawArcType):
-            return DrawArcType(value)
-        return value
-
-    @shape_draw_arc_type.setter
-    def shape_draw_arc_type(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawArcType")
-        assert isinstance(value, DrawArcType), "값은 DrawArcType 객체이어야 합니다."
-        self._set_value("ShapeDrawArcType", value)
-
-    @property
-    def shape_draw_resize(self):
-        """그리기 개체 리사이징."""
-        value = self._get_value("ShapeDrawResize")
-        if value is not None and not isinstance(value, DrawResize):
-            return DrawResize(value)
-        return value
-
-    @shape_draw_resize.setter
-    def shape_draw_resize(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawResize")
-        assert isinstance(value, DrawResize), "값은 DrawResize 객체이어야 합니다."
-        self._set_value("ShapeDrawResize", value)
-
-    @property
-    def shape_draw_rotate(self):
-        """그리기 개체 회전."""
-        value = self._get_value("ShapeDrawRotate")
-        if value is not None and not isinstance(value, DrawRotate):
-            return DrawRotate(value)
-        return value
-
-    @shape_draw_rotate.setter
-    def shape_draw_rotate(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawRotate")
-        assert isinstance(value, DrawRotate), "값은 DrawRotate 객체이어야 합니다."
-        self._set_value("ShapeDrawRotate", value)
-
-    @property
-    def shape_draw_edit_detail(self):
-        """그리기 개체 EditDetail."""
-        value = self._get_value("ShapeDrawEditDetail")
-        if value is not None and not isinstance(value, DrawEditDetail):
-            return DrawEditDetail(value)
-        return value
-
-    @shape_draw_edit_detail.setter
-    def shape_draw_edit_detail(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawEditDetail")
-        assert isinstance(value, DrawEditDetail), "값은 DrawEditDetail 객체이어야 합니다."
-        self._set_value("ShapeDrawEditDetail", value)
-
-    @property
-    def shape_draw_image_scissoring(self):
-        """그림 개체 자르기."""
-        value = self._get_value("ShapeDrawImageScissoring")
-        if value is not None and not isinstance(value, DrawImageScissoring):
-            return DrawImageScissoring(value)
-        return value
-
-    @shape_draw_image_scissoring.setter
-    def shape_draw_image_scissoring(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawImageScissoring")
-        assert isinstance(value, DrawImageScissoring), "값은 DrawImageScissoring 객체이어야 합니다."
-        self._set_value("ShapeDrawImageScissoring", value)
-
-    @property
-    def shape_draw_sc_action(self):
-        """그리기 개체 회전."""
-        value = self._get_value("ShapeDrawScAction")
-        if value is not None and not isinstance(value, DrawScAction):
-            return DrawScAction(value)
-        return value
-
-    @shape_draw_sc_action.setter
-    def shape_draw_sc_action(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawScAction")
-        assert isinstance(value, DrawScAction), "값은 DrawScAction 객체이어야 합니다."
-        self._set_value("ShapeDrawScAction", value)
-
-    @property
-    def shape_draw_ctrl_hyperlink(self):
-        """그리기 개체 하이퍼링크."""
-        value = self._get_value("ShapeDrawCtrlHyperlink")
-        if value is not None and not isinstance(value, DrawCtrlHyperlink):
-            return DrawCtrlHyperlink(value)
-        return value
-
-    @shape_draw_ctrl_hyperlink.setter
-    def shape_draw_ctrl_hyperlink(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawCtrlHyperlink")
-        assert isinstance(value, DrawCtrlHyperlink), "값은 DrawCtrlHyperlink 객체이어야 합니다."
-        self._set_value("ShapeDrawCtrlHyperlink", value)
-
-    @property
-    def shape_draw_coord_info(self):
-        """그리기 개체 좌표정보."""
-        value = self._get_value("ShapeDrawCoordInfo")
-        if value is not None and not isinstance(value, DrawCoordInfo):
-            return DrawCoordInfo(value)
-        return value
-
-    @shape_draw_coord_info.setter
-    def shape_draw_coord_info(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawCoordInfo")
-        assert isinstance(value, DrawCoordInfo), "값은 DrawCoordInfo 객체이어야 합니다."
-        self._set_value("ShapeDrawCoordInfo", value)
-
-    @property
-    def shape_draw_shear(self):
-        """그리기 개체 기울이기."""
-        value = self._get_value("ShapeDrawShear")
-        if value is not None and not isinstance(value, DrawShear):
-            return DrawShear(value)
-        return value
-
-    @shape_draw_shear.setter
-    def shape_draw_shear(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawShear")
-        assert isinstance(value, DrawShear), "값은 DrawShear 객체이어야 합니다."
-        self._set_value("ShapeDrawShear", value)
-
-    @property
-    def shape_draw_textart(self):
-        """글맵시."""
-        value = self._get_value("ShapeDrawTextart")
-        if value is not None and not isinstance(value, DrawTextart):
-            return DrawTextart(value)
-        return value
-
-    @shape_draw_textart.setter
-    def shape_draw_textart(self, value):
-        if value is None:
-            return self._del_value("ShapeDrawTextart")
-        assert isinstance(value, DrawTextart), "값은 DrawTextart 객체이어야 합니다."
-        self._set_value("ShapeDrawTextart", value)
-
-    @property
-    def shape_draw_shadow(self):
-        """그림자."""
-        value = self._get_value("ShapeDrawShadow")
-        if value is not None and not isinstance(value, DrawShadow):
-            return DrawShadow(value)
-
-    @property
-    def shape_table_cell(self):
-        """셀 정보."""
-        value = self._get_value("ShapeTableCell")
-        if value is not None and not isinstance(value, Cell):
-            return Cell(value)
-        return value
-
-    @shape_table_cell.setter
-    def shape_table_cell(self, value):
-        if value is None:
-            return self._del_value("ShapeTableCell")
-        assert isinstance(value, Cell), "값은 Cell 객체이어야 합니다."
-        self._set_value("ShapeTableCell", value)
-
-    @property
-    def shape_list_properties(self):
-        """서브 list 속성."""
-        value = self._get_value("ShapeListProperties")
-        if value is not None and not isinstance(value, ListProperties):
-            return ListProperties(value)
-        return value
-
-    @shape_list_properties.setter
-    def shape_list_properties(self, value):
-        if value is None:
-            return self._del_value("ShapeListProperties")
-        assert isinstance(value, ListProperties), "값은 ListProperties 객체이어야 합니다."
-        self._set_value("ShapeListProperties", value)
-
-    @property
-    def shape_caption(self):
-        """캡션."""
-        value = self._get_value("ShapeCaption")
-        if value is not None and not isinstance(value, Caption):
-            return Caption(value)
-        return value
-
-    @shape_caption.setter
-    def shape_caption(self, value):
-        if value is None:
-            return self._del_value("ShapeCaption")
-        assert isinstance(value, Caption), "값은 Caption 객체이어야 합니다."
-        self._set_value("ShapeCaption", value)
-
-    @property
-    def shape_type(self):
-        """TablePropertyDialog 의 종류."""
-        return self._get_value("ShapeType")
-
-    @shape_type.setter
-    def shape_type(self, value):
-        if value is None:
-            return self._del_value("ShapeType")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("ShapeType", value)
-
-    @property
-    def shape_cell_size(self):
-        """셀 크기 적용 여부 (on / off)."""
-        return self._get_value("ShapeCellSize")
-
-    @shape_cell_size.setter
-    def shape_cell_size(self, value):
-        if value is None:
-            return self._del_value("ShapeCellSize")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        self._set_value("ShapeCellSize", value)
-
-    @property
-    def shape_creation_type(self):
-        """그리기 개체 형태 (0:직선, 1:사각형, 2:원, 3:호)."""
-        return self._get_value("ShapeCreationType")
-
-    @shape_creation_type.setter
-    def shape_creation_type(self, value):
-        if value is None:
-            return self._del_value("ShapeCreationType")
-        assert value in [0, 1, 2, 3], "값은 0, 1, 2 또는 3이어야 합니다."
-        self._set_value("ShapeCreationType", value)
-
-    @property
-    def shape_creation_mode(self):
-        """마우스로 그리기 여부 (on / off)."""
-        return self._get_value("ShapeCreationMode")
-
-    @shape_creation_mode.setter
-    def shape_creation_mode(self, value):
-        if value is None:
-            return self._del_value("ShapeCreationMode")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        self._set_value("ShapeCreationMode", value)
 
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 63
-class TabDef(ParameterSet):
-    """
-   ### TabDef
-
-113\) TabDef : 탭 정의
-
-| Item ID | Type | SubType | Description |
-| --- | --- | --- | --- |
-| AutoTabLeft | PIT\_UI1 |  | 문단 왼쪽 끝 탭 (on / off) |
-| AutoTabRight | PIT\_UI1 |  | 문단 오른쪽 끝 탭 (on / off) |
-| TabItem | PIT\_ARRAY | PIT\_I | 각각의 탭 정의. 하나의 탭 아이템은 세 개의 인수로 표현되어 있음.(n \* 3 \+ 0\) \- PIT\_I : 탭 위치 (URC)(n \* 3 \+ 1\) \- PIT\_I : 채울 모양 (아래참조)(n \* 3 \+ 2\) \- PIT\_I : 탭 종류 (아래참조.)채울 모양 :선 종류, 탭 종류 :0 \= 왼쪽 1 \= 오른쪽2 \= 가운데3 \= 소수점 |
-
- """
-
-    @property
-    def auto_tab_left(self):
-        """문단 왼쪽 탭 설정 (on / off)"""
-        return self._get_value("AutoTabLeft")
-
-    @auto_tab_left.setter
-    def auto_tab_left(self, value):
-        if value is None:
-            return self._del_value("AutoTabLeft")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("AutoTabLeft", value)
-
-    @property
-    def auto_tab_right(self):
-        """문단 오른쪽 탭 설정 (on / off)"""
-        return self._get_value("AutoTabRight")
-
-    @auto_tab_right.setter
-    def auto_tab_right(self, value):
-        if value is None:
-            return self._del_value("AutoTabRight")
-        assert value in [0, 1], "값은 0 (off) 또는 1 (on)이어야 합니다."
-        return self._set_value("AutoTabRight", value)
-
-    @property
-    def tab_item(self):
-        """탭 정의 목록"""
-        return self._get_value("TabItem")
-
-    @tab_item.setter
-    def tab_item(self, value):
-        if value is None:
-            return self._del_value("TabItem")
-        assert isinstance(value, list), "값은 리스트 형식이어야 합니다."
-        for item in value:
-            assert isinstance(item, int), "리스트의 각 항목은 정수형이어야 합니다."
-        return self._set_value("TabItem", value)
-
-
-
-# %% ../nbs/02_api/02_parameters.ipynb 65
 class Table(ParameterSet):
     """
     ### Table
 
     114) Table : 테이블 속성 정의
 
-    | Item ID          | Type      | SubType         | Description |
-    |------------------|-----------|-----------------|-------------|
-    | PageBreak        | PIT_UI1   |                 | 페이지 나눔 처리 방식 |
-    | RepeatHeader     | PIT_UI1   |                 | 반복 헤더 여부 (on / off) |
-    | CellSpacing      | PIT_UI4   |                 | 셀 간격 (HWPUNIT) |
-    | CellMarginLeft   | PIT_I4    |                 | 셀 왼쪽 여백 |
-    | CellMarginRight  | PIT_I4    |                 | 셀 오른쪽 여백 |
-    | CellMarginTop    | PIT_I4    |                 | 셀 위쪽 여백 |
-    | CellMarginBottom | PIT_I4    |                 | 셀 아래쪽 여백 |
-    | BorderFill       | PIT_SET   | BorderFill      | 테두리/채우기 속성 |
-    | TableCharInfo    | PIT_SET   | TableChartInfo  | 테이블 관련 문자 정보 |
-    | TableBorderFill  | PIT_SET   | BorderFill      | 테이블 테두리 속성 |
-    | Cell             | PIT_SET   | Cell            | 셀 정보 |
+    | Item ID          | Type      | SubType         | Description                   |
+    |------------------|-----------|-----------------|-------------------------------|
+    | PageBreak        | PIT_UI1   |                 | 페이지 나눔 처리 방식         |
+    | RepeatHeader     | PIT_UI1   |                 | 반복 헤더 여부 (on / off)      |
+    | CellSpacing      | PIT_UI4   |                 | 셀 간격 (HWPUNIT)             |
+    | CellMarginLeft   | PIT_I4    |                 | 셀 왼쪽 여백                 |
+    | CellMarginRight  | PIT_I4    |                 | 셀 오른쪽 여백               |
+    | CellMarginTop    | PIT_I4    |                 | 셀 위쪽 여백                 |
+    | CellMarginBottom | PIT_I4    |                 | 셀 아래쪽 여백               |
+    | BorderFill       | PIT_SET   | BorderFill      | 테두리/채우기 속성           |
+    | TableCharInfo    | PIT_SET   | TableChartInfo  | 테이블 관련 문자 정보        |
+    | TableBorderFill  | PIT_SET   | BorderFill      | 테이블 테두리 속성           |
+    | Cell             | PIT_SET   | Cell            | 셀 정보                      |
     """
+    page_break     = ParameterSet._enum_prop("PageBreak", allowed=[0, 1, 2],
+                                               doc="페이지 나눔 처리 방식")
+    repeat_header  = ParameterSet._bool_prop("RepeatHeader", "반복 헤더 여부 (on/off)")
+    cell_spacing   = ParameterSet._int_prop("CellSpacing", "셀 간격 (HWPUNIT)")
+    cell_margin_left  = ParameterSet._int_prop("CellMarginLeft", "셀 왼쪽 여백")
+    cell_margin_right = ParameterSet._int_prop("CellMarginRight", "셀 오른쪽 여백")
+    cell_margin_top   = ParameterSet._int_prop("CellMarginTop", "셀 위쪽 여백")
+    cell_margin_bottom = ParameterSet._int_prop("CellMarginBottom", "셀 아래쪽 여백")
+    border_fill    = ParameterSet._typed_prop("BorderFill", "테두리/채우기 속성", BorderFill)
+    # table_char_info = ParameterSet._typed_prop("TableCharInfo", "테이블 관련 문자 정보", TableChartInfo) # Not available now.
+    table_border_fill = ParameterSet._typed_prop("TableBorderFill", "테이블 테두리 속성", BorderFill)
+    cell           = ParameterSet._typed_prop("Cell", "셀 정보", Cell)
 
-    @property
-    def page_break(self):
-        """페이지 나눔 처리 방식."""
-        return self._get_value("PageBreak")
-
-    @page_break.setter
-    def page_break(self, value):
-        if value is None:
-            return self._del_value("PageBreak")
-        assert value in [0, 1, 2], "값은 0, 1, 또는 2이어야 합니다."
-        self._set_value("PageBreak", value)
-
-    @property
-    def repeat_header(self):
-        """반복 헤더 여부 (on / off)."""
-        return self._get_value("RepeatHeader")
-
-    @repeat_header.setter
-    def repeat_header(self, value):
-        if value is None:
-            return self._del_value("RepeatHeader")
-        assert value in [0, 1], "값은 0 또는 1이어야 합니다."
-        self._set_value("RepeatHeader", value)
-
-    @property
-    def cell_spacing(self):
-        """셀 간격 (HWPUNIT)."""
-        return self._get_value("CellSpacing")
-
-    @cell_spacing.setter
-    def cell_spacing(self, value):
-        if value is None:
-            return self._del_value("CellSpacing")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("CellSpacing", value)
-
-    @property
-    def cell_margin_left(self):
-        """셀 왼쪽 여백."""
-        return self._get_value("CellMarginLeft")
-
-    @cell_margin_left.setter
-    def cell_margin_left(self, value):
-        if value is None:
-            return self._del_value("CellMarginLeft")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("CellMarginLeft", value)
-
-    @property
-    def cell_margin_right(self):
-        """셀 오른쪽 여백."""
-        return self._get_value("CellMarginRight")
-
-    @cell_margin_right.setter
-    def cell_margin_right(self, value):
-        if value is None:
-            return self._del_value("CellMarginRight")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("CellMarginRight", value)
-
-    @property
-    def cell_margin_top(self):
-        """셀 위쪽 여백."""
-        return self._get_value("CellMarginTop")
-
-    @cell_margin_top.setter
-    def cell_margin_top(self, value):
-        if value is None:
-            return self._del_value("CellMarginTop")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("CellMarginTop", value)
-
-    @property
-    def cell_margin_bottom(self):
-        """셀 아래쪽 여백."""
-        return self._get_value("CellMarginBottom")
-
-    @cell_margin_bottom.setter
-    def cell_margin_bottom(self, value):
-        if value is None:
-            return self._del_value("CellMarginBottom")
-        assert isinstance(value, int), "값은 정수이어야 합니다."
-        self._set_value("CellMarginBottom", value)
-
-    @property
-    def border_fill(self):
-        """테두리/채우기 속성."""
-        return self._get_value("BorderFill")
-
-    @border_fill.setter
-    def border_fill(self, value):
-        if value is None:
-            return self._del_value("BorderFill")
-        assert isinstance(value, BorderFill), "값은 BorderFill 객체이어야 합니다."
-        self._set_value("BorderFill", value)
-
-    @property
-    def table_char_info(self):
-        """테이블 관련 문자 정보."""
-        return self._get_value("TableCharInfo")
-
-    @table_char_info.setter
-    def table_char_info(self, value):
-        if value is None:
-            return self._del_value("TableCharInfo")
-        # assert isinstance(value, TableChartInfo), "값은 TableChartInfo 객체이어야 합니다."
-        self._set_value("TableCharInfo", value)
-
-    @property
-    def table_border_fill(self):
-        """테이블 테두리 속성."""
-        return self._get_value("TableBorderFill")
-
-    @table_border_fill.setter
-    def table_border_fill(self, value):
-        if value is None:
-            return self._del_value("TableBorderFill")
-        assert isinstance(value, BorderFill), "값은 BorderFill 객체이어야 합니다."
-        self._set_value("TableBorderFill", value)
-
-    @property
-    def cell(self):
-        """셀 정보."""
-        return self._get_value("Cell")
-
-    @cell.setter
-    def cell(self, value):
-        if value is None:
-            return self._del_value("Cell")
-        assert isinstance(value, Cell), "값은 Cell 객체이어야 합니다."
-        self._set_value("Cell", value)
 

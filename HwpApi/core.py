@@ -14,7 +14,8 @@ import warnings
 
 # %% ../nbs/02_api/00_core.ipynb 5
 from .actions import _Action, _Actions
-from .classes import MoveAccessor, CellAccessor, TableAccessor, PageAccessor, CharShape, ParaShape
+from .parametersets import CharShape, ParaShape
+from .classes import MoveAccessor, CellAccessor, TableAccessor, PageAccessor
 from hwpapi.functions import (
     check_dll,
     get_hwp_objects,
@@ -1022,7 +1023,7 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
         pset.update(parashape)
 
     for key, value in kwargs.items():
-        setattr(parashape, key, value)
+        setattr(pset, key, value)
 
     return action.run()
 
@@ -1059,7 +1060,7 @@ def insert_text(
     >>> insert_text(app, "Hello World", fontName="Arial", fontSize=12)
     """
     if not charshape:
-        charshape = CharShape()
+        charshape = app.get_charshape()
     for key, value in kwargs.items():
         setattr(charshape, key, value)
     app.set_charshape(charshape)
