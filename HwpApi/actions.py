@@ -938,7 +938,7 @@ class _Action:
             return self.act.Execute(pset.HSet)
         # 커스텀 플래그를 만든 것이라면 parameterset으로 실행
         # 왜 이렇게 설계했냐면 하위 컨셉들이 있을 수 있기 때문 
-        if pset.is_pset:
+        if pset._is_pset:
             return self.act.Execute(pset.parameterset)
         # 그렇지 않다면 HSet으로 보고 실행
         # 이렇게 복잡하게 나눠서 진행하는 이유는 Find and Replace와 관련된 기능은 
@@ -989,7 +989,7 @@ class _Action:
     def __call__(self, pset=None):
         self.run(pset)
 
-# %% ../nbs/02_api/01_actions.ipynb 14
+# %% ../nbs/02_api/01_actions.ipynb 12
 class _Actions:
     """
     Dynamically generates and registers actions for the application.

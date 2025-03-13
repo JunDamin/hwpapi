@@ -5,7 +5,7 @@ __all__ = ['get_font_name', 'dispatch', 'get_hwp_objects', 'get_absolute_path', 
            'get_registry_value', 'check_dll', 'get_value', 'get_key', 'convert2int', 'set_pset', 'get_charshape_pset',
            'set_charshape_pset', 'get_parashape_pset', 'set_parashape_pset', 'hex_to_rgb', 'get_rgb_tuple',
            'convert_to_hwp_color', 'convert_hwp_color_to_hex', 'mili2unit', 'unit2mili', 'point2unit', 'unit2point',
-           'block_input']
+           'to_hwpunit', 'from_hwpunit', 'block_input']
 
 # %% ../nbs/02_api/02_functions.ipynb 3
 import importlib.resources
@@ -336,6 +336,19 @@ def unit2point(value):
     return value / 100 if value else value
 
 # %% ../nbs/02_api/02_functions.ipynb 28
+def to_hwpunit(value, unit):
+    if unit == "mili":
+        return mili2unit(value)
+    if unit == "pt":
+        return point2unit(value)
+    
+def from_hwpunit(value, unit):
+    if unit == "mili":
+        return unit2mili(value)
+    if unit in ["pt", "point"]:
+        return unit2point(value)
+
+# %% ../nbs/02_api/02_functions.ipynb 29
 def block_input(func):
     """
     함수가 실행될 동안 다른 입력을 할 수 없게 하는 기능을 가진 데코레이터입니다. 

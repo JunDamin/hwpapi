@@ -951,11 +951,11 @@ def set_charshape(app: App, charshape: CharShape=None, **kwargs):
     action = app.actions.CharShape
     pset = action.pset
     # charshape를 전달하면 반영해야 함
-    if not charshape:
+    if charshape:
         pset.update(charshape)
 
     for key, value in kwargs.items():
-        setattr(charshape, key, value)
+        setattr(pset, key, value)
         
     return action.run()
 
