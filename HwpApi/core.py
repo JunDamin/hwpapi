@@ -14,24 +14,16 @@ import warnings
 
 # %% ../nbs/02_api/00_core.ipynb 5
 from .actions import _Action, _Actions
-from .parametersets import CharShape, ParaShape
+from .parametersets import ParaShape
+import hwpapi.parametersets as parametersets
 from .classes import MoveAccessor, CellAccessor, TableAccessor, PageAccessor
 from hwpapi.functions import (
     check_dll,
     get_hwp_objects,
     dispatch,
     get_absolute_path,
-    get_charshape_pset,
-    get_parashape_pset,
     get_rgb_tuple,
-    get_value,
-    mili2unit,
-    point2unit,
-    set_charshape_pset,
-    set_parashape_pset,
     set_pset,
-    unit2mili,
-    unit2point,
 )
 
 # %% ../nbs/02_api/00_core.ipynb 6
@@ -442,7 +434,7 @@ class App:
         self.cell = CellAccessor(self)
         self.table = TableAccessor(self)
         self.page = PageAccessor(self)
-
+        
     def _load(self, new_app=False, engine=None, dll_path=None):
         if new_app:
             engine = Engine()
@@ -512,7 +504,9 @@ class App:
     create_parameterset = 'patch'
     engine = 'patch'
     find_text = 'patch'
+    charshape = "patch"
     get_charshape = 'patch'
+    set_charshape = 'patch'
     get_filepath = 'patch'
     get_font_list = 'patch'
     get_hwnd = 'patch'
@@ -566,7 +560,16 @@ def set_visible(app: App, is_visible=True, window_i=0):
     app.api.XHwpWindows.Item(window_i).Visible = is_visible
 
 
-# %% ../nbs/02_api/00_core.ipynb 12
+# %% ../nbs/02_api/00_core.ipynb 11
+@patch
+def create_parameterset(app: App, key:str):
+    pset = app.api.CreateSet(key)
+    pset_class = getattr(parametersets, key, None)
+    return pset_class(pset) if pset_class else pset
+    
+    
+
+# %% ../nbs/02_api/00_core.ipynb 14
 @patch
 def reload(app: App, new_app=False, dll_path=None):
     """
@@ -595,7 +598,7 @@ def reload(app: App, new_app=False, dll_path=None):
     app._load(new_app=new_app, dll_path=dll_path)
 
 
-# %% ../nbs/02_api/00_core.ipynb 14
+# %% ../nbs/02_api/00_core.ipynb 16
 @patch
 def get_filepath(app: App):
     """
@@ -624,7 +627,7 @@ def get_filepath(app: App):
     return doc.FullName
 
 
-# %% ../nbs/02_api/00_core.ipynb 16
+# %% ../nbs/02_api/00_core.ipynb 18
 @patch
 def create_action(app: App, action_key: str):
     """
@@ -654,7 +657,7 @@ def create_action(app: App, action_key: str):
     return _Action(app, action_key)
 
 
-# %% ../nbs/02_api/00_core.ipynb 18
+# %% ../nbs/02_api/00_core.ipynb 20
 @patch
 def open(app: App, path: str):
     """
@@ -686,7 +689,7 @@ def open(app: App, path: str):
     return name
 
 
-# %% ../nbs/02_api/00_core.ipynb 20
+# %% ../nbs/02_api/00_core.ipynb 22
 @patch
 def get_hwnd(app: App):
     """
@@ -715,7 +718,7 @@ def get_hwnd(app: App):
     return app.api.XHwpWindows.Active_XHwpWindow.WindowHandle
 
 
-# %% ../nbs/02_api/00_core.ipynb 22
+# %% ../nbs/02_api/00_core.ipynb 24
 @patch
 def save(app: App, path=None):
     """
@@ -762,7 +765,7 @@ def save(app: App, path=None):
     return name
 
 
-# %% ../nbs/02_api/00_core.ipynb 23
+# %% ../nbs/02_api/00_core.ipynb 25
 @patch
 def save_block(app: App, path: Path):
     """
@@ -809,7 +812,7 @@ def save_block(app: App, path: Path):
     return name if Path(name).exists() else None
 
 
-# %% ../nbs/02_api/00_core.ipynb 25
+# %% ../nbs/02_api/00_core.ipynb 27
 @patch
 def close(app: App):
     """
@@ -832,7 +835,7 @@ def close(app: App):
     app.api.Run("FileClose")
 
 
-# %% ../nbs/02_api/00_core.ipynb 27
+# %% ../nbs/02_api/00_core.ipynb 29
 @patch
 def quit(app: App):
     """
@@ -855,7 +858,7 @@ def quit(app: App):
     app.api.Run("FileQuit")
 
 
-# %% ../nbs/02_api/00_core.ipynb 28
+# %% ../nbs/02_api/00_core.ipynb 30
 @patch
 def get_font_list(app:App):
     """
@@ -888,7 +891,83 @@ def get_font_list(app:App):
         ))
     return output
 
-# %% ../nbs/02_api/00_core.ipynb 29
+# %% ../nbs/02_api/00_core.ipynb 31
+@patch
+def charshape(app:App, 
+    facename=None,
+    fonttype=None,
+    size=None,
+    ratio=None,
+    spacing=None,
+    offset=None,
+    bold=None,
+    italic=None,
+    small_caps=None,
+    emboss=None,
+    engrave=None,
+    superscript=None,
+    subscript=None,
+    underline_type=None,
+    underline_shape=None,
+    outline_type=None,
+    shadow_type=None,
+    text_color=None,
+    shade_color=None,
+    underline_color=None,
+    shadow_color=None,
+    shadow_offset_x=None,
+    shadow_offset_y=None,
+    strikeout_color=None,
+    strikeout_type=None,
+    strikeout_shape=None,
+    diac_sym_mark=None,
+    use_font_space=None,
+    use_kerning=None,
+    height=None,
+    border_fill=None):
+    """return null charshape
+    """
+    charshape_pset = app.create_parameterset("CharShape")
+    value_set = {
+        "facename": facename,
+        "fonttype": fonttype,
+        "size": size,
+        "ratio": ratio,
+        "spacing": spacing,
+        "offset": offset,
+        "bold": bold,
+        "italic": italic,
+        "small_caps": small_caps,
+        "emboss": emboss,
+        "engrave": engrave,
+        "superscript": superscript,
+        "subscript": subscript,
+        "underline_type": underline_type,
+        "underline_shape": underline_shape,
+        "outline_type": outline_type,
+        "shadow_type": shadow_type,
+        "text_color": text_color,
+        "shade_color": shade_color,
+        "underline_color": underline_color,
+        "shadow_color": shadow_color,
+        "shadow_offset_x": shadow_offset_x,
+        "shadow_offset_y": shadow_offset_y,
+        "strikeout_color": strikeout_color,
+        "strikeout_type": strikeout_type,
+        "strikeout_shape": strikeout_shape,
+        "diac_sym_mark": diac_sym_mark,
+        "use_font_space": use_font_space,
+        "use_kerning": use_kerning,
+        "height": height,
+        "border_fil": border_fill}
+    for key, value in value_set.items():
+        if not key:
+            continue
+        setattr(charshape_pset, key, value)
+        
+    return charshape_pset
+
+# %% ../nbs/02_api/00_core.ipynb 32
 @patch
 def get_charshape(app: App):
     """
@@ -916,10 +995,9 @@ def get_charshape(app: App):
     return app.actions.CharShape.pset
 
 
-# %% ../nbs/02_api/00_core.ipynb 31
-from .parametersets import CharShape
+# %% ../nbs/02_api/00_core.ipynb 34
 @patch
-def set_charshape(app: App, charshape: CharShape=None, **kwargs):
+def set_charshape(app: App, charshape: parametersets.CharShape=None, **kwargs):
     """
     Sets the character shape in the current paragraph of the Hancom Office Hwp application using the provided `CharShape`.
 
@@ -952,15 +1030,17 @@ def set_charshape(app: App, charshape: CharShape=None, **kwargs):
     pset = action.pset
     # charshape를 전달하면 반영해야 함
     if charshape:
-        pset.update(charshape)
+        pset.update_from(charshape)
 
     for key, value in kwargs.items():
         setattr(pset, key, value)
-        
-    return action.run()
+    
+    if action.run():
+        return pset 
+    return None 
 
 
-# %% ../nbs/02_api/00_core.ipynb 36
+# %% ../nbs/02_api/00_core.ipynb 38
 @patch
 def get_parashape(app: App):
     """
@@ -987,7 +1067,7 @@ def get_parashape(app: App):
     """
     return app.actions.ParagraphShape.pset
 
-# %% ../nbs/02_api/00_core.ipynb 38
+# %% ../nbs/02_api/00_core.ipynb 40
 @patch
 def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     """
@@ -1020,7 +1100,7 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     action = app.actions.ParagraphShape
     pset = action.pset
     if parashape:
-        pset.update(parashape)
+        pset.update_from(parashape)
 
     for key, value in kwargs.items():
         setattr(pset, key, value)
@@ -1028,12 +1108,12 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 40
+# %% ../nbs/02_api/00_core.ipynb 42
 @patch
 def insert_text(
     app: App,
     text: str,
-    charshape: CharShape = None, 
+    charshape: parametersets.CharShape = None, 
     **kwargs,
 ):
     """
@@ -1073,7 +1153,7 @@ def insert_text(
     return
 
 
-# %% ../nbs/02_api/00_core.ipynb 46
+# %% ../nbs/02_api/00_core.ipynb 48
 def _get_text(app):
     """스캔한 텍스트 텍스트 제너레이터"""
     flag, text = 2, ""
@@ -1087,7 +1167,7 @@ def scan(
     app: App,
     option=const.MaskOption.All,
     selection=False,
-    scan_spos=const.ScanStartPosition.Document,
+    scan_spos=const.ScanStartPosition.Current,
     scan_epos=const.ScanEndPosition.Document,
     spara=None,
     spos=None,
@@ -1112,13 +1192,13 @@ def scan(
     app.api.ReleaseScan()
 
 
-# %% ../nbs/02_api/00_core.ipynb 47
+# %% ../nbs/02_api/00_core.ipynb 49
 def move_to_line(app: App, text):
     """인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다."""
-    with app.scan(scan_spos="Line") as scan:
+    with app.scan(scan_spos=const.ScanStartPosition.Line) as scan:
         for line in scan:
             if text in line:
-                return app.move(key=const.MoveID.ScanPos)
+                return app.move.scan_pos()
     return False
 
 # %% ../nbs/02_api/00_core.ipynb 52
@@ -1345,22 +1425,22 @@ def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosi
 def find_text(
     app: App,
     text="",  # 찾을 텍스트
-    charshape: CharShape = None,  # 문자 모양 설정
+    charshape:parametersets.CharShape=None,  # 문자 모양 설정
     ignore_message=True,  # 메시지 무시 여부
-    direction=const.Direction.Forward,  # 검색 방향
-    match_case=False,  # 대소문자 구분
-    all_word_forms=False,  # 모든 단어 형태 검색
-    several_words=False,  # 여러 단어 검색
-    use_wild_cards=False,  # 와일드카드 사용
-    whole_word_only=False,  # 전체 단어만 검색
-    replace_mode=False,  # 찾아 바꾸기 모드
-    ignore_find_string=False,  # 찾을 문자열 무시
-    ignore_replace_string=False,  # 바꿀 문자열 무시
-    find_style="",  # 찾을 스타일
-    replace_style="",  # 바꿀 스타일
-    find_jaso=False,  # 자소로 검색
-    find_reg_exp=False,  # 정규표현식으로 검색
-    find_type=False,  # 마지막 검색(True), 새 검색(False)
+    direction=None,  # 검색 방향
+    match_case=None,  # 대소문자 구분
+    all_word_forms=None,  # 모든 단어 형태 검색
+    several_words=None,  # 여러 단어 검색
+    use_wild_cards=None,  # 와일드카드 사용
+    whole_word_only=None,  # 전체 단어만 검색
+    replace_mode=None,  # 찾아 바꾸기 모드
+    ignore_find_string=None,  # 찾을 문자열 무시
+    ignore_replace_string=None,  # 바꿀 문자열 무시
+    find_style=None,  # 찾을 스타일
+    replace_style=None,  # 바꿀 스타일
+    find_jaso=None,  # 자소로 검색
+    find_regexp=None,  # 정규표현식으로 검색
+    find_type=None,  # 마지막 검색(True), 새 검색(False)
 ):
     """
     문서에서 다양한 옵션을 사용해 특정 텍스트를 검색합니다.
@@ -1387,35 +1467,51 @@ def find_text(
 
     # 반복 검색 액션 생성
     action = app.actions.RepeatFind
-    p = action._get_hset()
-    p.FindCharShape = action.act.CreateSet()
+    pset = action.pset
+    pset.find_charshape.update_from(app.charshape())
+
 
     # 옵션 설정
-    p.FindString = text
-    p.IgnoreMessage = ignore_message
-    p.MatchCase = match_case
-    p.AllWordForms = all_word_forms
-    p.Direction = direction.value  # Enum 값 사용
-    p.SeveralWords = several_words
-    p.UseWildCards = use_wild_cards
-    p.WholeWordOnly = whole_word_only
-    p.ReplaceMode = replace_mode
-    p.IgnoreFindString = ignore_find_string
-    p.IgnoreReplaceString = ignore_replace_string
-    p.FindStyle = find_style
-    p.ReplaceStyle = replace_style
-    p.FindJaso = find_jaso
-    p.FindRegExp = find_reg_exp
-    p.FindType = find_type
+    if text is not None:
+        pset.find_string = text
+    if ignore_message is not None:    
+        pset.ignore_message = ignore_message
+    if match_case is not None:    
+        pset.mach_case = match_case
+    if all_word_forms is not None:
+        pset.all_word_forms = all_word_forms
+    if direction is not None:
+        pset.direction = direction
+    if several_words is not None:
+        pset.several_words = several_words
+    if use_wild_cards is not None:
+        pset.use_wild_cards = use_wild_cards
+    if whole_word_only is not None:
+        pset.whole_word_only = whole_word_only
+    if replace_mode is not None:
+        pset.replace_mode = replace_mode
+    if ignore_find_string is not None:
+        pset.ignore_find_string = ignore_find_string
+    if ignore_replace_string is not None:
+        pset.ignore_replace_string = ignore_replace_string
+    if find_style is not None:
+        pset.find_style = find_style
+    if replace_style is not None:
+        pset.replace_style = replace_style
+    if find_jaso is not None:
+        pset.find_jaso = find_jaso
+    if find_regexp is not None:
+        pset.find_regexp = find_regexp
+    if find_type is not None:
+        pset.find_type = find_type
 
     # 문자 모양 설정
     if charshape:
-        set_pset(p.FindCharShape, charshape.todict())
-
+        pset.find_charshape.update_from(charshape)
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 66
+# %% ../nbs/02_api/00_core.ipynb 71
 @patch
 def replace_all(
     app: App,
@@ -1424,21 +1520,22 @@ def replace_all(
     old_charshape=None,  # 기존 문자 모양
     new_charshape=None,  # 새로운 문자 모양
     ignore_message=True,  # 메시지 무시 여부
-    direction=const.Direction.All,  # 검색 방향
-    match_case=False,  # 대소문자 구분
-    all_word_forms=False,  # 모든 단어 형태
-    several_words=False,  # 여러 단어 검색
-    use_wild_cards=False,  # 와일드카드 사용
-    whole_word_only=False,  # 전체 단어만 검색
-    auto_spell=True,  # 자동 철자 교정
-    replace_mode=True,  # 찾아 바꾸기 모드
-    ignore_find_string=False,  # 찾을 문자열 무시
-    ignore_replace_string=False,  # 바꿀 문자열 무시
-    find_style="",  # 찾을 스타일
-    replace_style="",  # 바꿀 스타일
-    find_jaso=False,  # 자소로 검색
-    find_reg_exp=False,  # 정규표현식으로 검색
-    find_type=True,  # 마지막 검색 사용(True), 새 검색(False)
+    direction=None,  # 검색 방향
+    match_case=None,  # 대소문자 구분
+    all_word_forms=None,  # 모든 단어 형태
+    several_words=None,  # 여러 단어 검색
+    use_wild_cards=None,  # 와일드카드 사용
+    whole_word_only=None,  # 전체 단어만 검색
+    auto_spell=None,  # 자동 철자 교정
+    replace_mode=None,  # 찾아 바꾸기 모드
+    ignore_find_string=None,  # 찾을 문자열 무시
+    ignore_replace_string=None,  # 바꿀 문자열 무시
+    find_regexp=None,  # 정규표현식으로 검색
+    find_style=None,  # 찾을 스타일
+    replace_style=None,  # 바꿀 스타일
+    find_jaso=None,  # 자소로 검색
+    find_reg_exp=None,  # 정규표현식으로 검색
+    find_type=None,  # 마지막 검색 사용(True), 새 검색(False)
 ):
     """
     문서에서 특정 텍스트를 새 텍스트로 모두 교체합니다.
@@ -1465,39 +1562,58 @@ def replace_all(
     >>> print(success)
     """
 
-    # 액션 생성
+
+    # 반복 검색 액션 생성
     action = app.actions.AllReplace
-    p = action.pset
+    pset = action.pset
 
     # 옵션 설정
-    p.FindString = old_text
-    p.ReplaceString = new_text
-    p.IgnoreMessage = ignore_message
-    p.MatchCase = match_case
-    p.AllWordForms = all_word_forms
-    p.Direction = direction.value
-    p.UseWildCards = use_wild_cards
-    p.WholeWordOnly = whole_word_only
-    p.AutoSpell = auto_spell
-    p.ReplaceMode = replace_mode
-    p.IgnoreFindString = ignore_find_string
-    p.IgnoreReplaceString = ignore_replace_string
-    p.FindStyle = find_style
-    p.ReplaceStyle = replace_style
-    p.FindJaso = find_jaso
-    p.FindRegExp = find_reg_exp
-    p.FindType = find_type
+    if old_text is not None:
+        pset.find_string = old_text
+    if new_text is not None:
+        pset.replace_string = new_text
+    if ignore_message is not None:    
+        pset.ignore_message = ignore_message
+    if match_case is not None:    
+        pset.mach_case = match_case
+    if all_word_forms is not None:
+        pset.all_word_forms = all_word_forms
+    if direction is not None:
+        pset.direction = direction
+    if several_words is not None:
+        pset.several_words = several_words
+    if use_wild_cards is not None:
+        pset.use_wild_cards = use_wild_cards
+    if whole_word_only is not None:
+        pset.whole_word_only = whole_word_only
+    if replace_mode is not None:
+        pset.replace_mode = replace_mode
+    if ignore_find_string is not None:
+        pset.ignore_find_string = ignore_find_string
+    if ignore_replace_string is not None:
+        pset.ignore_replace_string = ignore_replace_string
+    if find_style is not None:
+        pset.find_style = find_style
+    if replace_style is not None:
+        pset.replace_style = replace_style
+    if find_jaso is not None:
+        pset.find_jaso = find_jaso
+    if find_regexp is not None:
+        pset.find_regexp = find_regexp
+    if find_type is not None:
+        pset.find_type = find_type
+    if auto_spell is not None:
+        pset.auto_spell = auto_spell
 
-    # 기존 및 새로운 문자 모양 설정
+    # 문자 모양 설정
     if old_charshape:
-        set_pset(p.FindCharShape, old_charshape.todict())
+        pset.find_charshape.update_from(old_charshape)
     if new_charshape:
-        set_pset(p.ReplaceCharShape, new_charshape.todict())
-
+        pset.replace_charshape.update_from(new_charshape)
     return action.run()
+    
 
-
-# %% ../nbs/02_api/00_core.ipynb 70
+# %% ../nbs/02_api/00_core.ipynb 75
 @patch
 def insert_file(
     app: App,
@@ -1551,7 +1667,7 @@ def insert_file(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 71
+# %% ../nbs/02_api/00_core.ipynb 76
 @patch
 def set_cell_border(
     app: App,
@@ -1649,7 +1765,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 72
+# %% ../nbs/02_api/00_core.ipynb 77
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None

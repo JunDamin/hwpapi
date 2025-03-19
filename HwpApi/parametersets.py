@@ -48,7 +48,7 @@ class ParameterSet:
     
     def __str__(self):
         attributes = {key: getattr(self, key) for key in self.attributes_names}
-        pprinted = pprint.pformat(attributes)
+        pprinted = pprint.pformat(attributes, indent=4, width=60)
         return f"<{self.__class__.__name__}>\nvalues:\n {pprinted}"
     
     def __repr__(self):
@@ -1171,7 +1171,7 @@ class CharShape(ParameterSet):
             }
         return f"""<CharShape>
         value:
-        {pprint.pformat(data)}
+        {pprint.pformat(data, indent=4, width=60)}
         """
 
     def __repr__(self):
