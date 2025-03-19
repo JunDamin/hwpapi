@@ -48,8 +48,8 @@ class ParameterSet:
     
     def __str__(self):
         attributes = {key: getattr(self, key) for key in self.attributes_names}
-        pprinted = pprint.pformat(attributes, indent=4, width=60)
-        return f"<{self.__class__.__name__}>\nvalues:\n {pprinted}"
+        data = {"name": self.__class__.__name__, "values": attributes}
+        return pprint.pformat(data, indent=4, width=60)
     
     def __repr__(self):
         return self.__str__()
@@ -1139,7 +1139,7 @@ class CharShape(ParameterSet):
                 setattr(self, key, val)
 
     def __str__(self):
-        data = {
+        attributes = {
             "facename": self.facename, 
             "fonttype": self.fonttype,
             "size": self.size,
@@ -1169,10 +1169,8 @@ class CharShape(ParameterSet):
             "height": self.height,
             "border_fill": self.border_fill,
             }
-        return f"""<CharShape>
-        value:
-        {pprint.pformat(data, indent=4, width=60)}
-        """
+        data = {"name": self.__class__.__name__, "values": attributes}
+        return pprint.pformat(data, indent=4, width=60)
 
     def __repr__(self):
         return self.__str__()
