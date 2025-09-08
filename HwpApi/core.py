@@ -583,17 +583,18 @@ def set_visible(app: App, is_visible=True, window_i=0):
     >>> set_visible(app, is_visible=True, window_i=0)
     >>> set_visible(app, is_visible=False, window_i=1)
     """
+    logger = get_logger('00_core.set_visible')
+    logger.debug(f"Calling set_visible")
     app.api.XHwpWindows.Item(window_i).Visible = is_visible
-
 
 # %% ../nbs/02_api/00_core.ipynb 11
 @patch
 def create_parameterset(app: App, key:str):
+    logger = get_logger('00_core.create_parameterset')
+    logger.debug(f"Calling create_parameterset")
     pset = app.api.CreateSet(key)
     pset_class = getattr(parametersets, key, None)
     return pset_class(pset) if pset_class else pset
-    
-    
 
 # %% ../nbs/02_api/00_core.ipynb 14
 @patch
@@ -621,8 +622,9 @@ def reload(app: App, new_app=False, dll_path=None):
     >>> app = App()
     >>> reload(app, dll_path="path/to/dll")
     """
+    logger = get_logger('00_core.reload')
+    logger.debug(f"Calling reload")
     app._load(new_app=new_app, dll_path=dll_path)
-
 
 # %% ../nbs/02_api/00_core.ipynb 16
 @patch
@@ -649,9 +651,10 @@ def get_filepath(app: App):
     >>> filepath = get_filepath(app)
     >>> print(filepath)
     """
+    logger = get_logger('00_core.get_filepath')
+    logger.debug(f"Calling get_filepath")
     doc = app.api.XHwpDocuments.Active_XHwpDocument
     return doc.FullName
-
 
 # %% ../nbs/02_api/00_core.ipynb 18
 @patch
@@ -680,8 +683,9 @@ def create_action(app: App, action_key: str):
     >>> action = create_action(app, 'some_action_key')
     >>> print(action)
     """
+    logger = get_logger('00_core.create_action')
+    logger.debug(f"Calling create_action")
     return _Action(app, action_key)
-
 
 # %% ../nbs/02_api/00_core.ipynb 20
 @patch
@@ -710,10 +714,11 @@ def open(app: App, path: str):
     >>> opened_file_path = open(app, 'path/to/document.hwp')
     >>> print(opened_file_path)
     """
+    logger = get_logger('00_core.open')
+    logger.debug(f"Calling open")
     name = get_absolute_path(path)
     app.api.Open(name)
     return name
-
 
 # %% ../nbs/02_api/00_core.ipynb 22
 @patch
@@ -741,8 +746,9 @@ def get_hwnd(app: App):
     >>> hwnd = get_hwnd(app)
     >>> print(hwnd)
     """
+    logger = get_logger('00_core.get_hwnd')
+    logger.debug(f"Calling get_hwnd")
     return app.api.XHwpWindows.Active_XHwpWindow.WindowHandle
-
 
 # %% ../nbs/02_api/00_core.ipynb 24
 @patch
@@ -772,6 +778,8 @@ def save(app: App, path=None):
     >>> saved_file_path = save(app, 'path/to/document.hwp')
     >>> print(saved_file_path)
     """
+    logger = get_logger('00_core.save')
+    logger.debug(f"Calling save")
     if not path:
         app.api.Save()
         return app.get_filepath()
@@ -790,7 +798,6 @@ def save(app: App, path=None):
 
     app.api.SaveAs(name, format_)
     return name
-
 
 # %% ../nbs/02_api/00_core.ipynb 25
 @patch
@@ -820,6 +827,8 @@ def save_block(app: App, path: Path):
     >>> saved_path = save_block(app, Path('path/to/save/block.hwp'))
     >>> print(saved_path)
     """
+    logger = get_logger('00_core.save_block')
+    logger.debug(f"Calling save_block")
 
     name = get_absolute_path(path)
     extension = Path(name).suffix
@@ -837,7 +846,6 @@ def save_block(app: App, path: Path):
     p.Format = format_
     action.run()
     return name if Path(name).exists() else None
-
 
 # %% ../nbs/02_api/00_core.ipynb 27
 @patch
@@ -859,8 +867,9 @@ def close(app: App):
     >>> # Open and manipulate the document
     >>> close(app)
     """
+    logger = get_logger('00_core.close')
+    logger.debug(f"Calling close")
     app.api.Run("FileClose")
-
 
 # %% ../nbs/02_api/00_core.ipynb 29
 @patch
@@ -882,8 +891,9 @@ def quit(app: App):
     >>> # Perform actions with the app
     >>> quit(app)
     """
+    logger = get_logger('00_core.quit')
+    logger.debug(f"Calling quit")
     app.api.Run("FileQuit")
-
 
 # %% ../nbs/02_api/00_core.ipynb 30
 @patch
@@ -911,6 +921,8 @@ def get_font_list(app:App):
     >>> font_list = app.get_font_list()
     >>> print(font_list)
     """
+    logger = get_logger('00_core.get_font_list')
+    logger.debug(f"Calling get_font_list")
     app.api.ScanFont()
     result = app.api.GetFontList()
     output = list(map(lambda txt: txt.split(",")[0],
@@ -954,6 +966,10 @@ def charshape(app:App,
     border_fill=None):
     """return null charshape
     """
+
+    logger = get_logger('00_core.charshape')
+    logger.debug(f"Calling charshape")
+
     charshape_pset = app.create_parameterset("CharShape")
     value_set = {
         "facename": facename,
@@ -1019,8 +1035,9 @@ def get_charshape(app: App):
     >>> char_shape = get_charshape(app)
     >>> print(char_shape)
     """
+    logger = get_logger('00_core.get_charshape')
+    logger.debug(f"Calling get_charshape")
     return app.actions.CharShape.pset
-
 
 # %% ../nbs/02_api/00_core.ipynb 34
 @patch
@@ -1053,6 +1070,8 @@ def set_charshape(app: App, charshape: parametersets.CharShape=None, **kwargs):
     >>> success = set_charshape(app, charshape=char_shape, fontName='Arial', fontSize=10)
     >>> print(success)
     """
+    logger = get_logger('00_core.set_charshape')
+    logger.debug(f"Calling set_charshape")
     action = app.actions.CharShape
     pset = action.pset
     # charshape를 전달하면 반영해야 함
@@ -1064,8 +1083,7 @@ def set_charshape(app: App, charshape: parametersets.CharShape=None, **kwargs):
     
     if action.run():
         return pset 
-    return None 
-
+    return None
 
 # %% ../nbs/02_api/00_core.ipynb 38
 @patch
@@ -1092,6 +1110,8 @@ def get_parashape(app: App):
     >>> para_shape = get_parashape(app)
     >>> print(para_shape)
     """
+    logger = get_logger('00_core.get_parashape')
+    logger.debug(f"Calling get_parashape")
     return app.actions.ParagraphShape.pset
 
 # %% ../nbs/02_api/00_core.ipynb 40
@@ -1124,6 +1144,8 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     >>> success = set_parashape(app, parashape=para_shape, align='Left', indent=10)
     >>> print(success)
     """
+    logger = get_logger('00_core.set_parashape')
+    logger.debug(f"Calling set_parashape")
     action = app.actions.ParagraphShape
     pset = action.pset
     if parashape:
@@ -1133,7 +1155,6 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
         setattr(pset, key, value)
 
     return action.run()
-
 
 # %% ../nbs/02_api/00_core.ipynb 42
 @patch
@@ -1166,6 +1187,11 @@ def insert_text(
     >>> app = App()
     >>> insert_text(app, "Hello World", fontName="Arial", fontSize=12)
     """
+
+    
+    logger = get_logger('00_core.insert_text')
+    logger.debug(f"Calling insert_text")
+    
     if not charshape:
         charshape = app.get_charshape()
     for key, value in kwargs.items():
@@ -1178,7 +1204,6 @@ def insert_text(
     
     insert_text.run()
     return
-
 
 # %% ../nbs/02_api/00_core.ipynb 48
 def _get_text(app):
@@ -1202,6 +1227,11 @@ def scan(
     epos=None,
     scan_direction=const.ScanDirection.Forward,
 ):
+
+    
+    logger = get_logger('00_core.scan')
+    logger.debug(f"Calling scan")
+
     range_ = scan_spos.value + scan_epos.value
     if selection:
         range_ = 0x00FF  # Limit the scanning to the block if selection is True
@@ -1218,10 +1248,11 @@ def scan(
     yield _get_text(app)
     app.api.ReleaseScan()
 
-
 # %% ../nbs/02_api/00_core.ipynb 49
 def move_to_line(app: App, text):
     """인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다."""
+    logger = get_logger('00_core.move_to_line')
+    logger.debug(f"Calling move_to_line")
     with app.scan(scan_spos=const.ScanStartPosition.Line) as scan:
         for line in scan:
             if text in line:
@@ -1276,6 +1307,11 @@ def setup_page(
     >>> setup_page(app, top=25, bottom=15, right=20, left=20, header=10, footer=5, gutter=5)
     """
 
+
+    
+    logger = get_logger('00_core.setup_page')
+    logger.debug(f"Calling setup_page")
+    
     action = app.actions.PageSetup
     p = action.pset
 
@@ -1289,7 +1325,6 @@ def setup_page(
     p.PageDef.GutterLen = app.api.MiliToHwpUnit(gutter)
 
     return action.run()  # 페이지 설정 실행
-
 
 # %% ../nbs/02_api/00_core.ipynb 52
 @patch
@@ -1337,6 +1372,10 @@ def insert_picture(
     >>> print(success)
     """
 
+    
+    logger = get_logger('00_core.insert_picture')
+    logger.debug(f"Calling insert_picture")
+
     path = Path(fpath)  # 이미지 파일 경로 처리
     size_option = size_option.value  # 크기 옵션 값 설정
     effect = effect.value  # 효과 옵션 값 설정
@@ -1350,7 +1389,6 @@ def insert_picture(
         watermark=watermark,  # 워터마크 여부
         effect=effect,  # 시각적 효과
     )
-
 
 # %% ../nbs/02_api/00_core.ipynb 53
 @patch
@@ -1375,13 +1413,14 @@ def select_text(app: App, option=const.SelectionOption.Line):
     >>> app = App()
     >>> select_text(app, option=SelectionOption.Para)
     """
+    logger = get_logger('00_core.select_text')
+    logger.debug(f"Calling select_text")
 
     begin_action_name, end_action_name = option.value  # 시작 및 끝 작업 이름 가져오기
     begin_action = getattr(app.actions, begin_action_name)  # 시작 작업 가져오기
     end_action = getattr(app.actions, end_action_name)  # 끝 작업 가져오기
 
     return begin_action().run(), end_action().run()  # 작업 실행 후 결과 반환
-
 
 # %% ../nbs/02_api/00_core.ipynb 56
 @patch
@@ -1408,11 +1447,12 @@ def get_selected_text(app: App):
     >>> selected_text = get_selected_text(app)
     >>> print(selected_text)
     """
+    logger = get_logger('00_core.get_selected_text')
+    logger.debug(f"Calling get_selected_text")
 
     with app.scan(selection=True) as scan:  # 선택된 영역 스캔
         text = "\n".join(scan)  # 선택된 텍스트를 줄 단위로 결합
     return text  # 결합된 텍스트 반환
-
 
 # %% ../nbs/02_api/00_core.ipynb 58
 # 리팩터링된 get_text 함수
@@ -1441,11 +1481,12 @@ def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosi
     >>> text = get_text(app, spos=ScanStartPosition.Paragraph, epos=ScanEndPosition.Paragraph)
     >>> print(text)
     """
+    logger = get_logger('00_core.get_text')
+    logger.debug(f"Calling get_text")
 
     with app.scan(scan_spos=spos, scan_epos=epos) as txts:  # 지정된 위치 범위에서 텍스트 스캔
         text = "".join(txts)  # 스캔한 텍스트를 하나의 문자열로 결합
     return text  # 결합된 텍스트 반환
-
 
 # %% ../nbs/02_api/00_core.ipynb 61
 @patch
@@ -1492,6 +1533,10 @@ def find_text(
     >>> print(found)
     """
 
+    
+    logger = get_logger('00_core.find_text')
+    logger.debug(f"Calling find_text")
+
     # 반복 검색 액션 생성
     action = app.actions.RepeatFind
     pset = action.pset
@@ -1536,7 +1581,6 @@ def find_text(
     if charshape:
         pset.find_charshape.update_from(charshape)
     return action.run()
-
 
 # %% ../nbs/02_api/00_core.ipynb 70
 @patch
@@ -1590,6 +1634,9 @@ def replace_all(
     """
 
 
+    logger = get_logger('00_core.replace_all')
+    logger.debug(f"Calling replace_all")
+
     # 반복 검색 액션 생성
     action = app.actions.AllReplace
     pset = action.pset
@@ -1638,7 +1685,6 @@ def replace_all(
     if new_charshape:
         pset.replace_charshape.update_from(new_charshape)
     return action.run()
-    
 
 # %% ../nbs/02_api/00_core.ipynb 74
 @patch
@@ -1683,6 +1729,12 @@ def insert_file(
     >>> print(success)
     """
 
+
+    
+    logger = get_logger('00_core.insert_file')
+    logger.debug(f"Calling insert_file")
+
+    
     action = app.actions.InsertFile
     p = action.pset
     p.filename = Path(fpath).absolute().as_posix()
@@ -1692,7 +1744,6 @@ def insert_file(
     p.KeepStyle = keep_style
 
     return action.run()
-
 
 # %% ../nbs/02_api/00_core.ipynb 75
 @patch
@@ -1782,6 +1833,10 @@ def set_cell_border(
         else None,
     }
 
+    
+    logger = get_logger('00_core.set_cell_border')
+    logger.debug(f"Calling set_cell_border")
+
     action = app.actions.CellFill
     p = action.pset
 
@@ -1833,6 +1888,10 @@ def set_cell_color(
     Colors are specified in hexadecimal format. The alpha parameter controls the transparency of the background color.
     """
 
+
+    logger = get_logger('00_core.set_cell_color')
+    logger.debug(f"Calling set_cell_color")
+
     fill_type = windows_brush = None
     if bg_color:
         fill_type = 1
@@ -1855,4 +1914,3 @@ def set_cell_color(
             setattr(p.FillAttr, key, value)
 
     return action.run()
-

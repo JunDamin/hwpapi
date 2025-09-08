@@ -24,6 +24,8 @@ from .logging import get_logger
 
 # %% ../nbs/02_api/02_functions.ipynb 4
 def get_font_name(text):
+    logger = get_logger('02_functions.get_font_name')
+    logger.debug(f"Calling get_font_name")
     m = re.search("(^.+?)\s[A-Z0-9]+\.HFT", text)
     return m.group(1) if m else None
 
@@ -94,12 +96,16 @@ def get_hwp_objects():
 # %% ../nbs/02_api/02_functions.ipynb 7
 def get_absolute_path(path):
     """파일 절대 경로를 반환합니다."""
+    logger = get_logger('02_functions.get_absolute_path')
+    logger.debug(f"Calling get_absolute_path")
     name = Path(path)
     return name.absolute().as_posix()
 
 # %% ../nbs/02_api/02_functions.ipynb 8
 def get_dll_path(package_name, dll_filename):
     """패키지에서 dll 경로를 확보합니다."""
+    logger = get_logger('02_functions.get_dll_path')
+    logger.debug(f"Calling get_dll_path")
     try:
         with importlib.resources.path(package_name, dll_filename) as dll_path:
             return str(dll_path)
@@ -111,6 +117,8 @@ def get_dll_path(package_name, dll_filename):
 # %% ../nbs/02_api/02_functions.ipynb 9
 def add_dll_to_registry(dll_path, key_path):
     """레지스트리에 dll을 등록합니다."""
+    logger = get_logger('02_functions.add_dll_to_registry')
+    logger.debug(f"Calling add_dll_to_registry")
     try:
         # Connect to the registry and open the specified key
         registry_key = winreg.OpenKey(
@@ -131,6 +139,8 @@ def add_dll_to_registry(dll_path, key_path):
 # %% ../nbs/02_api/02_functions.ipynb 10
 def get_registry_value(key_path, value_name):
     """레지스트리에 값이 있는지 확인해 봅니다."""
+    logger = get_logger('02_functions.get_registry_value')
+    logger.debug(f"Calling get_registry_value")
     try:
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path) as key:
             value, value_type = winreg.QueryValueEx(key, value_name)
@@ -141,6 +151,8 @@ def get_registry_value(key_path, value_name):
 # %% ../nbs/02_api/02_functions.ipynb 11
 def check_dll(dll_path=None):
     """dll 모듈을 등록합니다."""
+    logger = get_logger('02_functions.check_dll')
+    logger.debug(f"Calling check_dll")
     dll_path = dll_path if dll_path else get_dll_path("hwpapi", "FilePathCheckerModuleExample.dll")
     key_path = "SOFTWARE\\HNC\\HwpAutomation\\Modules"
     value_name = "FilePathCheckerModule"
@@ -154,6 +166,8 @@ def check_dll(dll_path=None):
 # %% ../nbs/02_api/02_functions.ipynb 12
 def get_value(dict_, key):
     """딕셔너리에서 키를 찾아 값을 반환합니다. 반환할 값이 없으면 키에러와 함께 가능한 키를 알려줍니다."""
+    logger = get_logger('02_functions.get_value')
+    logger.debug(f"Calling get_value")
     if key is None:
         return None
     try:
@@ -166,6 +180,8 @@ def get_value(dict_, key):
 # %% ../nbs/02_api/02_functions.ipynb 13
 def get_key(dict_, value):
     """딕셔너리에서 값를 찾아 키를 반환합니다. 반환할 값이 없으면 키에러와 함께 가능한 키를 알려줍니다."""
+    logger = get_logger('02_functions.get_key')
+    logger.debug(f"Calling get_key")
     if value is None:
         return None
     try:
@@ -177,6 +193,8 @@ def get_key(dict_, value):
 
 # %% ../nbs/02_api/02_functions.ipynb 14
 def convert2int(_dict, value):
+    logger = get_logger('02_functions.convert2int')
+    logger.debug(f"Calling convert2int")
     if value is None:
         return value
     if isinstance(value, str):
@@ -188,6 +206,8 @@ def convert2int(_dict, value):
 
 # %% ../nbs/02_api/02_functions.ipynb 15
 def set_pset(p, value_dict:dict):
+    logger = get_logger('02_functions.set_pset')
+    logger.debug(f"Calling set_pset")
     for field in dir(p):
         value = value_dict.get(field, None)
         if value is None:
@@ -198,6 +218,8 @@ def set_pset(p, value_dict:dict):
 
 # %% ../nbs/02_api/02_functions.ipynb 16
 def get_charshape_pset(p):
+    logger = get_logger('02_functions.get_charshape_pset')
+    logger.debug(f"Calling get_charshape_pset")
     return {field: getattr(p, field) for field in char_fields}
 
 # %% ../nbs/02_api/02_functions.ipynb 17
@@ -209,6 +231,10 @@ def set_charshape_pset(
     char_fields에 정의된 키 값을 기반으로 파라미터를 세팅합니다.
     """
     
+    
+    logger = get_logger('02_functions.set_charshape_pset')
+    logger.debug(f"Calling set_charshape_pset")
+
     for field in char_fields:
         value = value_dict.get(field, None)
         if not value:
@@ -220,12 +246,18 @@ def set_charshape_pset(
 # %% ../nbs/02_api/02_functions.ipynb 18
 def get_parashape_pset(p):
 
+    logger = get_logger('02_functions.get_parashape_pset')
+    logger.debug(f"Calling get_parashape_pset")
     return {field: getattr(p, field) for field in para_fields}
 
 # %% ../nbs/02_api/02_functions.ipynb 19
 def set_parashape_pset(
     parashape_pset, value_dict:dict,
 ):
+
+    
+    logger = get_logger('02_functions.set_parashape_pset')
+    logger.debug(f"Calling set_parashape_pset")
  
     for field in para_fields:
         value = value_dict.get(field, None)
@@ -239,6 +271,8 @@ def set_parashape_pset(
 # %% ../nbs/02_api/02_functions.ipynb 20
 def hex_to_rgb(hex_string):
     # Remove the "#" symbol if it exists
+    logger = get_logger('02_functions.hex_to_rgb')
+    logger.debug(f"Calling hex_to_rgb")
     if hex_string.startswith("#"):
         hex_string = hex_string[1:]
 
@@ -297,6 +331,8 @@ def get_rgb_tuple(color):
 # %% ../nbs/02_api/02_functions.ipynb 21
 def convert_to_hwp_color(color):
     
+    logger = get_logger('02_functions.convert_to_hwp_color')
+    logger.debug(f"Calling convert_to_hwp_color")
     if isinstance(color, int):
         return color 
     
@@ -326,21 +362,26 @@ def convert_to_hwp_color(color):
 
 # %% ../nbs/02_api/02_functions.ipynb 22
 def convert_hwp_color_to_hex(color:int):
+    logger = get_logger('02_functions.convert_hwp_color_to_hex')
+    logger.debug(f"Calling convert_hwp_color_to_hex")
     if not color:
         return color
     text = f"{color:06x}"
     return f"#{text[4:6]}{text[2:4]}{text[:2]}"
-
 
 # %% ../nbs/02_api/02_functions.ipynb 24
 def mili2unit(value):
     """
     1 밀리는 283 hwpunit 입니다.
     """
+    logger = get_logger('02_functions.mili2unit')
+    logger.debug(f"Calling mili2unit")
     return int(round(value*283, 0)) if value else value
 
 # %% ../nbs/02_api/02_functions.ipynb 25
 def unit2mili(value):
+    logger = get_logger('02_functions.unit2mili')
+    logger.debug(f"Calling unit2mili")
     return value/283 if value else value
 
 # %% ../nbs/02_api/02_functions.ipynb 26
@@ -348,14 +389,20 @@ def point2unit(value):
     """
     1point는 100 hwpunit입니다.
     """
+    logger = get_logger('02_functions.point2unit')
+    logger.debug(f"Calling point2unit")
     return int(round(value*100, 0)) if value else value
 
 # %% ../nbs/02_api/02_functions.ipynb 27
 def unit2point(value):
+    logger = get_logger('02_functions.unit2point')
+    logger.debug(f"Calling unit2point")
     return value / 100 if value else value
 
 # %% ../nbs/02_api/02_functions.ipynb 28
 def to_hwpunit(value, unit):
+    logger = get_logger('02_functions.to_hwpunit')
+    logger.debug(f"Calling to_hwpunit")
     if unit in ["mili", "mm"]:
         return mili2unit(value)
     if unit in ["pt", "point"]:
@@ -372,10 +419,11 @@ def block_input(func):
     """
     함수가 실행될 동안 다른 입력을 할 수 없게 하는 기능을 가진 데코레이터입니다. 
     """
+    logger = get_logger('02_functions.block_input')
+    logger.debug(f"Calling block_input")
     def wrapper(app, *args, **kwargs):
         app.api.EditMode = 0
         result = func(app, *args, **kwargs)
         app.api.EditMode = 1
         return result
     return wrapper
-
