@@ -755,7 +755,8 @@ def save(app: App, path=None):
     format_ = {
         ".hwp": "HWP",
         ".pdf": "PDF",
-        ".hwpx": "HWPML2X",
+        ".hwpx": "HWPX",
+        ".hml": "HWPML2X",
         ".png": "PNG",
         ".txt": "TEXT", 
         ".docx": "MSWORD", 
@@ -1201,7 +1202,7 @@ def move_to_line(app: App, text):
                 return app.move.scan_pos()
     return False
 
-# %% ../nbs/02_api/00_core.ipynb 52
+# %% ../nbs/02_api/00_core.ipynb 51
 @patch
 def setup_page(
     app: App,  # 앱 인스턴스
@@ -1264,7 +1265,7 @@ def setup_page(
     return action.run()  # 페이지 설정 실행
 
 
-# %% ../nbs/02_api/00_core.ipynb 53
+# %% ../nbs/02_api/00_core.ipynb 52
 @patch
 def insert_picture(
     app: App,
@@ -1325,7 +1326,7 @@ def insert_picture(
     )
 
 
-# %% ../nbs/02_api/00_core.ipynb 54
+# %% ../nbs/02_api/00_core.ipynb 53
 @patch
 def select_text(app: App, option=const.SelectionOption.Line):
     """
@@ -1356,7 +1357,7 @@ def select_text(app: App, option=const.SelectionOption.Line):
     return begin_action().run(), end_action().run()  # 작업 실행 후 결과 반환
 
 
-# %% ../nbs/02_api/00_core.ipynb 57
+# %% ../nbs/02_api/00_core.ipynb 56
 @patch
 def get_selected_text(app: App):
     """
@@ -1387,7 +1388,7 @@ def get_selected_text(app: App):
     return text  # 결합된 텍스트 반환
 
 
-# %% ../nbs/02_api/00_core.ipynb 59
+# %% ../nbs/02_api/00_core.ipynb 58
 # 리팩터링된 get_text 함수
 @patch
 def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosition.Line):
@@ -1420,7 +1421,7 @@ def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosi
     return text  # 결합된 텍스트 반환
 
 
-# %% ../nbs/02_api/00_core.ipynb 62
+# %% ../nbs/02_api/00_core.ipynb 61
 @patch
 def find_text(
     app: App,
@@ -1511,7 +1512,7 @@ def find_text(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 71
+# %% ../nbs/02_api/00_core.ipynb 70
 @patch
 def replace_all(
     app: App,
@@ -1613,7 +1614,7 @@ def replace_all(
     return action.run()
     
 
-# %% ../nbs/02_api/00_core.ipynb 75
+# %% ../nbs/02_api/00_core.ipynb 74
 @patch
 def insert_file(
     app: App,
@@ -1667,7 +1668,7 @@ def insert_file(
     return action.run()
 
 
-# %% ../nbs/02_api/00_core.ipynb 76
+# %% ../nbs/02_api/00_core.ipynb 75
 @patch
 def set_cell_border(
     app: App,
@@ -1765,7 +1766,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 77
+# %% ../nbs/02_api/00_core.ipynb 76
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None

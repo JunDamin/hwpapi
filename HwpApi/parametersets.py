@@ -7,203 +7,313 @@ import pprint
 
 
 class ParameterSet:
+    """
+    Base class for HWP parameter sets.
+    
+    Provides a unified interface for working with HWP parameter objects,
+    handling both COM objects with SetID and regular Python objects.
+    """
 
     def __init__(self, parameterset):
+        """Initialize with a parameter set object."""
         self._pset = parameterset
         self._is_pset = hasattr(parameterset, "SetID")
         self.attributes_names = []
 
     @property
     def parameterset(self):
+        """Get the underlying parameter set object."""
         return self._pset
 
     def _get_value(self, name):
+        """Get a value from the parameter set."""
         if self._is_pset:
             return self._pset.Item(name)
         return getattr(self._pset, name)
     
     def _set_value(self, name, value):
+        """Set a value in the parameter set."""
         if self._is_pset:
-             return self._pset.SetItem(name, value)
+            return self._pset.SetItem(name, value)
         return setattr(self._pset, name, value)
 
     def _del_value(self, name):
+        """Delete a value from the parameter set."""
         if self._is_pset:
             return self._pset.RemoveItem(name)
         return False
     
     def update_from(self, pset):
+        """Update this parameter set with values from another parameter set."""
         for key in self.attributes_names:
-            value = getattr(pset, key)
+            value = getattr(pset, key, None)
+            
             if isinstance(value, ParameterSet):
+                # Recursively update nested parameter sets
                 target = getattr(self, key)
-                source = getattr(pset, key)
-                target.update_from(source)
-                return self
-            if value is None:
+                target.update_from(value)
+            elif value is None:
+                # Remove the attribute if value is None
                 self._del_value(key)
-            if value:
+            elif value:
+                # Set the attribute if value is truthy
                 setattr(self, key, value)
         return self
+
+    def serialize(self):
+        """Convert the parameter set to a dictionary."""
+        result = {}
+        for key in self.attributes_names:
+            value = getattr(self, key, None)
+            if isinstance(value, ParameterSet):
+                value = value.serialize()
+            result[key] = value
+        return result
     
     def __str__(self):
-        attributes = {key: getattr(self, key) for key in self.attributes_names}
-        data = {"name": self.__class__.__name__, "values": attributes}
+        """String representation of the parameter set."""
+        data = {
+            "name": self.__class__.__name__, 
+            "values": self.serialize()
+        }
         return pprint.pformat(data, indent=4, width=60)
     
     def __repr__(self):
+        """Representation of the parameter set."""
         return self.__str__()
 
     @staticmethod        
     def _typed_prop(key, doc, expected_type):
+        """Create a property for typed parameter sets."""
         def getter(self):
-            subset = self._get_value(key)
-            if subset:
-                return expected_type()(subset)
-            return subset
+            value = self._get_value(key)
+            if value is None:
+                return None
+            # Wrap in expected type if not already wrapped
+            if not isinstance(value, expected_type()):
+                return expected_type()(value)
+            return value
+        
         def setter(self, pset):
             if pset is None:
                 return self._del_value(key)
-            assert isinstance(pset, expected_type()), f"입력된 값 {pset} | {key}의 값은 {expected_type()} 객체이어야 합니다."
+            
+            # Validate type
+            if not isinstance(pset, expected_type()):
+                raise TypeError(f"Value for '{key}' must be of type {expected_type.__name__}")
+            
+            # Get or create target
             target = self._get_value(key)
             if not target:
                 target = self._pset.CreateItemSet(key, expected_type().SetID)
+            
+            # Update target with new values
             expected_type()(target).update_from(pset)
+        
         return property(getter, setter, doc=doc)    
 
     @staticmethod      
     def _int_prop(key, doc, min_val=None, max_val=None):
+        """Create a property for integer values with optional range validation."""
         def getter(self):
             return self._get_value(key)
+        
         def setter(self, value):
             if value is None:
                 return self._del_value(key)
+            
+            # Type validation
             if not isinstance(value, int):
-                raise TypeError(f"입력된 값 {value} | {key}의 값은 정수이어야 합니다.")
-            if value == 0:
-                return self._set_value(key, values)
-            if min_val and max_val and not (min_val <= value <= max_val):
-                raise ValueError(f"입력된 값 {value} | {key}의 값은 {min_val}에서 {max_val} 사이여야 합니다.")
-            if min_val and not (min_val <= value):
-                raise ValueError(f"입력된 값 {value} | {key}의 값은 {min_val}보다 커야 합니다.")
-            if max_val and not (value <= max_val):
-                raise ValueError(f"입력된 값 {value} | {key}의 값은 {max_val}보다 작아야 합니다.")
+                raise TypeError(f"Value for '{key}' must be an integer, got {type(value).__name__}")
+            
+            # Range validation
+            if min_val is not None and value < min_val:
+                raise ValueError(f"Value for '{key}' must be >= {min_val}, got {value}")
+            if max_val is not None and value > max_val:
+                raise ValueError(f"Value for '{key}' must be <= {max_val}, got {value}")
+            
             return self._set_value(key, value)
+        
         return property(getter, setter, doc=doc)
     
     @staticmethod 
     def _bool_prop(key, doc):
-
+        """Create a property for boolean values (0 or 1)."""
         def getter(self):
             return self._get_value(key)
+        
         def setter(self, value):
             if value is None:
                 return self._del_value(key)
-            assert value in [0, 1], f"입력된 값 {value} | {key}의 값은 0 또는 1이어야 합니다."
+            
+            # Convert boolean to 0/1 if needed
+            if isinstance(value, bool):
+                value = int(value)
+            
+            # Validate value is 0 or 1
+            if value not in [0, 1]:
+                raise ValueError(f"Value for '{key}' must be 0 or 1, got {value}")
+            
             return self._set_value(key, value)
+        
         return property(getter, setter, doc=doc)
     
     @staticmethod 
     def _color_prop(key, doc):
+        """Create a property for color values with hex conversion."""
         def getter(self):
-            return convert_hwp_color_to_hex(self._get_value(key))
+            hwp_color = self._get_value(key)
+            return convert_hwp_color_to_hex(hwp_color)
+        
         def setter(self, value):
             if value is None:
                 return self._del_value(key)
-            return self._set_value(key, convert_to_hwp_color(value))
+            
+            hwp_color = convert_to_hwp_color(value)
+            return self._set_value(key, hwp_color)
+        
         return property(getter, setter, doc=doc)
     
     @staticmethod 
     def _unit_prop(key, unit, doc):
+        """Create a property for unit-based values with automatic conversion."""
         def getter(self):
-            value = self._get_value(key)
-            return from_hwpunit(value, unit)
+            hwp_value = self._get_value(key)
+            return from_hwpunit(hwp_value, unit)
+        
         def setter(self, value):
             if value is None:
                 return self._del_value(key)
+            
+            # Type validation
             if not isinstance(value, (int, float)):
-                raise TypeError(f"입력된 값 {value} | {key}의 값은 정수 또는 실수이어야 합니다.")
-            unit_value = to_hwpunit(float(value), unit)
-            return self._set_value(key, unit_value)
+                raise TypeError(f"Value for '{key}' must be a number, got {type(value).__name__}")
+            
+            # Convert to HWP unit
+            hwp_value = to_hwpunit(float(value), unit)
+            return self._set_value(key, hwp_value)
+        
         return property(getter, setter, doc=doc)
     
     @staticmethod 
     def _mapped_prop(key, mapping, doc):
+        """Create a property for mapped values (string <-> integer)."""
         reverse_mapping = {v: k for k, v in mapping.items()}
 
         def getter(self):
-            value = self._get_value(key)
-            return mapping.get(value, value)
+            numeric_value = self._get_value(key)
+            # Return the string representation if available, otherwise the numeric value
+            return reverse_mapping.get(numeric_value, numeric_value)
+        
         def setter(self, value):
             if value is None:
                 return self._del_value(key)
+            
+            # Handle string input
             if isinstance(value, str):
                 if value not in mapping:
-                    valid_options = " | ".join(f"{k} ({v})" for k, v in mapping.items())
-                    raise ValueError(f"입력된 값 {value} | {key}의 올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+                    valid_options = list(mapping.keys())
+                    raise ValueError(f"Invalid value '{value}' for '{key}'. Valid options: {valid_options}")
                 numeric_value = mapping[value]
+            
+            # Handle integer input
             elif isinstance(value, int):
                 if value not in reverse_mapping:
-                    valid_options = " | ".join(f"{v} ({k})" for k, v in mapping.items())
-                    raise ValueError(f"입력된 값 {value} | {key}의 올바르지 않은 값입니다. 허용되는 값: {valid_options}")
+                    valid_options = list(reverse_mapping.keys())
+                    raise ValueError(f"Invalid value {value} for '{key}'. Valid options: {valid_options}")
                 numeric_value = value
+            
+            # Invalid type
             else:
-                valid_options = " | ".join(f"{k} ({v})" for k, v in mapping.items())
-                raise TypeError(f"입력된 값 {value} | {key}의 값은 정수 또는 문자열이어야 합니다. 허용되는 값: {valid_options}")
+                raise TypeError(f"Value for '{key}' must be string or integer, got {type(value).__name__}")
+            
             return self._set_value(key, numeric_value)
+        
         return property(getter, setter, doc=doc)
 
 
-    # --- Local helper functions for CharShape ---
+    # --- Additional property types ---
     @staticmethod
     def _str_prop(key, doc):
+        """Create a property for string values."""
         def getter(self):
             return self._get_value(key)
+        
         def setter(self, value):
             if value is None:
                 return self._del_value(key)
+            
             if not isinstance(value, str):
-                raise TypeError(f"입력된 값 {value} | {key}의 값은 문자열이어야 합니다.")
+                raise TypeError(f"Value for '{key}' must be a string, got {type(value).__name__}")
+            
             return self._set_value(key, value)
+        
         return property(getter, setter, doc=doc)
 
     @staticmethod
     def _int_list_prop(key, doc):
+        """Create a property for lists of integers."""
         def getter(self):
             return self._get_value(key)
+        
         def setter(self, value):
             if value is None:
                 return self._del_value(key)
-            if not (isinstance(value, list) and all(isinstance(i, int) for i in value)):
-                raise TypeError(f"입력된 값 {value} | {key}의 값은 정수 배열이어야 합니다.")
+            
+            # Validate list of integers
+            if not isinstance(value, list):
+                raise TypeError(f"Value for '{key}' must be a list, got {type(value).__name__}")
+            
+            if not all(isinstance(item, int) for item in value):
+                raise TypeError(f"All items in '{key}' must be integers")
+            
             return self._set_value(key, value)
+        
         return property(getter, setter, doc=doc)
     
     @staticmethod
     def _tuple_list_prop(key, doc):
+        """Create a property for lists of (X, Y) coordinate tuples."""
         def getter(self):
             return self._get_value(key)
+        
         def setter(self, value):
             if value is None:
                 return self._del_value(key)
-            # Ensure value is a list of (X, Y) tuples where both X and Y are integers
-            if not (isinstance(value, list) and 
-                    all(isinstance(item, tuple) and len(item) == 2 and all(isinstance(coord, int) for coord in item)
-                        for item in value)):
-                raise TypeError(f"입력된 값 {value} | {key}의 값은 (X, Y) 튜플의 리스트이어야 합니다.")
+            
+            # Validate list of (X, Y) tuples
+            if not isinstance(value, list):
+                raise TypeError(f"Value for '{key}' must be a list, got {type(value).__name__}")
+            
+            for i, item in enumerate(value):
+                if not isinstance(item, tuple) or len(item) != 2:
+                    raise TypeError(f"Item {i} in '{key}' must be a tuple of length 2")
+                if not all(isinstance(coord, int) for coord in item):
+                    raise TypeError(f"All coordinates in item {i} of '{key}' must be integers")
+            
             return self._set_value(key, value)
+        
         return property(getter, setter, doc=doc)
     
     @staticmethod
     def _gradation_color_prop(key, doc):
+        """Create a property for gradation color lists (2-10 colors)."""
         def getter(self):
             return self._get_value(key)
+        
         def setter(self, value):
             if value is None:
                 return self._del_value(key)
-            if not (isinstance(value, list) and 2 <= len(value) <= 10):
-                raise ValueError(f"입력된 값 {value} | {key}의 값은 길이가 2에서 10 사이인 리스트여야 합니다.")
+            
+            # Validate list with length constraints
+            if not isinstance(value, list):
+                raise TypeError(f"Value for '{key}' must be a list, got {type(value).__name__}")
+            
+            if not (2 <= len(value) <= 10):
+                raise ValueError(f"Length of '{key}' must be between 2 and 10, got {len(value)}")
+            
             return self._set_value(key, value)
+        
         return property(getter, setter, doc=doc)
 
 
@@ -591,8 +701,8 @@ class Cell(ParameterSet):
     )
     protected = ParameterSet._bool_prop("Protected", "보호 설정 여부: 0 = off, 1 = on.")
     header = ParameterSet._bool_prop("Header", "헤더 여부: 0 = off, 1 = on.")
-    width = ParameterSet._int_prop("Width", "셀의 너비 (HWPUNIT).")
-    height = ParameterSet._int_prop("Height", "셀의 높이 (HWPUNIT).")
+    width = ParameterSet._unit_prop("Width", "mili", "셀의 너비 (mm).")
+    height = ParameterSet._unit_prop("Height", "mili", "셀의 높이 (mm).")
     editable = ParameterSet._bool_prop("Editable", "편집 가능 여부: 0 = off, 1 = on.")
     dirty = ParameterSet._bool_prop("Dirty", "변경 여부: 0 = off, 1 = on.")
     cell_ctrl_data = ParameterSet._typed_prop(
@@ -609,71 +719,71 @@ class CharShape(ParameterSet):
 
     | Item ID | Type | SubType | Description |
     | --- | --- | --- | --- |
-    | FaceNameHangul | PIT\_BSTR |  | 글꼴 이름 (한글) |
-    | FaceNameLatin | PIT\_BSTR |  | 글꼴 이름 (영문) |
-    | FaceNameHanja | PIT\_BSTR |  | 글꼴 이름 (한자) |
-    | FaceNameJapanese | PIT\_BSTR |  | 글꼴 이름 (일본어) |
-    | FaceNameOther | PIT\_BSTR |  | 글꼴 이름 (기타) |
-    | FaceNameSymbol | PIT\_BSTR |  | 글꼴 이름 (심벌) |
-    | FaceNameUser | PIT\_BSTR |  | 글꼴 이름 (사용자) |
-    | FontTypeHangul | PIT\_UI1 |  | 폰트 종류 (한글) : 0 \= don't care, 1 \= TTF, 2 \= HFT |
-    | FontTypeLatin | PIT\_UI1 |  | 폰트 종류 (영문) : 0 \= don't care, 1 \= TTF, 2 \= HFT |
-    | FontTypeHanja | PIT\_UI1 |  | 폰트 종류 (한자) : 0 \= don't care, 1 \= TTF, 2 \= HFT |
-    | FontTypeJapanese | PIT\_UI1 |  | 폰트 종류 (일본어) : 0 \= don't care, 1 \= TTF, 2 \= HFT |
-    | FontTypeOther | PIT\_UI1 |  | 폰트 종류 (기타) : 0 \= don't care, 1 \= TTF, 2 \= HFT |
-    | FontTypeSymbol | PIT\_UI1 |  | 폰트 종류 (심벌) : 0 \= don't care, 1 \= TTF, 2 \= HFT |
-    | FontTypeUser | PIT\_UI1 |  | 폰트 종류 (사용자) : 0 \= don't care, 1 \= TTF, 2 \= HFT |
-    | SizeHangul | PIT\_UI1 |  | 각 언어별 크기 비율. (한글) 10% \- 250% |
-    | SizeLatin | PIT\_UI1 |  | 각 언어별 크기 비율. (영문) 10% \- 250% |
-    | SizeHanja | PIT\_UI1 |  | 각 언어별 크기 비율. (한자) 10% \- 250% |
-    | SizeJapanese | PIT\_UI1 |  | 각 언어별 크기 비율. (일본어) 10% \- 250% |
-    | SizeOther | PIT\_UI1 |  | 각 언어별 크기 비율. (기타) 10% \- 250% |
-    | SizeSymbol | PIT\_UI1 |  | 각 언어별 크기 비율. (심벌) 10% \- 250% |
-    | SizeUser | PIT\_UI1 |  | 각 언어별 크기 비율. (사용자) 10% \- 250% |
-    | RatioHangul | PIT\_UI1 |  | 각 언어별 장평 비율. (한글) 50% \- 200% |
-    | RatioLatin | PIT\_UI1 |  | 각 언어별 장평 비율. (영문) 50% \- 200% |
-    | RatioHanja | PIT\_UI1 |  | 각 언어별 장평 비율. (한자) 50% \- 200% |
-    | RatioJapanese | PIT\_UI1 |  | 각 언어별 장평 비율. (일본어) 50% \- 200% |
-    | RatioOther | PIT\_UI1 |  | 각 언어별 장평 비율. (기타) 50% \- 200% |
-    | RatioSymbol | PIT\_UI1 |  | 각 언어별 장평 비율. (심벌) 50% \- 200% |
-    | RatioUser | PIT\_UI1 |  | 각 언어별 장평 비율. (사용자) 50% \- 200% |
-    | SpacingHangul | PIT\_I1 |  | 각 언어별 자간. (한글) \-50% \- 50% |
-    | SpacingLatin | PIT\_I1 |  | 각 언어별 자간. (영문) \-50% \- 50% |
-    | SpacingHanja | PIT\_I1 |  | 각 언어별 자간. (한자) \-50% \- 50% |
-    | SpacingJapanese | PIT\_I1 |  | 각 언어별 자간. (일본어) \-50% \- 50% |
-    | SpacingOther | PIT\_I1 |  | 각 언어별 자간. (기타) \-50% \- 50% |
-    | SpacingSymbol | PIT\_I1 |  | 각 언어별 자간. (심벌) \-50% \- 50% |
-    | SpacingUser | PIT\_I1 |  | 각 언어별 자간. (사용자) \-50% \- 50% |
-    | OffsetHangul | PIT\_I1 |  | 각 언어별 오프셋. (한글) \-100% \- 100% |
-    | OffsetLatin | PIT\_I1 |  | 각 언어별 오프셋. (영문) \-100% \- 100% |
-    | OffsetHanja | PIT\_I1 |  | 각 언어별 오프셋. (한자) \-100% \- 100% |
-    | OffsetJapanese | PIT\_I1 |  | 각 언어별 오프셋. (일본어) \-100% \- 100% |
-    | OffsetOther | PIT\_I1 |  | 각 언어별 오프셋. (기타) \-100% \- 100% |
-    | OffsetSymbol | PIT\_I1 |  | 각 언어별 오프셋. (심벌) \-100% \- 100% |
-    | OffsetUser | PIT\_I1 |  | 각 언어별 오프셋. (사용자) \-100% \- 100% |
-    | Bold | PIT\_UI1 |  | Bold : 0 \= off, 1 \= on |
-    | Italic | PIT\_UI1 |  | Italic : 0 \= off, 1 \= on |
-    | SmallCaps | PIT\_UI1 |  | Small Caps : 0 \= off, 1 \= on |
-    | Emboss | PIT\_UI1 |  | Emboss : 0 \= off, 1 \= on |
-    | Engrave | PIT\_UI1 |  | Engrave : 0 \= off, 1 \= on |
-    | SuperScript | PIT\_UI1 |  | Superscript : 0 \= off, 1 \= on |
-    | SubScript | PIT\_UI1 |  | Subscript : 0 \= off, 1 \= on |
-    | UnderlineType | PIT\_UI1 |  | 밑줄 종류 :  0 \= none, 1 \= bottom, 2 \= center, 3 \= top |
-    | OutlineType | PIT\_UI1 |  | 외곽선 종류 : 0 \= none, 1 \= solid, 2 \= dot, 3 \= thick,  4 \= dash, 5 \= dashdot, 6 \= dashdotdot |
-    | ShadowType | PIT\_UI1 |  | 그림자 종류 : 0 \= none, 1 \= drop, 2 \= continuous |
-    | TextColor | PIT\_UI4 |  | 글자색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-    | ShadeColor | PIT\_UI4 |  | 음영색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-    | UnderlineShape | PIT\_UI1 |  | 밑줄 모양 : 선 종류 |
-    | UnderlineColor | PIT\_UI4 |  | 밑줄 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-    | ShadowOffsetX | PIT\_I1 |  | 그림자 간격 (X 방향) \-100% \- 100% |
-    | ShadowOffsetY | PIT\_I1 |  | 그림자 간격 (Y 방향) \-100% \- 100% |
-    | ShadowColor | PIT\_UI4 |  | 그림자 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-    | StrikeOutType | PIT\_UI1 |  | 취소선 종류 : 0 \= none, 1 \= red single, 2 \= red double,  3 \= text single, 4 \= text double |
-    | DiacSymMark | PIT\_UI1 |  | 강조점 종류 : 0 \= none, 1 \= 검정 동그라미, 2 \= 속 빈 동그라미 |
-    | UseFontSpace | PIT\_UI1 |  | 글꼴에 어울리는 빈칸 : 0 \= off, 1 \= on |
-    | UseKerning | PIT\_UI1 |  | 커닝 : 0 \= off, 1 \= on |
-    | Height | PIT\_I4 |  | 글자 크기 (HWPUNIT) |
-    | BorderFill | PIT\_SET | BorderFill | 테두리/배경 (한글2007에 새로 추가) |
+    | FaceNameHangul | PIT_BSTR |  | 글꼴 이름 (한글) |
+    | FaceNameLatin | PIT_BSTR |  | 글꼴 이름 (영문) |
+    | FaceNameHanja | PIT_BSTR |  | 글꼴 이름 (한자) |
+    | FaceNameJapanese | PIT_BSTR |  | 글꼴 이름 (일본어) |
+    | FaceNameOther | PIT_BSTR |  | 글꼴 이름 (기타) |
+    | FaceNameSymbol | PIT_BSTR |  | 글꼴 이름 (심벌) |
+    | FaceNameUser | PIT_BSTR |  | 글꼴 이름 (사용자) |
+    | FontTypeHangul | PIT_UI1 |  | 폰트 종류 (한글) : 0 = don't care, 1 = TTF, 2 = HFT |
+    | FontTypeLatin | PIT_UI1 |  | 폰트 종류 (영문) : 0 = don't care, 1 = TTF, 2 = HFT |
+    | FontTypeHanja | PIT_UI1 |  | 폰트 종류 (한자) : 0 = don't care, 1 = TTF, 2 = HFT |
+    | FontTypeJapanese | PIT_UI1 |  | 폰트 종류 (일본어) : 0 = don't care, 1 = TTF, 2 = HFT |
+    | FontTypeOther | PIT_UI1 |  | 폰트 종류 (기타) : 0 = don't care, 1 = TTF, 2 = HFT |
+    | FontTypeSymbol | PIT_UI1 |  | 폰트 종류 (심벌) : 0 = don't care, 1 = TTF, 2 = HFT |
+    | FontTypeUser | PIT_UI1 |  | 폰트 종류 (사용자) : 0 = don't care, 1 = TTF, 2 = HFT |
+    | SizeHangul | PIT_UI1 |  | 각 언어별 크기 비율. (한글) 10% - 250% |
+    | SizeLatin | PIT_UI1 |  | 각 언어별 크기 비율. (영문) 10% - 250% |
+    | SizeHanja | PIT_UI1 |  | 각 언어별 크기 비율. (한자) 10% - 250% |
+    | SizeJapanese | PIT_UI1 |  | 각 언어별 크기 비율. (일본어) 10% - 250% |
+    | SizeOther | PIT_UI1 |  | 각 언어별 크기 비율. (기타) 10% - 250% |
+    | SizeSymbol | PIT_UI1 |  | 각 언어별 크기 비율. (심벌) 10% - 250% |
+    | SizeUser | PIT_UI1 |  | 각 언어별 크기 비율. (사용자) 10% - 250% |
+    | RatioHangul | PIT_UI1 |  | 각 언어별 장평 비율. (한글) 50% - 200% |
+    | RatioLatin | PIT_UI1 |  | 각 언어별 장평 비율. (영문) 50% - 200% |
+    | RatioHanja | PIT_UI1 |  | 각 언어별 장평 비율. (한자) 50% - 200% |
+    | RatioJapanese | PIT_UI1 |  | 각 언어별 장평 비율. (일본어) 50% - 200% |
+    | RatioOther | PIT_UI1 |  | 각 언어별 장평 비율. (기타) 50% - 200% |
+    | RatioSymbol | PIT_UI1 |  | 각 언어별 장평 비율. (심벌) 50% - 200% |
+    | RatioUser | PIT_UI1 |  | 각 언어별 장평 비율. (사용자) 50% - 200% |
+    | SpacingHangul | PIT_I1 |  | 각 언어별 자간. (한글) -50% - 50% |
+    | SpacingLatin | PIT_I1 |  | 각 언어별 자간. (영문) -50% - 50% |
+    | SpacingHanja | PIT_I1 |  | 각 언어별 자간. (한자) -50% - 50% |
+    | SpacingJapanese | PIT_I1 |  | 각 언어별 자간. (일본어) -50% - 50% |
+    | SpacingOther | PIT_I1 |  | 각 언어별 자간. (기타) -50% - 50% |
+    | SpacingSymbol | PIT_I1 |  | 각 언어별 자간. (심벌) -50% - 50% |
+    | SpacingUser | PIT_I1 |  | 각 언어별 자간. (사용자) -50% - 50% |
+    | OffsetHangul | PIT_I1 |  | 각 언어별 오프셋. (한글) -100% - 100% |
+    | OffsetLatin | PIT_I1 |  | 각 언어별 오프셋. (영문) -100% - 100% |
+    | OffsetHanja | PIT_I1 |  | 각 언어별 오프셋. (한자) -100% - 100% |
+    | OffsetJapanese | PIT_I1 |  | 각 언어별 오프셋. (일본어) -100% - 100% |
+    | OffsetOther | PIT_I1 |  | 각 언어별 오프셋. (기타) -100% - 100% |
+    | OffsetSymbol | PIT_I1 |  | 각 언어별 오프셋. (심벌) -100% - 100% |
+    | OffsetUser | PIT_I1 |  | 각 언어별 오프셋. (사용자) -100% - 100% |
+    | Bold | PIT_UI1 |  | Bold : 0 = off, 1 = on |
+    | Italic | PIT_UI1 |  | Italic : 0 = off, 1 = on |
+    | SmallCaps | PIT_UI1 |  | Small Caps : 0 = off, 1 = on |
+    | Emboss | PIT_UI1 |  | Emboss : 0 = off, 1 = on |
+    | Engrave | PIT_UI1 |  | Engrave : 0 = off, 1 = on |
+    | SuperScript | PIT_UI1 |  | Superscript : 0 = off, 1 = on |
+    | SubScript | PIT_UI1 |  | Subscript : 0 = off, 1 = on |
+    | UnderlineType | PIT_UI1 |  | 밑줄 종류 :  0 = none, 1 = bottom, 2 = center, 3 = top |
+    | OutlineType | PIT_UI1 |  | 외곽선 종류 : 0 = none, 1 = solid, 2 = dot, 3 = thick,  4 = dash, 5 = dashdot, 6 = dashdotdot |
+    | ShadowType | PIT_UI1 |  | 그림자 종류 : 0 = none, 1 = drop, 2 = continuous |
+    | TextColor | PIT_UI4 |  | 글자색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+    | ShadeColor | PIT_UI4 |  | 음영색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+    | UnderlineShape | PIT_UI1 |  | 밑줄 모양 : 선 종류 |
+    | UnderlineColor | PIT_UI4 |  | 밑줄 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+    | ShadowOffsetX | PIT_I1 |  | 그림자 간격 (X 방향) -100% - 100% |
+    | ShadowOffsetY | PIT_I1 |  | 그림자 간격 (Y 방향) -100% - 100% |
+    | ShadowColor | PIT_UI4 |  | 그림자 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+    | StrikeOutType | PIT_UI1 |  | 취소선 종류 : 0 = none, 1 = red single, 2 = red double,  3 = text single, 4 = text double |
+    | DiacSymMark | PIT_UI1 |  | 강조점 종류 : 0 = none, 1 = 검정 동그라미, 2 = 속 빈 동그라미 |
+    | UseFontSpace | PIT_UI1 |  | 글꼴에 어울리는 빈칸 : 0 = off, 1 = on |
+    | UseKerning | PIT_UI1 |  | 커닝 : 0 = off, 1 = on |
+    | Height | PIT_I4 |  | 글자 크기 (HWPUNIT) |
+    | BorderFill | PIT_SET | BorderFill | 테두리/배경 (한글2007에 새로 추가) |
     """
 
     def __init__(self, parameterset):
@@ -952,7 +1062,7 @@ class CharShape(ParameterSet):
     )
 
     # Height property
-    height = ParameterSet._int_prop("Height", "글자 크기 (HWPUNIT)")
+    height = ParameterSet._unit_prop("Height", "pt", "글자 크기 (HWPUNIT)")
 
     # BorderFill property (explicit)
     border_fill    = ParameterSet._typed_prop("BorderFill", "테두리/채우기 속성", lambda: BorderFill)
@@ -1167,7 +1277,7 @@ class CharShape(ParameterSet):
             "use_font_space": self.use_font_space,
             "use_kerning": self.use_kerning,
             "height": self.height,
-            "border_fill": self.border_fill,
+            "border_fill": self.border_fill.serialize() if self.border_fill else None,
             }
         data = {"name": self.__class__.__name__, "values": attributes}
         return pprint.pformat(data, indent=4, width=60)
@@ -2139,6 +2249,59 @@ class ShapeObject(ParameterSet):
     | AdjustTextBox      | PIT_UI1   |           | 텍스트 박스 조정 여부                         |
     | AdjustPrevObjAttr  | PIT_UI1   |           | 이전 객체 속성 조정 여부                       |
     """
+    def __init__(self, parameterset):
+        super().__init__(parameterset)
+        self.attributes_names = [
+"treat_as_char", 
+"affects_line", 
+"vert_rel_to", 
+"vert_align", 
+"vert_offset", 
+"horz_rel_to", 
+"horz_align", 
+"horz_offset", 
+"flow_with_text", 
+"allow_overlap", 
+"width_rel_to", 
+"width", 
+"height_rel_to", 
+"height", 
+"protect_size", 
+"text_wrap", 
+"text_flow", 
+"outside_margin_left", 
+"outside_margin_right", 
+"outside_margin_top", 
+"outside_margin_bottom", 
+"numbering_type", 
+"layout_width", 
+"layout_height", 
+"lock", 
+"hold_anchor_obj", 
+"page_number", 
+"adjust_selection", 
+"adjust_text_box", 
+"adjust_prev_obj_attr", 
+"shape_draw_layout", 
+"shape_draw_line_attr", 
+"shape_draw_fill_attr", 
+"shape_draw_image_attr", 
+"shape_draw_rect_type", 
+"shape_draw_arc_type", 
+"shape_draw_resize", 
+"shape_draw_rotate", 
+"shape_draw_edit_detail", 
+"shape_draw_image_scissoring", 
+"shape_draw_sc_action", 
+"shape_draw_ctrl_hyperlink", 
+"shape_draw_coord_info", 
+"shape_draw_shear", 
+"shape_draw_textart", 
+"shape_table_cell", 
+"shape_list_properties", 
+"shape_caption", 
+        ]
+            
     treat_as_char    = ParameterSet._bool_prop("TreatAsChar", "글자처럼 처리 여부 (on/off)")
     affects_line     = ParameterSet._bool_prop("AffectsLine", "줄에 영향을 미치는지 여부 (on/off)")
     vert_rel_to      = ParameterSet._mapped_prop("VertRelTo", _vert_rel_to_map, doc="수직 기준 위치 설정")

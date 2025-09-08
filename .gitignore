@@ -135,3 +135,7 @@ dmypy.json
 todo.md
 _docs
 _proc
+
+test.pdf
+test.txt
+test*.png

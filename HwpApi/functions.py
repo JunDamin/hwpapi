@@ -337,13 +337,13 @@ def unit2point(value):
 
 # %% ../nbs/02_api/02_functions.ipynb 28
 def to_hwpunit(value, unit):
-    if unit == "mili":
+    if unit in ["mili", "mm"]:
         return mili2unit(value)
-    if unit == "pt":
+    if unit in ["pt", "point"]:
         return point2unit(value)
     
 def from_hwpunit(value, unit):
-    if unit == "mili":
+    if unit == ["mili", "mm"]:
         return unit2mili(value)
     if unit in ["pt", "point"]:
         return unit2point(value)

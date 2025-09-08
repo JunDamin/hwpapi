@@ -262,33 +262,12 @@ class CellAccessor:
         """
         self._app = app
 
-    def _get_cell_property(self):
-        """
-        테이블 셀의 속성을 가져옵니다.
 
-        Returns
-        -------
-        dict
-            테이블 셀의 속성 정보를 포함하는 딕셔너리입니다.
-            포함된 속성:
-            - HasMargin: 셀에 여백이 있는지 여부
-            - Protected: 셀이 보호 상태인지 여부
-            - Header: 셀이 테이블 헤더인지 여부
-            - Width: 셀의 너비
-            - Height: 셀의 높이
-            - Editable: 셀이 편집 가능한지 여부
-            - Dirty: 셀의 변경 여부
-            - CellCtrlData: 셀 컨트롤 데이터
-        """
-        app = self._app
-        action = app.actions.TablePropertyDialog
-        pset = action.create_pset()
-        cell = pset.Item("ShapeTableCell")
-        property_names = ("HasMargin", "Protected", "Header", "Width", "Height", "Editable", "Dirty", "CellCtrlData")
-        return {name: cell.Item(name) for name in property_names} if cell else {}
 
     def __call__(self):
-        return self._get_cell_property()
+        app = self._app
+        action = app.actions.TablePropertyDialog
+        return action.pset.shape_table_cell
     
     @property
     def width(self):
@@ -300,8 +279,10 @@ class CellAccessor:
         float
             셀의 너비 (밀리미터 단위).
         """
-        cell_property = self._get_cell_property()
-        return unit2mili(cell_property.get("Width"))
+        
+        app = self._app
+        action = app.actions.TablePropertyDialog
+        return action.pset.shape_table_cell.width
 
     @property
     def height(self):
@@ -313,9 +294,10 @@ class CellAccessor:
         float
             셀의 높이 (밀리미터 단위).
         """
-        cell_property = self._get_cell_property()
-        return unit2mili(cell_property.get("Height"))
-
+        app = self._app
+        action = app.actions.TablePropertyDialog
+        return action.pset.shape_table_cell.height
+        
     @width.setter
     def width(self, width):
         """
@@ -333,7 +315,7 @@ class CellAccessor:
         """
         app = self._app
         action = app.actions.TablePropertyDialog
-        action.pset.ShapeTableCell.Width = mili2unit(width)
+        action.pset.shape_table_cell.width = width
         action.run()
         return app.cell.width == width
 
@@ -354,12 +336,12 @@ class CellAccessor:
         """
         app = self._app
         action = app.actions.TablePropertyDialog
-        action.pset.ShapeTableCell.Height = mili2unit(height)
+        action.pset.shape_table_cell.height = height
         action.run()
         return app.cell.height == height
 
 
-# %% ../nbs/02_api/03_classes.ipynb 9
+# %% ../nbs/02_api/03_classes.ipynb 11
 class TableAccessor:
     """
     테이블 속성에 접근하고 조작할 수 있는 클래스입니다.
@@ -399,7 +381,7 @@ class TableAccessor:
             "AdjustTextBox", "AdjustPrevObjAttr"
         )
         action = app.actions.TablePropertyDialog
-        pset = action.create_pset()
+        pset = action._create_pset()
         return {name: unit2mili(pset.Item(name)) if name in TableAccessor.miliunits else pset.Item(name) for name in property_names }
 
     def _set_shape_property(self, name, value):
@@ -415,7 +397,7 @@ class TableAccessor:
         """
         app = self._app
         action = app.actions.TablePropertyDialog
-        pset = action.create_pset()
+        pset = action._create_pset()
         pset.SetItem(name, mili2unit(value) if name in TableAccessor.miliunits else value)
         action.run(pset)
 
@@ -732,7 +714,7 @@ class TableAccessor:
         self._set_shape_property("AdjustPrevObjAttr", value)
 
 
-# %% ../nbs/02_api/03_classes.ipynb 11
+# %% ../nbs/02_api/03_classes.ipynb 13
 class PageAccessor:
     
     def __init__(self, app):
@@ -740,13 +722,13 @@ class PageAccessor:
 
     def _get_miliproperty(self, name):
         action = self._app.actions.PageSetup
-        pset = action.create_pset()
+        pset = action._create_pset()
         value = pset.Item("PageDef").Item(name)
         return unit2mili(value)
 
     def _set_miliproperty(self, name, value):
         action = self._app.actions.PageSetup
-        pset = action.create_pset()
+        pset = action._create_pset()
         pset.Item("PageDef").SetItem(name, mili2unit(value))
         return action.run(pset)
 
@@ -756,7 +738,7 @@ class PageAccessor:
     @property
     def inner_width(self):
         action = self._app.actions.PageSetup
-        pset = action.create_pset()
+        pset = action._create_pset()
         paper_width = pset.Item("PageDef").Item("PaperWidth")
         left_margin = pset.Item("PageDef").Item("LeftMargin")
         right_margin = pset.Item("PageDef").Item("RightMargin")
@@ -765,7 +747,7 @@ class PageAccessor:
     @property
     def inner_height(self):
         action = self._app.actions.PageSetup
-        pset = action.create_pset()
+        pset = action._create_pset()
         paper_height = pset.Item("PageDef").Item("PaperHeight")
         top_margin = pset.Item("PageDef").Item("TopMargin")
         bottom_margin = pset.Item("PageDef").Item("BottomMargin")
@@ -849,13 +831,13 @@ class PageAccessor:
     @property
     def _get_properties(self):
         action = self._app.actions.PageSetup
-        pset = action.create_pset()
+        pset = action._create_pset()
         hwpunit_property_names, property_names = ("PaperWidth", "PaperHeight", "LeftMargin", "RightMargin", "TopMargin", "BottomMargin", "HeaderLen", "FooterLen", "GutterLen"), ("Landscape", "GutterType", "ApplyTo", "ApplyClass")
         properties = {name: unit2mili(pset.Item("PageDef").Item(name)) for name in hwpunit_property_names}
         properties.update({name: pset.Item("PageDef").Item(name) for name in property_names})
         return properties
 
-# %% ../nbs/02_api/03_classes.ipynb 13
+# %% ../nbs/02_api/03_classes.ipynb 15
 @dataclass
 class Character:
     Bold: Optional[int] = None
@@ -925,7 +907,7 @@ class Character:
     UseFontSpace: Optional[int] = None
     UseKerning: Optional[int] = None
 
-# %% ../nbs/02_api/03_classes.ipynb 14
+# %% ../nbs/02_api/03_classes.ipynb 16
 import inspect
 
 
@@ -1330,7 +1312,7 @@ class CharShape:
 
         return self
 
-# %% ../nbs/02_api/03_classes.ipynb 18
+# %% ../nbs/02_api/03_classes.ipynb 20
 @dataclass
 class Paragraph:
     AlignType: Optional[int] = None
@@ -1366,7 +1348,7 @@ class Paragraph:
     TextAlignment: Optional[int] = None
     WidowOrphan: Optional[int] = None
 
-# %% ../nbs/02_api/03_classes.ipynb 19
+# %% ../nbs/02_api/03_classes.ipynb 21
 class ParaShape:
     """
     ParaShape 클래스는 문단 모양을 다룹니다. ParaShape는 문단에 적용되는 스타일링 속성을 나타냅니다.
@@ -1726,7 +1708,7 @@ class ParaShape:
         
         return self
 
-# %% ../nbs/02_api/03_classes.ipynb 22
+# %% ../nbs/02_api/03_classes.ipynb 24
 @dataclass
 class PageShape:
     MarginLeft: int
