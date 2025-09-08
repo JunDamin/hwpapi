@@ -11,6 +11,7 @@ import hwpapi.constants as const
 from fastcore.basics import patch
 import sys
 import warnings
+from .logging import get_logger
 
 # %% ../nbs/02_api/00_core.ipynb 5
 from .actions import _Action, _Actions
@@ -67,12 +68,15 @@ class Engine:
         hwp_object : object, optional
             The Hwp object to be encapsulated by the Engine. Defaults to "HWPFrame.HwpObject".
         """
+        self.logger = get_logger('core.Engine')
         try:
             if not hwp_object:
                 hwp_object = "HWPFrame.HwpObject"
+            self.logger.debug(f"Initializing Engine with hwp_object: {hwp_object}")
             self.impl = dispatch(hwp_object)
+            self.logger.info(f"Engine initialized successfully with CLSID: {self.impl.CLSID if self.impl else 'None'}")
         except Exception as e:
-            print(f"Failed to initialize Hwp object: {e}")
+            self.logger.error(f"Failed to initialize Hwp object: {e}")
             self.impl = None
 
     @property
@@ -426,35 +430,51 @@ class App:
         -----
         engine이 제공되지 않은 경우, `Engines`를 통해 엔진을 생성하거나 선택합니다.
         """
+        self.logger = get_logger('core.App')
+        self.logger.debug(f"Initializing App with new_app={new_app}, is_visible={is_visible}, dll_path={dll_path}")
+        
         self._load(new_app=new_app, dll_path=dll_path, engine=engine)
         self.actions = _Actions(self)
         self.parameters = self.api.HParameterSet
         self.set_visible(is_visible)
+        self.logger.info(f"App window visibility set to: {is_visible}")
+        
         self.move = MoveAccessor(self)
         self.cell = CellAccessor(self)
         self.table = TableAccessor(self)
         self.page = PageAccessor(self)
+        self.logger.info("App initialized successfully with all accessors")
         
     def _load(self, new_app=False, engine=None, dll_path=None):
+        self.logger.debug(f"Loading App with new_app={new_app}, engine={engine}, dll_path={dll_path}")
+        
         if new_app:
             engine = Engine()
+            self.logger.debug("Created new engine for new_app")
         if not engine:
             engines = Engines()
             engine = engines[-1] if len(engines) > 0 else Engine()
+            self.logger.debug(f"Selected engine from engines collection: {len(engines.engines) if engines else 0} available")
+        
         self.engine = engine
+        self.logger.info(f"Engine loaded successfully: {engine.name if engine and engine.impl else 'No engine'}")
+        
         # Try multiple locations for DLL file
         if dll_path is None:
+            self.logger.debug("Searching for DLL file in multiple locations")
             # First try the bundled DLL path
             if hasattr(sys, '_MEIPASS'):  # Check if running as PyInstaller bundle
                 bundled_dll = Path(sys._MEIPASS) / 'FilePathCheckerModuleExample.dll'
                 if bundled_dll.exists():
                     dll_path = bundled_dll
+                    self.logger.debug(f"Found DLL in PyInstaller bundle: {dll_path}")
             
             # Then try current directory
             if dll_path is None:
                 local_dll = Path.cwd() / 'FilePathCheckerModuleExample.dll'
                 if local_dll.exists():
                     dll_path = local_dll
+                    self.logger.debug(f"Found DLL in current directory: {dll_path}")
                 
             # Finally try package directory
             if dll_path is None:
@@ -462,14 +482,20 @@ class App:
                 package_dll = package_dir / 'FilePathCheckerModuleExample.dll'
                 if package_dll.exists():
                     dll_path = package_dll
+                    self.logger.debug(f"Found DLL in package directory: {dll_path}")
         
         # Register DLL if found
         if dll_path is not None:
+            self.logger.info(f"Registering DLL: {dll_path}")
             check_dll(dll_path)
+        else:
+            self.logger.warning("No DLL file found - some functionality may be limited")
         
         try:
             self.api.RegisterModule("FilePathCheckDLL", "FilePathCheckerModule")
+            self.logger.debug("Successfully registered FilePathCheckDLL module")
         except Exception as e:
+            self.logger.warning(f"Failed to register FilePathCheckDLL module: {e}")
             warnings.warn(f"Failed to register FilePathCheckDLL module: {e}")
         
 

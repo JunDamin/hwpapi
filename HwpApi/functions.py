@@ -20,6 +20,7 @@ from win32com.client import Dispatch
 from win32com import client
 
 from .constants import char_fields, para_fields
+from .logging import get_logger
 
 # %% ../nbs/02_api/02_functions.ipynb 4
 def get_font_name(text):
@@ -29,11 +30,17 @@ def get_font_name(text):
 # %% ../nbs/02_api/02_functions.ipynb 5
 def dispatch(app_name):
     """캐시가 충돌하는 문제를 해결하기 위해 실행합니다. 에러가 발생할 경우 기존 캐시를 삭제하고 다시 불러옵니다."""
+    logger = get_logger('functions.dispatch')
+    logger.debug(f"Attempting to dispatch: {app_name}")
+    
     try:
         from win32com import client
 
         app = client.gencache.EnsureDispatch(app_name)
-    except AttributeError:
+        logger.info(f"Successfully dispatched: {app_name}")
+        return app
+    except AttributeError as e:
+        logger.warning(f"AttributeError occurred, clearing cache: {e}")
         # Corner case dependencies.
         import os
         import re
@@ -45,14 +52,23 @@ def dispatch(app_name):
         for module in MODULE_LIST:
             if re.match(r"win32com\.gen_py\..+", module):
                 del sys.modules[module]
-        shutil.rmtree(os.path.join(os.environ.get("LOCALAPPDATA"), "Temp", "gen_py"))
+        
+        cache_path = os.path.join(os.environ.get("LOCALAPPDATA"), "Temp", "gen_py")
+        if os.path.exists(cache_path):
+            shutil.rmtree(cache_path)
+            logger.debug(f"Removed cache directory: {cache_path}")
+        
         from win32com import client
 
         app = client.gencache.EnsureDispatch(app_name)
-    return app
+        logger.info(f"Successfully dispatched after cache clear: {app_name}")
+        return app
 
 # %% ../nbs/02_api/02_functions.ipynb 6
 def get_hwp_objects():
+    logger = get_logger('functions.get_hwp_objects')
+    logger.debug("Searching for running HWP objects")
+    
     context = pythoncom.CreateBindCtx(0)
     
     # 현재 실행중인 프로세스를 가져옵니다. 
@@ -65,11 +81,14 @@ def get_hwp_objects():
         # moniker의 DisplayName을 통해 한글을 가져옵니다
         # 한글의 경우 HwpObject.버전으로 각 버전별 실행 이름을 설정합니다. 
         if re.match("!HwpObject", name):
+            logger.debug(f"Found HWP object: {name}")
             # 120은 한글 2022의 경우입니다. 
             # 현재 moniker를 통해 ROT에서 한글의 object를 가져옵니다. 
             obje = running_coms.GetObject(moniker)
             # 가져온 object를 Dispatch를 통해 사용할수 있는 객체로 변환시킵니다. 
             hwp_objects.append(obje.QueryInterface(pythoncom.IID_IDispatch))
+    
+    logger.info(f"Found {len(hwp_objects)} running HWP objects")
     return hwp_objects
 
 # %% ../nbs/02_api/02_functions.ipynb 7

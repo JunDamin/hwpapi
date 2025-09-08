@@ -30,6 +30,7 @@ from hwpapi.functions import (
     unit2point,
 )
 import hwpapi.constants as const
+from .logging import get_logger
 
 
 
@@ -40,6 +41,7 @@ class MoveAccessor:
     """
     def __init__(self, app):
         self._app = app
+        self.logger = get_logger('classes.MoveAccessor')
 
     def __call__(self, key=const.MoveId.ScanPos.value, para=None, pos=None):
         """
@@ -64,9 +66,11 @@ class MoveAccessor:
         >>> app = App()
         >>> move(app, key=MoveId.TopOfFile)
         """
-
         move_id = key.value if isinstance(key, const.MoveId) else const.MoveId[key].value
-        return self._app.api.MovePos(moveID=move_id, Para=para, pos=pos)
+        self.logger.debug(f"Moving cursor with moveID={move_id}, para={para}, pos={pos}")
+        result = self._app.api.MovePos(moveID=move_id, Para=para, pos=pos)
+        self.logger.debug(f"Move operation result: {result}")
+        return result
 
     def main(self, para, pos):
         """루트 리스트의 특정 위치(para, pos로 위치 지정)"""
@@ -261,6 +265,7 @@ class CellAccessor:
             HWP API 객체로, 문서 및 테이블 속성에 접근하기 위해 필요합니다.
         """
         self._app = app
+        self.logger = get_logger('classes.CellAccessor')
 
 
 
@@ -313,11 +318,14 @@ class CellAccessor:
         bool
             너비 설정이 성공했는지 여부.
         """
+        self.logger.debug(f"Setting cell width to: {width}mm")
         app = self._app
         action = app.actions.TablePropertyDialog
         action.pset.shape_table_cell.width = width
         action.run()
-        return app.cell.width == width
+        result = app.cell.width == width
+        self.logger.info(f"Cell width set to {width}mm, success: {result}")
+        return result
 
     @height.setter
     def height(self, height):
@@ -334,11 +342,14 @@ class CellAccessor:
         bool
             높이 설정이 성공했는지 여부.
         """
+        self.logger.debug(f"Setting cell height to: {height}mm")
         app = self._app
         action = app.actions.TablePropertyDialog
         action.pset.shape_table_cell.height = height
         action.run()
-        return app.cell.height == height
+        result = app.cell.height == height
+        self.logger.info(f"Cell height set to {height}mm, success: {result}")
+        return result
 
 
 # %% ../nbs/02_api/03_classes.ipynb 11
@@ -361,6 +372,7 @@ class TableAccessor:
             HWP API 객체로, 테이블 속성에 접근하거나 수정하기 위해 필요합니다.
         """
         self._app = app
+        self.logger = get_logger('classes.TableAccessor')
 
     def _get_shape_properties(self):
         """
@@ -719,6 +731,7 @@ class PageAccessor:
     
     def __init__(self, app):
         self._app = app
+        self.logger = get_logger('classes.PageAccessor')
 
     def _get_miliproperty(self, name):
         action = self._app.actions.PageSetup
