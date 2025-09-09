@@ -932,7 +932,7 @@ class _Action:
 
         # 파라미터가 불요한 액션이면 그대로 실행
         if not pset:
-            self.act.Execute(None)
+            return self.act.Execute(None)
         # parametersets에서 정의된 파라미터가 아니라면 HSet으로 바로 연결
         if not isinstance(pset, parametersets.ParameterSet):
             return self.act.Execute(pset.HSet)
