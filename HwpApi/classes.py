@@ -45,23 +45,23 @@ class MoveAccessor:
 
     def __call__(self, key=const.MoveId.ScanPos.value, para=None, pos=None):
         """
-        Moves the caret position based on the specified key.
+        지정된 키에 따라 캐럿 위치를 이동합니다.
 
-        Parameters
+        매개변수
         ----------
         key : MoveId, optional
-            The movement option, as defined in the `MoveId` Enum. Defaults to MoveId.ScanPos.
+            `MoveId` Enum에 정의된 이동 옵션. 기본값은 MoveId.ScanPos입니다.
         para : int, optional
-            The paragraph number to move to, if applicable. Defaults to None.
+            해당하는 경우 이동할 문단 번호. 기본값은 None입니다.
         pos : int, optional
-            The position within the paragraph to move to, if applicable. Defaults to None.
+            해당하는 경우 문단 내 위치. 기본값은 None입니다.
         
-        Returns
+        반환값
         -------
         bool
-            True if the movement was successful, False otherwise.
+            이동이 성공하면 True, 그렇지 않으면 False.
 
-        Examples
+        사용 예시
         --------
         >>> app = App()
         >>> move(app, key=MoveId.TopOfFile)
@@ -259,7 +259,7 @@ class CellAccessor:
         """
         CellAccessor 클래스의 인스턴스를 초기화합니다.
 
-        Parameters
+        매개변수
         ----------
         app : App
             HWP API 객체로, 문서 및 테이블 속성에 접근하기 위해 필요합니다.
@@ -279,7 +279,7 @@ class CellAccessor:
         """
         셀의 너비를 가져옵니다.
 
-        Returns
+        반환값
         -------
         float
             셀의 너비 (밀리미터 단위).
@@ -294,7 +294,7 @@ class CellAccessor:
         """
         셀의 높이를 가져옵니다.
 
-        Returns
+        반환값
         -------
         float
             셀의 높이 (밀리미터 단위).
@@ -308,12 +308,12 @@ class CellAccessor:
         """
         셀의 너비를 설정합니다.
 
-        Parameters
+        매개변수
         ----------
         width : float
             셀의 새로운 너비 (밀리미터 단위).
 
-        Returns
+        반환값
         -------
         bool
             너비 설정이 성공했는지 여부.
@@ -332,12 +332,12 @@ class CellAccessor:
         """
         셀의 높이를 설정합니다.
 
-        Parameters
+        매개변수
         ----------
         height : float
             셀의 새로운 높이 (밀리미터 단위).
 
-        Returns
+        반환값
         -------
         bool
             높이 설정이 성공했는지 여부.
@@ -366,7 +366,7 @@ class TableAccessor:
         """
         TableAccessor 클래스의 인스턴스를 초기화합니다.
 
-        Parameters
+        매개변수
         ----------
         app : App
             HWP API 객체로, 테이블 속성에 접근하거나 수정하기 위해 필요합니다.
@@ -378,7 +378,7 @@ class TableAccessor:
         """
         테이블의 모양과 관련된 속성을 가져옵니다.
 
-        Returns
+        반환값
         -------
         dict
             테이블의 속성 정보를 포함하는 딕셔너리입니다.
@@ -400,7 +400,7 @@ class TableAccessor:
         """
         테이블의 특정 속성을 설정합니다.
 
-        Parameters
+        매개변수
         ----------
         name : str
             설정하려는 속성 이름.
@@ -417,7 +417,7 @@ class TableAccessor:
         """
         테이블 속성 정보를 호출합니다.
 
-        Returns
+        반환값
         -------
         dict
             테이블의 속성 정보를 포함하는 딕셔너리입니다.

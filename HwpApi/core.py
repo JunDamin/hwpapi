@@ -30,28 +30,28 @@ from hwpapi.functions import (
 # %% ../nbs/02_api/00_core.ipynb 6
 class Engine:
     """
-    Engine class to encapsulate the Hancom Office Hwp object.
+    한컴오피스 Hwp 객체를 캡슐화하는 Engine 클래스입니다.
 
-    This class provides an interface to interact with the Hancom Office Hwp application,
-    facilitating actions and operations within the Hwp environment.
+    이 클래스는 한컴오피스 Hwp 애플리케이션과 상호작용하는 인터페이스를 제공하며,
+    Hwp 환경 내에서 작업과 동작을 용이하게 합니다.
 
-    Parameters
+    매개변수
     ----------
     hwp_object : object, optional
-        The Hwp object to be encapsulated by the Engine. If not provided, 
-        it defaults to creating a new Hwp object using "HWPFrame.HwpObject".
+        Engine에 의해 캡슐화될 Hwp 객체. 제공되지 않은 경우, 
+        "HWPFrame.HwpObject"를 사용하여 새로운 Hwp 객체를 생성합니다.
 
-    Attributes
+    속성
     ----------
     impl : object
-        The implementation of the Hwp object.
+        Hwp 객체의 구현체.
 
-    Methods
+    메서드
     -------
     name()
-        Returns the name (CLSID) of the Hwp object.
+        Hwp 객체의 이름(CLSID)을 반환합니다.
 
-    Examples
+    사용 예시
     --------
     >>> engine = Engine()
     >>> print(engine.name)
@@ -59,14 +59,14 @@ class Engine:
 
     def __init__(self, hwp_object=None):
         """
-        Initializes the Engine with a Hancom Hwp object.
+        한컴 Hwp 객체로 Engine을 초기화합니다.
 
-        If `hwp_object` is not provided, a new Hwp object is created. If the creation fails, `impl` is set to None.
+        `hwp_object`가 제공되지 않으면 새로운 Hwp 객체가 생성됩니다. 생성에 실패하면 `impl`이 None으로 설정됩니다.
 
-        Parameters
+        매개변수
         ----------
         hwp_object : object, optional
-            The Hwp object to be encapsulated by the Engine. Defaults to "HWPFrame.HwpObject".
+            Engine에 의해 캡슐화될 Hwp 객체. 기본값은 "HWPFrame.HwpObject"입니다.
         """
         self.logger = get_logger('core.Engine')
         try:
@@ -82,23 +82,23 @@ class Engine:
     @property
     def name(self):
         """
-        Returns the name (CLSID) of the Hwp object.
+        Hwp 객체의 이름(CLSID)을 반환합니다.
 
-        Returns
+        반환값
         -------
         str
-            The CLSID of the Hwp object. Returns None if the object is not initialized.
+            Hwp 객체의 CLSID. 객체가 초기화되지 않은 경우 None을 반환합니다.
         """
         return self.impl.CLSID if self.impl else None
 
     def __repr__(self):
         """
-        Returns the string representation of the Engine object.
+        Engine 객체의 문자열 표현을 반환합니다.
 
-        Returns
+        반환값
         -------
         str
-            String representation of the Engine. If the engine is uninitialized, it indicates 'Uninitialized'.
+            Engine의 문자열 표현. 엔진이 초기화되지 않은 경우 'Uninitialized'로 표시됩니다.
         """
         engine_name = self.name if self.name else "Uninitialized"
         return f"<Engine {engine_name}>"
@@ -107,31 +107,31 @@ class Engine:
 # %% ../nbs/02_api/00_core.ipynb 7
 class Engines:
     """
-    A collection manager for multiple Engine instances.
+    여러 Engine 인스턴스를 관리하는 컬렉션 매니저입니다.
 
-    This class manages multiple Engine instances, providing methods to access and iterate over them.
-    It is useful for handling multiple Hancom Office Hwp objects.
+    이 클래스는 여러 Engine 인스턴스를 관리하며, 이들에 접근하고 반복하는 메서드를 제공합니다.
+    여러 한컴오피스 Hwp 객체를 처리하는 데 유용합니다.
 
-    Parameters
+    매개변수
     ----------
     dll_path : str, optional
-        Path to a DLL file, if required for initialization.
+        초기화에 필요한 경우 DLL 파일의 경로.
 
-    Attributes
+    속성
     ----------
     active : Engine or None
-        The currently active Engine instance.
+        현재 활성화된 Engine 인스턴스.
     engines : list of Engine
-        List of Engine instances managed by this collection.
+        이 컬렉션에서 관리하는 Engine 인스턴스 목록.
 
-    Methods
+    메서드
     -------
     add(engine)
-        Adds a new Engine instance to the collection.
+        컬렉션에 새로운 Engine 인스턴스를 추가합니다.
     count()
-        Returns the number of Engine instances in the collection.
+        컬렉션의 Engine 인스턴스 수를 반환합니다.
 
-    Examples
+    사용 예시
     --------
     >>> engines = Engines()
     >>> engines.add(Engine())
@@ -139,20 +139,20 @@ class Engines:
     >>> for engine in engines:
     ...     print(engine)
 
-    Notes
+    주의사항
     -----
-    The `Engines` class initializes by creating Engine instances for each object retrieved
-    from `get_hwp_objects()` function. It also checks for the required DLLs if `dll_path` is provided.
+    `Engines` 클래스는 `get_hwp_objects()` 함수에서 검색된 각 객체에 대해 Engine 인스턴스를 생성하여 초기화됩니다. 
+    `dll_path`가 제공된 경우 필요한 DLL을 확인합니다.
     """
 
     def __init__(self, dll_path=None):
         """
-        Initializes the Engines collection with available Hwp objects.
+        사용 가능한 Hwp 객체로 Engines 컬렉션을 초기화합니다.
 
-        Parameters
+        매개변수
         ----------
         dll_path : str, optional
-            Path to a DLL file, if required for initialization.
+            초기화에 필요한 경우 DLL 파일의 경로.
         """
         self.active = None
         self.engines = [Engine(hwp_object) for hwp_object in get_hwp_objects()]
@@ -160,92 +160,92 @@ class Engines:
 
     def add(self, engine):
         """
-        Adds a new Engine instance to the collection.
+        컬렉션에 새로운 Engine 인스턴스를 추가합니다.
 
-        Parameters
+        매개변수
         ----------
         engine : Engine
-            The Engine instance to be added to the collection.
+            컬렉션에 추가할 Engine 인스턴스.
         """
         self.engines.append(engine)
 
     @property
     def count(self):
         """
-        Returns the number of Engine instances in the collection.
+        컬렉션의 Engine 인스턴스 수를 반환합니다.
 
-        Returns
+        반환값
         -------
         int
-            The number of Engine instances.
+            Engine 인스턴스의 수.
         """
         return len(self)
 
     def __call__(self, ind):
         """
-        Returns an Engine instance from the collection based on its index.
+        인덱스를 기준으로 컬렉션에서 Engine 인스턴스를 반환합니다.
 
-        Parameters
+        매개변수
         ----------
         ind : int
-            The index of the Engine instance to retrieve.
+            검색할 Engine 인스턴스의 인덱스.
 
-        Returns
+        반환값
         -------
         Engine
-            The Engine instance at the specified index.
+            지정된 인덱스의 Engine 인스턴스.
         """
         if isinstance(ind, numbers.Number):
             return self.engines[ind]
 
     def __getitem__(self, ind):
         """
-        Returns an Engine instance from the collection based on its index.
+        인덱스를 기준으로 컬렉션에서 Engine 인스턴스를 반환합니다.
 
-        Parameters
+        매개변수
         ----------
         ind : int
-            The index of the Engine instance to retrieve.
+            검색할 Engine 인스턴스의 인덱스.
 
-        Returns
+        반환값
         -------
         Engine
-            The Engine instance at the specified index.
+            지정된 인덱스의 Engine 인스턴스.
         """
         if isinstance(ind, numbers.Number):
             return self.engines[ind]
 
     def __len__(self):
         """
-        Returns the number of Engine instances in the collection.
+        컬렉션의 Engine 인스턴스 수를 반환합니다.
 
-        Returns
+        반환값
         -------
         int
-            The number of Engine instances.
+            Engine 인스턴스의 수.
         """
         return len(self.engines)
 
     def __iter__(self):
         """
-        Yields each Engine instance in the collection.
+        컬렉션의 각 Engine 인스턴스를 반환합니다.
 
-        Yields
+        반환값
         ------
         Engine
-            Each Engine instance in the collection.
+            컬렉션의 각 Engine 인스턴스.
         """
         for engine in self.engines:
             yield engine
 
     def __repr__(self):
         """
-        Returns the string representation of the Engines collection.
+        Engines 컬렉션의 문자열 표현을 반환합니다.
 
-        Returns
+        반환값
         -------
         str
-            String representation of the Engines collection.
+            Engines 컬렉션의 문자열 표현.
         """
         return f"<HWP Engines activated: {len(self.engines)}>"
 
@@ -253,37 +253,37 @@ class Engines:
 # %% ../nbs/02_api/00_core.ipynb 8
 class Apps:
     """
-    A collection of all `app <App>` objects.
+    모든 `app <App>` 객체의 컬렉션입니다.
 
-    Attributes
+    속성
     ----------
     _apps : list
-        A list containing instances of `App`.
+        `App` 인스턴스를 포함하는 리스트.
 
-    Methods
+    메서드
     -------
     add(**kwargs)
-        Creates a new App and adds it to the collection.
+        새로운 App을 생성하고 컬렉션에 추가합니다.
     count()
-        Returns the number of apps in the collection.
+        컬렉션의 앱 수를 반환합니다.
     cleanup()
-        [Method description needed]
+        [메서드 설명 필요]
     """
 
     def __init__(self):
         """
-        Initializes the `Apps` collection by creating `App` instances for each `engine` in `Engines`.
+        `Engines`의 각 `engine`에 대해 `App` 인스턴스를 생성하여 `Apps` 컬렉션을 초기화합니다.
         """
         self._apps = [App(engine=engine) for engine in Engines()]
 
     def add(self, **kwargs):
         """
-        Creates a new App. The new App becomes the active one.
+        새로운 App을 생성합니다. 새로운 App이 활성화됩니다.
 
-        Returns
+        반환값
         -------
         App
-            The newly created App object.
+            새로 생성된 App 객체.
         """
         app = App(engine=Engine())
         self._apps.append(app)
@@ -291,28 +291,28 @@ class Apps:
 
     def __call__(self, i):
         """
-        Allows the `Apps` instance to be called like a function, returning the app at the specified index.
+        `Apps` 인스턴스를 함수처럼 호출할 수 있게 하여, 지정된 인덱스의 앱을 반환합니다.
 
-        Parameters
+        매개변수
         ----------
         i : int
-            The index of the app to retrieve.
+            검색할 앱의 인덱스.
 
-        Returns
+        반환값
         -------
         App
-            The app at the specified index.
+            지정된 인덱스의 앱.
         """
         return self[i]
 
     def __repr__(self):
         """
-        Returns a string representation of the `Apps` instance.
+        `Apps` 인스턴스의 문자열 표현을 반환합니다.
 
-        Returns
+        반환값
         -------
         str
-            A string representation of the `Apps` instance.
+            `Apps` 인스턴스의 문자열 표현.
         """
         return "{}({})".format(
             getattr(self.__class__, "_name", self.__class__.__name__), repr(list(self))
@@ -320,61 +320,61 @@ class Apps:
 
     def __getitem__(self, item):
         """
-        Returns the app at the specified index.
+        지정된 인덱스의 앱을 반환합니다.
 
-        Parameters
+        매개변수
         ----------
         item : int
-            The index of the app.
+            앱의 인덱스.
 
-        Returns
+        반환값
         -------
         App
-            The app at the specified index.
+            지정된 인덱스의 앱.
         """
         return self._apps[item]
 
     def __len__(self):
         """
-        Returns the number of apps in the collection.
+        컬렉션의 앱 수를 반환합니다.
 
-        Returns
+        반환값
         -------
         int
-            The number of apps.
+            앱의 수.
         """
         return len(self._apps)
 
     @property
     def count(self):
         """
-        Returns the number of apps in the collection.
+        컬렉션의 앱 수를 반환합니다.
 
         .. versionadded:: 0.9.0
 
-        Returns
+        반환값
         -------
         int
-            The number of apps.
+            앱의 수.
         """
         return len(self)
 
     def cleanup(self):
         """
-        [Method description needed]
+        [메서드 설명 필요]
 
-        [Describe what the method does and any side effects]
+        [메서드가 수행하는 작업과 부작용에 대한 설명]
         """
         
 
     def __iter__(self):
         """
-        Allows iteration over the collection of apps.
+        앱 컬렉션에 대한 반복을 허용합니다.
 
-        Yields
+        반환값
         ------
         App
-            The next app in the collection.
+            컬렉션의 다음 앱.
         """
         for app in self._apps:
             yield app
@@ -562,22 +562,22 @@ class App:
 @patch
 def set_visible(app: App, is_visible=True, window_i=0):
     """
-    Sets the visibility of the Hancom Office Hwp program window.
+    한컴오피스 Hwp 프로그램 창의 가시성을 설정합니다.
 
-    This function is used to show or hide the window of the Hancom Office Hwp program based on the `is_visible` parameter.
-    The `window_i` parameter specifies the index of the window to be shown or hidden.
+    이 함수는 `is_visible` 매개변수에 따라 한컴오피스 Hwp 프로그램의 창을 표시하거나 숨기는 데 사용됩니다.
+    `window_i` 매개변수는 표시하거나 숨길 창의 인덱스를 지정합니다.
 
-    Parameters
+    매개변수
     ----------
     app : App
-        The `App` instance associated with the Hancom Office Hwp program.
+        한컴오피스 Hwp 프로그램과 연결된 `App` 인스턴스.
     is_visible : bool, optional
-        A boolean value indicating the visibility of the program window. 
-        If True, the window is made visible. If False, it is hidden. Default is True.
+        프로그램 창의 가시성을 나타내는 불린 값. 
+        True이면 창이 표시되고, False이면 숨겨집니다. 기본값은 True입니다.
     window_i : int, optional
-        The index of the window to be modified. Default is 0.
+        수정할 창의 인덱스. 기본값은 0입니다.
 
-    Examples
+    사용 예시
     --------
     >>> app = App()
     >>> set_visible(app, is_visible=True, window_i=0)
@@ -600,24 +600,24 @@ def create_parameterset(app: App, key:str):
 @patch
 def reload(app: App, new_app=False, dll_path=None):
     """
-    Reloads the `App` instance with a new HWPFrame.HwpObject and resets its visibility and DLL path.
+    새로운 HWPFrame.HwpObject로 `App` 인스턴스를 다시 로드하고 가시성과 DLL 경로를 재설정합니다.
 
-    This function is designed to reinitialize the `app` object's API with a new instance of the HWPFrame.HwpObject.
-    It also checks and registers the specified DLL file if provided.
+    이 함수는 `app` 객체의 API를 새로운 HWPFrame.HwpObject 인스턴스로 다시 초기화하도록 설계되었습니다.
+    또한 제공된 경우 지정된 DLL 파일을 확인하고 등록합니다.
 
-    Parameters
+    매개변수
     ----------
     app : App
-        The `App` instance to be reloaded.
+        다시 로드할 `App` 인스턴스.
     dll_path : str, optional
-        The path to the DLL file to be checked and registered. If None, no DLL registration is performed.
+        확인하고 등록할 DLL 파일의 경로. None인 경우 DLL 등록이 수행되지 않습니다.
 
-    Notes
+    주의사항
     -----
-    The `reload` function is useful in scenarios where the state of the HWPFrame.HwpObject needs to be reset
-    or when changing the DLL being used.
+    `reload` 함수는 HWPFrame.HwpObject의 상태를 재설정해야 하거나
+    사용 중인 DLL을 변경할 때 유용합니다.
 
-    Examples
+    사용 예시
     --------
     >>> app = App()
     >>> reload(app, dll_path="path/to/dll")
@@ -630,22 +630,22 @@ def reload(app: App, new_app=False, dll_path=None):
 @patch
 def get_filepath(app: App):
     """
-    Retrieves the file path of the currently open Hancom Office Hwp document.
+    현재 열려있는 한컴오피스 Hwp 문서의 파일 경로를 검색합니다.
 
-    This function accesses the active document in the Hancom Office Hwp program linked to the `App` instance
-    and returns its full file path.
+    이 함수는 `App` 인스턴스와 연결된 한컴오피스 Hwp 프로그램의 활성 문서에 접근하여
+    전체 파일 경로를 반환합니다.
 
-    Parameters
+    매개변수
     ----------
     app : App
-        The `App` instance associated with the Hancom Office Hwp program.
+        한컴오피스 Hwp 프로그램과 연결된 `App` 인스턴스.
 
-    Returns
+    반환값
     -------
     str
-        The full file path of the currently active Hancom Office Hwp document.
+        현재 활성화된 한컴오피스 Hwp 문서의 전체 파일 경로.
 
-    Examples
+    사용 예시
     --------
     >>> app = App()
     >>> filepath = get_filepath(app)
@@ -660,24 +660,24 @@ def get_filepath(app: App):
 @patch
 def create_action(app: App, action_key: str):
     """
-    Creates and returns an instance of the `_Action` class.
+    `_Action` 클래스의 인스턴스를 생성하고 반환합니다.
 
-    This function generates a new `_Action` instance associated with the given `app` and `action_key`. 
-    The `action_key` specifies the type of action to be created for the application.
+    이 함수는 주어진 `app`과 `action_key`와 연결된 새로운 `_Action` 인스턴스를 생성합니다. 
+    `action_key`는 애플리케이션에 대해 생성할 특정 액션의 유형을 지정합니다.
 
-    Parameters
+    매개변수
     ----------
     app : App
-        The application object for which the action is being created.
+        액션이 생성될 애플리케이션 객체.
     action_key : str
-        The key representing the specific action to be created.
+        생성할 특정 액션을 나타내는 키.
 
-    Returns
+    반환값
     -------
     _Action
-        An instance of the `_Action` class initialized with the provided application object and action key.
+        제공된 애플리케이션 객체와 액션 키로 초기화된 `_Action` 클래스의 인스턴스.
 
-    Examples
+    사용 예시
     --------
     >>> app = App()
     >>> action = create_action(app, 'some_action_key')
@@ -691,24 +691,24 @@ def create_action(app: App, action_key: str):
 @patch
 def open(app: App, path: str):
     """
-    Opens a file in the Hancom Office Hwp program using the provided file path.
+    제공된 파일 경로를 사용하여 한컴오피스 Hwp 프로그램에서 파일을 엽니다.
 
-    This function first converts the provided file path to an absolute path using the `get_absolute_path` function.
-    It then opens the file in the Hancom Office Hwp program using the `api.Open` method and returns the absolute path of the opened file.
+    이 함수는 먼저 제공된 파일 경로를 `get_absolute_path` 함수를 사용하여 절대 경로로 변환합니다.
+    그런 다음 `api.Open` 메서드를 사용하여 한컴오피스 Hwp 프로그램에서 파일을 열고 열린 파일의 절대 경로를 반환합니다.
 
-    Parameters
+    매개변수
     ----------
     app : App
-        The `App` instance associated with the Hancom Office Hwp program.
+        한컴오피스 Hwp 프로그램과 연결된 `App` 인스턴스.
     path : str
-        The file path of the document to be opened.
+        열릴 문서의 파일 경로.
 
-    Returns
+    반환값
     -------
     str
-        The absolute path of the file that has been opened.
+        열린 파일의 절대 경로.
 
-    Examples
+    사용 예시
     --------
     >>> app = App()
     >>> opened_file_path = open(app, 'path/to/document.hwp')

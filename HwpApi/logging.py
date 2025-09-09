@@ -213,19 +213,19 @@ class HwpApiLogger:
 # %% ../nbs/02_api/06_logging.ipynb 5
 def get_logger(name: Optional[str] = None) -> logging.Logger:
     """
-    Convenience function to get a logger instance.
+    로거 인스턴스를 가져오는 편의 함수입니다.
     
-    Parameters
+    매개변수
     ----------
     name : str, optional
-        Name of the module/component requesting the logger
+        로거를 요청하는 모듈/컴포넌트의 이름
     
-    Returns
+    반환값
     -------
     logging.Logger
-        Configured logger instance
+        구성된 로거 인스턴스
     
-    Examples
+    사용 예시
     --------
     >>> from hwpapi.logging import get_logger
     >>> logger = get_logger('core')
@@ -235,14 +235,14 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
 
 def configure_logging(**kwargs):
     """
-    Configure the hwpapi logging system.
+    hwpapi 로깅 시스템을 구성합니다.
     
-    Parameters
+    매개변수
     ----------
     **kwargs
-        Configuration options passed to HwpApiLogger.configure()
+        HwpApiLogger.configure()에 전달되는 구성 옵션
     
-    Examples
+    사용 예시
     --------
     >>> from hwpapi.logging import configure_logging
     >>> configure_logging(level='DEBUG', file_path='hwpapi.log')
@@ -254,16 +254,16 @@ def configure_logging(**kwargs):
 # %% ../nbs/02_api/06_logging.ipynb 6
 def setup_jupyter_logging(level='INFO', format_string=None):
     """
-    Setup logging specifically for Jupyter notebooks with better visibility.
+    더 나은 가시성을 위해 Jupyter 노트북 전용 로깅을 설정합니다.
     
-    Parameters
+    매개변수
     ----------
     level : str
-        Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        로깅 레벨 (DEBUG, INFO, WARNING, ERROR, CRITICAL)
     format_string : str, optional
-        Custom format string for log messages
+        로그 메시지용 사용자 정의 형식 문자열
     
-    Examples
+    사용 예시
     --------
     >>> from hwpapi.logging import setup_jupyter_logging
     >>> setup_jupyter_logging(level='DEBUG')
