@@ -490,8 +490,14 @@ def _update_from_impl(self, pset):
             # Remove the attribute if value is None
             self._del_value(key)
         elif value:
-            # Set the attribute if value is truthy
-            setattr(self, key, value)
+            # Set the attribute if value is truthy, but handle validation errors gracefully
+            try:
+                setattr(self, key, value)
+            except (ValueError, TypeError) as e:
+                # Log validation errors but continue with other attributes
+                import logging
+                logging.warning(f"Skipping invalid value for '{key}': {value}. Error: {e}")
+                continue
     return self
 
 def _serialize_impl(self):
