@@ -2,37 +2,606 @@
 
 # %% ../nbs/02_api/02_parameters.ipynb 4
 from __future__ import annotations
-from .parameter_base import (
-    ParameterSet, IntProperty, BoolProperty, StringProperty, 
-    ColorProperty, UnitProperty, MappedProperty, TypedProperty, ListProperty
-)
-from .parameter_mappings import (
-    DIRECTION_MAP, CAP_FULL_SIZE_MAP, ALIGNMENT_MAP, VERT_ALIGN_MAP, VERT_REL_TO_MAP, 
-    HORZ_REL_TO_MAP, HORZ_ALIGN_MAP, ALIGN_MAP, ALIGN_TYPE_MAP, FONTTYPE_MAP, 
-    SHADOW_TYPE_MAP, UNDERLINE_TYPE_MAP, OUTLINE_TYPE_MAP, STRIKEOUT_TYPE_MAP, 
-    USE_KERNING_MAP, DIAC_SYM_MARK_MAP, USE_FONT_SPACE_MAP, BACKGROUND_TYPE_MAP, 
-    GRADATION_TYPE_MAP, ROTATION_SETTING_MAP, SEARCH_DIRECTION_MAP, TEXT_DIRECTION_MAP, 
-    LINE_WRAP_MAP, TEXT_WRAP_MAP, TEXT_FLOW_MAP, LATIN_LINE_BREAK_MAP, 
-    NONLATIN_LINE_BREAK_MAP, TEXT_ALIGN_MAP, HEADING_TYPE_MAP, BORDER_TEXT_MAP, 
-    NUMBERING_TYPE_MAP, NUMBER_FORMAT_MAP, LINE_SPACING_TYPE_MAP, PIC_EFFECT_MAP, 
-    PAGE_BREAK_MAP
-)
+from .functions import from_hwpunit, to_hwpunit, convert_hwp_color_to_hex, convert_to_hwp_color
 import pprint
-
-
-# The base ParameterSet class is now imported from parameter_base.py
-
+from typing import Any, Dict, List, Optional, Union, Callable, Type
 
 # %% auto 0
-__all__ = ['ParameterSet', 'BorderFill', 'Caption', 'BulletShape', 'Cell', 'CharShape', 'CtrlData', 'DrawArcType', 
-           'DrawCoordInfo', 'DrawCtrlHyperlink', 'DrawEditDetail', 'DrawFillAttr', 'DrawImageAttr', 'DrawImageScissoring', 
-           'DrawLayout', 'DrawLineAttr', 'DrawRectType', 'DrawResize', 'DrawRotate', 'DrawScAction', 'DrawShadow', 
-           'DrawShear', 'DrawTextart', 'FindReplace', 'ListProperties', 'NumberingShape', 'ParaShape', 'ShapeObject', 
-           'TabDef', 'Table']
+__all__ = ['DIRECTION_MAP', 'CAP_FULL_SIZE_MAP', 'ALIGNMENT_MAP', 'VERT_ALIGN_MAP', 'VERT_REL_TO_MAP', 'HORZ_REL_TO_MAP',
+           'HORZ_ALIGN_MAP', 'ALIGN_MAP', 'ALIGN_TYPE_MAP', 'FONTTYPE_MAP', 'TEXT_DIRECTION_MAP', 'TEXT_ALIGN_MAP',
+           'LINE_SPACING_TYPE_MAP', 'LINE_WRAP_MAP', 'TEXT_WRAP_MAP', 'TEXT_FLOW_MAP', 'LATIN_LINE_BREAK_MAP',
+           'NONLATIN_LINE_BREAK_MAP', 'SHADOW_TYPE_MAP', 'BACKGROUND_TYPE_MAP', 'GRADATION_TYPE_MAP',
+           'ROTATION_SETTING_MAP', 'PIC_EFFECT_MAP', 'SEARCH_DIRECTION_MAP', 'BORDER_TEXT_MAP', 'UNDERLINE_TYPE_MAP',
+           'OUTLINE_TYPE_MAP', 'STRIKEOUT_TYPE_MAP', 'USE_KERNING_MAP', 'DIAC_SYM_MARK_MAP', 'USE_FONT_SPACE_MAP',
+           'HEADING_TYPE_MAP', 'NUMBERING_TYPE_MAP', 'NUMBER_FORMAT_MAP', 'PAGE_BREAK_MAP', 'ALL_MAPPINGS',
+           'PropertyDescriptor', 'IntProperty', 'BoolProperty', 'StringProperty', 'ColorProperty', 'UnitProperty',
+           'MappedProperty', 'TypedProperty', 'ListProperty', 'ParameterSetMeta', 'ParameterSet', 'BorderFill',
+           'Caption', 'FindReplace', 'DrawFillAttr', 'CharShape', 'ParaShape', 'ShapeObject', 'Table', 'BulletShape',
+           'Cell', 'CtrlData', 'DrawArcType', 'DrawCoordInfo', 'DrawCtrlHyperlink', 'DrawEditDetail', 'DrawImageAttr',
+           'DrawImageScissoring', 'DrawLayout', 'DrawLineAttr', 'DrawRectType', 'DrawResize', 'DrawRotate',
+           'DrawScAction', 'DrawShadow', 'DrawShear', 'DrawTextart', 'ListProperties', 'NumberingShape', 'TabDef']
 
-# Mapping constants are now imported from parameter_mappings.py
+# %% ../nbs/02_api/02_parameters.ipynb 6
+# Direction mappings
+DIRECTION_MAP = {"left": 0, "right": 1, "top": 2, "bottom": 3}
+
+# Size and alignment mappings
+CAP_FULL_SIZE_MAP = {"exclude": 0, "include": 1}
+ALIGNMENT_MAP = {"left": 0, "center": 1, "right": 2}
+VERT_ALIGN_MAP = {"top": 0, "center": 1, "bottom": 2}
+VERT_REL_TO_MAP = {"paper": 0, "page": 1, "paragraph": 2}
+HORZ_REL_TO_MAP = {"paper": 0, "page": 1, "column": 2, "paragraph": 3}
+HORZ_ALIGN_MAP = {"left": 0, "center": 1, "right": 2, "inside": 3, "outside": 4}
+ALIGN_MAP = {"left": 0, "center": 1, "right": 2}
+ALIGN_TYPE_MAP = {"between": 0, "left": 1, "right": 2, "center": 3, "ratio": 4, "shared": 5}
+
+# Font and text mappings
+FONTTYPE_MAP = {"don't care": 0, "TTF": 1, "HFT": 2, "dontcare": 0, "ttf": 1, "htf": 2}
+TEXT_DIRECTION_MAP = {"horizontal": 0, "vertical": 1}
+TEXT_ALIGN_MAP = {"font": 0, "up": 1, "middle": 2, "down": 3}
+LINE_SPACING_TYPE_MAP = {"font": 0, "fixed": 1, "space": 2}
+
+# Line and text wrapping mappings
+LINE_WRAP_MAP = {"basic": 0, "no_newline": 1, "forced": 2}
+TEXT_WRAP_MAP = {"square": 0, "top_bottom": 1, "behind": 2, "front": 3, "tight": 4, "through": 5}
+TEXT_FLOW_MAP = {"both": 0, "left": 1, "right": 2, "largest": 3}
+LATIN_LINE_BREAK_MAP = {"word": 0, "hyphen": 1, "letter": 2}
+NONLATIN_LINE_BREAK_MAP = {"word": 0, "letter": 1}
+
+# Style and effect mappings
+SHADOW_TYPE_MAP = {"none": 0, "drop": 1, "continuous": 2}
+BACKGROUND_TYPE_MAP = {"empty": 0, "fill": 1, "picture": 2, "gradation": 3}
+GRADATION_TYPE_MAP = {"stripe": 1, "circle": 2, "cone": 3, "square": 4}
+ROTATION_SETTING_MAP = {"none": 0, "setted_rotation": 1, "picture_centered_rotation": 2, "rotation_and_centered": 3}
+PIC_EFFECT_MAP = {"none": 0, "bw": 1, "sepia": 2}
+
+# Search and direction mappings
+SEARCH_DIRECTION_MAP = {"down": 0, "up": 1, "doc": 2}
+
+# Border and outline mappings
+BORDER_TEXT_MAP = {"column": 0, "text": 1}
+UNDERLINE_TYPE_MAP = {"none": 0, "bottom": 1, "center": 2, "top": 3}
+OUTLINE_TYPE_MAP = {
+    "none": 0, "solid": 1, "dot": 2, "thick": 3,
+    "dash": 4, "dashdot": 5, "dashdotdot": 6,
+}
+STRIKEOUT_TYPE_MAP = {
+    "none": 0, "red single": 1, "red double": 2,
+    "text single": 3, "text double": 4,
+}
+
+# Special character and formatting mappings
+USE_KERNING_MAP = {"off": 0, "on": 1}
+DIAC_SYM_MARK_MAP = {"none": 0, "black circle": 1, "empty circle": 2}
+USE_FONT_SPACE_MAP = {"off": 0, "on": 1}
+HEADING_TYPE_MAP = {"none": 0, "outline": 1, "number": 2, "bullet": 3}
+
+# Numbering and formatting mappings
+NUMBERING_TYPE_MAP = {"none": 0, "picture": 1, "table": 2, "equation": 3}
+NUMBER_FORMAT_MAP = {
+    "1": 0, "circled 1": 1, "I": 2, "i": 3, "A": 4, "a": 5,
+    "circled A": 6, "circled a": 7, "가": 8, "동그라미 가": 9,
+    "ㄱ": 10, "동그라미 ㄱ": 11, "일": 12, "一": 13, "동그라미 一": 14
+}
+
+# Page and table mappings
+PAGE_BREAK_MAP = {"none": 0, "cell": 1, "text": 2}
+
+# All mappings registry for easy access
+ALL_MAPPINGS = {
+    "direction": DIRECTION_MAP,
+    "cap_full_size": CAP_FULL_SIZE_MAP,
+    "alignment": ALIGNMENT_MAP,
+    "fonttype": FONTTYPE_MAP,
+    "shadow_type": SHADOW_TYPE_MAP,
+    "background_type": BACKGROUND_TYPE_MAP,
+    "gradation_type": GRADATION_TYPE_MAP,
+    "rotation_setting": ROTATION_SETTING_MAP,
+    "search_direction": SEARCH_DIRECTION_MAP,
+    "text_direction": TEXT_DIRECTION_MAP,
+    "line_wrap": LINE_WRAP_MAP,
+    "text_wrap": TEXT_WRAP_MAP,
+    "text_flow": TEXT_FLOW_MAP,
+    "vert_align": VERT_ALIGN_MAP,
+    "vert_rel_to": VERT_REL_TO_MAP,
+    "horz_rel_to": HORZ_REL_TO_MAP,
+    "horz_align": HORZ_ALIGN_MAP,
+    "align": ALIGN_MAP,
+    "align_type": ALIGN_TYPE_MAP,
+    "latin_line_break": LATIN_LINE_BREAK_MAP,
+    "nonlatin_line_break": NONLATIN_LINE_BREAK_MAP,
+    "text_align": TEXT_ALIGN_MAP,
+    "heading_type": HEADING_TYPE_MAP,
+    "border_text": BORDER_TEXT_MAP,
+    "underline_type": UNDERLINE_TYPE_MAP,
+    "outline_type": OUTLINE_TYPE_MAP,
+    "strikeout_type": STRIKEOUT_TYPE_MAP,
+    "use_kerning": USE_KERNING_MAP,
+    "diac_sym_mark": DIAC_SYM_MARK_MAP,
+    "use_font_space": USE_FONT_SPACE_MAP,
+    "numbering_type": NUMBERING_TYPE_MAP,
+    "number_format": NUMBER_FORMAT_MAP,
+    "line_spacing_type": LINE_SPACING_TYPE_MAP,
+    "pic_effect": PIC_EFFECT_MAP,
+    "page_break": PAGE_BREAK_MAP,
+}
+
 
 # %% ../nbs/02_api/02_parameters.ipynb 8
+class PropertyDescriptor:
+    """Base descriptor for parameter properties."""
+    
+    def __init__(self, key: str, doc: str):
+        self.key = key
+        self.doc = doc
+        self.name = None
+    
+    def __set_name__(self, owner, name):
+        self.name = name
+    
+    def _get_value(self, instance):
+        """Get value from the underlying parameter set."""
+        if hasattr(instance._pset, 'Item'):
+            return instance._pset.Item(self.key)
+        return getattr(instance._pset, self.key, None)
+    
+    def _set_value(self, instance, value):
+        """Set value in the underlying parameter set."""
+        if hasattr(instance._pset, 'SetItem'):
+            return instance._pset.SetItem(self.key, value)
+        return setattr(instance._pset, self.key, value)
+    
+    def _del_value(self, instance):
+        """Delete value from the underlying parameter set."""
+        if hasattr(instance._pset, 'RemoveItem'):
+            return instance._pset.RemoveItem(self.key)
+        return False
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 9
+class IntProperty(PropertyDescriptor):
+    """Property descriptor for integer values with optional range validation."""
+    
+    def __init__(self, key: str, doc: str, min_val: Optional[int] = None, max_val: Optional[int] = None):
+        super().__init__(key, doc)
+        self.min_val = min_val
+        self.max_val = max_val
+    
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        value = self._get_value(instance)
+        return int(value) if value is not None else None
+    
+    def __set__(self, instance, value):
+        if value is None:
+            return self._del_value(instance)
+        
+        if not isinstance(value, (int, float)):
+            raise TypeError(f"Value for '{self.key}' must be numeric")
+        
+        value = int(value)
+        
+        if self.min_val is not None and value < self.min_val:
+            raise ValueError(f"Value {value} for '{self.key}' is below minimum {self.min_val}")
+        if self.max_val is not None and value > self.max_val:
+            raise ValueError(f"Value {value} for '{self.key}' is above maximum {self.max_val}")
+        
+        return self._set_value(instance, value)
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 10
+class BoolProperty(PropertyDescriptor):
+    """Property descriptor for boolean values (0 or 1)."""
+    
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        value = self._get_value(instance)
+        return bool(value) if value is not None else None
+    
+    def __set__(self, instance, value):
+        if value is None:
+            return self._del_value(instance)
+        
+        if isinstance(value, bool):
+            numeric_value = 1 if value else 0
+        elif isinstance(value, (int, float)):
+            numeric_value = 1 if value else 0
+        else:
+            raise TypeError(f"Value for '{self.key}' must be boolean or numeric")
+        
+        return self._set_value(instance, numeric_value)
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 11
+class StringProperty(PropertyDescriptor):
+    """Property descriptor for string values."""
+    
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        value = self._get_value(instance)
+        return str(value) if value is not None else None
+    
+    def __set__(self, instance, value):
+        if value is None:
+            return self._del_value(instance)
+        
+        if not isinstance(value, str):
+            value = str(value)
+        
+        return self._set_value(instance, value)
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 12
+class ColorProperty(PropertyDescriptor):
+    """Property descriptor for color values with hex conversion."""
+    
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        value = self._get_value(instance)
+        return convert_hwp_color_to_hex(value) if value is not None else None
+    
+    def __set__(self, instance, value):
+        if value is None:
+            return self._del_value(instance)
+        
+        numeric_value = convert_to_hwp_color(value)
+        return self._set_value(instance, numeric_value)
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 13
+class UnitProperty(PropertyDescriptor):
+    """Property descriptor for unit-based values with automatic conversion."""
+    
+    def __init__(self, key: str, unit: str, doc: str):
+        super().__init__(key, doc)
+        self.unit = unit
+    
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        value = self._get_value(instance)
+        if value is None:
+            return None
+        return from_hwpunit(value, self.unit)
+    
+    def __set__(self, instance, value):
+        if value is None:
+            return self._del_value(instance)
+        
+        if not isinstance(value, (int, float)):
+            raise TypeError(f"Value for '{self.key}' must be numeric")
+        
+        hwp_value = to_hwpunit(value, self.unit)
+        return self._set_value(instance, hwp_value)
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 14
+class MappedProperty(PropertyDescriptor):
+    """Property descriptor for mapped values (string <-> integer)."""
+    
+    def __init__(self, key: str, mapping: Dict[str, int], doc: str):
+        super().__init__(key, doc)
+        self.mapping = mapping
+        self.reverse_mapping = {v: k for k, v in mapping.items()}
+    
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        value = self._get_value(instance)
+        if value is None:
+            return None
+        return self.reverse_mapping.get(value, value)
+    
+    def __set__(self, instance, value):
+        if value is None:
+            return self._del_value(instance)
+        
+        if isinstance(value, str):
+            if value not in self.mapping:
+                valid_keys = list(self.mapping.keys())
+                raise ValueError(f"Invalid value '{value}' for '{self.key}'. Valid options: {valid_keys}")
+            numeric_value = self.mapping[value]
+        elif isinstance(value, (int, float)):
+            numeric_value = int(value)
+            if numeric_value not in self.reverse_mapping:
+                valid_values = list(self.reverse_mapping.keys())
+                raise ValueError(f"Invalid numeric value '{numeric_value}' for '{self.key}'. Valid values: {valid_values}")
+        else:
+            raise TypeError(f"Value for '{self.key}' must be string or numeric")
+        
+        return self._set_value(instance, numeric_value)
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 15
+class TypedProperty(PropertyDescriptor):
+    """Property descriptor for typed parameter sets."""
+    
+    def __init__(self, key: str, doc: str, expected_type: Callable):
+        super().__init__(key, doc)
+        self.expected_type = expected_type
+    
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        value = self._get_value(instance)
+        if value is None:
+            return None
+        # Wrap in expected type if not already wrapped
+        if not isinstance(value, self.expected_type()):
+            return self.expected_type()(value)
+        return value
+    
+    def __set__(self, instance, pset):
+        if pset is None:
+            return self._del_value(instance)
+        
+        # Validate type
+        if not isinstance(pset, self.expected_type()):
+            raise TypeError(f"Value for '{self.key}' must be of type {self.expected_type.__name__}")
+        
+        # Get or create target
+        target = self._get_value(instance)
+        if not target:
+            # Create new parameter set if it doesn't exist
+            target = instance._pset.CreateSet(self.key)
+        
+        # Update target with source values
+        wrapped_target = self.expected_type()(target)
+        wrapped_target.update_from(pset)
+        
+        return self._set_value(instance, wrapped_target.parameterset)
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 16
+class ListProperty(PropertyDescriptor):
+    """Property descriptor for list values."""
+    
+    def __init__(self, key: str, doc: str, item_type: Optional[Type] = None, 
+                 min_length: Optional[int] = None, max_length: Optional[int] = None):
+        super().__init__(key, doc)
+        self.item_type = item_type
+        self.min_length = min_length
+        self.max_length = max_length
+    
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        value = self._get_value(instance)
+        return list(value) if value is not None else None
+    
+    def __set__(self, instance, value):
+        if value is None:
+            return self._del_value(instance)
+        
+        if not isinstance(value, (list, tuple)):
+            raise TypeError(f"Value for '{self.key}' must be a list or tuple")
+        
+        value = list(value)
+        
+        # Length validation
+        if self.min_length is not None and len(value) < self.min_length:
+            raise ValueError(f"List for '{self.key}' must have at least {self.min_length} items")
+        if self.max_length is not None and len(value) > self.max_length:
+            raise ValueError(f"List for '{self.key}' must have at most {self.max_length} items")
+        
+        # Type validation
+        if self.item_type is not None:
+            for i, item in enumerate(value):
+                if not isinstance(item, self.item_type):
+                    if self.item_type == tuple and isinstance(item, (list, tuple)) and len(item) == 2:
+                        value[i] = tuple(item)
+                    else:
+                        try:
+                            value[i] = self.item_type(item)
+                        except (ValueError, TypeError):
+                            raise TypeError(f"Item {i} in list for '{self.key}' must be of type {self.item_type.__name__}")
+        
+        return self._set_value(instance, value)
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 18
+class ParameterSetMeta(type):
+    """Metaclass for automatic property registration."""
+    
+    def __new__(cls, name, bases, namespace):
+        # Collect property descriptors
+        properties = {}
+        for key, value in namespace.items():
+            if isinstance(value, PropertyDescriptor):
+                properties[key] = value
+        
+        # Store property registry
+        namespace['_property_registry'] = properties
+        
+        # Create the class
+        new_class = super().__new__(cls, name, bases, namespace)
+        
+        # Collect all properties from base classes too
+        all_properties = {}
+        for base in reversed(new_class.__mro__):
+            if hasattr(base, '_property_registry'):
+                all_properties.update(base._property_registry)
+        
+        new_class._all_properties = all_properties
+        
+        return new_class
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 19
+class ParameterSet(metaclass=ParameterSetMeta):
+    """
+    Base class for HWP parameter sets.
+    
+    Provides a unified interface for working with HWP parameter objects,
+    handling both COM objects with SetID and regular Python objects.
+    """
+
+    def __init__(self, parameterset):
+        """Initialize with a parameter set object."""
+        self._pset = parameterset
+        self._is_pset = hasattr(parameterset, "SetID")
+        self.attributes_names = []
+
+    @property
+    def parameterset(self):
+        """Get the underlying parameter set object."""
+        return self._pset
+
+    def _get_value(self, name):
+        """Get a value from the parameter set."""
+        if self._is_pset:
+            return self._pset.Item(name)
+        return getattr(self._pset, name)
+    
+    def _set_value(self, name, value):
+        """Set a value in the parameter set."""
+        if self._is_pset:
+            return self._pset.SetItem(name, value)
+        return setattr(self._pset, name, value)
+
+    def _del_value(self, name):
+        """Delete a value from the parameter set."""
+        if self._is_pset:
+            return self._pset.RemoveItem(name)
+        return False
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 20
+# Additional methods for ParameterSet class
+ParameterSet.update_from = lambda self, pset: self._update_from_impl(pset)
+ParameterSet.serialize = lambda self: self._serialize_impl()
+ParameterSet.__str__ = lambda self: self._str_impl()
+ParameterSet.__repr__ = lambda self: self.__str__()
+
+def _update_from_impl(self, pset):
+    """Update this parameter set with values from another parameter set."""
+    for key in self.attributes_names:
+        value = getattr(pset, key, None)
+        
+        if isinstance(value, ParameterSet):
+            # Recursively update nested parameter sets
+            target = getattr(self, key)
+            target.update_from(value)
+        elif value is None:
+            # Remove the attribute if value is None
+            self._del_value(key)
+        elif value:
+            # Set the attribute if value is truthy
+            setattr(self, key, value)
+    return self
+
+def _serialize_impl(self):
+    """Convert the parameter set to a dictionary."""
+    result = {}
+    for key in self.attributes_names:
+        value = getattr(self, key, None)
+        if isinstance(value, ParameterSet):
+            value = value.serialize()
+        result[key] = value
+    return result
+
+def _str_impl(self):
+    """String representation of the parameter set."""
+    data = {
+        "name": self.__class__.__name__, 
+        "values": self.serialize()
+    }
+    return pprint.pformat(data, indent=4, width=60)
+
+# Attach the implementations to the class
+ParameterSet._update_from_impl = _update_from_impl
+ParameterSet._serialize_impl = _serialize_impl
+ParameterSet._str_impl = _str_impl
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 21
+# Static methods for creating properties
+@staticmethod        
+def _typed_prop(key, doc, expected_type):
+    """Create a property for typed parameter sets."""
+    return TypedProperty(key, doc, expected_type)
+
+@staticmethod      
+def _int_prop(key, doc, min_val=None, max_val=None):
+    """Create a property for integer values with optional range validation."""
+    return IntProperty(key, doc, min_val, max_val)
+
+@staticmethod 
+def _bool_prop(key, doc):
+    """Create a property for boolean values (0 or 1)."""
+    return BoolProperty(key, doc)
+
+@staticmethod 
+def _color_prop(key, doc):
+    """Create a property for color values with hex conversion."""
+    return ColorProperty(key, doc)
+
+@staticmethod 
+def _unit_prop(key, unit, doc):
+    """Create a property for unit-based values with automatic conversion."""
+    return UnitProperty(key, unit, doc)
+
+@staticmethod 
+def _mapped_prop(key, mapping, doc):
+    """Create a property for mapped values (string <-> integer)."""
+    return MappedProperty(key, mapping, doc)
+
+@staticmethod
+def _str_prop(key, doc):
+    """Create a property for string values."""
+    return StringProperty(key, doc)
+
+@staticmethod
+def _int_list_prop(key, doc):
+    """Create a property for lists of integers."""
+    return ListProperty(key, doc, item_type=int)
+
+@staticmethod
+def _tuple_list_prop(key, doc):
+    """Create a property for lists of (X, Y) coordinate tuples."""
+    return ListProperty(key, doc, item_type=tuple)
+
+@staticmethod
+def _gradation_color_prop(key, doc):
+    """Create a property for gradation color lists with hex conversion."""
+    class GradationColorProperty(ListProperty):
+        def __get__(self, instance, owner):
+            if instance is None:
+                return self
+            value = self._get_value(instance)
+            if value is None:
+                return None
+            return [convert_hwp_color_to_hex(color) for color in value]
+        
+        def __set__(self, instance, value):
+            if value is None:
+                return self._del_value(instance)
+            if not isinstance(value, (list, tuple)):
+                raise TypeError(f"Value for '{self.key}' must be a list or tuple")
+            
+            converted_colors = [convert_to_hwp_color(color) for color in value]
+            return self._set_value(instance, converted_colors)
+    
+    return GradationColorProperty(key, doc, item_type=int, min_length=2, max_length=10)
+
+# Attach static methods to ParameterSet class
+ParameterSet._typed_prop = _typed_prop
+ParameterSet._int_prop = _int_prop
+ParameterSet._bool_prop = _bool_prop
+ParameterSet._color_prop = _color_prop
+ParameterSet._unit_prop = _unit_prop
+ParameterSet._mapped_prop = _mapped_prop
+ParameterSet._str_prop = _str_prop
+ParameterSet._int_list_prop = _int_list_prop
+ParameterSet._tuple_list_prop = _tuple_list_prop
+ParameterSet._gradation_color_prop = _gradation_color_prop
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 23
 class BorderFill(ParameterSet):
     """
     ### BorderFill
@@ -115,7 +684,8 @@ class BorderFill(ParameterSet):
     # Typed property for fill attribute
     fill_attr = TypedProperty("FillAttr", "배경 채우기 속성", lambda: DrawFillAttr)
 
-# %% ../nbs/02_api/02_parameters.ipynb 10
+
+# %% ../nbs/02_api/02_parameters.ipynb 24
 class Caption(ParameterSet):
     """
     ### Caption
@@ -140,7 +710,442 @@ class Caption(ParameterSet):
     # Mapping for 'cap_full_size': 0 means 'exclude', 1 means 'include'
     cap_full_size = MappedProperty("CapFullSize", CAP_FULL_SIZE_MAP, "캡션 폭에 여백 포함 여부 (CapFullSize): 0 = exclude, 1 = include")
 
-# %% ../nbs/02_api/02_parameters.ipynb 12
+
+# %% ../nbs/02_api/02_parameters.ipynb 25
+class FindReplace(ParameterSet):
+    """
+    ### FindReplace
+
+    56) FindReplace : 찾기/찾아 바꾸기
+
+    | Item ID           | Type      | SubType | Description                                                               |
+    |-------------------|-----------|---------|---------------------------------------------------------------------------|
+    | FindString        | PIT_BSTR  |         | 찾을 문자열                                                              |
+    | ReplaceString     | PIT_BSTR  |         | 바꿀 문자열                                                              |
+    | Direction         | PIT_UI1   |         | 찾을 방향 : 0 = 아래쪽, 1 = 위쪽, 2 = 문서 전체                           |
+    | MatchCase         | PIT_UI1   |         | 대소문자 구별 (on/off)                                                     |
+    | AllWordForms      | PIT_UI1   |         | 모든 단어 형태 (on/off)                                                   |
+    | SeveralWords      | PIT_UI1   |         | 여러 단어 찾기 (on/off)                                                    |
+    | UseWildCards      | PIT_UI1   |         | 와일드카드 사용 (on/off)                                                   |
+    | WholeWordOnly     | PIT_UI1   |         | 전체 단어만 찾기 (on/off)                                                   |
+    | AutoSpell         | PIT_UI1   |         | 자동 맞춤법 사용 (on/off)                                                  |
+    | ReplaceMode       | PIT_UI1   |         | 찾아 바꾸기 모드 (on/off)                                                  |
+    | IgnoreFindString  | PIT_UI1   |         | 찾을 문자열 무시 (on/off)                                                  |
+    | IgnoreReplaceString| PIT_UI1  |         | 바꿀 문자열 무시 (on/off)                                                   |
+    | FindCharShape     | PIT_SET   | CharShape | 찾을 글자 모양                                                          |
+    | FindParaShape     | PIT_SET   | ParaShape | 찾을 문단 모양                                                          |
+    | ReplaceCharShape  | PIT_SET   | CharShape | 바꿀 글자 모양                                                          |
+    | ReplaceParaShape  | PIT_SET   | ParaShape | 바꿀 문단 모양                                                          |
+    | FindStyle         | PIT_BSTR  |         | 찾을 스타일                                                              |
+    | ReplaceStyle      | PIT_BSTR  |         | 바꿀 스타일                                                              |
+    | IgnoreMessage     | PIT_UI1   |         | 메시지박스 표시 안함 (on/off)                                              |
+    | HanjaFromHangul   | PIT_UI1   |         | 한글임으로 한자 차기                                                      |
+    | FindJaso          | PIT_UI1   |         | 자소로 찾기 (on/off)                                                      |
+    | FindRegExp        | PIT_UI1   |         | 정규식(조건식)으로 찾기 (on/off)                                           |
+    | FindType          | PIT_UI1   |         | 찾기 유형 (on/off)                                                       |
+    """
+
+    def __init__(self, parameterset):
+        super().__init__(parameterset)
+        self.attributes_names = [
+            "find_string",
+            "replace_string",
+            "find_style",
+            "replace_style",
+            "direction",
+            "match_case",
+            "all_word_forms",
+            "several_words",
+            "use_wildcards",
+            "whole_word_only",
+            "auto_spell",
+            "replace_mode",
+            "ignore_find_string",
+            "ignore_replace_string",
+            "ignore_message",
+            "hanja_from_hangul",
+            "find_jaso",
+            "find_regexp",
+            "find_type",
+            "find_charshape",
+            "find_parashape",
+            "replace_charshape",
+            "replace_parashape",
+        ]
+
+    # String properties
+    find_string = StringProperty("FindString", "찾을 문자열")
+    replace_string = StringProperty("ReplaceString", "바꿀 문자열")
+    find_style = StringProperty("FindStyle", "찾을 스타일")
+    replace_style = StringProperty("ReplaceStyle", "바꿀 스타일")
+
+    # Enum property for direction
+    direction = MappedProperty(
+        "Direction",
+        SEARCH_DIRECTION_MAP,
+        "찾을 방향: 0 = 아래쪽, 1 = 위쪽, 2 = 문서 전체",
+    )
+
+    # Boolean properties (on/off flags)
+    match_case = BoolProperty("MatchCase", "대소문자 구별 (on/off)")
+    all_word_forms = BoolProperty("AllWordForms", "모든 단어 형태 (on/off)")
+    several_words = BoolProperty("SeveralWords", "여러 단어 찾기 (on/off)")
+    use_wildcards = BoolProperty("UseWildCards", "와일드카드 사용 (on/off)")
+    whole_word_only = BoolProperty(
+        "WholeWordOnly", "전체 단어만 찾기 (on/off)"
+    )
+    auto_spell = BoolProperty("AutoSpell", "자동 맞춤법 사용 (on/off)")
+    replace_mode = BoolProperty("ReplaceMode", "찾아 바꾸기 모드 (on/off)")
+    ignore_find_string = BoolProperty(
+        "IgnoreFindString", "찾을 문자열 무시 (on/off)"
+    )
+    ignore_replace_string = BoolProperty(
+        "IgnoreReplaceString", "바꿀 문자열 무시 (on/off)"
+    )
+    ignore_message = BoolProperty(
+        "IgnoreMessage", "메시지박스 표시 안함 (on/off)"
+    )
+    hanja_from_hangul = BoolProperty(
+        "HanjaFromHangul", "한글임으로 한자 차기"
+    )
+    find_jaso = BoolProperty("FindJaso", "자소로 찾기 (on/off)")
+    find_regexp = BoolProperty("FindRegExp", "정규식 찾기 (on/off)")
+    find_type = BoolProperty("FindType", "찾기 유형 (on/off)")
+
+    # Composite properties using _typed_prop
+    find_charshape = TypedProperty(
+        "FindCharShape", "찾을 글자 모양", lambda: CharShape
+    )
+    find_parashape = TypedProperty(
+        "FindParaShape", "찾을 문단 모양", lambda: ParaShape
+    )
+    replace_charshape = TypedProperty(
+        "ReplaceCharShape", "바꿀 글자 모양", lambda: CharShape
+    )
+    replace_parashape = TypedProperty(
+        "ReplaceParaShape", "바꿀 문단 모양", lambda: ParaShape
+    )
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 26
+# Forward declarations for commonly referenced parameter sets
+# These are minimal implementations - full implementations would be added as needed
+
+class DrawFillAttr(ParameterSet):
+    """DrawFillAttr parameter set - placeholder implementation"""
+    pass
+
+class CharShape(ParameterSet):
+    """CharShape parameter set - placeholder implementation"""
+    pass
+
+class ParaShape(ParameterSet):
+    """ParaShape parameter set - placeholder implementation"""
+    pass
+
+class ShapeObject(ParameterSet):
+    """ShapeObject parameter set - placeholder implementation"""
+    pass
+
+class Table(ParameterSet):
+    """Table parameter set - placeholder implementation"""
+    pass
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 28
+# Direction mappings
+DIRECTION_MAP = {"left": 0, "right": 1, "top": 2, "bottom": 3}
+
+# Size and alignment mappings
+CAP_FULL_SIZE_MAP = {"exclude": 0, "include": 1}
+ALIGNMENT_MAP = {"left": 0, "center": 1, "right": 2}
+VERT_ALIGN_MAP = {"top": 0, "center": 1, "bottom": 2}
+VERT_REL_TO_MAP = {"paper": 0, "page": 1, "paragraph": 2}
+HORZ_REL_TO_MAP = {"paper": 0, "page": 1, "column": 2, "paragraph": 3}
+HORZ_ALIGN_MAP = {"left": 0, "center": 1, "right": 2, "inside": 3, "outside": 4}
+ALIGN_MAP = {"left": 0, "center": 1, "right": 2}
+ALIGN_TYPE_MAP = {"between": 0, "left": 1, "right": 2, "center": 3, "ratio": 4, "shared": 5}
+
+# Font and text mappings
+FONTTYPE_MAP = {"don't care": 0, "TTF": 1, "HFT": 2, "dontcare": 0, "ttf": 1, "htf": 2}
+SHADOW_TYPE_MAP = {"none": 0, "drop": 1, "continuous": 2}
+UNDERLINE_TYPE_MAP = {"none": 0, "bottom": 1, "center": 2, "top": 3}
+OUTLINE_TYPE_MAP = {
+    "none": 0,
+    "solid": 1,
+    "dot": 2,
+    "thick": 3,
+    "dash": 4,
+    "dashdot": 5,
+    "dashdotdot": 6,
+}
+STRIKEOUT_TYPE_MAP = {
+    "none": 0,
+    "red single": 1,
+    "red double": 2,
+    "text single": 3,
+    "text double": 4,
+}
+USE_KERNING_MAP = {"off": 0, "on": 1}
+DIAC_SYM_MARK_MAP = {"none": 0, "black circle": 1, "empty circle": 2}
+USE_FONT_SPACE_MAP = {"off": 0, "on": 1}
+
+# Background and fill mappings
+BACKGROUND_TYPE_MAP = {"empty": 0, "fill": 1, "picture": 2, "gradation": 3}
+GRADATION_TYPE_MAP = {"stripe": 1, "circle": 2, "cone": 3, "square": 4}
+ROTATION_SETTING_MAP = {"none": 0, "setted_rotation": 1, "picture_centered_rotation": 2, "rotation_and_centered": 3}
+
+# Search and text flow mappings
+SEARCH_DIRECTION_MAP = {"down": 0, "up": 1, "doc": 2}
+TEXT_DIRECTION_MAP = {"horizontal": 0, "vertical": 1}
+LINE_WRAP_MAP = {"basic": 0, "no_newline": 1, "forced": 2}
+TEXT_WRAP_MAP = {"square": 0, "top_bottom": 1, "behind": 2, "front": 3, "tight": 4, "through": 5}
+TEXT_FLOW_MAP = {"both": 0, "left": 1, "right": 2, "largest": 3}
+
+# Line break and text alignment mappings
+LATIN_LINE_BREAK_MAP = {"word": 0, "hyphen": 1, "letter": 2}
+NONLATIN_LINE_BREAK_MAP = {"word": 0, "letter": 1}
+TEXT_ALIGN_MAP = {"font": 0, "up": 1, "middle": 2, "down": 3}
+
+# Heading and border mappings
+HEADING_TYPE_MAP = {"none": 0, "outline": 1, "number": 2, "bullet": 3}
+BORDER_TEXT_MAP = {"column": 0, "text": 1}
+
+# Numbering mappings
+NUMBERING_TYPE_MAP = {"none": 0, "picture": 1, "table": 2, "equation": 3}
+NUMBER_FORMAT_MAP = {
+    "1": 0,
+    "circled 1": 1,
+    "I": 2,
+    "i": 3,
+    "A": 4,
+    "a": 5,
+    "circled A": 6,
+    "circled a": 7,
+    "가": 8,
+    "동그라미 가": 9,
+    "ㄱ": 10,
+    "동그라미 ㄱ": 11,
+    "일": 12,
+    "一": 13,
+    "동그라미 一": 14
+}
+
+# Line spacing and effects mappings
+LINE_SPACING_TYPE_MAP = {"font": 0, "fixed": 1, "space": 2}
+PIC_EFFECT_MAP = {"none": 0, "bw": 1, "sepia": 2}
+PAGE_BREAK_MAP = {"none": 0, "cell": 1, "text": 2}
+
+# %% ../nbs/02_api/02_parameters.ipynb 30
+class BorderFill(ParameterSet):
+    """
+    ### BorderFill
+
+    5) BorderFill : 테두리/배경의 일반 속성
+
+    | Item ID | Type | SubType | Description |
+    | --- | --- | --- | --- |
+    | BorderTypeLeft | PIT_UI2 |  | 4방향 테두리 종류 : 왼쪽 [선 종류] |
+    | BorderTypeRight | PIT_UI2 |  | 4방향 테두리 종류 : 오른쪽 |
+    | BorderTypeTop | PIT_UI2 |  | 4방향 테두리 종류 : 위 |
+    | BorderTypeBottom | PIT_UI2 |  | 4방향 테두리 종류 : 아래 |
+    | BorderWidthLeft | PIT_UI1 |  | 4방향 테두리 두께 : 왼쪽 [선 굵기] |
+    | BorderWidthRight | PIT_UI1 |  | 4방향 테두리 두께 : 오른쪽 |
+    | BorderWidthTop | PIT_UI1 |  | 4방향 테두리 두께 : 위 |
+    | BorderWidthBottom | PIT_UI1 |  | 4방향 테두리 두께 : 아래 |
+    | BorderColorLeft | PIT_UI4 |  | 4방향 테두리 색깔 : 왼쪽 (RGB color: 0x00BBGGRR) |
+    | BorderColorRight | PIT_UI4 |  | 4방향 테두리 색깔 : 오른쪽 (RGB color: 0x00BBGGRR) |
+    | BorderColorTop | PIT_UI4 |  | 4방향 테두리 색깔 : 위 (RGB color: 0x00BBGGRR) |
+    | BorderColorBottom | PIT_UI4 |  | 4방향 테두리 색깔 : 아래 (정수값 그대로 사용) |
+    | SlashFlag | PIT_UI2 |  | 대각선 플래그 (비트 플래그 조합) |
+    | BackSlashFlag | PIT_UI2 |  | 역대각선 플래그 (비트 플래그 조합) |
+    | DiagonalType | PIT_UI2 |  | 대각선 유형 (셀 또는 자동 분할 경계선에 사용) |
+    | DiagonalWidth | PIT_UI1 |  | 대각선 두께 (셀 또는 자동 분할 경계선에 사용) |
+    | DiagonalColor | PIT_UI4 |  | 대각선 색상 (RGB color: 0x00BBGGRR) |
+    | BorderFill3D | PIT_UI1 |  | 3차원 효과: 0 = off, 1 = on |
+    | Shadow | PIT_UI1 |  | 그림자 효과: 0 = off, 1 = on |
+    | FillAttr | PIT_SET | DrawFillAttr | 배경 채우기 속성 |
+    | CrookedSlashFlag | PIT_UI2 |  | 꺾인 대각선 플래그 (bit 0, 1) |
+    | BreakCellSeparateLine | PIT_UI1 |  | 자동으로 나뉜 표의 경계선 설정: 0 = 기본, 1 = 사용자 설정 |
+    | CounterSlashFlag | PIT_UI1 |  | 슬래쉬 대각선 역방향 플래그: 0 = 순방향, 1 = 역방향 |
+    | CounterBackSlashFlag | PIT_UI1 |  | 역슬래쉬 대각선 역방향 플래그: 0 = 순방향, 1 = 역방향 |
+    | CenterLineFlag | PIT_UI1 |  | 중심선 플래그: 0 = 없음, 1 = 있음 |
+    | CrookedSlashFlag1 | PIT_UI1 |  | 슬래쉬 대각선 꺾임 여부 (저바이트) |
+    | CrookedSlashFlag2 | PIT_UI1 |  | 역슬래쉬 대각선 꺾임 여부 (고바이트) |
+
+    ※ 대각선의 형태는 다음의 3가지 아이템으로 결정됩니다:
+      - SlashFlag (또는 BackSlashFlag)
+      - CrookedSlashFlag1 (또는 CrookedSlashFlag2)
+      - CounterSlashFlag (또는 CounterBackSlashFlag)
+    """
+
+    def __init__(self, parameterset):
+        super().__init__(parameterset)
+        self.attributes_names = [
+            "border_type_left",
+            "border_type_right",
+            "border_type_top",
+            "border_type_bottom",
+            "border_width_left",
+            "border_width_right",
+            "border_width_top",
+            "border_width_bottom",
+            "border_color_left",
+            "border_color_right",
+            "border_color_top",
+            "border_color_bottom",
+            "diagonal_color",
+            "slash_flag",
+            "backslash_flag",
+            "diagonal_type",
+            "diagonal_width",
+            "crooked_slash_flag",
+            "border_fill_3d",
+            "shadow",
+            "break_cell_separate_line",
+            "counter_slash_flag",
+            "counter_back_slash_flag",
+            "center_line_flag",
+            "crooked_slash_flag1",
+            "crooked_slash_flag2",
+            "fill_attr",
+        ]
+
+    # Integer properties
+    border_type_left = ParameterSet._int_prop(
+        "BorderTypeLeft", "테두리 유형 (왼쪽): 정수 값을 입력하세요."
+    )
+    border_type_right = ParameterSet._int_prop(
+        "BorderTypeRight", "테두리 유형 (오른쪽): 정수 값을 입력하세요."
+    )
+    border_type_top = ParameterSet._int_prop(
+        "BorderTypeTop", "테두리 유형 (위): 정수 값을 입력하세요."
+    )
+    border_type_bottom = ParameterSet._int_prop(
+        "BorderTypeBottom", "테두리 유형 (아래): 정수 값을 입력하세요."
+    )
+
+    border_width_left = ParameterSet._int_prop(
+        "BorderWidthLeft", "테두리 두께 (왼쪽): 정수 값을 입력하세요."
+    )
+    border_width_right = ParameterSet._int_prop(
+        "BorderWidthRight", "테두리 두께 (오른쪽): 정수 값을 입력하세요."
+    )
+    border_width_top = ParameterSet._int_prop(
+        "BorderWidthTop", "테두리 두께 (위): 정수 값을 입력하세요."
+    )
+    border_width_bottom = ParameterSet._int_prop(
+        "BorderWidthBottom", "테두리 두께 (아래): 정수 값을 입력하세요."
+    )
+
+    # Color properties (with conversion)
+    border_color_left = ParameterSet._color_prop(
+        "BorderCorlorLeft", "테두리 색상 (왼쪽): 정수 값을 입력하세요."
+    )
+    border_color_right = ParameterSet._color_prop(
+        "BorderColorRight", "테두리 색상 (오른쪽): 정수 값을 입력하세요."
+    )
+    border_color_top = ParameterSet._color_prop(
+        "BorderColorTop", "테두리 색상 (위): 정수 값을 입력하세요."
+    )
+    border_color_bottom = ParameterSet._int_prop(
+        "BorderColorBottom", "테두리 색상 (아래): 정수 값을 입력하세요."
+    )
+
+    # 대각선 색상 (setter now completes properly)
+    diagonal_color = ParameterSet._int_prop(
+        "DiagonalColor", "대각선 색상: 정수 값을 입력하세요."
+    )
+
+    # Other integer properties
+    slash_flag = ParameterSet._int_prop(
+        "SlashFlag", "대각선 플래그: 정수 값을 입력하세요."
+    )
+    backslash_flag = ParameterSet._int_prop(
+        "BackSlashFlag", "역대각선 플래그: 정수 값을 입력하세요."
+    )
+    diagonal_type = ParameterSet._int_prop(
+        "DiagonalType", "대각선 유형: 정수 값을 입력하세요."
+    )
+    diagonal_width = ParameterSet._int_prop(
+        "DiagonalWidth", "대각선 두께: 정수 값을 입력하세요."
+    )
+    crooked_slash_flag = ParameterSet._int_prop(
+        "CrookedSlashFlag", "꺾인 대각선 플래그 (bit 0, 1): 정수 값을 입력하세요."
+    )
+
+    # Boolean properties
+    border_fill_3d = ParameterSet._bool_prop(
+        "BorderFill3D", "3차원 효과: 0 = off, 1 = on"
+    )
+    shadow = ParameterSet._bool_prop("Shadow", "그림자 효과: 0 = off, 1 = on")
+    break_cell_separate_line = ParameterSet._bool_prop(
+        "BreakCellSeparateLine",
+        "자동으로 나뉜 표의 경계선 설정: 0 = 기본, 1 = 사용자 설정",
+    )
+    counter_slash_flag = ParameterSet._bool_prop(
+        "CounterSlashFlag", "슬래쉬 대각선의 역방향 플래그: 0 = 순방향, 1 = 역방향"
+    )
+    counter_back_slash_flag = ParameterSet._bool_prop(
+        "CounterBackSlashFlag",
+        "역슬래쉬 대각선의 역방향 플래그: 0 = 순방향, 1 = 역방향",
+    )
+    center_line_flag = ParameterSet._bool_prop(
+        "CenterLineFlag", "중심선 플래그: 0 = 없음, 1 = 있음"
+    )
+    crooked_slash_flag1 = ParameterSet._bool_prop(
+        "CrookedSlashFlag1", "슬래쉬 대각선의 꺾임 여부 (저바이트): 0 = 아니오, 1 = 예"
+    )
+    crooked_slash_flag2 = ParameterSet._bool_prop(
+        "CrookedSlashFlag2",
+        "역슬래쉬 대각선의 꺾임 여부 (고바이트): 0 = 아니오, 1 = 예",
+    )
+
+    # Typed property for fill attribute
+    fill_attr = ParameterSet._typed_prop("FillAttr", "배경 채우기 속성", lambda: DrawFillAttr)
+
+# %% ../nbs/02_api/02_parameters.ipynb 32
+class Caption(ParameterSet):
+    """
+    ### Caption
+
+    8) Caption : 캡션 속성
+
+    | Item ID       | Type    | SubType | Description                                                                 |
+    | ------------- | ------- | ------- | --------------------------------------------------------------------------- |
+    | Side          | PIT_UI1 |         | 방향. 0 = 왼쪽, 1 = 오른쪽, 2 = 위, 3 = 아래                               |
+    | Width         | PIT_I   |         | 캡션 폭 (가로 방향이면 높이를 사용함. 단위: HWPUNIT)                      |
+    | Gap           | PIT_I   |         | 캡션과의 사이 간격 (단위: HWPUNIT)                                        |
+    | CapFullSize   | PIT_UI1 |         | 캡션 폭에 여백을 포함할지 여부 (0 = 포함 안 함, 1 = 포함함)              |
+    """
+
+    def __init__(self, parameterset):
+        super().__init__(parameterset)
+        self.attributes_names = [
+            "side",
+            "width",
+            "gap",
+            "cap_full_size",
+        ]
+
+    # 'side' must be one of the allowed values
+    side = ParameterSet._mapped_prop(
+        "Side", DIRECTION_MAP, doc="방향: 0 = 왼쪽, 1 = 오른쪽, 2 = 위, 3 = 아래"
+    )
+
+    # 'width' and 'gap' are stored in HWPUNIT; convert to/from mili
+    width = ParameterSet._unit_prop("Width", unit="mili", doc="캡션 폭 (단위: HWPUNIT)")
+    gap = ParameterSet._unit_prop("Gap", unit="mili", doc="캡션과의 간격 (단위: HWPUNIT)")
+
+    # Mapping for 'cap_full_size': 0 means 'exclude', 1 means 'include'
+    cap_full_size = ParameterSet._mapped_prop(
+        "CapFullSize",
+        mapping=CAP_FULL_SIZE_MAP,
+        doc="캡션 폭에 여백 포함 여부 (CapFullSize): 0 = exclude, 1 = include",
+    )
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 34
 class BulletShape(ParameterSet):
     """
     ### BulletShape
@@ -160,19 +1165,51 @@ class BulletShape(ParameterSet):
     | BulletImage    | PIT_SET  | DrawImageAttr  | 글머리 기호 이미지 |
     """
 
-    has_char_shape = BoolProperty("HasCharShape", "글자 모양 사용 여부: 0 = 기본, 1 = 사용자 정의")
-    char_shape = TypedProperty("CharShape", "글자 모양", lambda: CharShape)
-    width_adjust = IntProperty("WidthAdjust", "글자 크기 보정 값 (HWPUNIT)")
-    text_offset = IntProperty("TextOffset", "텍스트 오프셋 (percent or HWPUNIT)")
-    alignment = MappedProperty("Alignment", ALIGNMENT_MAP, "정렬 방식: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
-    use_inst_width = BoolProperty("UseInstWidth", "인스턴스 폭 사용 여부 (on/off)")
-    auto_indent = BoolProperty("AutoIndent", "자동 들여쓰기 (on/off)")
-    text_offset_type = BoolProperty("TextOffsetType", "텍스트 오프셋 타입: 0 = percent, 1 = HWPUNIT")
-    bullet_char = IntProperty("BulletChar", "글머리 기호 문자")
-    has_image = BoolProperty("HasImage", "이미지 글머리 기호 여부: 0 = 없음, 1 = 있음")
-    bullet_image = TypedProperty("BulletImage", "글머리 기호 이미지", lambda: DrawImageAttr)
+    def __init__(self, parameterset):
+        super().__init__(parameterset)
+        self.attributes_names = [
+            "has_char_shape",
+            "char_shape",
+            "width_adjust",
+            "text_offset",
+            "alignment",
+            "use_inst_width",
+            "auto_indent",
+            "text_offset_type",
+            "bullet_char",
+            "has_image",
+            "bullet_image",
+        ]
 
-# %% ../nbs/02_api/02_parameters.ipynb 14
+    has_char_shape = ParameterSet._bool_prop(
+        "HasCharShape", "글자 모양 사용 여부: 0 = 기본, 1 = 사용자 정의"
+    )
+    char_shape = ParameterSet._typed_prop("CharShape", "글자 모양", lambda: CharShape)
+    width_adjust = ParameterSet._int_prop("WidthAdjust", "글자 크기 보정 값 (HWPUNIT)")
+    text_offset = ParameterSet._int_prop(
+        "TextOffset", "텍스트 오프셋 (percent or HWPUNIT)"
+    )
+    alignment = ParameterSet._mapped_prop(
+        "Alignment",
+        ALIGNMENT_MAP,
+        doc="정렬 방식: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽",
+    )
+    use_inst_width = ParameterSet._bool_prop(
+        "UseInstWidth", "인스턴스 폭 사용 여부 (on/off)"
+    )
+    auto_indent = ParameterSet._bool_prop("AutoIndent", "자동 들여쓰기 (on/off)")
+    text_offset_type = ParameterSet._bool_prop(
+        "TextOffsetType", "텍스트 오프셋 타입: 0 = percent, 1 = HWPUNIT"
+    )
+    bullet_char = ParameterSet._int_prop("BulletChar", "글머리 기호 문자")
+    has_image = ParameterSet._bool_prop(
+        "HasImage", "이미지 글머리 기호 여부: 0 = 없음, 1 = 있음"
+    )
+    bullet_image = ParameterSet._typed_prop(
+        "BulletImage", "글머리 기호 이미지", lambda: DrawImageAttr
+    )
+
+# %% ../nbs/02_api/02_parameters.ipynb 36
 class Cell(ParameterSet):
     """
     ### Cell
@@ -191,16 +1228,33 @@ class Cell(ParameterSet):
     | CellCtrlData | PIT_SET  | CtrlData  | 셀 제어 데이터               |
     """
 
-    has_margin = BoolProperty("HasMargin", "셀 여백 여부 (on / off): 0 또는 1.")
-    protected = BoolProperty("Protected", "보호 설정 여부: 0 = off, 1 = on.")
-    header = BoolProperty("Header", "헤더 여부: 0 = off, 1 = on.")
-    width = UnitProperty("Width", "mili", "셀의 너비 (mm).")
-    height = UnitProperty("Height", "mili", "셀의 높이 (mm).")
-    editable = BoolProperty("Editable", "편집 가능 여부: 0 = off, 1 = on.")
-    dirty = BoolProperty("Dirty", "변경 여부: 0 = off, 1 = on.")
-    cell_ctrl_data = TypedProperty("CellCtrlData", "셀 제어 데이터", lambda: CtrlData)
+    def __init__(self, parameterset):
+        super().__init__(parameterset)
+        self.attributes_names = [
+            "has_margin",
+            "protected",
+            "header",
+            "width",
+            "height",
+            "editable",
+            "dirty",
+            "cell_ctrl_data",
+        ]
 
-# %% ../nbs/02_api/02_parameters.ipynb 16
+    has_margin = ParameterSet._bool_prop(
+        "HasMargin", "셀 여백 여부 (on / off): 0 또는 1."
+    )
+    protected = ParameterSet._bool_prop("Protected", "보호 설정 여부: 0 = off, 1 = on.")
+    header = ParameterSet._bool_prop("Header", "헤더 여부: 0 = off, 1 = on.")
+    width = ParameterSet._unit_prop("Width", "mili", "셀의 너비 (mm).")
+    height = ParameterSet._unit_prop("Height", "mili", "셀의 높이 (mm).")
+    editable = ParameterSet._bool_prop("Editable", "편집 가능 여부: 0 = off, 1 = on.")
+    dirty = ParameterSet._bool_prop("Dirty", "변경 여부: 0 = off, 1 = on.")
+    cell_ctrl_data = ParameterSet._typed_prop(
+        "CellCtrlData", "셀 제어 데이터", lambda: CtrlData
+    )
+
+# %% ../nbs/02_api/02_parameters.ipynb 38
 class CharShape(ParameterSet):
     """
         ### CharShape
@@ -499,7 +1553,7 @@ class CharShape(ParameterSet):
     # Outline type (mapped)
 
     outline_type = ParameterSet._mapped_prop(
-        "OutlineType",
+        "OutLineType",
         OUTLINE_TYPE_MAP,
         "외곽선 종류: 0 = none, 1 = solid, 2 = dot, 3 = thick, 4 = dash, 5 = dashdot, 6 = dashdotdot",
     )
@@ -759,7 +1813,7 @@ class CharShape(ParameterSet):
             "shadow_type": self.shadow_type,
             "text_color": self.text_color,
             "shade_color": self.shade_color,
-            "underline_color": self.underline_color,
+            "underline_colo": self.underline_color,
             "shadow_offset_x": self.shadow_offset_x,
             "shadow_offset_y": self.shadow_offset_y,
             "shadow_color": self.shadow_color,
@@ -776,7 +1830,7 @@ class CharShape(ParameterSet):
     def __repr__(self):
         return self.__str__()
 
-# %% ../nbs/02_api/02_parameters.ipynb 18
+# %% ../nbs/02_api/02_parameters.ipynb 40
 class CtrlData(ParameterSet):
     """
     ### CtrlData
@@ -787,11 +1841,11 @@ class CtrlData(ParameterSet):
     |---------|-----------|---------|----------------------|
     | Name    | PIT_BSTR  |         | 제어 데이터의 이름.  |
     """
-    name = StringProperty("Name", "제어 데이터의 이름.")
+    name = ParameterSet._str_prop("Name", "제어 데이터의 이름.")
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 20
+# %% ../nbs/02_api/02_parameters.ipynb 42
 class DrawArcType(ParameterSet):
     """
     ### DrawArcType
@@ -803,13 +1857,14 @@ class DrawArcType(ParameterSet):
     | Type     | PIT_UI     |         | 곡선 유형: 0 = 선, 1 = 필수곡선, 2 = 화살표 |
     | Interval | PIT_ARRAY  | PIT_I   | 곡선의 시작점과 끝점을 나타내는 배열 |
     """
-    _arc_type_map = {"line": 0, "essential": 1, "arrow": 2}
-    type = MappedProperty("Type", _arc_type_map, "곡선 유형: 0 = 선, 1 = 필수곡선, 2 = 화살표")
-    interval = ListProperty("Interval", "곡선의 시작점과 끝점을 나타내는 배열", item_type=int)
+    _ark_type_map = {"line": 0, "essential": 1, "arrow": 2}
+    type = ParameterSet._mapped_prop("Type", _ark_type_map,
+                                     doc="곡선 유형: 0 = 선, 1 = 필수곡선, 2 = 화살표")
+    interval = ParameterSet._int_list_prop("Interval", "곡선의 시작점과 끝점을 나타내는 배열")
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 22
+# %% ../nbs/02_api/02_parameters.ipynb 44
 class DrawCoordInfo(ParameterSet):
     """
     ### DrawCoordInfo
@@ -824,13 +1879,13 @@ class DrawCoordInfo(ParameterSet):
     | Point   | PIT_ARRAY  | PIT_I   | 좌표 Array (X1,Y1), (X2,Y2), ..., (Xn,Yn)   |
     | Line    | PIT_ARRAY  | PIT_UI1 | 선 정보 Array(점들에서 연결된 형태)          |
     """
-    count = IntProperty("Count", "점의 개수: 정수 값을 입력하세요.")
-    point = ListProperty("Point", "좌표 배열 (X1, Y1), (X2, Y2), ..., (Xn, Yn): 리스트 값을 입력하세요.", item_type=tuple)
-    line  = ListProperty("Line", "선 정보 배열: 리스트 값을 입력하세요.", item_type=int)
+    count = ParameterSet._int_prop("Count", "점의 개수: 정수 값을 입력하세요.")
+    point = ParameterSet._tuple_list_prop("Point", "좌표 배열 (X1, Y1), (X2, Y2), ..., (Xn, Yn): 리스트 값을 입력하세요.")
+    line  = ParameterSet._int_list_prop("Line", "선 정보 배열: 리스트 값을 입력하세요.")
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 24
+# %% ../nbs/02_api/02_parameters.ipynb 46
 class DrawCtrlHyperlink(ParameterSet):
     """
     ### DrawCtrlHyperlink
@@ -843,11 +1898,11 @@ class DrawCtrlHyperlink(ParameterSet):
     |---------|-----------|---------|--------------------------------------|
     | Command | PIT_BSTR  |         | Command String (명령 문자열)         |
     """
-    command = StringProperty("Command", "Command String: 명령 문자열을 입력하세요.")
+    command = ParameterSet._str_prop("Command", "Command String: 명령 문자열을 입력하세요.")
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 26
+# %% ../nbs/02_api/02_parameters.ipynb 48
 class DrawEditDetail(ParameterSet):
     """
     ### DrawEditDetail
@@ -861,18 +1916,18 @@ class DrawEditDetail(ParameterSet):
     | PointX  | PIT_I  |         | 교점의 X 좌표 |
     | PointY  | PIT_I  |         | 교점의 Y 좌표 |
     """
-    command = IntProperty("Command", "Command: Reserved.")
-    index   = IntProperty("Index", "Index: 교점 정의의 인덱스.")
-    point_x = IntProperty("PointX", "PointX: 교점의 X 좌표.")
-    point_y = IntProperty("PointY", "PointY: 교점의 Y 좌표.")
+    command = ParameterSet._int_prop("Command", "Command: Reserved.")
+    index   = ParameterSet._int_prop("Index", "Index: 교점 정의의 인덱스.")
+    point_x = ParameterSet._int_prop("PointX", "PointX: 교점의 X 좌표.")
+    point_y = ParameterSet._int_prop("PointY", "PointY: 교점의 Y 좌표.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 28
+# %% ../nbs/02_api/02_parameters.ipynb 50
 class DrawFillAttr(ParameterSet):
     """
     ### DrawFillAttr
 
-    31) DrawFillAttr : 그리기 개체의 채우기 속성
+    30) DrawEditDetail : 그림의 교정과 관련된 상세 설정
 
     | Item ID               | Type         | SubType   | Description                                                                                         |
     |-----------------------|--------------|-----------|-----------------------------------------------------------------------------------------------------|
@@ -940,8 +1995,8 @@ class DrawFillAttr(ParameterSet):
     
     filename = ParameterSet._str_prop("FileName", "그림 파일 경로")
     embedded = ParameterSet._bool_prop("Embedded", "그림이 문서에 직접 삽입(TRUE) / 파일로 연결(FALSE)")
-    PIC_EFFECT_MAP = {"none": 0, "gray": 1, "black and white": 2}
-    pic_effect = ParameterSet._mapped_prop("PicEffect", PIC_EFFECT_MAP,
+    _pic_effect_map = {"none": 0, "gray": 1, "black and white": 2}
+    pic_effect = ParameterSet._mapped_prop("PicEffect", _pic_effect_map,
                                            doc="그림 효과: 0 = 실제 이미지 그대로, 1 = 그레이스케일, 2 = 흑백 효과")
     brightness = ParameterSet._int_prop("Brightness", "명도 (-100 ~ 100)", -100, 100)
     contrast = ParameterSet._int_prop("Contrast", "대비 (-100 ~ 100)", -100, 100)
@@ -968,7 +2023,7 @@ class DrawFillAttr(ParameterSet):
     image_alpha = ParameterSet._int_prop("ImageAlpha", "그림 개체/배경 투명도", 0, 255)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 31
+# %% ../nbs/02_api/02_parameters.ipynb 53
 class DrawImageAttr(ParameterSet):
     """
     ### DrawImageAttr
@@ -1035,7 +2090,7 @@ class DrawImageAttr(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 33
+# %% ../nbs/02_api/02_parameters.ipynb 55
 class DrawImageScissoring(ParameterSet):
     """
     ### DrawImageScissoring
@@ -1055,7 +2110,7 @@ class DrawImageScissoring(ParameterSet):
     handle_index = ParameterSet._int_prop("HandleIndex", "Reserved: 정수 값을 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 35
+# %% ../nbs/02_api/02_parameters.ipynb 57
 class DrawLayout(ParameterSet):
     """
     ### DrawLayout
@@ -1073,7 +2128,7 @@ class DrawLayout(ParameterSet):
     curve_segment_info = ParameterSet._int_list_prop("CurveSegmentInfo", "곡선 세그먼트 정보: 정수 리스트")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 37
+# %% ../nbs/02_api/02_parameters.ipynb 59
 class DrawLineAttr(ParameterSet):
     """
     ### DrawLineAttr
@@ -1109,7 +2164,7 @@ class DrawLineAttr(ParameterSet):
     alpha         = ParameterSet._int_prop("Alpha", "투명도: 정수를 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 39
+# %% ../nbs/02_api/02_parameters.ipynb 61
 class DrawRectType(ParameterSet):
     """
     ### DrawRectType
@@ -1124,7 +2179,7 @@ class DrawRectType(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 41
+# %% ../nbs/02_api/02_parameters.ipynb 63
 class DrawResize(ParameterSet):
     """
     ### DrawResize
@@ -1144,7 +2199,7 @@ class DrawResize(ParameterSet):
     mode = ParameterSet._int_prop("Mode", "Reserved: 정수 값을 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 43
+# %% ../nbs/02_api/02_parameters.ipynb 65
 class DrawRotate(ParameterSet):
     """
     ### DrawRotate
@@ -1170,7 +2225,7 @@ class DrawRotate(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 45
+# %% ../nbs/02_api/02_parameters.ipynb 67
 class DrawScAction(ParameterSet):
     """
     ### DrawScAction
@@ -1195,7 +2250,7 @@ class DrawScAction(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 47
+# %% ../nbs/02_api/02_parameters.ipynb 69
 class DrawShadow(ParameterSet):
     """
     ### DrawShadow
@@ -1218,7 +2273,7 @@ class DrawShadow(ParameterSet):
     shadow_alpha   = ParameterSet._int_prop("ShadowAlpha", "그림자 투명도 (0 ~ 255)", 0, 255)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 49
+# %% ../nbs/02_api/02_parameters.ipynb 71
 class DrawShear(ParameterSet):
     """
     ### DrawShear
@@ -1235,7 +2290,7 @@ class DrawShear(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 51
+# %% ../nbs/02_api/02_parameters.ipynb 73
 class DrawTextart(ParameterSet):
     """
     ### DrawTextart
@@ -1260,7 +2315,7 @@ class DrawTextart(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 53
+# %% ../nbs/02_api/02_parameters.ipynb 75
 class FindReplace(ParameterSet):
     """
     ### FindReplace
@@ -1375,7 +2430,7 @@ class FindReplace(ParameterSet):
         "ReplaceParaShape", "바꿀 문단 모양", lambda: ParaShape
     )
 
-# %% ../nbs/02_api/02_parameters.ipynb 55
+# %% ../nbs/02_api/02_parameters.ipynb 77
 class ListProperties(ParameterSet):
     """
     ### ListProperties
@@ -1405,7 +2460,7 @@ class ListProperties(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 57
+# %% ../nbs/02_api/02_parameters.ipynb 79
 class NumberingShape(ParameterSet):
     """
     ### NumberingShape
@@ -1433,7 +2488,7 @@ class NumberingShape(ParameterSet):
     char_shape_level0      = ParameterSet._typed_prop("CharShapeLevel0", "수준0 글자 모양 지정", lambda: CharShape)
     width_adjust_level0    = ParameterSet._int_prop("WidthAdjustLevel0", "수준0 너비 조정 값 (HWPUNIT)")
     text_offset_level0     = ParameterSet._int_prop("TextOffsetLevel0", "수준0 텍스트 오프셋 (percent or HWPUNIT)")
-    alignment_level0       = ParameterSet._mapped_prop("AlignmentLevel0", ALIGN_MAP,
+    alignment_level0       = ParameterSet._mapped_prop("AlignmentLevel0", ALIGNMENT_MAP,
                                                      doc="수준0 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
     use_inst_width_level0  = ParameterSet._bool_prop("UseInstWidthLevel0", "수준0 문서 내부 너비 맞춤 여부")
     auto_indent_level0     = ParameterSet._bool_prop("AutoIndentLevel0", "수준0 자동 들여쓰기 여부")
@@ -1447,7 +2502,7 @@ class NumberingShape(ParameterSet):
     char_shape_level1      = ParameterSet._typed_prop("CharShapeLevel1", "수준1 글자 모양 지정", lambda: CharShape)
     width_adjust_level1    = ParameterSet._int_prop("WidthAdjustLevel1", "수준1 너비 조정 값 (HWPUNIT)")
     text_offset_level1     = ParameterSet._int_prop("TextOffsetLevel1", "수준1 텍스트 오프셋")
-    alignment_level1       = ParameterSet._mapped_prop("AlignmentLevel1", ALIGN_MAP,
+    alignment_level1       = ParameterSet._mapped_prop("AlignmentLevel1", ALIGNMENT_MAP,
                                                      doc="수준1 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
     use_inst_width_level1  = ParameterSet._bool_prop("UseInstWidthLevel1", "수준1 문서 내부 너비 맞춤 여부")
     auto_indent_level1     = ParameterSet._bool_prop("AutoIndentLevel1", "수준1 자동 들여쓰기 여부")
@@ -1461,7 +2516,7 @@ class NumberingShape(ParameterSet):
     char_shape_level2      = ParameterSet._typed_prop("CharShapeLevel2", "수준2 글자 모양 지정", lambda: CharShape)
     width_adjust_level2    = ParameterSet._int_prop("WidthAdjustLevel2", "수준2 너비 조정 값 (HWPUNIT)")
     text_offset_level2     = ParameterSet._int_prop("TextOffsetLevel2", "수준2 텍스트 오프셋")
-    alignment_level2       = ParameterSet._mapped_prop("AlignmentLevel2", ALIGN_MAP,
+    alignment_level2       = ParameterSet._mapped_prop("AlignmentLevel2", ALIGNMENT_MAP,
                                                      doc="수준2 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
     use_inst_width_level2  = ParameterSet._bool_prop("UseInstWidthLevel2", "수준2 문서 내부 너비 맞춤 여부")
     auto_indent_level2     = ParameterSet._bool_prop("AutoIndentLevel2", "수준2 자동 들여쓰기 여부")
@@ -1475,7 +2530,7 @@ class NumberingShape(ParameterSet):
     char_shape_level3      = ParameterSet._typed_prop("CharShapeLevel3", "수준3 글자 모양 지정", lambda: CharShape)
     width_adjust_level3    = ParameterSet._int_prop("WidthAdjustLevel3", "수준3 너비 조정 값 (HWPUNIT)")
     text_offset_level3     = ParameterSet._int_prop("TextOffsetLevel3", "수준3 텍스트 오프셋")
-    alignment_level3       = ParameterSet._mapped_prop("AlignmentLevel3", ALIGN_MAP,
+    alignment_level3       = ParameterSet._mapped_prop("AlignmentLevel3", ALIGNMENT_MAP,
                                                      doc="수준3 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
     use_inst_width_level3  = ParameterSet._bool_prop("UseInstWidthLevel3", "수준3 문서 내부 너비 맞춤 여부")
     auto_indent_level3     = ParameterSet._bool_prop("AutoIndentLevel3", "수준3 자동 들여쓰기 여부")
@@ -1489,7 +2544,7 @@ class NumberingShape(ParameterSet):
     char_shape_level4      = ParameterSet._typed_prop("CharShapeLevel4", "수준4 글자 모양 지정", lambda: CharShape)
     width_adjust_level4    = ParameterSet._int_prop("WidthAdjustLevel4", "수준4 너비 조정 값 (HWPUNIT)")
     text_offset_level4     = ParameterSet._int_prop("TextOffsetLevel4", "수준4 텍스트 오프셋")
-    alignment_level4       = ParameterSet._mapped_prop("AlignmentLevel4", ALIGN_MAP,
+    alignment_level4       = ParameterSet._mapped_prop("AlignmentLevel4", ALIGNMENT_MAP,
                                                      doc="수준4 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
     use_inst_width_level4  = ParameterSet._bool_prop("UseInstWidthLevel4", "수준4 문서 내부 너비 맞춤 여부")
     auto_indent_level4     = ParameterSet._bool_prop("AutoIndentLevel4", "수준4 자동 들여쓰기 여부")
@@ -1503,7 +2558,7 @@ class NumberingShape(ParameterSet):
     char_shape_level5      = ParameterSet._typed_prop("CharShapeLevel5", "수준5 글자 모양 지정", lambda: CharShape)
     width_adjust_level5    = ParameterSet._int_prop("WidthAdjustLevel5", "수준5 너비 조정 값 (HWPUNIT)")
     text_offset_level5     = ParameterSet._int_prop("TextOffsetLevel5", "수준5 텍스트 오프셋")
-    alignment_level5       = ParameterSet._mapped_prop("AlignmentLevel5", ALIGN_MAP,
+    alignment_level5       = ParameterSet._mapped_prop("AlignmentLevel5", ALIGNMENT_MAP,
                                                      doc="수준5 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
     use_inst_width_level5  = ParameterSet._bool_prop("UseInstWidthLevel5", "수준5 문서 내부 너비 맞춤 여부")
     auto_indent_level5     = ParameterSet._bool_prop("AutoIndentLevel5", "수준5 자동 들여쓰기 여부")
@@ -1517,7 +2572,7 @@ class NumberingShape(ParameterSet):
     char_shape_level6      = ParameterSet._typed_prop("CharShapeLevel6", "수준6 글자 모양 지정", lambda: CharShape)
     width_adjust_level6    = ParameterSet._int_prop("WidthAdjustLevel6", "수준6 너비 조정 값 (HWPUNIT)")
     text_offset_level6     = ParameterSet._int_prop("TextOffsetLevel6", "수준6 텍스트 오프셋")
-    alignment_level6       = ParameterSet._mapped_prop("AlignmentLevel6", ALIGN_MAP,
+    alignment_level6       = ParameterSet._mapped_prop("AlignmentLevel6", ALIGNMENT_MAP,
                                                      doc="수준6 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
     use_inst_width_level6  = ParameterSet._bool_prop("UseInstWidthLevel6", "수준6 문서 내부 너비 맞춤 여부")
     auto_indent_level6     = ParameterSet._bool_prop("AutoIndentLevel6", "수준6 자동 들여쓰기 여부")
@@ -1530,7 +2585,7 @@ class NumberingShape(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 59
+# %% ../nbs/02_api/02_parameters.ipynb 81
 class ParaShape(ParameterSet):
     """
     ### ParaShape
@@ -1697,7 +2752,7 @@ class ParaShape(ParameterSet):
         "BorderFill", "테두리/배경", lambda: BorderFill
     )
 
-# %% ../nbs/02_api/02_parameters.ipynb 61
+# %% ../nbs/02_api/02_parameters.ipynb 83
 class ShapeObject(ParameterSet):
     """
     ### ShapeObject
@@ -1811,9 +2866,9 @@ class ShapeObject(ParameterSet):
     text_flow        = ParameterSet._mapped_prop("TextFlow", TEXT_FLOW_MAP, doc="텍스트 흐름 방향 그리기 개체의 좌/우 어느 쪽에 글을 배치할지 지정하는 옵션. TextWrap의 값이 0일 때만 유효하다. 0 = 양쪽 모두(Both) 1 = 왼쪽만(Left Only) 2 = 오른쪽만(Right Only) 3 = 왼쪽과 오른쪽 중 넓은 쪽(Largest Only)")
     outside_margin_left  = ParameterSet._unit_prop("OutsideMarginLeft", "mili", "외부 여백 (왼쪽)")
     outside_margin_right = ParameterSet._unit_prop("OutsideMarginRight", "mili", "외부 여백 (오른쪽)")
-    outside_margin_top   = ParameterSet._unit_prop("OutsideMarginTop", "mili", "외부 여백 (위)")
-    outside_margin_bottom = ParameterSet._unit_prop("OutsideMarginBottom", "mili", "외부 여백 (아래)")
-    numbering_type   = ParameterSet._mapped_prop("NumberingType", NUMBERING_TYPE_MAP, doc="번호 매기기 방식")
+    horz_rel_to      = ParameterSet._mapped_prop("HorzRelTo", HORZ_REL_TO_MAP, doc="수평 기준 위치 설정")
+    horz_align       = ParameterSet._mapped_prop("HorzAlign", HORZ_ALIGN_MAP, doc="수평 정렬 방식")
+    horz_offset      = ParameterSet._int_prop("HorzOffset", "수평 오프셋 (HWPUNIT)")
     layout_width     = ParameterSet._int_prop("LayoutWidth", "레이아웃 너비")
     layout_height    = ParameterSet._int_prop("LayoutHeight", "레이아웃 높이")
     lock             = ParameterSet._bool_prop("Lock", "잠금 여부 (on/off)")
@@ -1848,7 +2903,7 @@ class ShapeObject(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 63
+# %% ../nbs/02_api/02_parameters.ipynb 85
 class TabDef(ParameterSet):
     """
     ### TabDef
@@ -1868,7 +2923,7 @@ class TabDef(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 65
+# %% ../nbs/02_api/02_parameters.ipynb 87
 class Table(ParameterSet):
     """
     ### Table
