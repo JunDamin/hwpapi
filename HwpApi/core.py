@@ -1413,14 +1413,24 @@ def select_text(app: App, option=const.SelectionOption.Line):
     >>> app = App()
     >>> select_text(app, option=SelectionOption.Para)
     """
+
     logger = get_logger('00_core.select_text')
-    logger.debug(f"Calling select_text")
+    logger.debug(f"Calling select_text with option={option}")
 
-    begin_action_name, end_action_name = option.value  # 시작 및 끝 작업 이름 가져오기
-    begin_action = getattr(app.actions, begin_action_name)  # 시작 작업 가져오기
-    end_action = getattr(app.actions, end_action_name)  # 끝 작업 가져오기
+    # 문자열 입력 처리
+    if isinstance(option, str):
+        try:
+            option = const.SelectionOption[option]  # 문자열을 Enum으로 변환
+        except KeyError:
+            raise ValueError(f"Invalid option string: {option}. Must be one of {[o.name for o in const.SelectionOption]}")
 
-    return begin_action().run(), end_action().run()  # 작업 실행 후 결과 반환
+    # Enum 멤버라면 값 꺼내기
+    begin_action_name, end_action_name = option.value
+    begin_action = getattr(app.actions, begin_action_name)
+    end_action = getattr(app.actions, end_action_name)
+
+    return begin_action(), end_action()
+
 
 # %% ../nbs/02_api/00_core.ipynb 56
 @patch
