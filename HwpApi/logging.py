@@ -55,7 +55,8 @@ class HwpApiLogger:
         
         # Set default level from environment variable or INFO
         level = os.environ.get('HWPAPI_LOG_LEVEL', 'INFO').upper()
-        self.logger.setLevel(getattr(logging, level, logging.INFO))
+        log_level = getattr(logging, level, logging.DEBUG)
+        self.logger.setLevel(log_level)
         
         # Create console handler if none exists
         if not self.logger.handlers:
@@ -79,6 +80,13 @@ class HwpApiLogger:
             console_handler.setFormatter(formatter)
             
             self.logger.addHandler(console_handler)
+            
+            # Automatically add file handler when level is DEBUG
+            if log_level == logging.DEBUG:
+                log_dir = Path('logs')
+                log_dir.mkdir(exist_ok=True)
+                log_file = log_dir / 'hwpapi_debug.log'
+                self.add_file_handler(log_file, logging.DEBUG)
         
         # Prevent propagation to root logger
         self.logger.propagate = False
@@ -160,7 +168,7 @@ class HwpApiLogger:
     def configure(self, 
                  level: Union[str, int] = 'INFO',
                  console: bool = True,
-                 file_path: Optional[Union[str, Path]] = None,
+                 file_path: Optional[Union[str, Path]] = "app.log",
                  format_string: Optional[str] = None):
         """
         Configure the logger with custom settings.
@@ -252,7 +260,7 @@ def configure_logging(**kwargs):
 
 
 # %% ../nbs/02_api/06_logging.ipynb 6
-def setup_jupyter_logging(level='INFO', format_string=None):
+def setup_jupyter_logging(level='DEBUG', format_string=None):
     """
     더 나은 가시성을 위해 Jupyter 노트북 전용 로깅을 설정합니다.
     
