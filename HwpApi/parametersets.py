@@ -2,395 +2,35 @@
 
 # %% ../nbs/02_api/02_parameters.ipynb 4
 from __future__ import annotations
-from .functions import from_hwpunit, to_hwpunit, convert_hwp_color_to_hex, convert_to_hwp_color
+from .parameter_base import (
+    ParameterSet, IntProperty, BoolProperty, StringProperty, 
+    ColorProperty, UnitProperty, MappedProperty, TypedProperty, ListProperty
+)
+from .parameter_mappings import (
+    DIRECTION_MAP, CAP_FULL_SIZE_MAP, ALIGNMENT_MAP, VERT_ALIGN_MAP, VERT_REL_TO_MAP, 
+    HORZ_REL_TO_MAP, HORZ_ALIGN_MAP, ALIGN_MAP, ALIGN_TYPE_MAP, FONTTYPE_MAP, 
+    SHADOW_TYPE_MAP, UNDERLINE_TYPE_MAP, OUTLINE_TYPE_MAP, STRIKEOUT_TYPE_MAP, 
+    USE_KERNING_MAP, DIAC_SYM_MARK_MAP, USE_FONT_SPACE_MAP, BACKGROUND_TYPE_MAP, 
+    GRADATION_TYPE_MAP, ROTATION_SETTING_MAP, SEARCH_DIRECTION_MAP, TEXT_DIRECTION_MAP, 
+    LINE_WRAP_MAP, TEXT_WRAP_MAP, TEXT_FLOW_MAP, LATIN_LINE_BREAK_MAP, 
+    NONLATIN_LINE_BREAK_MAP, TEXT_ALIGN_MAP, HEADING_TYPE_MAP, BORDER_TEXT_MAP, 
+    NUMBERING_TYPE_MAP, NUMBER_FORMAT_MAP, LINE_SPACING_TYPE_MAP, PIC_EFFECT_MAP, 
+    PAGE_BREAK_MAP
+)
 import pprint
 
 
-class ParameterSet:
-    """
-    Base class for HWP parameter sets.
-    
-    Provides a unified interface for working with HWP parameter objects,
-    handling both COM objects with SetID and regular Python objects.
-    """
-
-    def __init__(self, parameterset):
-        """Initialize with a parameter set object."""
-        self._pset = parameterset
-        self._is_pset = hasattr(parameterset, "SetID")
-        self.attributes_names = []
-
-    @property
-    def parameterset(self):
-        """Get the underlying parameter set object."""
-        return self._pset
-
-    def _get_value(self, name):
-        """Get a value from the parameter set."""
-        if self._is_pset:
-            return self._pset.Item(name)
-        return getattr(self._pset, name)
-    
-    def _set_value(self, name, value):
-        """Set a value in the parameter set."""
-        if self._is_pset:
-            return self._pset.SetItem(name, value)
-        return setattr(self._pset, name, value)
-
-    def _del_value(self, name):
-        """Delete a value from the parameter set."""
-        if self._is_pset:
-            return self._pset.RemoveItem(name)
-        return False
-    
-    def update_from(self, pset):
-        """Update this parameter set with values from another parameter set."""
-        for key in self.attributes_names:
-            value = getattr(pset, key, None)
-            
-            if isinstance(value, ParameterSet):
-                # Recursively update nested parameter sets
-                target = getattr(self, key)
-                target.update_from(value)
-            elif value is None:
-                # Remove the attribute if value is None
-                self._del_value(key)
-            elif value:
-                # Set the attribute if value is truthy
-                setattr(self, key, value)
-        return self
-
-    def serialize(self):
-        """Convert the parameter set to a dictionary."""
-        result = {}
-        for key in self.attributes_names:
-            value = getattr(self, key, None)
-            if isinstance(value, ParameterSet):
-                value = value.serialize()
-            result[key] = value
-        return result
-    
-    def __str__(self):
-        """String representation of the parameter set."""
-        data = {
-            "name": self.__class__.__name__, 
-            "values": self.serialize()
-        }
-        return pprint.pformat(data, indent=4, width=60)
-    
-    def __repr__(self):
-        """Representation of the parameter set."""
-        return self.__str__()
-
-    @staticmethod        
-    def _typed_prop(key, doc, expected_type):
-        """Create a property for typed parameter sets."""
-        def getter(self):
-            value = self._get_value(key)
-            if value is None:
-                return None
-            # Wrap in expected type if not already wrapped
-            if not isinstance(value, expected_type()):
-                return expected_type()(value)
-            return value
-        
-        def setter(self, pset):
-            if pset is None:
-                return self._del_value(key)
-            
-            # Validate type
-            if not isinstance(pset, expected_type()):
-                raise TypeError(f"Value for '{key}' must be of type {expected_type.__name__}")
-            
-            # Get or create target
-            target = self._get_value(key)
-            if not target:
-                target = self._pset.CreateItemSet(key, expected_type().SetID)
-            
-            # Update target with new values
-            expected_type()(target).update_from(pset)
-        
-        return property(getter, setter, doc=doc)    
-
-    @staticmethod      
-    def _int_prop(key, doc, min_val=None, max_val=None):
-        """Create a property for integer values with optional range validation."""
-        def getter(self):
-            return self._get_value(key)
-        
-        def setter(self, value):
-            if value is None:
-                return self._del_value(key)
-            
-            # Type validation
-            if not isinstance(value, int):
-                raise TypeError(f"Value for '{key}' must be an integer, got {type(value).__name__}")
-            
-            # Range validation
-            if min_val is not None and value < min_val:
-                raise ValueError(f"Value for '{key}' must be >= {min_val}, got {value}")
-            if max_val is not None and value > max_val:
-                raise ValueError(f"Value for '{key}' must be <= {max_val}, got {value}")
-            
-            return self._set_value(key, value)
-        
-        return property(getter, setter, doc=doc)
-    
-    @staticmethod 
-    def _bool_prop(key, doc):
-        """Create a property for boolean values (0 or 1)."""
-        def getter(self):
-            return self._get_value(key)
-        
-        def setter(self, value):
-            if value is None:
-                return self._del_value(key)
-            
-            # Convert boolean to 0/1 if needed
-            if isinstance(value, bool):
-                value = int(value)
-            
-            # Validate value is 0 or 1
-            if value not in [0, 1]:
-                raise ValueError(f"Value for '{key}' must be 0 or 1, got {value}")
-            
-            return self._set_value(key, value)
-        
-        return property(getter, setter, doc=doc)
-    
-    @staticmethod 
-    def _color_prop(key, doc):
-        """Create a property for color values with hex conversion."""
-        def getter(self):
-            hwp_color = self._get_value(key)
-            return convert_hwp_color_to_hex(hwp_color)
-        
-        def setter(self, value):
-            if value is None:
-                return self._del_value(key)
-            
-            hwp_color = convert_to_hwp_color(value)
-            return self._set_value(key, hwp_color)
-        
-        return property(getter, setter, doc=doc)
-    
-    @staticmethod 
-    def _unit_prop(key, unit, doc):
-        """Create a property for unit-based values with automatic conversion."""
-        def getter(self):
-            hwp_value = self._get_value(key)
-            return from_hwpunit(hwp_value, unit)
-        
-        def setter(self, value):
-            if value is None:
-                return self._del_value(key)
-            
-            # Type validation
-            if not isinstance(value, (int, float)):
-                raise TypeError(f"Value for '{key}' must be a number, got {type(value).__name__}")
-            
-            # Convert to HWP unit
-            hwp_value = to_hwpunit(float(value), unit)
-            return self._set_value(key, hwp_value)
-        
-        return property(getter, setter, doc=doc)
-    
-    @staticmethod 
-    def _mapped_prop(key, mapping, doc):
-        """Create a property for mapped values (string <-> integer)."""
-        reverse_mapping = {v: k for k, v in mapping.items()}
-
-        def getter(self):
-            numeric_value = self._get_value(key)
-            # Return the string representation if available, otherwise the numeric value
-            return reverse_mapping.get(numeric_value, numeric_value)
-        
-        def setter(self, value):
-            if value is None:
-                return self._del_value(key)
-            
-            # Handle string input
-            if isinstance(value, str):
-                if value not in mapping:
-                    valid_options = list(mapping.keys())
-                    raise ValueError(f"Invalid value '{value}' for '{key}'. Valid options: {valid_options}")
-                numeric_value = mapping[value]
-            
-            # Handle integer input
-            elif isinstance(value, int):
-                if value not in reverse_mapping:
-                    valid_options = list(reverse_mapping.keys())
-                    raise ValueError(f"Invalid value {value} for '{key}'. Valid options: {valid_options}")
-                numeric_value = value
-            
-            # Invalid type
-            else:
-                raise TypeError(f"Value for '{key}' must be string or integer, got {type(value).__name__}")
-            
-            return self._set_value(key, numeric_value)
-        
-        return property(getter, setter, doc=doc)
-
-
-    # --- Additional property types ---
-    @staticmethod
-    def _str_prop(key, doc):
-        """Create a property for string values."""
-        def getter(self):
-            return self._get_value(key)
-        
-        def setter(self, value):
-            if value is None:
-                return self._del_value(key)
-            
-            if not isinstance(value, str):
-                raise TypeError(f"Value for '{key}' must be a string, got {type(value).__name__}")
-            
-            return self._set_value(key, value)
-        
-        return property(getter, setter, doc=doc)
-
-    @staticmethod
-    def _int_list_prop(key, doc):
-        """Create a property for lists of integers."""
-        def getter(self):
-            return self._get_value(key)
-        
-        def setter(self, value):
-            if value is None:
-                return self._del_value(key)
-            
-            # Validate list of integers
-            if not isinstance(value, list):
-                raise TypeError(f"Value for '{key}' must be a list, got {type(value).__name__}")
-            
-            if not all(isinstance(item, int) for item in value):
-                raise TypeError(f"All items in '{key}' must be integers")
-            
-            return self._set_value(key, value)
-        
-        return property(getter, setter, doc=doc)
-    
-    @staticmethod
-    def _tuple_list_prop(key, doc):
-        """Create a property for lists of (X, Y) coordinate tuples."""
-        def getter(self):
-            return self._get_value(key)
-        
-        def setter(self, value):
-            if value is None:
-                return self._del_value(key)
-            
-            # Validate list of (X, Y) tuples
-            if not isinstance(value, list):
-                raise TypeError(f"Value for '{key}' must be a list, got {type(value).__name__}")
-            
-            for i, item in enumerate(value):
-                if not isinstance(item, tuple) or len(item) != 2:
-                    raise TypeError(f"Item {i} in '{key}' must be a tuple of length 2")
-                if not all(isinstance(coord, int) for coord in item):
-                    raise TypeError(f"All coordinates in item {i} of '{key}' must be integers")
-            
-            return self._set_value(key, value)
-        
-        return property(getter, setter, doc=doc)
-    
-    @staticmethod
-    def _gradation_color_prop(key, doc):
-        """Create a property for gradation color lists (2-10 colors)."""
-        def getter(self):
-            return self._get_value(key)
-        
-        def setter(self, value):
-            if value is None:
-                return self._del_value(key)
-            
-            # Validate list with length constraints
-            if not isinstance(value, list):
-                raise TypeError(f"Value for '{key}' must be a list, got {type(value).__name__}")
-            
-            if not (2 <= len(value) <= 10):
-                raise ValueError(f"Length of '{key}' must be between 2 and 10, got {len(value)}")
-            
-            return self._set_value(key, value)
-        
-        return property(getter, setter, doc=doc)
+# The base ParameterSet class is now imported from parameter_base.py
 
 
 # %% auto 0
-__all__ = ['ParameterSet', 'BorderFill', 'Caption', 'BulletShape', 'Cell', 'CharShape', 'CtrlData', 'DrawArcType',
-           'DrawCoordInfo', 'DrawCtrlHyperlink', 'DrawEditDetail', 'DrawFillAttr', 'DrawImageAttr',
-           'DrawImageScissoring', 'DrawLayout', 'DrawLineAttr', 'DrawRectType', 'DrawResize', 'DrawRotate',
-           'DrawScAction', 'DrawShadow', 'DrawShear', 'DrawTextart', 'FindReplace', 'ListProperties', 'NumberingShape',
-           'ParaShape', 'ShapeObject', 'TabDef', 'Table']
+__all__ = ['ParameterSet', 'BorderFill', 'Caption', 'BulletShape', 'Cell', 'CharShape', 'CtrlData', 'DrawArcType', 
+           'DrawCoordInfo', 'DrawCtrlHyperlink', 'DrawEditDetail', 'DrawFillAttr', 'DrawImageAttr', 'DrawImageScissoring', 
+           'DrawLayout', 'DrawLineAttr', 'DrawRectType', 'DrawResize', 'DrawRotate', 'DrawScAction', 'DrawShadow', 
+           'DrawShear', 'DrawTextart', 'FindReplace', 'ListProperties', 'NumberingShape', 'ParaShape', 'ShapeObject', 
+           'TabDef', 'Table']
 
-# %% ../nbs/02_api/02_parameters.ipynb 6
-_direction_map = {"left": 0, "right": 1, "top": 2, "bottom": 3}
-_cap_full_size_map = {"exclude": 0 , "include": 1}
-_alignment_map = {"left": 0, "center": 1, "right": 2}
-_fonttype_map ={"don't care": 0, "TTF":  1, "HFT": 2, "dontcare": 0, "ttf": 1, "htf": 2}
-_shadow_type_map = {"none": 0, "drop": 1, "continous": 2}
-_background_type_map = {"empty": 0, "fill": 1, "picture": 2, "gradation":3}
-_gradataion_type_map = {"stripe": 1, "circle": 2, "cone": 3, "square": 4}
-_rotation_setting_map = {"none": 0, "setted_rotation": 1, "picture_centered_roation": 2, "rotation_and_centered": 3 }
-_search_direction_map = {"down": 0, "up": 1, "doc": 2}
-_text_direction_map = {"horizontal": 0, "vertical": 1}
-_line_wrap_map = {"basic": 0, "no_newline": 1, "forced": 2}
-_text_wrap_map = {"square": 0, "top_bottom": 1, "behind": 2, "front": 3, "tight": 4, "through": 5}
-_text_flow_map = {"both": 0, "left": 1, "right": 2, "largest": 3}
-_vert_align_map = {"top": 0, "center": 1, "bottom": 2}
-_vert_rel_to_map = {"paper": 0, "page": 1, "paragraph": 2}
-_hroz_rel_to_map = {"paper": 0, "page": 1, "column": 2, "paragraph": 3}
-_hroz_align_map = {"left": 0, "center": 1, "right": 2, "inside": 3, "outside": 4}
-_align_map = {"left": 0, "center": 1, "right": 2}
-_align_type_map = {"between": 0, "left": 1, "right": 2, "center": 3, "ratio": 4, "shared": 5}
-_latin_line_break_map = {"word": 0, "hyphen": 1, "letter": 2}
-_nonlatin_line_break_map = {"word": 0, "letter": 1}
-_text_align_map = {"font": 0, "up": 1, "middle": 2, "donw": 3}
-_heading_type_map = {"none": 0, "outline": 1, "number": 2, "bullet": 3}
-_border_text_map = {"column": 0, "text": 1}
-_underline_type_map = {"none": 0 , "bottom" : 1, "center": 2, "top": 3}
-_outline_type_map = {
-        "none": 0,
-        "solid": 1,
-        "dot": 2 ,
-        "thick": 3,
-        "dash": 4,
-        "dashdot": 5,
-        "dashdotdot": 6,
-    }
-_strikeout_type_map = {
-        "none": 0,
-        "red single": 1,
-        "red double": 2,
-        "text single": 3,
-        "text double": 4,
-    }
-_use_kerning_map = {"off": 0, "on": 1}
-
-_diac_sym_mark_map = {"none": 0 , "black circle": 1, "empty circle": 2}
-_use_font_space_map = {"off":0 , "on": 1}
-
-_numbering_type_map = {"none": 0, "picture": 1, "table": 2, "equation": 3}
-_number_format_map = {"1": 0,
-                      "circled 1": 1, 
-                      "I": 2,
-                      "i": 3, 
-                      "A": 4, 
-                      "a": 5, 
-                      "circled A": 6, 
-                      "circled a": 7, 
-                      "가": 8, 
-                      "동그라미 가": 9,
-                      "ㄱ": 10,  
-                      "동그라미 ㄱ": 11, 
-                      "일": 12, 
-                      "一": 13, 
-                      "동그라미 一" : 14
-}
-_line_spacing_type_map = {"font": 0, "fixed": 1, "space": 2}
-_pic_effect_map = {"none": 0, "bw": 1, "sepia": 2}
-_page_break_map = {'none': 0, "cell": 1, "text": 2}
+# Mapping constants are now imported from parameter_mappings.py
 
 # %% ../nbs/02_api/02_parameters.ipynb 8
 class BorderFill(ParameterSet):
@@ -435,130 +75,45 @@ class BorderFill(ParameterSet):
       - CounterSlashFlag (또는 CounterBackSlashFlag)
     """
 
-    def __init__(self, parameterset):
-        super().__init__(parameterset)
-        self.attributes_names = [
-            "border_type_left",
-            "border_type_right",
-            "border_type_top",
-            "border_type_bottom",
-            "border_width_left",
-            "border_width_right",
-            "border_width_top",
-            "border_width_bottom",
-            "border_color_left",
-            "border_color_right",
-            "border_color_top",
-            "border_color_bottom",
-            "diagonal_color",
-            "slash_flag",
-            "backslash_flag",
-            "diagonal_type",
-            "diagonal_width",
-            "crooked_slash_flag",
-            "border_fill_3d",
-            "shadow",
-            "break_cell_separate_line",
-            "counter_slash_flag",
-            "counter_back_slash_flag",
-            "center_line_flag",
-            "crooked_slash_flag1",
-            "crooked_slash_flag2",
-            "fill_attr",
-        ]
-
     # Integer properties
-    border_type_left = ParameterSet._int_prop(
-        "BorderTypeLeft", "테두리 유형 (왼쪽): 정수 값을 입력하세요."
-    )
-    border_type_right = ParameterSet._int_prop(
-        "BorderTypeRight", "테두리 유형 (오른쪽): 정수 값을 입력하세요."
-    )
-    border_type_top = ParameterSet._int_prop(
-        "BorderTypeTop", "테두리 유형 (위): 정수 값을 입력하세요."
-    )
-    border_type_bottom = ParameterSet._int_prop(
-        "BorderTypeBottom", "테두리 유형 (아래): 정수 값을 입력하세요."
-    )
+    border_type_left = IntProperty("BorderTypeLeft", "테두리 유형 (왼쪽): 정수 값을 입력하세요.")
+    border_type_right = IntProperty("BorderTypeRight", "테두리 유형 (오른쪽): 정수 값을 입력하세요.")
+    border_type_top = IntProperty("BorderTypeTop", "테두리 유형 (위): 정수 값을 입력하세요.")
+    border_type_bottom = IntProperty("BorderTypeBottom", "테두리 유형 (아래): 정수 값을 입력하세요.")
 
-    border_width_left = ParameterSet._int_prop(
-        "BorderWidthLeft", "테두리 두께 (왼쪽): 정수 값을 입력하세요."
-    )
-    border_width_right = ParameterSet._int_prop(
-        "BorderWidthRight", "테두리 두께 (오른쪽): 정수 값을 입력하세요."
-    )
-    border_width_top = ParameterSet._int_prop(
-        "BorderWidthTop", "테두리 두께 (위): 정수 값을 입력하세요."
-    )
-    border_width_bottom = ParameterSet._int_prop(
-        "BorderWidthBottom", "테두리 두께 (아래): 정수 값을 입력하세요."
-    )
+    border_width_left = IntProperty("BorderWidthLeft", "테두리 두께 (왼쪽): 정수 값을 입력하세요.")
+    border_width_right = IntProperty("BorderWidthRight", "테두리 두께 (오른쪽): 정수 값을 입력하세요.")
+    border_width_top = IntProperty("BorderWidthTop", "테두리 두께 (위): 정수 값을 입력하세요.")
+    border_width_bottom = IntProperty("BorderWidthBottom", "테두리 두께 (아래): 정수 값을 입력하세요.")
 
     # Color properties (with conversion)
-    border_color_left = ParameterSet._color_prop(
-        "BorderCorlorLeft", "테두리 색상 (왼쪽): 정수 값을 입력하세요."
-    )
-    border_color_right = ParameterSet._color_prop(
-        "BorderColorRight", "테두리 색상 (오른쪽): 정수 값을 입력하세요."
-    )
-    border_color_top = ParameterSet._color_prop(
-        "BorderColorTop", "테두리 색상 (위): 정수 값을 입력하세요."
-    )
-    border_color_bottom = ParameterSet._int_prop(
-        "BorderColorBottom", "테두리 색상 (아래): 정수 값을 입력하세요."
-    )
+    border_color_left = ColorProperty("BorderColorLeft", "테두리 색상 (왼쪽): 정수 값을 입력하세요.")
+    border_color_right = ColorProperty("BorderColorRight", "테두리 색상 (오른쪽): 정수 값을 입력하세요.")
+    border_color_top = ColorProperty("BorderColorTop", "테두리 색상 (위): 정수 값을 입력하세요.")
+    border_color_bottom = IntProperty("BorderColorBottom", "테두리 색상 (아래): 정수 값을 입력하세요.")
 
     # 대각선 색상 (setter now completes properly)
-    diagonal_color = ParameterSet._int_prop(
-        "DiagonalColor", "대각선 색상: 정수 값을 입력하세요."
-    )
+    diagonal_color = IntProperty("DiagonalColor", "대각선 색상: 정수 값을 입력하세요.")
 
     # Other integer properties
-    slash_flag = ParameterSet._int_prop(
-        "SlashFlag", "대각선 플래그: 정수 값을 입력하세요."
-    )
-    backslash_flag = ParameterSet._int_prop(
-        "BackSlashFlag", "역대각선 플래그: 정수 값을 입력하세요."
-    )
-    diagonal_type = ParameterSet._int_prop(
-        "DiagonalType", "대각선 유형: 정수 값을 입력하세요."
-    )
-    diagonal_width = ParameterSet._int_prop(
-        "DiagonalWidth", "대각선 두께: 정수 값을 입력하세요."
-    )
-    crooked_slash_flag = ParameterSet._int_prop(
-        "CrookedSlashFlag", "꺾인 대각선 플래그 (bit 0, 1): 정수 값을 입력하세요."
-    )
+    slash_flag = IntProperty("SlashFlag", "대각선 플래그: 정수 값을 입력하세요.")
+    backslash_flag = IntProperty("BackSlashFlag", "역대각선 플래그: 정수 값을 입력하세요.")
+    diagonal_type = IntProperty("DiagonalType", "대각선 유형: 정수 값을 입력하세요.")
+    diagonal_width = IntProperty("DiagonalWidth", "대각선 두께: 정수 값을 입력하세요.")
+    crooked_slash_flag = IntProperty("CrookedSlashFlag", "꺾인 대각선 플래그 (bit 0, 1): 정수 값을 입력하세요.")
 
     # Boolean properties
-    border_fill_3d = ParameterSet._bool_prop(
-        "BorderFill3D", "3차원 효과: 0 = off, 1 = on"
-    )
-    shadow = ParameterSet._bool_prop("Shadow", "그림자 효과: 0 = off, 1 = on")
-    break_cell_separate_line = ParameterSet._bool_prop(
-        "BreakCellSeparateLine",
-        "자동으로 나뉜 표의 경계선 설정: 0 = 기본, 1 = 사용자 설정",
-    )
-    counter_slash_flag = ParameterSet._bool_prop(
-        "CounterSlashFlag", "슬래쉬 대각선의 역방향 플래그: 0 = 순방향, 1 = 역방향"
-    )
-    counter_back_slash_flag = ParameterSet._bool_prop(
-        "CounterBackSlashFlag",
-        "역슬래쉬 대각선의 역방향 플래그: 0 = 순방향, 1 = 역방향",
-    )
-    center_line_flag = ParameterSet._bool_prop(
-        "CenterLineFlag", "중심선 플래그: 0 = 없음, 1 = 있음"
-    )
-    crooked_slash_flag1 = ParameterSet._bool_prop(
-        "CrookedSlashFlag1", "슬래쉬 대각선의 꺾임 여부 (저바이트): 0 = 아니오, 1 = 예"
-    )
-    crooked_slash_flag2 = ParameterSet._bool_prop(
-        "CrookedSlashFlag2",
-        "역슬래쉬 대각선의 꺾임 여부 (고바이트): 0 = 아니오, 1 = 예",
-    )
+    border_fill_3d = BoolProperty("BorderFill3D", "3차원 효과: 0 = off, 1 = on")
+    shadow = BoolProperty("Shadow", "그림자 효과: 0 = off, 1 = on")
+    break_cell_separate_line = BoolProperty("BreakCellSeparateLine", "자동으로 나뉜 표의 경계선 설정: 0 = 기본, 1 = 사용자 설정")
+    counter_slash_flag = BoolProperty("CounterSlashFlag", "슬래쉬 대각선의 역방향 플래그: 0 = 순방향, 1 = 역방향")
+    counter_back_slash_flag = BoolProperty("CounterBackSlashFlag", "역슬래쉬 대각선의 역방향 플래그: 0 = 순방향, 1 = 역방향")
+    center_line_flag = BoolProperty("CenterLineFlag", "중심선 플래그: 0 = 없음, 1 = 있음")
+    crooked_slash_flag1 = BoolProperty("CrookedSlashFlag1", "슬래쉬 대각선의 꺾임 여부 (저바이트): 0 = 아니오, 1 = 예")
+    crooked_slash_flag2 = BoolProperty("CrookedSlashFlag2", "역슬래쉬 대각선의 꺾임 여부 (고바이트): 0 = 아니오, 1 = 예")
 
     # Typed property for fill attribute
-    fill_attr = ParameterSet._typed_prop("FillAttr", "배경 채우기 속성", lambda: DrawFillAttr)
+    fill_attr = TypedProperty("FillAttr", "배경 채우기 속성", lambda: DrawFillAttr)
 
 # %% ../nbs/02_api/02_parameters.ipynb 10
 class Caption(ParameterSet):
@@ -575,30 +130,15 @@ class Caption(ParameterSet):
     | CapFullSize   | PIT_UI1 |         | 캡션 폭에 여백을 포함할지 여부 (0 = 포함 안 함, 1 = 포함함)              |
     """
 
-    def __init__(self, parameterset):
-        super().__init__(parameterset)
-        self.attributes_names = [
-            "side",
-            "width",
-            "gap",
-            "cap_full_size",
-        ]
-
     # 'side' must be one of the allowed values
-    side = ParameterSet._mapped_prop(
-        "Side", _direction_map, doc="방향: 0 = 왼쪽, 1 = 오른쪽, 2 = 위, 3 = 아래"
-    )
+    side = MappedProperty("Side", DIRECTION_MAP, "방향: 0 = 왼쪽, 1 = 오른쪽, 2 = 위, 3 = 아래")
 
     # 'width' and 'gap' are stored in HWPUNIT; convert to/from mili
-    width = ParameterSet._unit_prop("Width", unit="mili", doc="캡션 폭 (단위: HWPUNIT)")
-    gap = ParameterSet._unit_prop("Gap", unit="mili", doc="캡션과의 간격 (단위: HWPUNIT)")
+    width = UnitProperty("Width", "mili", "캡션 폭 (단위: HWPUNIT)")
+    gap = UnitProperty("Gap", "mili", "캡션과의 간격 (단위: HWPUNIT)")
 
     # Mapping for 'cap_full_size': 0 means 'exclude', 1 means 'include'
-    cap_full_size = ParameterSet._mapped_prop(
-        "CapFullSize",
-        mapping=_cap_full_size_map,
-        doc="캡션 폭에 여백 포함 여부 (CapFullSize): 0 = exclude, 1 = include",
-    )
+    cap_full_size = MappedProperty("CapFullSize", CAP_FULL_SIZE_MAP, "캡션 폭에 여백 포함 여부 (CapFullSize): 0 = exclude, 1 = include")
 
 # %% ../nbs/02_api/02_parameters.ipynb 12
 class BulletShape(ParameterSet):
@@ -620,49 +160,17 @@ class BulletShape(ParameterSet):
     | BulletImage    | PIT_SET  | DrawImageAttr  | 글머리 기호 이미지 |
     """
 
-    def __init__(self, parameterset):
-        super().__init__(parameterset)
-        self.attributes_names = [
-            "has_char_shape",
-            "char_shape",
-            "width_adjust",
-            "text_offset",
-            "alignment",
-            "use_inst_width",
-            "auto_indent",
-            "text_offset_type",
-            "bullet_char",
-            "has_image",
-            "bullet_image",
-        ]
-
-    has_char_shape = ParameterSet._bool_prop(
-        "HasCharShape", "글자 모양 사용 여부: 0 = 기본, 1 = 사용자 정의"
-    )
-    char_shape = ParameterSet._typed_prop("CharShape", "글자 모양", lambda: CharShape)
-    width_adjust = ParameterSet._int_prop("WidthAdjust", "글자 크기 보정 값 (HWPUNIT)")
-    text_offset = ParameterSet._int_prop(
-        "TextOffset", "텍스트 오프셋 (percent or HWPUNIT)"
-    )
-    alignment = ParameterSet._mapped_prop(
-        "Alignment",
-        _alignment_map,
-        doc="정렬 방식: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽",
-    )
-    use_inst_width = ParameterSet._bool_prop(
-        "UseInstWidth", "인스턴스 폭 사용 여부 (on/off)"
-    )
-    auto_indent = ParameterSet._bool_prop("AutoIndent", "자동 들여쓰기 (on/off)")
-    text_offset_type = ParameterSet._bool_prop(
-        "TextOffsetType", "텍스트 오프셋 타입: 0 = percent, 1 = HWPUNIT"
-    )
-    bullet_char = ParameterSet._int_prop("BulletChar", "글머리 기호 문자")
-    has_image = ParameterSet._bool_prop(
-        "HasImage", "이미지 글머리 기호 여부: 0 = 없음, 1 = 있음"
-    )
-    bullet_image = ParameterSet._typed_prop(
-        "BulletImage", "글머리 기호 이미지", lambda: DrawImageAttr
-    )
+    has_char_shape = BoolProperty("HasCharShape", "글자 모양 사용 여부: 0 = 기본, 1 = 사용자 정의")
+    char_shape = TypedProperty("CharShape", "글자 모양", lambda: CharShape)
+    width_adjust = IntProperty("WidthAdjust", "글자 크기 보정 값 (HWPUNIT)")
+    text_offset = IntProperty("TextOffset", "텍스트 오프셋 (percent or HWPUNIT)")
+    alignment = MappedProperty("Alignment", ALIGNMENT_MAP, "정렬 방식: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
+    use_inst_width = BoolProperty("UseInstWidth", "인스턴스 폭 사용 여부 (on/off)")
+    auto_indent = BoolProperty("AutoIndent", "자동 들여쓰기 (on/off)")
+    text_offset_type = BoolProperty("TextOffsetType", "텍스트 오프셋 타입: 0 = percent, 1 = HWPUNIT")
+    bullet_char = IntProperty("BulletChar", "글머리 기호 문자")
+    has_image = BoolProperty("HasImage", "이미지 글머리 기호 여부: 0 = 없음, 1 = 있음")
+    bullet_image = TypedProperty("BulletImage", "글머리 기호 이미지", lambda: DrawImageAttr)
 
 # %% ../nbs/02_api/02_parameters.ipynb 14
 class Cell(ParameterSet):
@@ -683,31 +191,14 @@ class Cell(ParameterSet):
     | CellCtrlData | PIT_SET  | CtrlData  | 셀 제어 데이터               |
     """
 
-    def __init__(self, parameterset):
-        super().__init__(parameterset)
-        self.attributes_names = [
-            "has_margin",
-            "protected",
-            "header",
-            "width",
-            "height",
-            "editable",
-            "dirty",
-            "cell_ctrl_data",
-        ]
-
-    has_margin = ParameterSet._bool_prop(
-        "HasMargin", "셀 여백 여부 (on / off): 0 또는 1."
-    )
-    protected = ParameterSet._bool_prop("Protected", "보호 설정 여부: 0 = off, 1 = on.")
-    header = ParameterSet._bool_prop("Header", "헤더 여부: 0 = off, 1 = on.")
-    width = ParameterSet._unit_prop("Width", "mili", "셀의 너비 (mm).")
-    height = ParameterSet._unit_prop("Height", "mili", "셀의 높이 (mm).")
-    editable = ParameterSet._bool_prop("Editable", "편집 가능 여부: 0 = off, 1 = on.")
-    dirty = ParameterSet._bool_prop("Dirty", "변경 여부: 0 = off, 1 = on.")
-    cell_ctrl_data = ParameterSet._typed_prop(
-        "CellCtrlData", "셀 제어 데이터", lambda: CtrlData
-    )
+    has_margin = BoolProperty("HasMargin", "셀 여백 여부 (on / off): 0 또는 1.")
+    protected = BoolProperty("Protected", "보호 설정 여부: 0 = off, 1 = on.")
+    header = BoolProperty("Header", "헤더 여부: 0 = off, 1 = on.")
+    width = UnitProperty("Width", "mili", "셀의 너비 (mm).")
+    height = UnitProperty("Height", "mili", "셀의 높이 (mm).")
+    editable = BoolProperty("Editable", "편집 가능 여부: 0 = off, 1 = on.")
+    dirty = BoolProperty("Dirty", "변경 여부: 0 = off, 1 = on.")
+    cell_ctrl_data = TypedProperty("CellCtrlData", "셀 제어 데이터", lambda: CtrlData)
 
 # %% ../nbs/02_api/02_parameters.ipynb 16
 class CharShape(ParameterSet):
@@ -870,37 +361,37 @@ class CharShape(ParameterSet):
     # FontType properties: mapped from numbers to human‐readable strings
     fonttype_hangul = ParameterSet._mapped_prop(
         "FontTypeHangul",
-        _fonttype_map,
+        FONTTYPE_MAP,
         "폰트 종류 (한글): 0 = don't care, 1 = TTF, 2 = HFT",
     )
     fonttype_latin = ParameterSet._mapped_prop(
         "FontTypeLatin",
-        _fonttype_map,
+        FONTTYPE_MAP,
         "폰트 종류 (영문): 0 = don't care, 1 = TTF, 2 = HFT",
     )
     fonttype_hanja = ParameterSet._mapped_prop(
         "FontTypeHanja",
-        _fonttype_map,
+        FONTTYPE_MAP,
         "폰트 종류 (한자): 0 = don't care, 1 = TTF, 2 = HFT",
     )
     fonttype_japanese = ParameterSet._mapped_prop(
         "FontTypeJapanese",
-        _fonttype_map,
+        FONTTYPE_MAP,
         "폰트 종류 (일본어): 0 = don't care, 1 = TTF, 2 = HFT",
     )
     fonttype_other = ParameterSet._mapped_prop(
         "FontTypeOther",
-        _fonttype_map,
+        FONTTYPE_MAP,
         "폰트 종류 (기타): 0 = don't care, 1 = TTF, 2 = HFT",
     )
     fonttype_symbol = ParameterSet._mapped_prop(
         "FontTypeSymbol",
-        _fonttype_map,
+        FONTTYPE_MAP,
         "폰트 종류 (심벌): 0 = don't care, 1 = TTF, 2 = HFT",
     )
     fonttype_user = ParameterSet._mapped_prop(
         "FontTypeUser",
-        _fonttype_map,
+        FONTTYPE_MAP,
         "폰트 종류 (사용자): 0 = don't care, 1 = TTF, 2 = HFT",
     )
 
@@ -1000,7 +491,7 @@ class CharShape(ParameterSet):
     # Underline type (mapped)
     underline_type = ParameterSet._mapped_prop(
         "UnderlineType",
-        _underline_type_map,
+        UNDERLINE_TYPE_MAP,
         "밑줄 종류: 0 = none, 1 = bottom, 2 = center, 3 = top",
     )
     underline_shape = ParameterSet._int_prop("UnderlineShape", "선모양")
@@ -1008,15 +499,15 @@ class CharShape(ParameterSet):
     # Outline type (mapped)
 
     outline_type = ParameterSet._mapped_prop(
-        "OutLineType",
-        _outline_type_map,
+        "OutlineType",
+        OUTLINE_TYPE_MAP,
         "외곽선 종류: 0 = none, 1 = solid, 2 = dot, 3 = thick, 4 = dash, 5 = dashdot, 6 = dashdotdot",
     )
 
     # Shadow type (mapped)
     shadow_type = ParameterSet._mapped_prop(
         "ShadowType",
-        _shadow_type_map,
+        SHADOW_TYPE_MAP,
         "그림자 종류: 0 = none, 1 = drop, 2 = continuous",
     )
 
@@ -1039,7 +530,7 @@ class CharShape(ParameterSet):
 
     strikeout_type = ParameterSet._mapped_prop(
         "StrikeOutType",
-        _strikeout_type_map,
+        STRIKEOUT_TYPE_MAP,
         "취소선 종류: 0 = none, 1 = red single, 2 = red double, 3 = text single, 4 = text double",
     )
     strikeout_shape = ParameterSet._int_prop("StrikeOutShape", "선모양")
@@ -1047,18 +538,18 @@ class CharShape(ParameterSet):
     # DiacSymMark (mapped)
     diac_sym_mark = ParameterSet._mapped_prop(
         "DiacSymMark",
-        _diac_sym_mark_map,
+        DIAC_SYM_MARK_MAP,
         "강조점 종류: 0 = none, 1 = black circle, 2 = empty circle",
     )
 
     # UseFontSpace (mapped)
     use_font_space = ParameterSet._mapped_prop(
-        "UseFontSpace", _use_font_space_map, "글꼴에 어울리는 빈칸: 0 = off, 1 = on"
+        "UseFontSpace", USE_FONT_SPACE_MAP, "글꼴에 어울리는 빈칸: 0 = off, 1 = on"
     )
 
     # UseKerning (mapped)
     use_kerning = ParameterSet._mapped_prop(
-        "UseKerning", _use_kerning_map, "커닝: 0 = off, 1 = on"
+        "UseKerning", USE_KERNING_MAP, "커닝: 0 = off, 1 = on"
     )
 
     # Height property
@@ -1268,7 +759,7 @@ class CharShape(ParameterSet):
             "shadow_type": self.shadow_type,
             "text_color": self.text_color,
             "shade_color": self.shade_color,
-            "underline_colo": self.underline_color,
+            "underline_color": self.underline_color,
             "shadow_offset_x": self.shadow_offset_x,
             "shadow_offset_y": self.shadow_offset_y,
             "shadow_color": self.shadow_color,
@@ -1296,7 +787,7 @@ class CtrlData(ParameterSet):
     |---------|-----------|---------|----------------------|
     | Name    | PIT_BSTR  |         | 제어 데이터의 이름.  |
     """
-    name = ParameterSet._str_prop("Name", "제어 데이터의 이름.")
+    name = StringProperty("Name", "제어 데이터의 이름.")
 
 
 
@@ -1312,10 +803,9 @@ class DrawArcType(ParameterSet):
     | Type     | PIT_UI     |         | 곡선 유형: 0 = 선, 1 = 필수곡선, 2 = 화살표 |
     | Interval | PIT_ARRAY  | PIT_I   | 곡선의 시작점과 끝점을 나타내는 배열 |
     """
-    _ark_type_map = {"line": 0, "essential": 1, "arrow": 2}
-    type = ParameterSet._mapped_prop("Type", _ark_type_map,
-                                     doc="곡선 유형: 0 = 선, 1 = 필수곡선, 2 = 화살표")
-    interval = ParameterSet._int_list_prop("Interval", "곡선의 시작점과 끝점을 나타내는 배열")
+    _arc_type_map = {"line": 0, "essential": 1, "arrow": 2}
+    type = MappedProperty("Type", _arc_type_map, "곡선 유형: 0 = 선, 1 = 필수곡선, 2 = 화살표")
+    interval = ListProperty("Interval", "곡선의 시작점과 끝점을 나타내는 배열", item_type=int)
 
 
 
@@ -1334,9 +824,9 @@ class DrawCoordInfo(ParameterSet):
     | Point   | PIT_ARRAY  | PIT_I   | 좌표 Array (X1,Y1), (X2,Y2), ..., (Xn,Yn)   |
     | Line    | PIT_ARRAY  | PIT_UI1 | 선 정보 Array(점들에서 연결된 형태)          |
     """
-    count = ParameterSet._int_prop("Count", "점의 개수: 정수 값을 입력하세요.")
-    point = ParameterSet._tuple_list_prop("Point", "좌표 배열 (X1, Y1), (X2, Y2), ..., (Xn, Yn): 리스트 값을 입력하세요.")
-    line  = ParameterSet._int_list_prop("Line", "선 정보 배열: 리스트 값을 입력하세요.")
+    count = IntProperty("Count", "점의 개수: 정수 값을 입력하세요.")
+    point = ListProperty("Point", "좌표 배열 (X1, Y1), (X2, Y2), ..., (Xn, Yn): 리스트 값을 입력하세요.", item_type=tuple)
+    line  = ListProperty("Line", "선 정보 배열: 리스트 값을 입력하세요.", item_type=int)
 
 
 
@@ -1353,7 +843,7 @@ class DrawCtrlHyperlink(ParameterSet):
     |---------|-----------|---------|--------------------------------------|
     | Command | PIT_BSTR  |         | Command String (명령 문자열)         |
     """
-    command = ParameterSet._str_prop("Command", "Command String: 명령 문자열을 입력하세요.")
+    command = StringProperty("Command", "Command String: 명령 문자열을 입력하세요.")
 
 
 
@@ -1371,10 +861,10 @@ class DrawEditDetail(ParameterSet):
     | PointX  | PIT_I  |         | 교점의 X 좌표 |
     | PointY  | PIT_I  |         | 교점의 Y 좌표 |
     """
-    command = ParameterSet._int_prop("Command", "Command: Reserved.")
-    index   = ParameterSet._int_prop("Index", "Index: 교점 정의의 인덱스.")
-    point_x = ParameterSet._int_prop("PointX", "PointX: 교점의 X 좌표.")
-    point_y = ParameterSet._int_prop("PointY", "PointY: 교점의 Y 좌표.")
+    command = IntProperty("Command", "Command: Reserved.")
+    index   = IntProperty("Index", "Index: 교점 정의의 인덱스.")
+    point_x = IntProperty("PointX", "PointX: 교점의 X 좌표.")
+    point_y = IntProperty("PointY", "PointY: 교점의 Y 좌표.")
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 28
@@ -1427,9 +917,9 @@ class DrawFillAttr(ParameterSet):
 
     # Basic Properties
     
-    type = ParameterSet._mapped_prop("Type", _background_type_map,
+    type = ParameterSet._mapped_prop("Type", BACKGROUND_TYPE_MAP,
                                      doc="배경 유형: 0 = 채우기 없음, 1 = 단색 또는 무늬 채우기, 2 = 그림, 3 = 그라데이션")
-    gradation_type = ParameterSet._mapped_prop("GradationType", _gradataion_type_map,
+    gradation_type = ParameterSet._mapped_prop("GradationType", GRADATION_TYPE_MAP,
                                              doc="그라데이션 형태: 1 = 줄무늬형, 2 = 원형, 3 = 원뿔형, 4 = 사각형")
     gradation_angle = ParameterSet._int_prop("GradationAngle", "그라데이션의 기울기(회전 각도)")
     gradation_center_x = ParameterSet._int_prop("GradationCenterX", "그라데이션의 가로 중심 (X 좌표)")
@@ -1450,8 +940,8 @@ class DrawFillAttr(ParameterSet):
     
     filename = ParameterSet._str_prop("FileName", "그림 파일 경로")
     embedded = ParameterSet._bool_prop("Embedded", "그림이 문서에 직접 삽입(TRUE) / 파일로 연결(FALSE)")
-    _pic_effect_map = {"none": 0, "gray": 1, "black and white": 2}
-    pic_effect = ParameterSet._mapped_prop("PicEffect", _pic_effect_map,
+    PIC_EFFECT_MAP = {"none": 0, "gray": 1, "black and white": 2}
+    pic_effect = ParameterSet._mapped_prop("PicEffect", PIC_EFFECT_MAP,
                                            doc="그림 효과: 0 = 실제 이미지 그대로, 1 = 그레이스케일, 2 = 흑백 효과")
     brightness = ParameterSet._int_prop("Brightness", "명도 (-100 ~ 100)", -100, 100)
     contrast = ParameterSet._int_prop("Contrast", "대비 (-100 ~ 100)", -100, 100)
@@ -1517,7 +1007,7 @@ class DrawImageAttr(ParameterSet):
     """
     file_name = ParameterSet._str_prop("FileName", "그림 파일 경로")
     embedded = ParameterSet._bool_prop("Embedded", "그림이 문서에 삽입(T)/링크(F)")
-    pic_effect = ParameterSet._mapped_prop("PicEffect", _pic_effect_map,
+    pic_effect = ParameterSet._mapped_prop("PicEffect", PIC_EFFECT_MAP,
                                            doc="그림 효과: 0 = 그대로, 1 = 흑백, 2 = 세피아 등")
     brightness = ParameterSet._int_prop("Brightness", "명도 (-100 ~ 100)", -100, 100)
     contrast = ParameterSet._int_prop("Contrast", "밝기 (-100 ~ 100)", -100, 100)
@@ -1669,7 +1159,7 @@ class DrawRotate(ParameterSet):
     | Angle           | PIT_I  | 회전 각도                                    |
     | RotateImage     | PIT_UI1| 그림 회전 여부 (0: 회전 안 함, 1: 회전함)     |
     """
-    command         = ParameterSet._mapped_prop("Command", _rotation_setting_map,
+    command         = ParameterSet._mapped_prop("Command", ROTATION_SETTING_MAP,
                                                 doc="회전 설정의 기초 설정 (0: 없음, 1: 설정된 회전, 2: 그림 중심 회전, 3: 회전과 중심)")
     center_x        = ParameterSet._int_prop("CenterX", "회전 중심의 X 좌표.")
     center_y        = ParameterSet._int_prop("CenterY", "회전 중심의 Y 좌표.")
@@ -1720,7 +1210,7 @@ class DrawShadow(ParameterSet):
     | ShadowOffsetY | PIT_I4   |         | 그림자 Y축 오프셋 (-48% ~ 48%)                   |
     | ShadowAlpha   | PIT_UI1  |         | 그림자 투명도 (0 ~ 255)                          |
     """
-    shadow_type    = ParameterSet._mapped_prop("ShadowType", _shadow_type_map,
+    shadow_type    = ParameterSet._mapped_prop("ShadowType", SHADOW_TYPE_MAP,
                                               doc="그림자 종류: 0 = none, 1 = drop, 2 = continuous")
     shadow_color   = ParameterSet._int_prop("ShadowColor", "그림자 색상 (COLORREF): 정수를 입력하세요.")
     shadow_offset_x = ParameterSet._int_prop("ShadowOffsetX", "그림자 X축 오프셋 (-48% ~ 48%)", -48, 48)
@@ -1755,13 +1245,13 @@ class DrawTextart(ParameterSet):
     string         = ParameterSet._str_prop("String", "텍스트아트 내용: 문자열 값을 입력하세요.")
     font_name      = ParameterSet._str_prop("FontName", "폰트 이름.")
     font_style     = ParameterSet._str_prop("FontStyle", "폰트 스타일 (0 = Regular).")
-    font_type      = ParameterSet._mapped_prop("FontType", _fonttype_map,
+    font_type      = ParameterSet._mapped_prop("FontType", FONTTYPE_MAP,
                                              doc="폰트 타입: 0 = don't care, 1 = TTF, 2 = HFT.")
     line_spacing   = ParameterSet._int_prop("LineSpacing", "줄 간격 (50 ~ 500).", 50, 500)
     char_spacing   = ParameterSet._int_prop("CharSpacing", "문자 간격 (50 ~ 500).", 50, 500)
     align_type     = ParameterSet._int_prop("AlignType", "정렬 유형.")
     shape          = ParameterSet._int_prop("Shape", "형태 (0 ~ 54).", 0, 54)
-    shadow_type    = ParameterSet._mapped_prop("ShadowType", _shadow_type_map,
+    shadow_type    = ParameterSet._mapped_prop("ShadowType", SHADOW_TYPE_MAP,
                                               doc="그림자 유형: 0 = none, 1 = drop, 2 = continuous.")
     shadow_offset_x = ParameterSet._int_prop("ShadowOffsetX", "그림자 X 오프셋 (-48 ~ 48).", -48, 48)
     shadow_offset_y = ParameterSet._int_prop("ShadowOffsetY", "그림자 Y 오프셋 (-48 ~ 48).", -48, 48)
@@ -1841,7 +1331,7 @@ class FindReplace(ParameterSet):
     # Enum property for direction
     direction = ParameterSet._mapped_prop(
         "Direction",
-        _search_direction_map,
+        SEARCH_DIRECTION_MAP,
         doc="찾을 방향: 0 = 아래쪽, 1 = 위쪽, 2 = 문서 전체",
     )
 
@@ -1902,11 +1392,11 @@ class ListProperties(ParameterSet):
     | MarginTop     | PIT_I4   |         | 위쪽 여백                                       |
     | MarginBottom  | PIT_I4   |         | 아래쪽 여백                                     |
     """
-    text_direction = ParameterSet._mapped_prop("TextDirection", _text_direction_map,
+    text_direction = ParameterSet._mapped_prop("TextDirection", TEXT_DIRECTION_MAP,
                                                doc="글자 방향: 0 = 기본값, 1 = 세로 쓰기")
-    line_wrap = ParameterSet._mapped_prop("LineWrap", _line_wrap_map,
+    line_wrap = ParameterSet._mapped_prop("LineWrap", LINE_WRAP_MAP,
                                           doc="줄 바꿈 옵션: 0 = 기본값, 1 = 줄 바꿈 없음, 2 = 강제 줄 바꿈")
-    vert_align = ParameterSet._mapped_prop("VertAlign", _vert_align_map,
+    vert_align = ParameterSet._mapped_prop("VertAlign", VERT_ALIGN_MAP,
                                            doc="세로 정렬: 0 = 위, 1 = 가운데, 2 = 아래")
     margin_left = ParameterSet._int_prop("MarginLeft", "왼쪽 여백: 정수 값을 입력하세요.")
     margin_right = ParameterSet._int_prop("MarginRight", "오른쪽 여백: 정수 값을 입력하세요.")
@@ -1943,13 +1433,13 @@ class NumberingShape(ParameterSet):
     char_shape_level0      = ParameterSet._typed_prop("CharShapeLevel0", "수준0 글자 모양 지정", lambda: CharShape)
     width_adjust_level0    = ParameterSet._int_prop("WidthAdjustLevel0", "수준0 너비 조정 값 (HWPUNIT)")
     text_offset_level0     = ParameterSet._int_prop("TextOffsetLevel0", "수준0 텍스트 오프셋 (percent or HWPUNIT)")
-    alignment_level0       = ParameterSet._mapped_prop("AlignmentLevel0", _align_map,
+    alignment_level0       = ParameterSet._mapped_prop("AlignmentLevel0", ALIGN_MAP,
                                                      doc="수준0 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
     use_inst_width_level0  = ParameterSet._bool_prop("UseInstWidthLevel0", "수준0 문서 내부 너비 맞춤 여부")
     auto_indent_level0     = ParameterSet._bool_prop("AutoIndentLevel0", "수준0 자동 들여쓰기 여부")
     text_offset_type_level0 = ParameterSet._bool_prop("TextOffsetTypeLevel0", "수준0 텍스트 오프셋 타입 (0 = 기본값, 1 = HWPUNIT)")
     str_format_level0      = ParameterSet._str_prop("StrFormatLevel0", "수준0 문자열 포맷")
-    num_format_level0      = ParameterSet._mapped_prop("NumFormatLevel0", _number_format_map,
+    num_format_level0      = ParameterSet._mapped_prop("NumFormatLevel0", NUMBER_FORMAT_MAP,
                                                      doc="수준0 번호 포맷 (0 또는 1)")
 
     # Level 1 properties
@@ -1957,13 +1447,13 @@ class NumberingShape(ParameterSet):
     char_shape_level1      = ParameterSet._typed_prop("CharShapeLevel1", "수준1 글자 모양 지정", lambda: CharShape)
     width_adjust_level1    = ParameterSet._int_prop("WidthAdjustLevel1", "수준1 너비 조정 값 (HWPUNIT)")
     text_offset_level1     = ParameterSet._int_prop("TextOffsetLevel1", "수준1 텍스트 오프셋")
-    alignment_level1       = ParameterSet._mapped_prop("AlignmentLevel1", _align_map,
+    alignment_level1       = ParameterSet._mapped_prop("AlignmentLevel1", ALIGN_MAP,
                                                      doc="수준1 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
     use_inst_width_level1  = ParameterSet._bool_prop("UseInstWidthLevel1", "수준1 문서 내부 너비 맞춤 여부")
     auto_indent_level1     = ParameterSet._bool_prop("AutoIndentLevel1", "수준1 자동 들여쓰기 여부")
     text_offset_type_level1 = ParameterSet._bool_prop("TextOffsetTypeLevel1", "수준1 텍스트 오프셋 타입")
     str_format_level1      = ParameterSet._str_prop("StrFormatLevel1", "수준1 문자열 포맷")
-    num_format_level1      = ParameterSet._mapped_prop("NumFormatLevel1", _number_format_map,
+    num_format_level1      = ParameterSet._mapped_prop("NumFormatLevel1", NUMBER_FORMAT_MAP,
                                                      doc="수준1 번호 포맷")
 
     # Level 2 properties
@@ -1971,13 +1461,13 @@ class NumberingShape(ParameterSet):
     char_shape_level2      = ParameterSet._typed_prop("CharShapeLevel2", "수준2 글자 모양 지정", lambda: CharShape)
     width_adjust_level2    = ParameterSet._int_prop("WidthAdjustLevel2", "수준2 너비 조정 값 (HWPUNIT)")
     text_offset_level2     = ParameterSet._int_prop("TextOffsetLevel2", "수준2 텍스트 오프셋")
-    alignment_level2       = ParameterSet._mapped_prop("AlignmentLevel2", _align_map,
+    alignment_level2       = ParameterSet._mapped_prop("AlignmentLevel2", ALIGN_MAP,
                                                      doc="수준2 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
     use_inst_width_level2  = ParameterSet._bool_prop("UseInstWidthLevel2", "수준2 문서 내부 너비 맞춤 여부")
     auto_indent_level2     = ParameterSet._bool_prop("AutoIndentLevel2", "수준2 자동 들여쓰기 여부")
     text_offset_type_level2 = ParameterSet._bool_prop("TextOffsetTypeLevel2", "수준2 텍스트 오프셋 타입")
     str_format_level2      = ParameterSet._str_prop("StrFormatLevel2", "수준2 문자열 포맷")
-    num_format_level2      = ParameterSet._mapped_prop("NumFormatLevel2", _number_format_map,
+    num_format_level2      = ParameterSet._mapped_prop("NumFormatLevel2", NUMBER_FORMAT_MAP,
                                                      doc="수준2 번호 포맷")
 
     # Level 3 properties
@@ -1985,13 +1475,13 @@ class NumberingShape(ParameterSet):
     char_shape_level3      = ParameterSet._typed_prop("CharShapeLevel3", "수준3 글자 모양 지정", lambda: CharShape)
     width_adjust_level3    = ParameterSet._int_prop("WidthAdjustLevel3", "수준3 너비 조정 값 (HWPUNIT)")
     text_offset_level3     = ParameterSet._int_prop("TextOffsetLevel3", "수준3 텍스트 오프셋")
-    alignment_level3       = ParameterSet._mapped_prop("AlignmentLevel3", _align_map,
+    alignment_level3       = ParameterSet._mapped_prop("AlignmentLevel3", ALIGN_MAP,
                                                      doc="수준3 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
     use_inst_width_level3  = ParameterSet._bool_prop("UseInstWidthLevel3", "수준3 문서 내부 너비 맞춤 여부")
     auto_indent_level3     = ParameterSet._bool_prop("AutoIndentLevel3", "수준3 자동 들여쓰기 여부")
     text_offset_type_level3 = ParameterSet._bool_prop("TextOffsetTypeLevel3", "수준3 텍스트 오프셋 타입")
     str_format_level3      = ParameterSet._str_prop("StrFormatLevel3", "수준3 문자열 포맷")
-    num_format_level3      = ParameterSet._mapped_prop("NumFormatLevel3", _number_format_map,
+    num_format_level3      = ParameterSet._mapped_prop("NumFormatLevel3", NUMBER_FORMAT_MAP,
                                                      doc="수준3 번호 포맷")
 
     # Level 4 properties
@@ -1999,13 +1489,13 @@ class NumberingShape(ParameterSet):
     char_shape_level4      = ParameterSet._typed_prop("CharShapeLevel4", "수준4 글자 모양 지정", lambda: CharShape)
     width_adjust_level4    = ParameterSet._int_prop("WidthAdjustLevel4", "수준4 너비 조정 값 (HWPUNIT)")
     text_offset_level4     = ParameterSet._int_prop("TextOffsetLevel4", "수준4 텍스트 오프셋")
-    alignment_level4       = ParameterSet._mapped_prop("AlignmentLevel4", _align_map,
+    alignment_level4       = ParameterSet._mapped_prop("AlignmentLevel4", ALIGN_MAP,
                                                      doc="수준4 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
     use_inst_width_level4  = ParameterSet._bool_prop("UseInstWidthLevel4", "수준4 문서 내부 너비 맞춤 여부")
     auto_indent_level4     = ParameterSet._bool_prop("AutoIndentLevel4", "수준4 자동 들여쓰기 여부")
     text_offset_type_level4 = ParameterSet._bool_prop("TextOffsetTypeLevel4", "수준4 텍스트 오프셋 타입")
     str_format_level4      = ParameterSet._str_prop("StrFormatLevel4", "수준4 문자열 포맷")
-    num_format_level4      = ParameterSet._mapped_prop("NumFormatLevel4", _number_format_map,
+    num_format_level4      = ParameterSet._mapped_prop("NumFormatLevel4", NUMBER_FORMAT_MAP,
                                                      doc="수준4 번호 포맷")
 
     # Level 5 properties
@@ -2013,13 +1503,13 @@ class NumberingShape(ParameterSet):
     char_shape_level5      = ParameterSet._typed_prop("CharShapeLevel5", "수준5 글자 모양 지정", lambda: CharShape)
     width_adjust_level5    = ParameterSet._int_prop("WidthAdjustLevel5", "수준5 너비 조정 값 (HWPUNIT)")
     text_offset_level5     = ParameterSet._int_prop("TextOffsetLevel5", "수준5 텍스트 오프셋")
-    alignment_level5       = ParameterSet._mapped_prop("AlignmentLevel5", _align_map,
+    alignment_level5       = ParameterSet._mapped_prop("AlignmentLevel5", ALIGN_MAP,
                                                      doc="수준5 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
     use_inst_width_level5  = ParameterSet._bool_prop("UseInstWidthLevel5", "수준5 문서 내부 너비 맞춤 여부")
     auto_indent_level5     = ParameterSet._bool_prop("AutoIndentLevel5", "수준5 자동 들여쓰기 여부")
     text_offset_type_level5 = ParameterSet._bool_prop("TextOffsetTypeLevel5", "수준5 텍스트 오프셋 타입")
     str_format_level5      = ParameterSet._str_prop("StrFormatLevel5", "수준5 문자열 포맷")
-    num_format_level5      = ParameterSet._mapped_prop("NumFormatLevel5", _number_format_map,
+    num_format_level5      = ParameterSet._mapped_prop("NumFormatLevel5", NUMBER_FORMAT_MAP,
                                                      doc="수준5 번호 포맷")
 
     # Level 6 properties
@@ -2027,13 +1517,13 @@ class NumberingShape(ParameterSet):
     char_shape_level6      = ParameterSet._typed_prop("CharShapeLevel6", "수준6 글자 모양 지정", lambda: CharShape)
     width_adjust_level6    = ParameterSet._int_prop("WidthAdjustLevel6", "수준6 너비 조정 값 (HWPUNIT)")
     text_offset_level6     = ParameterSet._int_prop("TextOffsetLevel6", "수준6 텍스트 오프셋")
-    alignment_level6       = ParameterSet._mapped_prop("AlignmentLevel6", _align_map,
+    alignment_level6       = ParameterSet._mapped_prop("AlignmentLevel6", ALIGN_MAP,
                                                      doc="수준6 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
     use_inst_width_level6  = ParameterSet._bool_prop("UseInstWidthLevel6", "수준6 문서 내부 너비 맞춤 여부")
     auto_indent_level6     = ParameterSet._bool_prop("AutoIndentLevel6", "수준6 자동 들여쓰기 여부")
     text_offset_type_level6 = ParameterSet._bool_prop("TextOffsetTypeLevel6", "수준6 텍스트 오프셋 타입")
     str_format_level6      = ParameterSet._str_prop("StrFormatLevel6", "수준6 문자열 포맷")
-    num_format_level6      = ParameterSet._mapped_prop("NumFormatLevel6", _number_format_map,
+    num_format_level6      = ParameterSet._mapped_prop("NumFormatLevel6", NUMBER_FORMAT_MAP,
                                                      doc="수준6 번호 포맷")
 
         
@@ -2127,23 +1617,23 @@ class ParaShape(ParameterSet):
     next_spacing = ParameterSet._int_prop("NextSpacing", "문단 간격 아래 (URC)")
     line_spacing_type = ParameterSet._mapped_prop(
         "LineSpacingType",
-        _line_spacing_type_map,
+        LINE_SPACING_TYPE_MAP,
         doc="줄 간격 종류: 0 = 글꼴 기준, 1 = 고정 값, 2 = 여백만 지정",
     )
     line_spacing = ParameterSet._int_prop("LineSpacing", "줄 간격 값")
     align_type = ParameterSet._mapped_prop(
         "AlignType",
-        _align_type_map,
+        ALIGN_TYPE_MAP,
         doc="정렬 방식: 0 = 양쪽 정렬, 1 = 왼쪽 정렬, 2 = 오른쪽 정렬, 3 = 가운데 정렬, 4 = 배분 정렬, 5 = 나눔 정렬",
     )
     break_latin_word = ParameterSet._mapped_prop(
         "BreakLatinWord",
-        _latin_line_break_map,
+        LATIN_LINE_BREAK_MAP,
         doc="줄 나눔 (라틴): 0 = 단어, 1 = 하이픈, 2 = 글자",
     )
     break_non_latin_word = ParameterSet._mapped_prop(
         "BreakNonLatinWord",
-        _nonlatin_line_break_map,
+        NONLATIN_LINE_BREAK_MAP,
         "줄 나눔 (비 라틴): 0 = 어절, 1 = 글자",
     )
     snap_to_grid = ParameterSet._bool_prop(
@@ -2162,7 +1652,7 @@ class ParaShape(ParameterSet):
     )
     text_alignment = ParameterSet._mapped_prop(
         "TextAlignment",
-        _text_align_map,
+        TEXT_ALIGN_MAP,
         doc="세로 정렬: 0 = 글꼴 기준, 1 = 위, 2 = 가운데, 3 = 아래",
     )
     font_line_height = ParameterSet._bool_prop(
@@ -2170,7 +1660,7 @@ class ParaShape(ParameterSet):
     )
     heading_type = ParameterSet._mapped_prop(
         "HeadingType",
-        _heading_type_map,
+        HEADING_TYPE_MAP,
         doc="문단 머리 모양: 0 = 없음, 1 = 개요, 2 = 번호, 3 = 불릿",
     )
     level = ParameterSet._int_prop("Level", "단계 (0 - 6)", 0, 6)
@@ -2179,7 +1669,7 @@ class ParaShape(ParameterSet):
     )
     border_text = ParameterSet._mapped_prop(
         "BorderText",
-        _border_text_map,
+        BORDER_TEXT_MAP,
         doc="문단 테두리/배경 - 여백 무시: 0 = 단, 1 = 텍스트",
     )
     border_offset_left = ParameterSet._int_prop(
@@ -2304,26 +1794,26 @@ class ShapeObject(ParameterSet):
             
     treat_as_char    = ParameterSet._bool_prop("TreatAsChar", "글자처럼 처리 여부 (on/off)")
     affects_line     = ParameterSet._bool_prop("AffectsLine", "줄에 영향을 미치는지 여부 (on/off)")
-    vert_rel_to      = ParameterSet._mapped_prop("VertRelTo", _vert_rel_to_map, doc="수직 기준 위치 설정")
-    vert_align       = ParameterSet._mapped_prop("VertAlign", _vert_align_map, doc="수직 정렬 방식")
+    vert_rel_to      = ParameterSet._mapped_prop("VertRelTo", VERT_REL_TO_MAP, doc="수직 기준 위치 설정")
+    vert_align       = ParameterSet._mapped_prop("VertAlign", VERT_ALIGN_MAP, doc="수직 정렬 방식")
     vert_offset      = ParameterSet._int_prop("VertOffset", "수직 오프셋 (HWPUNIT)")
-    horz_rel_to      = ParameterSet._mapped_prop("HorzRelTo", _hroz_rel_to_map, doc="수평 기준 위치 설정")
-    horz_align       = ParameterSet._mapped_prop("HorzAlign", _hroz_align_map, doc="수평 정렬 방식")
+    horz_rel_to      = ParameterSet._mapped_prop("HorzRelTo", HORZ_REL_TO_MAP, doc="수평 기준 위치 설정")
+    horz_align       = ParameterSet._mapped_prop("HorzAlign", HORZ_ALIGN_MAP, doc="수평 정렬 방식")
     horz_offset      = ParameterSet._int_prop("HorzOffset", "수평 오프셋 (HWPUNIT)")
     flow_with_text   = ParameterSet._bool_prop("FlowWithText", "텍스트 흐름에 따라 이동 여부 (on/off)")
     allow_overlap    = ParameterSet._bool_prop("AllowOverlap", "겹침 허용 여부 (on/off)")
-    width_rel_to     = ParameterSet._mapped_prop("WidthRelTo", _hroz_rel_to_map, doc="너비 기준 위치 설정")
+    width_rel_to     = ParameterSet._mapped_prop("WidthRelTo", HORZ_REL_TO_MAP, doc="너비 기준 위치 설정")
     width            = ParameterSet._int_prop("Width", "도형의 너비. WidthRelTo 값에 따라 의미가 달라짐(absolute는 hwpunit 나머지는 퍼센트(%))")
-    height_rel_to    = ParameterSet._mapped_prop("HeightRelTo", _vert_rel_to_map, doc="높이 기준 위치 설정")
+    height_rel_to    = ParameterSet._mapped_prop("HeightRelTo", VERT_REL_TO_MAP, doc="높이 기준 위치 설정")
     height           = ParameterSet._int_prop("Height", "도형의 높이 HeightRelTo 값에 따라 의미가 달라짐(absolute는 hwpunit 나머지는 퍼센트(%))")
     protect_size     = ParameterSet._bool_prop("ProtectSize", "크기 보호 여부 (on/off)")
-    text_wrap        = ParameterSet._mapped_prop("TextWrap", _text_wrap_map, doc="텍스트 랩 설정")
-    text_flow        = ParameterSet._mapped_prop("TextFlow", _text_flow_map, doc="텍스트 흐름 방향 그리기 개체의 좌/우 어느 쪽에 글을 배치할지 지정하는 옵션. TextWrap의 값이 0일 때만 유효하다. 0 = 양쪽 모두(Both) 1 = 왼쪽만(Left Only) 2 = 오른쪽만(Right Only) 3 = 왼쪽과 오른쪽 중 넓은 쪽(Largest Only)")
+    text_wrap        = ParameterSet._mapped_prop("TextWrap", TEXT_WRAP_MAP, doc="텍스트 랩 설정")
+    text_flow        = ParameterSet._mapped_prop("TextFlow", TEXT_FLOW_MAP, doc="텍스트 흐름 방향 그리기 개체의 좌/우 어느 쪽에 글을 배치할지 지정하는 옵션. TextWrap의 값이 0일 때만 유효하다. 0 = 양쪽 모두(Both) 1 = 왼쪽만(Left Only) 2 = 오른쪽만(Right Only) 3 = 왼쪽과 오른쪽 중 넓은 쪽(Largest Only)")
     outside_margin_left  = ParameterSet._unit_prop("OutsideMarginLeft", "mili", "외부 여백 (왼쪽)")
     outside_margin_right = ParameterSet._unit_prop("OutsideMarginRight", "mili", "외부 여백 (오른쪽)")
     outside_margin_top   = ParameterSet._unit_prop("OutsideMarginTop", "mili", "외부 여백 (위)")
     outside_margin_bottom = ParameterSet._unit_prop("OutsideMarginBottom", "mili", "외부 여백 (아래)")
-    numbering_type   = ParameterSet._mapped_prop("NumberingType", _numbering_type_map, doc="번호 매기기 방식")
+    numbering_type   = ParameterSet._mapped_prop("NumberingType", NUMBERING_TYPE_MAP, doc="번호 매기기 방식")
     layout_width     = ParameterSet._int_prop("LayoutWidth", "레이아웃 너비")
     layout_height    = ParameterSet._int_prop("LayoutHeight", "레이아웃 높이")
     lock             = ParameterSet._bool_prop("Lock", "잠금 여부 (on/off)")
@@ -2399,7 +1889,7 @@ class Table(ParameterSet):
     | TableBorderFill  | PIT_SET   | BorderFill      | 테이블 테두리 속성           |
     | Cell             | PIT_SET   | Cell            | 셀 정보                      |
     """
-    page_break     = ParameterSet._mapped_prop("PageBreak", _page_break_map,
+    page_break     = ParameterSet._mapped_prop("PageBreak", PAGE_BREAK_MAP,
                                                doc="표가 페이지 경계에 걸렸을 때의 처리 방식 0 = 나누지 않는다.  1 = 테이블은 나누지만 셀은 나누지 않는다. 2 = 셀 내의 텍스트도 나눈다.")
     repeat_header  = ParameterSet._bool_prop("RepeatHeader", "반복 헤더 여부 (on/off)")
     cell_spacing   = ParameterSet._int_prop("CellSpacing", "셀 간격 (HWPUNIT)")
