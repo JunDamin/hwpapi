@@ -16,6 +16,7 @@ from pathlib import Path
 import re
 import win32com.client as win32 
 import pythoncom 
+import pywintypes
 from win32com.client import Dispatch
 from win32com import client
 
@@ -71,24 +72,49 @@ def get_hwp_objects():
     logger = get_logger('functions.get_hwp_objects')
     logger.debug("Searching for running HWP objects")
     
-    context = pythoncom.CreateBindCtx(0)
-    
-    # 현재 실행중인 프로세스를 가져옵니다. 
-    running_coms = pythoncom.GetRunningObjectTable()
-    monikers = running_coms.EnumRunning()
-
     hwp_objects = []
-    for moniker in monikers:
-        name = moniker.GetDisplayName(context,moniker);
-        # moniker의 DisplayName을 통해 한글을 가져옵니다
-        # 한글의 경우 HwpObject.버전으로 각 버전별 실행 이름을 설정합니다. 
-        if re.match("!HwpObject", name):
-            logger.debug(f"Found HWP object: {name}")
-            # 120은 한글 2022의 경우입니다. 
-            # 현재 moniker를 통해 ROT에서 한글의 object를 가져옵니다. 
-            obje = running_coms.GetObject(moniker)
-            # 가져온 object를 Dispatch를 통해 사용할수 있는 객체로 변환시킵니다. 
-            hwp_objects.append(obje.QueryInterface(pythoncom.IID_IDispatch))
+    
+    try:
+        context = pythoncom.CreateBindCtx(0)
+        
+        # 현재 실행중인 프로세스를 가져옵니다. 
+        running_coms = pythoncom.GetRunningObjectTable()
+        monikers = running_coms.EnumRunning()
+
+        for moniker in monikers:
+            try:
+                name = moniker.GetDisplayName(context, moniker)
+                # moniker의 DisplayName을 통해 한글을 가져옵니다
+                # 한글의 경우 HwpObject.버전으로 각 버전별 실행 이름을 설정합니다. 
+                if re.match("!HwpObject", name):
+                    logger.debug(f"Found HWP object: {name}")
+                    # 120은 한글 2022의 경우입니다. 
+                    # 현재 moniker를 통해 ROT에서 한글의 object를 가져옵니다. 
+                    try:
+                        obje = running_coms.GetObject(moniker)
+                        # 가져온 object를 Dispatch를 통해 사용할수 있는 객체로 변환시킵니다. 
+                        hwp_obj = obje.QueryInterface(pythoncom.IID_IDispatch)
+                        hwp_objects.append(hwp_obj)
+                        logger.debug(f"Successfully added HWP object: {name}")
+                    except pywintypes.com_error as e:
+                        logger.warning(f"COM error when accessing object {name}: {e}")
+                        continue
+                    except Exception as e:
+                        logger.warning(f"Unexpected error when accessing object {name}: {e}")
+                        continue
+            except pywintypes.com_error as e:
+                logger.warning(f"COM error when processing moniker: {e}")
+                continue
+            except Exception as e:
+                logger.warning(f"Unexpected error when processing moniker: {e}")
+                continue
+                
+    except pywintypes.com_error as e:
+        logger.error(f"COM error when accessing Running Object Table: {e}")
+        return []
+    except Exception as e:
+        logger.error(f"Unexpected error when accessing Running Object Table: {e}")
+        return []
     
     logger.info(f"Found {len(hwp_objects)} running HWP objects")
     return hwp_objects
