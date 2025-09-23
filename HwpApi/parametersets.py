@@ -4,7 +4,7 @@
 from __future__ import annotations
 from .functions import from_hwpunit, to_hwpunit, convert_hwp_color_to_hex, convert_to_hwp_color
 import pprint
-from typing import Any, Dict, List, Optional, Union, Callable, Type
+from typing import Any, Dict, List, Optional, Union, Callable, Type, Protocol, Literal, Iterable
 
 # %% auto 0
 __all__ = ['DIRECTION_MAP', 'CAP_FULL_SIZE_MAP', 'ALIGNMENT_MAP', 'VERT_ALIGN_MAP', 'VERT_REL_TO_MAP', 'HORZ_REL_TO_MAP',
@@ -14,6 +14,7 @@ __all__ = ['DIRECTION_MAP', 'CAP_FULL_SIZE_MAP', 'ALIGNMENT_MAP', 'VERT_ALIGN_MA
            'ROTATION_SETTING_MAP', 'PIC_EFFECT_MAP', 'SEARCH_DIRECTION_MAP', 'BORDER_TEXT_MAP', 'UNDERLINE_TYPE_MAP',
            'OUTLINE_TYPE_MAP', 'STRIKEOUT_TYPE_MAP', 'USE_KERNING_MAP', 'DIAC_SYM_MARK_MAP', 'USE_FONT_SPACE_MAP',
            'HEADING_TYPE_MAP', 'NUMBERING_TYPE_MAP', 'NUMBER_FORMAT_MAP', 'PAGE_BREAK_MAP', 'ALL_MAPPINGS',
+           'ParameterBackend', 'ComBackend', 'AttrBackend', 'make_backend', 'MissingRequiredError',
            'PropertyDescriptor', 'IntProperty', 'BoolProperty', 'StringProperty', 'ColorProperty', 'UnitProperty',
            'MappedProperty', 'TypedProperty', 'ListProperty', 'ParameterSetMeta', 'ParameterSet', 'BorderFill',
            'Caption', 'FindReplace', 'DrawFillAttr', 'CharShape', 'ParaShape', 'ShapeObject', 'Table', 'BulletShape',
@@ -127,36 +128,191 @@ ALL_MAPPINGS = {
 }
 
 
+# %% ../nbs/02_api/02_parameters.ipynb 7
+# =========================
+# Backends (COM vs. Python)  
+# =========================
+
+class ParameterBackend(Protocol):
+    """Protocol for parameter backends."""
+    def get(self, key: str) -> Any: ...
+    def set(self, key: str, value: Any) -> None: ...
+    def delete(self, key: str) -> bool: ...
+
+
+class ComBackend:
+    """win32com-style backend using Item/SetItem/RemoveItem."""
+    def __init__(self, obj: Any):
+        self._obj = obj
+
+    def get(self, key: str) -> Any:
+        return self._obj.Item(key)
+
+    def set(self, key: str, value: Any) -> None:
+        self._obj.SetItem(key, value)
+
+    def delete(self, key: str) -> bool:
+        try:
+            self._obj.RemoveItem(key)
+            return True
+        except Exception:
+            return False
+
+
+class AttrBackend:
+    """
+    Fallback for plain Python objects:
+    - attribute access if hasattr
+    - dict-like access otherwise
+    """
+    def __init__(self, obj: Any):
+        self._obj = obj
+
+    def get(self, key: str) -> Any:
+        if hasattr(self._obj, key):
+            return getattr(self._obj, key)
+        if isinstance(self._obj, dict):
+            return self._obj.get(key, None)
+        return self._obj[key]
+
+    def set(self, key: str, value: Any) -> None:
+        if hasattr(self._obj, key):
+            setattr(self._obj, key, value)
+        elif isinstance(self._obj, dict):
+            self._obj[key] = value
+        else:
+            self._obj[key] = value
+
+    def delete(self, key: str) -> bool:
+        if hasattr(self._obj, key):
+            try:
+                delattr(self._obj, key)
+                return True
+            except Exception:
+                return False
+        if isinstance(self._obj, dict):
+            return self._obj.pop(key, None) is not None
+        try:
+            del self._obj[key]
+            return True
+        except Exception:
+            return False
+
+
+def make_backend(obj: Any) -> ParameterBackend:
+    """
+    Pick COM backend if object looks like a ParameterSet (SetID or Item/SetItem/RemoveItem),
+    otherwise use attribute/dict backend.
+    """
+    if hasattr(obj, "SetID") or all(hasattr(obj, n) for n in ("Item", "SetItem", "RemoveItem")):
+        return ComBackend(obj)
+    return AttrBackend(obj)
+
+
+class MissingRequiredError(ValueError):
+    """Raised when required parameters are missing during apply()."""
+    pass
+
+
 # %% ../nbs/02_api/02_parameters.ipynb 8
 class PropertyDescriptor:
-    """Base descriptor for parameter properties."""
-    
-    def __init__(self, key: str, doc: str):
+    """
+    Descriptor for parameter properties backed by a staged ParameterSet.
+
+    Features:
+    - Reads prefer staged values, then snapshot, then default.
+    - Writes stage the value; nothing is sent until ParameterSet.apply().
+    - Optional automatic wrapping of nested ParameterSets via `wrap=...`.
+    """
+    def __init__(
+        self,
+        key: str,
+        doc: str = "",
+        *,
+        to_python: Optional[Callable[[Any], Any]] = None,
+        to_backend: Optional[Callable[[Any], Any]] = None,
+        default: Any = None,
+        readonly: bool = False,
+        required: bool = False,
+        wrap: Optional[Type["ParameterSet"]] = None,  # <-- NEW: nested ParameterSet subclass
+    ):
         self.key = key
         self.doc = doc
-        self.name = None
-    
+        self.name: Optional[str] = None
+        self.to_python = to_python
+        self.to_backend = to_backend
+        self.default = default
+        self.readonly = readonly
+        self.required = required
+        self.wrap = wrap
+
     def __set_name__(self, owner, name):
         self.name = name
-    
-    def _get_value(self, instance):
-        """Get value from the underlying parameter set."""
-        if hasattr(instance._pset, 'Item'):
-            return instance._pset.Item(self.key)
-        return getattr(instance._pset, self.key, None)
-    
-    def _set_value(self, instance, value):
-        """Set value in the underlying parameter set."""
-        if hasattr(instance._pset, 'SetItem'):
-            return instance._pset.SetItem(self.key, value)
-        return setattr(instance._pset, self.key, value)
-    
-    def _del_value(self, instance):
-        """Delete value from the underlying parameter set."""
-        if hasattr(instance._pset, 'RemoveItem'):
-            return instance._pset.RemoveItem(self.key)
-        return False
+        reg = getattr(owner, "_property_registry", None)
+        if reg is None:
+            reg = {}
+            setattr(owner, "_property_registry", reg)
+        reg[name] = self
 
+    def __get__(self, instance: Optional["ParameterSet"], owner):
+        if instance is None:
+            return self
+
+        # Get staged/snapshot value
+        val = instance._ps_get(self)
+
+        # Automatic wrapping for nested ParameterSets
+        if self.wrap is not None:
+            # Serve from cache if we already wrapped this key
+            cached = instance._wrapper_cache.get(self.key)
+            if cached is not None:
+                return cached
+
+            # If staged/snapshot holds an existing ParameterSet, cache and return it
+            if isinstance(val, ParameterSet):
+                instance._wrapper_cache[self.key] = val
+                return val
+
+            # If backend returned a raw nested object (COM or dict-like), wrap it now
+            if val is not None:
+                wrapped = self.wrap(val)
+                instance._wrapper_cache[self.key] = wrapped
+                # Also stage the wrapper so reads stay consistent
+                instance._staged[self.key] = wrapped
+                return wrapped
+
+            # If value is None, fall through to default handling below
+
+        # Non-wrapped (or None) path
+        if val is None and self.default is not None:
+            return self.default
+        return self.to_python(val) if (val is not None and self.to_python) else val
+
+    def __set__(self, instance: "ParameterSet", value: Any):
+        if self.readonly:
+            raise AttributeError(f"'{self.name}' is read-only")
+
+        # If this property is a nested ParameterSet, normalize on assignment:
+        if self.wrap is not None:
+            # Allow passing: ParameterSet, raw COM object, or dict-like
+            if isinstance(value, ParameterSet):
+                wrapped = value
+            else:
+                # If dict/raw object given, create a wrapper
+                wrapped = self.wrap(value if value is not None else {})
+            # Keep cache consistent so subsequent gets reuse same object
+            instance._wrapper_cache[self.key] = wrapped
+            # Stage the wrapper (not the raw) — parent apply() will unwrap
+            instance._ps_set(self, wrapped)
+            return
+
+        # Primitive path: run to_backend if provided
+        v = self.to_backend(value) if (value is not None and self.to_backend) else value
+        instance._ps_set(self, v)
+
+    def _get_value(self, instance): return self.__get__(instance, instance.__class__)
+    def _set_value(self, instance, value): return self.__set__(instance, value)
+    def _del_value(self, instance): return instance._ps_del(self)
 
 # %% ../nbs/02_api/02_parameters.ipynb 9
 class IntProperty(PropertyDescriptor):
@@ -318,42 +474,11 @@ class MappedProperty(PropertyDescriptor):
 
 # %% ../nbs/02_api/02_parameters.ipynb 15
 class TypedProperty(PropertyDescriptor):
-    """Property descriptor for typed parameter sets."""
+    """Property descriptor for typed parameter sets - DEPRECATED: Use wrap= parameter instead."""
     
     def __init__(self, key: str, doc: str, expected_type: Callable):
-        super().__init__(key, doc)
-        self.expected_type = expected_type
-    
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        value = self._get_value(instance)
-        if value is None:
-            return None
-        # Wrap in expected type if not already wrapped
-        if not isinstance(value, self.expected_type()):
-            return self.expected_type()(value)
-        return value
-    
-    def __set__(self, instance, pset):
-        if pset is None:
-            return self._del_value(instance)
-        
-        # Validate type
-        if not isinstance(pset, self.expected_type()):
-            raise TypeError(f"Value for '{self.key}' must be of type {self.expected_type.__name__}")
-        
-        # Get or create target
-        target = self._get_value(instance)
-        if not target:
-            # Create new parameter set if it doesn't exist
-            target = instance._pset.CreateSet(self.key)
-        
-        # Update target with source values
-        wrapped_target = self.expected_type()(target)
-        wrapped_target.update_from(pset)
-        
-        return self._set_value(instance, wrapped_target.parameterset)
+        # Convert to new wrap-based approach
+        super().__init__(key, doc, wrap=expected_type)
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 16
@@ -434,41 +559,260 @@ class ParameterSetMeta(type):
 # %% ../nbs/02_api/02_parameters.ipynb 19
 class ParameterSet(metaclass=ParameterSetMeta):
     """
-    Base class for HWP parameter sets.
-    
-    Provides a unified interface for working with HWP parameter objects,
-    handling both COM objects with SetID and regular Python objects.
+    Staged parameter set with flexible value entry and nested wrapping:
+      - Accept initial values at construction (staged).
+      - Accept overrides when calling apply().
+      - Validate required fields at apply-time (configurable).
+      - Reads: staged -> snapshot -> default.
+      - Nested sets: descriptors with wrap=... auto-wrap raw COM/dict values; apply() cascades.
     """
 
-    def __init__(self, parameterset):
-        """Initialize with a parameter set object."""
+    _property_registry: Dict[str, PropertyDescriptor]  # populated by descriptors
+
+    def __init__(
+        self,
+        parameterset: Any,
+        *,
+        backend_factory: Optional[Callable[[Any], ParameterBackend]] = None,
+        initial: Optional[Dict[str, Any]] = None,
+        **kwargs,
+    ):
+        self._raw = parameterset
+        if backend_factory is None:
+            backend_factory = make_backend
+        self._backend = backend_factory(parameterset)
+
+        # Legacy compatibility
         self._pset = parameterset
         self._is_pset = hasattr(parameterset, "SetID")
         self.attributes_names = []
 
+        # A stable snapshot of current remote values (keyed by descriptor.key)
+        self._snapshot: Dict[str, Any] = {}
+        # Staged changes (key -> value) not yet applied
+        self._staged: Dict[str, Any] = {}
+        # Keys marked for deletion
+        self._deleted: set[str] = set()
+        # Cache of wrapped nested ParameterSets keyed by raw parameter key
+        self._wrapper_cache: Dict[str, ParameterSet] = {}
+
+        # Load snapshot from backend
+        self.reload()
+
+        # Stage initial values (do NOT send yet)
+        if initial:
+            self.update(initial)
+        if kwargs:
+            self.update(kwargs)
+
     @property
     def parameterset(self):
-        """Get the underlying parameter set object."""
-        return self._pset
+        """Return the underlying raw object (COM ParameterSet or Python object)."""
+        return self._raw
+
+    def reload(self):
+        """Refresh in-memory snapshot from backend and clear staged edits (but keep wrapper cache coherent)."""
+        self._snapshot.clear()
+        for name, desc in self._property_registry.items():
+            try:
+                self._snapshot[desc.key] = self._backend.get(desc.key)
+            except Exception:
+                self._snapshot[desc.key] = None
+        self._staged.clear()
+        self._deleted.clear()
+        # Do not clear wrapper cache eagerly; it will be updated on next access if raw changed.
+        return self
+
+    def apply(
+        self,
+        overrides: Optional[Dict[str, Any]] = None,
+        *,
+        require: Literal["error", "warn", "skip"] = "error",
+        only_overrides: bool = False,
+        **kwargs,
+    ):
+        """
+        Flush staged changes (and deletions) to backend.
+
+        Parameters
+        ----------
+        overrides : dict | None
+            Additional values (by attribute name) to stage just-in-time.
+        require : {"error","warn","skip"}
+            Control missing-required behavior at apply-time.
+        only_overrides : bool
+            If True, ignore previously staged edits and apply ONLY overrides/**kwargs.
+        **kwargs
+            Same as overrides; convenient for inline use.
+        """
+        # Optionally ignore prior staged changes
+        saved_staged = None
+        saved_deleted = None
+        if only_overrides:
+            saved_staged = self._staged
+            saved_deleted = self._deleted
+            self._staged = {}
+            self._deleted = set()
+
+        # Add incoming values to staged
+        if overrides:
+            self.update(overrides)
+        if kwargs:
+            self.update(kwargs)
+
+        # Validate requireds
+        if require != "skip":
+            missing = self._missing_required()
+            if missing:
+                msg = f"Missing required parameters: {', '.join(missing)}"
+                if require == "error":
+                    if only_overrides:
+                        self._staged = saved_staged or {}
+                        self._deleted = saved_deleted or set()
+                    raise MissingRequiredError(msg)
+                else:
+                    print("[ParameterSet] WARN:", msg)
+
+        # Deletes first
+        for key in list(self._deleted):
+            try:
+                self._backend.delete(key)
+            finally:
+                self._snapshot[key] = None
+        self._deleted.clear()
+
+        # Writes next (cascade to nested ParameterSets and unwrap)
+        for key, value in list(self._staged.items()):
+            if isinstance(value, ParameterSet):
+                # Ensure nested staged values are flushed first
+                value.apply(require=require)
+                raw_value = value.parameterset
+            else:
+                raw_value = value
+            self._backend.set(key, raw_value)
+            self._snapshot[key] = raw_value
+        self._staged.clear()
+
+        # Restore pre-existing staged edits if only_overrides=True
+        if only_overrides:
+            for k, v in (saved_staged or {}).items():
+                # If the override already wrote same value, no need to re-stage
+                if k not in self._snapshot or self._snapshot[k] != v:
+                    self._staged[k] = v
+            # Deleted marks are not restored (ambiguous post-apply by design).
+
+        return self
+
+    def discard(self):
+        """Drop staged edits and deletions (keep snapshot)."""
+        self._staged.clear()
+        self._deleted.clear()
+        return self
+
+    # ------ descriptor hooks (staged-aware) ------
+    def _ps_get(self, desc: PropertyDescriptor):
+        key = desc.key
+        if key in self._deleted:
+            return None
+        if key in self._staged:
+            return self._staged[key]
+        return self._snapshot.get(key, None)
+
+    def _ps_set(self, desc: PropertyDescriptor, value: Any):
+        key = desc.key
+        self._deleted.discard(key)
+        self._staged[key] = value
+        # If setting a nested PS directly, keep cache aligned
+        if isinstance(value, ParameterSet):
+            self._wrapper_cache[key] = value
+
+    def _ps_del(self, desc: PropertyDescriptor):
+        key = desc.key
+        self._staged.pop(key, None)
+        self._deleted.add(key)
+        # Deleting clears any cached wrapper for that key
+        self._wrapper_cache.pop(key, None)
+        return True
+
+    # ------ conveniences ------
+    def __getitem__(self, name: str):
+        return getattr(self, name)
+
+    def __setitem__(self, name: str, value):
+        setattr(self, name, value)
 
     def _get_value(self, name):
-        """Get a value from the parameter set."""
-        if self._is_pset:
-            return self._pset.Item(name)
-        return getattr(self._pset, name)
+        """Legacy method - use backend instead."""
+        return self._backend.get(name)
     
     def _set_value(self, name, value):
-        """Set a value in the parameter set."""
-        if self._is_pset:
-            return self._pset.SetItem(name, value)
-        return setattr(self._pset, name, value)
+        """Legacy method - use backend instead."""
+        return self._backend.set(name, value)
 
     def _del_value(self, name):
-        """Delete a value from the parameter set."""
-        if self._is_pset:
-            return self._pset.RemoveItem(name)
-        return False
+        """Legacy method - use backend instead."""
+        return self._backend.delete(name)
 
+    def update(self, data: Dict[str, Any]):
+        """Stage multiple values by attribute name (not raw keys)."""
+        for n, v in data.items():
+            if n in self._property_registry:
+                setattr(self, n, v)
+        return self
+
+    def to_dict(
+        self,
+        *,
+        include_defaults: bool = True,
+        only: Optional[Iterable[str]] = None
+    ) -> Dict[str, Any]:
+        names = list(only) if only is not None else list(self._property_registry.keys())
+        out = {}
+        for n in names:
+            val = getattr(self, n)  # staged-aware
+            # For nested ParameterSets, show their own dict for readability
+            if isinstance(val, ParameterSet):
+                out[n] = val.to_dict(include_defaults=include_defaults)
+            else:
+                if include_defaults:
+                    out[n] = val
+                else:
+                    desc = self._property_registry[n]
+                    is_staged = desc.key in self._staged or desc.key in self._deleted
+                    if is_staged or (desc.default is None or val != desc.default):
+                        out[n] = val
+        return out
+
+    def _missing_required(self):
+        missing = []
+        for name, desc in self._property_registry.items():
+            if desc.required:
+                val = getattr(self, name)  # staged-aware
+                is_missing = (val in (None, "", [], {}, ()))
+                # If nested PS is required, also ensure it has no missing requireds
+                if not is_missing and isinstance(val, ParameterSet):
+                    nested_missing = val._missing_required()
+                    is_missing = len(nested_missing) > 0
+                if is_missing:
+                    missing.append(name)
+        return missing
+
+    def dirty(self) -> Dict[str, Any]:
+        """Return staged changes as {attr_name: value}, excluding deletions."""
+        rev = {d.key: name for name, d in self._property_registry.items()}
+        pretty = {}
+        for k, v in self._staged.items():
+            name = rev.get(k, k)
+            pretty[name] = v.to_dict() if isinstance(v, ParameterSet) else v
+        return pretty
+
+    def deleted(self) -> set[str]:
+        """Return attribute names marked for deletion."""
+        rev = {d.key: name for name, d in self._property_registry.items()}
+        return {rev.get(k, k) for k in self._deleted if k in rev}
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} staged={self.dirty()} deleted={self.deleted()}>"
 
 # %% ../nbs/02_api/02_parameters.ipynb 20
 # Additional methods for ParameterSet class
@@ -529,7 +873,7 @@ ParameterSet._str_impl = _str_impl
 @staticmethod        
 def _typed_prop(key, doc, expected_type):
     """Create a property for typed parameter sets."""
-    return TypedProperty(key, doc, expected_type)
+    return PropertyDescriptor(key, doc, wrap=expected_type)
 
 @staticmethod      
 def _int_prop(key, doc, min_val=None, max_val=None):
@@ -688,7 +1032,7 @@ class BorderFill(ParameterSet):
     crooked_slash_flag2 = BoolProperty("CrookedSlashFlag2", "역슬래쉬 대각선의 꺾임 여부 (고바이트): 0 = 아니오, 1 = 예")
 
     # Typed property for fill attribute
-    fill_attr = TypedProperty("FillAttr", "배경 채우기 속성", lambda: DrawFillAttr)
+    fill_attr = PropertyDescriptor("FillAttr", "배경 채우기 속성", wrap=lambda: DrawFillAttr)
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 24
@@ -818,18 +1162,18 @@ class FindReplace(ParameterSet):
     find_regexp = BoolProperty("FindRegExp", "정규식 찾기 (on/off)")
     find_type = BoolProperty("FindType", "찾기 유형 (on/off)")
 
-    # Composite properties using _typed_prop
-    find_charshape = TypedProperty(
-        "FindCharShape", "찾을 글자 모양", lambda: CharShape
+    # Composite properties using wrap parameter
+    find_charshape = PropertyDescriptor(
+        "FindCharShape", "찾을 글자 모양", wrap=lambda: CharShape
     )
-    find_parashape = TypedProperty(
-        "FindParaShape", "찾을 문단 모양", lambda: ParaShape
+    find_parashape = PropertyDescriptor(
+        "FindParaShape", "찾을 문단 모양", wrap=lambda: ParaShape
     )
-    replace_charshape = TypedProperty(
-        "ReplaceCharShape", "바꿀 글자 모양", lambda: CharShape
+    replace_charshape = PropertyDescriptor(
+        "ReplaceCharShape", "바꿀 글자 모양", wrap=lambda: CharShape
     )
-    replace_parashape = TypedProperty(
-        "ReplaceParaShape", "바꿀 문단 모양", lambda: ParaShape
+    replace_parashape = PropertyDescriptor(
+        "ReplaceParaShape", "바꿀 문단 모양", wrap=lambda: ParaShape
     )
 
 
@@ -2962,5 +3306,3 @@ class Table(ParameterSet):
     # table_char_info = ParameterSet._typed_prop("TableCharInfo", "테이블 관련 문자 정보", TableChartInfo) # Not available now.
     table_border_fill = ParameterSet._typed_prop("TableBorderFill", "테이블 테두리 속성", lambda: BorderFill)
     cell           = ParameterSet._typed_prop("Cell", "셀 정보", lambda: Cell)
-
-
