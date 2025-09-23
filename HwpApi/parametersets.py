@@ -580,26 +580,37 @@ class ParameterSet(metaclass=ParameterSetMeta):
       - Validate required fields at apply-time (configurable).
       - Reads: staged -> snapshot -> default.
       - Nested sets: descriptors with wrap=... auto-wrap raw COM/dict values; apply() cascades.
+
+    New behavior:
+      - `parameterset` is optional at __init__; required at apply-time.
+      - Validate the bound parameterset by checking `.SetID`, optionally against REQUIRED_SETID/expected_setid.
     """
+
+    # Optional class-level expected SetID. Subclasses can override.
+    REQUIRED_SETID: Optional[str] = None
 
     _property_registry: Dict[str, PropertyDescriptor]  # populated by descriptors
 
     def __init__(
         self,
-        parameterset: Any,
+        parameterset: Any = None,                 # <-- now optional
         *,
         backend_factory: Optional[Callable[[Any], ParameterBackend]] = None,
         initial: Optional[Dict[str, Any]] = None,
+        expected_setid: Optional[str] = None,     # <-- new
         **kwargs,
     ):
-        self._raw = parameterset
         if backend_factory is None:
             backend_factory = make_backend
-        self._backend = backend_factory(parameterset)
 
-        # Legacy compatibility
-        self._pset = parameterset
-        self._is_pset = hasattr(parameterset, "SetID")
+        # Expected SetID (instance preference > class default)
+        self._expected_setid: Optional[str] = expected_setid if expected_setid is not None else getattr(self.__class__, "REQUIRED_SETID", None)
+
+        # Placeholders before binding
+        self._raw: Any = None
+        self._backend: Optional[ParameterBackend] = None
+        self._pset: Any = None
+        self._is_pset: bool = False
         self.attributes_names = []
 
         # A stable snapshot of current remote values (keyed by descriptor.key)
@@ -611,8 +622,12 @@ class ParameterSet(metaclass=ParameterSetMeta):
         # Cache of wrapped nested ParameterSets keyed by raw parameter key
         self._wrapper_cache: Dict[str, ParameterSet] = {}
 
-        # Load snapshot from backend
-        self.reload()
+        # Bind immediately if provided, otherwise start unbound
+        if parameterset is not None:
+            self.bind(parameterset, backend_factory=backend_factory)
+        else:
+            # start empty; snapshot stays empty until bind+reload
+            pass
 
         # Stage initial values (do NOT send yet)
         if initial:
@@ -620,14 +635,53 @@ class ParameterSet(metaclass=ParameterSetMeta):
         if kwargs:
             self.update(kwargs)
 
+    def bind(self, parameterset: Any, *, backend_factory: Optional[Callable[[Any], ParameterBackend]] = None):
+        """
+        Bind/attach a raw parameterset to this instance (or re-bind a new one).
+        Validates SetID presence and (optionally) equality to expected SetID.
+        """
+        if parameterset is None:
+            raise TypeError("bind(): 'parameterset' must not be None")
+
+        # Must expose SetID
+        if not hasattr(parameterset, "SetID") and (self._expected_setid is not None and self._expected_setid not in str(parameterset.__class__)):
+            raise TypeError("bind(): provided object has no 'SetID' attribute")
+
+        # If we know what to expect, enforce it
+        if self._expected_setid is not None and ((self._expected_setid not in str(parameterset.__class__)) or (getattr(parameterset, "SetID", None) != self._expected_setid)):
+            raise ValueError(
+                f"bind(): parameterset.SetID={getattr(parameterset,'SetID',None)!r} "
+                f"does not match expected {self._expected_setid!r}"
+            )
+
+        if backend_factory is None:
+            backend_factory = make_backend
+
+        # Commit the binding
+        self._raw = parameterset
+        self._backend = backend_factory(parameterset)
+        self._pset = parameterset
+        self._is_pset = True
+
+        # Refresh snapshot from the newly bound backend
+        self.reload()
+        return self
+
     @property
     def parameterset(self):
-        """Return the underlying raw object (COM ParameterSet or Python object)."""
+        """Return the underlying raw object (COM ParameterSet or Python object), or None if unbound."""
         return self._raw
 
     def reload(self):
         """Refresh in-memory snapshot from backend and clear staged edits (but keep wrapper cache coherent)."""
         self._snapshot.clear()
+
+        # If not yet bound, nothing to load; keep staged/deleted but clean them for safety.
+        if self._backend is None:
+            self._staged.clear()
+            self._deleted.clear()
+            return self
+
         for name, desc in self._property_registry.items():
             try:
                 self._snapshot[desc.key] = self._backend.get(desc.key)
@@ -635,7 +689,6 @@ class ParameterSet(metaclass=ParameterSetMeta):
                 self._snapshot[desc.key] = None
         self._staged.clear()
         self._deleted.clear()
-        # Do not clear wrapper cache eagerly; it will be updated on next access if raw changed.
         return self
 
     def apply(
@@ -644,6 +697,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
         *,
         require: Literal["error", "warn", "skip"] = "error",
         only_overrides: bool = False,
+        parameterset: Any = None,                 # <-- NEW: allow binding at apply-time
         **kwargs,
     ):
         """
@@ -657,9 +711,19 @@ class ParameterSet(metaclass=ParameterSetMeta):
             Control missing-required behavior at apply-time.
         only_overrides : bool
             If True, ignore previously staged edits and apply ONLY overrides/**kwargs.
+        parameterset : Any | None
+            Optionally (re)bind a raw parameterset right before applying. Required if not already bound.
         **kwargs
             Same as overrides; convenient for inline use.
         """
+        # Ensure we are bound; if not, we must bind now and validate SetID
+        if self._backend is None:
+            if parameterset is None:
+                raise RuntimeError(
+                    "apply(): no parameterset is bound. Pass 'parameterset=' or call .bind() first."
+                )
+            self.bind(parameterset)
+
         # Optionally ignore prior staged changes
         saved_staged = None
         saved_deleted = None
@@ -711,10 +775,8 @@ class ParameterSet(metaclass=ParameterSetMeta):
         # Restore pre-existing staged edits if only_overrides=True
         if only_overrides:
             for k, v in (saved_staged or {}).items():
-                # If the override already wrote same value, no need to re-stage
                 if k not in self._snapshot or self._snapshot[k] != v:
                     self._staged[k] = v
-            # Deleted marks are not restored (ambiguous post-apply by design).
 
         return self
 
