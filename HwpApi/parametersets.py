@@ -275,7 +275,19 @@ class PropertyDescriptor:
 
             # If backend returned a raw nested object (COM or dict-like), wrap it now
             if val is not None:
-                wrapped = self.wrap(val)
+                # Handle both lambda functions (like lambda: CharShape) and direct class references
+                if callable(self.wrap):
+                    try:
+                        # Try calling with no arguments first (for lambda: ClassName patterns)
+                        wrapper_class = self.wrap()
+                        wrapped = wrapper_class(val) if val != {} else wrapper_class()
+                    except TypeError:
+                        # If that fails, try calling with val as argument (for direct callable patterns)
+                        wrapped = self.wrap(val)
+                else:
+                    # Direct class reference
+                    wrapped = self.wrap(val) if val != {} else self.wrap()
+   
                 instance._wrapper_cache[self.key] = wrapped
                 # Also stage the wrapper so reads stay consistent
                 instance._staged[self.key] = wrapped
