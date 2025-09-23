@@ -6,6 +6,7 @@ from .functions import from_hwpunit, to_hwpunit, convert_hwp_color_to_hex, conve
 import pprint
 from typing import Any, Dict, List, Optional, Union, Callable, Type, Protocol, Literal, Iterable
 
+
 # %% auto 0
 __all__ = ['DIRECTION_MAP', 'CAP_FULL_SIZE_MAP', 'ALIGNMENT_MAP', 'VERT_ALIGN_MAP', 'VERT_REL_TO_MAP', 'HORZ_REL_TO_MAP',
            'HORZ_ALIGN_MAP', 'ALIGN_MAP', 'ALIGN_TYPE_MAP', 'FONTTYPE_MAP', 'TEXT_DIRECTION_MAP', 'TEXT_ALIGN_MAP',
@@ -128,8 +129,8 @@ ALL_MAPPINGS = {
 }
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 7
-# =========================
+# %% ../nbs/02_api/02_parameters.ipynb 8
+# ===================
 # Backends (COM vs. Python)  
 # =========================
 
@@ -214,7 +215,6 @@ class MissingRequiredError(ValueError):
     pass
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 8
 class PropertyDescriptor:
     """
     Descriptor for parameter properties backed by a staged ParameterSet.
@@ -313,6 +313,8 @@ class PropertyDescriptor:
     def _get_value(self, instance): return self.__get__(instance, instance.__class__)
     def _set_value(self, instance, value): return self.__set__(instance, value)
     def _del_value(self, instance): return instance._ps_del(self)
+
+
 
 # %% ../nbs/02_api/02_parameters.ipynb 9
 class IntProperty(PropertyDescriptor):
@@ -479,7 +481,6 @@ class TypedProperty(PropertyDescriptor):
     def __init__(self, key: str, doc: str, expected_type: Callable):
         # Convert to new wrap-based approach
         super().__init__(key, doc, wrap=expected_type)
-
 
 # %% ../nbs/02_api/02_parameters.ipynb 16
 class ListProperty(PropertyDescriptor):
@@ -797,6 +798,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
                     missing.append(name)
         return missing
 
+
     def dirty(self) -> Dict[str, Any]:
         """Return staged changes as {attr_name: value}, excluding deletions."""
         rev = {d.key: name for name, d in self._property_registry.items()}
@@ -813,6 +815,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
 
     def __repr__(self):
         return f"<{self.__class__.__name__} staged={self.dirty()} deleted={self.deleted()}>"
+
 
 # %% ../nbs/02_api/02_parameters.ipynb 20
 # Additional methods for ParameterSet class
@@ -873,7 +876,7 @@ ParameterSet._str_impl = _str_impl
 @staticmethod        
 def _typed_prop(key, doc, expected_type):
     """Create a property for typed parameter sets."""
-    return PropertyDescriptor(key, doc, wrap=expected_type)
+    return TypedProperty(key, doc, expected_type)
 
 @staticmethod      
 def _int_prop(key, doc, min_val=None, max_val=None):
@@ -1032,7 +1035,7 @@ class BorderFill(ParameterSet):
     crooked_slash_flag2 = BoolProperty("CrookedSlashFlag2", "역슬래쉬 대각선의 꺾임 여부 (고바이트): 0 = 아니오, 1 = 예")
 
     # Typed property for fill attribute
-    fill_attr = PropertyDescriptor("FillAttr", "배경 채우기 속성", wrap=lambda: DrawFillAttr)
+    fill_attr = TypedProperty("FillAttr", "배경 채우기 속성", lambda: DrawFillAttr)
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 24
@@ -1145,10 +1148,10 @@ class FindReplace(ParameterSet):
         "WholeWordOnly", "전체 단어만 찾기 (on/off)"
     )
     auto_spell = BoolProperty("AutoSpell", "자동 맞춤법 사용 (on/off)")
-    replace_mode = BoolProperty("ReplaceMode", "찾아 바꾸기 모드 (on/off)")
-    ignore_find_string = BoolProperty(
-        "IgnoreFindString", "찾을 문자열 무시 (on/off)"
-    )
+    find_jaso = BoolProperty("FindJaso", "자소로 찾기 (on/off)")
+    find_regexp = BoolProperty("FindRegExp", "정규식 찾기 (on/off)")
+    find_type = BoolProperty("FindType", "찾기 유형 (on/off)")
+
     ignore_replace_string = BoolProperty(
         "IgnoreReplaceString", "바꿀 문자열 무시 (on/off)"
     )
@@ -1162,18 +1165,18 @@ class FindReplace(ParameterSet):
     find_regexp = BoolProperty("FindRegExp", "정규식 찾기 (on/off)")
     find_type = BoolProperty("FindType", "찾기 유형 (on/off)")
 
-    # Composite properties using wrap parameter
-    find_charshape = PropertyDescriptor(
-        "FindCharShape", "찾을 글자 모양", wrap=lambda: CharShape
+    # Composite properties using _typed_prop
+    find_charshape = TypedProperty(
+        "FindCharShape", "찾을 글자 모양", lambda: CharShape
     )
-    find_parashape = PropertyDescriptor(
-        "FindParaShape", "찾을 문단 모양", wrap=lambda: ParaShape
+    find_parashape = TypedProperty(
+        "FindParaShape", "찾을 문단 모양", lambda: ParaShape
     )
-    replace_charshape = PropertyDescriptor(
-        "ReplaceCharShape", "바꿀 글자 모양", wrap=lambda: CharShape
+    replace_charshape = TypedProperty(
+        "ReplaceCharShape", "바꿀 글자 모양", lambda: CharShape
     )
-    replace_parashape = PropertyDescriptor(
-        "ReplaceParaShape", "바꿀 문단 모양", wrap=lambda: ParaShape
+    replace_parashape = TypedProperty(
+        "ReplaceParaShape", "바꿀 문단 모양", lambda: ParaShape
     )
 
 
@@ -3306,3 +3309,5 @@ class Table(ParameterSet):
     # table_char_info = ParameterSet._typed_prop("TableCharInfo", "테이블 관련 문자 정보", TableChartInfo) # Not available now.
     table_border_fill = ParameterSet._typed_prop("TableBorderFill", "테이블 테두리 속성", lambda: BorderFill)
     cell           = ParameterSet._typed_prop("Cell", "셀 정보", lambda: Cell)
+
+
