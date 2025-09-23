@@ -310,8 +310,10 @@ class PropertyDescriptor:
         v = self.to_backend(value) if (value is not None and self.to_backend) else value
         instance._ps_set(self, v)
 
-    def _get_value(self, instance): return self.__get__(instance, instance.__class__)
-    def _set_value(self, instance, value): return self.__set__(instance, value)
+    def _get_value(self, instance):
+        return instance._ps_get(self)
+    def _set_value(self, instance, value):
+        instance._ps_set(self, value)
     def _del_value(self, instance): return instance._ps_del(self)
 
 
