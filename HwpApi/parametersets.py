@@ -3165,6 +3165,71 @@ class FindReplace(ParameterSet):
             "replace_parashape",
         ]
 
+    def apply(self, overrides=None, *, require="error", only_overrides=False, parameterset=None, **kwargs):
+        """
+        Override apply() to handle HSet-based parameter synchronization.
+        
+        For FindReplace actions, we need to ensure that staged changes are 
+        synchronized with the global HParameterSet state that actions actually use.
+        """
+        # First, apply normally to the local backend
+        result = super().apply(overrides, require=require, only_overrides=only_overrides, 
+                             parameterset=parameterset, **kwargs)
+        
+        # Special handling for HSet-based parameter sets
+        # Check if we're bound to an HParameterSet (has HFindReplace child node)
+        if (self._raw is not None and 
+            hasattr(self._raw, 'HFindReplace') and 
+            isinstance(self._backend, HParamBackend)):
+            
+            try:
+                # Synchronize critical properties with the global HParameterSet
+                # This ensures that actions using the global state see our changes
+                hfind_replace = self._raw.HFindReplace
+                
+                # Sync string properties
+                if 'FindString' in self._snapshot:
+                    hfind_replace.FindString = self._snapshot['FindString'] or ""
+                if 'ReplaceString' in self._snapshot:
+                    hfind_replace.ReplaceString = self._snapshot['ReplaceString'] or ""
+                if 'FindStyle' in self._snapshot:
+                    hfind_replace.FindStyle = self._snapshot['FindStyle'] or ""
+                if 'ReplaceStyle' in self._snapshot:
+                    hfind_replace.ReplaceStyle = self._snapshot['ReplaceStyle'] or ""
+                
+                # Sync boolean properties
+                bool_props = [
+                    ('MatchCase', 'MatchCase'),
+                    ('AllWordForms', 'AllWordForms'),
+                    ('SeveralWords', 'SeveralWords'),
+                    ('UseWildCards', 'UseWildCards'),
+                    ('WholeWordOnly', 'WholeWordOnly'),
+                    ('AutoSpell', 'AutoSpell'),
+                    ('ReplaceMode', 'ReplaceMode'),
+                    ('IgnoreFindString', 'IgnoreFindString'),
+                    ('IgnoreReplaceString', 'IgnoreReplaceString'),
+                    ('IgnoreMessage', 'IgnoreMessage'),
+                    ('HanjaFromHangul', 'HanjaFromHangul'),
+                    ('FindJaso', 'FindJaso'),
+                    ('FindRegExp', 'FindRegExp'),
+                    ('FindType', 'FindType'),
+                ]
+                
+                for snapshot_key, hparam_key in bool_props:
+                    if snapshot_key in self._snapshot and self._snapshot[snapshot_key] is not None:
+                        setattr(hfind_replace, hparam_key, bool(self._snapshot[snapshot_key]))
+                
+                # Sync direction property
+                if 'Direction' in self._snapshot and self._snapshot['Direction'] is not None:
+                    hfind_replace.Direction = int(self._snapshot['Direction'])
+                    
+            except Exception as e:
+                # Log the error but don't fail the apply operation
+                import logging
+                logging.warning(f"FindReplace: Failed to sync with global HParameterSet: {e}")
+        
+        return result
+
     # String properties
     find_string = ParameterSet._str_prop("FindString", "찾을 문자열")
     replace_string = ParameterSet._str_prop("ReplaceString", "바꿀 문자열")
