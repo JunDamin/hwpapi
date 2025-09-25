@@ -19,8 +19,8 @@ __all__ = ['DIRECTION_MAP', 'CAP_FULL_SIZE_MAP', 'ALIGNMENT_MAP', 'VERT_ALIGN_MA
            'snapshot_hparam', 'apply_dict_hparam', 'temp_edit_hparam', 'resolve_action_args', 'apply_staged_to_backend',
            'MissingRequiredError', 'PropertyDescriptor', 'IntProperty', 'BoolProperty', 'StringProperty',
            'ColorProperty', 'UnitProperty', 'MappedProperty', 'TypedProperty', 'ListProperty', 'ParameterSetMeta',
-           'ParameterSet', 'BorderFill', 'Caption', 'FindReplace', 'DrawFillAttr', 'CharShape', 'ParaShape',
-           'ShapeObject', 'Table', 'BulletShape', 'Cell', 'CtrlData', 'DrawArcType', 'DrawCoordInfo',
+           'ParameterSet', 'update_from', 'BorderFill', 'Caption', 'FindReplace', 'DrawFillAttr', 'CharShape',
+           'ParaShape', 'ShapeObject', 'Table', 'BulletShape', 'Cell', 'CtrlData', 'DrawArcType', 'DrawCoordInfo',
            'DrawCtrlHyperlink', 'DrawEditDetail', 'DrawImageAttr', 'DrawImageScissoring', 'DrawLayout', 'DrawLineAttr',
            'DrawRectType', 'DrawResize', 'DrawRotate', 'DrawScAction', 'DrawShadow', 'DrawShear', 'DrawTextart',
            'ListProperties', 'NumberingShape', 'TabDef']
@@ -1394,6 +1394,7 @@ def update_from(self, pset):
                 logging.warning(f"Skipping invalid value for '{key}': {value}. Error: {e}")
                 continue
     return self
+
 ParameterSet.update_from = update_from
 ParameterSet.serialize = lambda self: self._serialize_impl()
 ParameterSet.__str__ = lambda self: self._str_impl()
@@ -3916,3 +3917,5 @@ class Table(ParameterSet):
     # table_char_info = ParameterSet._typed_prop("TableCharInfo", "테이블 관련 문자 정보", TableChartInfo) # Not available now.
     table_border_fill = ParameterSet._typed_prop("TableBorderFill", "테이블 테두리 속성", lambda: BorderFill)
     cell           = ParameterSet._typed_prop("Cell", "셀 정보", lambda: Cell)
+
+

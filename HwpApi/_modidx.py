@@ -1925,4 +1925,6 @@ d = { 'settings': { 'branch': 'main',
                                       'hwpapi.parametersets.temp_edit_hparam': ( '02_api/parameters.html#temp_edit_hparam',
                                                                                  'hwpapi/parametersets.py'),
                                       'hwpapi.parametersets.to_dict_hparam': ( '02_api/parameters.html#to_dict_hparam',
-                                                                               'hwpapi/parametersets.py')}}}
+                                                                               'hwpapi/parametersets.py'),
+                                      'hwpapi.parametersets.update_from': ( '02_api/parameters.html#update_from',
+                                                                            'hwpapi/parametersets.py')}}}
