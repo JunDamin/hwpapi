@@ -1225,6 +1225,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
                 except Exception:
                     pass  # Skip properties that can't be set
 
+ 
     # ------ descriptor hooks (staged-aware) ------
     def _ps_get(self, desc: PropertyDescriptor):
         key = desc.key
