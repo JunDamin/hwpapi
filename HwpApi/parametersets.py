@@ -1159,108 +1159,64 @@ class ParameterSet(metaclass=ParameterSetMeta):
         
         The core issue: HSet-based actions use the GLOBAL HParameterSet state, but the 
         simplified API creates LOCAL copies via HAction.GetDefault(). This method bridges
-        that gap by copying values from the local parameter set to the global state.
+        that gap by copying staged values to the global HParameterSet using dotted key paths.
         """
-        # Only apply to HParamBackend instances bound to HParameterSet objects
-        if not (self._raw is not None and isinstance(self._backend, HParamBackend)):
+        # Only apply to HParamBackend instances with App reference
+        if not (self._raw is not None and isinstance(self._backend, HParamBackend) and self._app_instance):
             return
         
-        # We need to find the global HParameterSet - it should be accessible via the backend root
-        # or we need to find the App instance somehow
         try:
-            # Try to find the App instance by walking up the object hierarchy
-            global_hparam = self._find_global_hparameterset()
+            # Get the global HParameterSet
+            global_hparam = self._app_instance.api.HParameterSet
             if global_hparam is None:
                 return
-                
-            # Auto-detect the HParam node type and sync accordingly
-            sync_mappings = {
-                'HFindReplace': ('HFindReplace', self._sync_find_replace_to_global),
-                'HCharShape': ('HCharShape', self._sync_char_shape_to_global),
-                'HParaShape': ('HParaShape', self._sync_para_shape_to_global),
-            }
             
-            for local_node_name, (global_node_name, sync_method) in sync_mappings.items():
-                if hasattr(self._raw, local_node_name) and hasattr(global_hparam, global_node_name):
-                    local_node = getattr(self._raw, local_node_name)
-                    global_node = getattr(global_hparam, global_node_name)
-                    sync_method(local_node, global_node)
-                    break
+            # Create a backend for the global HParameterSet
+            global_backend = HParamBackend(global_hparam)
+            
+            # Determine the HParam node prefix based on the local parameter set type
+            hparam_prefix = self._get_hparam_prefix()
+            if not hparam_prefix:
+                return
+            
+            # Sync all staged values to the global HParameterSet using dotted paths
+            for property_key, value in self._staged.items():
+                # Skip nested ParameterSet objects for now
+                if isinstance(value, ParameterSet):
+                    continue
+                    
+                try:
+                    # Create the full dotted path: "HFindReplace.FindString"
+                    global_key = f"{hparam_prefix}.{property_key}"
+                    global_backend.set(global_key, value)
+                except Exception as e:
+                    # Skip properties that can't be set
+                    continue
                     
         except Exception as e:
             # Log the error but don't fail the apply operation
             import logging
             logging.warning(f"ParameterSet: Failed to sync with global HParameterSet: {e}")
 
-    def _find_global_hparameterset(self):
+    def _get_hparam_prefix(self):
         """
-        Find the global HParameterSet instance.
-        
-        The local HParameterSet (self._raw) is created by HAction.GetDefault(),
-        but we need to find the global one that actions actually use.
+        Determine the HParam prefix based on the parameter set class name.
+        Returns the appropriate prefix like "HFindReplace", "HCharShape", etc.
         """
-        # Strategy 1: Use the stored App instance reference if available
-        if self._app_instance and hasattr(self._app_instance, 'api') and hasattr(self._app_instance.api, 'HParameterSet'):
-            return self._app_instance.api.HParameterSet
-            
-        return None
-
-    def _sync_find_replace_to_global(self, local_node, global_node):
-        """Copy FindReplace values from local to global HParameterSet."""
-        # Sync string properties
-        string_props = ['FindString', 'ReplaceString', 'FindStyle', 'ReplaceStyle']
-        for prop in string_props:
-            if hasattr(local_node, prop) and hasattr(global_node, prop):
-                try:
-                    value = getattr(local_node, prop)
-                    setattr(global_node, prop, value)
-                except Exception:
-                    pass
+        class_name = self.__class__.__name__
         
-        # Sync boolean properties
-        bool_props = [
-            'MatchCase', 'AllWordForms', 'SeveralWords', 'UseWildCards', 
-            'WholeWordOnly', 'AutoSpell', 'ReplaceMode', 'IgnoreFindString',
-            'IgnoreReplaceString', 'IgnoreMessage', 'HanjaFromHangul', 
-            'FindJaso', 'FindRegExp', 'FindType'
-        ]
-        for prop in bool_props:
-            if hasattr(local_node, prop) and hasattr(global_node, prop):
-                try:
-                    value = getattr(local_node, prop)
-                    setattr(global_node, prop, value)
-                except Exception:
-                    pass
+        # Map parameter set class names to HParam prefixes
+        prefix_map = {
+            'FindReplace': 'HFindReplace',
+            'CharShape': 'HCharShape', 
+            'ParaShape': 'HParaShape',
+            'BorderFill': 'HBorderFill',
+            'Table': 'HTable',
+            # Add more mappings as needed
+        }
         
-        # Sync direction property
-        if hasattr(local_node, 'Direction') and hasattr(global_node, 'Direction'):
-            try:
-                value = getattr(local_node, 'Direction')
-                setattr(global_node, 'Direction', value)
-            except Exception:
-                pass
+        return prefix_map.get(class_name, None)
 
-    def _sync_char_shape_to_global(self, local_node, global_node):
-        """Copy CharShape values from local to global HParameterSet."""
-        char_props = ['Bold', 'Italic', 'Underline', 'StrikeOut', 'TextColor', 'ShadeColor']
-        for prop in char_props:
-            if hasattr(local_node, prop) and hasattr(global_node, prop):
-                try:
-                    value = getattr(local_node, prop)
-                    setattr(global_node, prop, value)
-                except Exception:
-                    pass
-
-    def _sync_para_shape_to_global(self, local_node, global_node):
-        """Copy ParaShape values from local to global HParameterSet."""
-        para_props = ['Align', 'HeadIndent', 'TailIndent', 'LineSpacing', 'PrevSpacing', 'NextSpacing']
-        for prop in para_props:
-            if hasattr(local_node, prop) and hasattr(global_node, prop):
-                try:
-                    value = getattr(local_node, prop)
-                    setattr(global_node, prop, value)
-                except Exception:
-                    pass
 
  
     # ------ descriptor hooks (staged-aware) ------
