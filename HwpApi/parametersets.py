@@ -1367,7 +1367,34 @@ class ParameterSet(metaclass=ParameterSetMeta):
 
 # %% ../nbs/02_api/02_parameters.ipynb 22
 # Additional methods for ParameterSet class
-ParameterSet.update_from = lambda self, pset: self._update_from_impl(pset)
+def update_from(self, pset):
+    """
+    Update this ParameterSet with values from another ParameterSet instance.
+
+    Only attributes defined in self.attributes_names are updated.
+    Nested ParameterSet attributes are updated recursively.
+    If a value is None, the attribute is deleted.
+    If a value is truthy, it is set on self.
+    """
+    if not isinstance(pset, ParameterSet):
+        raise TypeError("update_from expects a ParameterSet instance")
+    for key in self.attributes_names:
+        value = getattr(pset, key, None)
+        if isinstance(value, ParameterSet):
+            target = getattr(self, key)
+            if isinstance(target, ParameterSet):
+                target.update_from(value)
+        elif value is None:
+            self._del_value(key)
+        elif value:
+            try:
+                setattr(self, key, value)
+            except (ValueError, TypeError) as e:
+                import logging
+                logging.warning(f"Skipping invalid value for '{key}': {value}. Error: {e}")
+                continue
+    return self
+ParameterSet.update_from = update_from
 ParameterSet.serialize = lambda self: self._serialize_impl()
 ParameterSet.__str__ = lambda self: self._str_impl()
 ParameterSet.__repr__ = lambda self: self.__str__()
@@ -3889,5 +3916,3 @@ class Table(ParameterSet):
     # table_char_info = ParameterSet._typed_prop("TableCharInfo", "테이블 관련 문자 정보", TableChartInfo) # Not available now.
     table_border_fill = ParameterSet._typed_prop("TableBorderFill", "테이블 테두리 속성", lambda: BorderFill)
     cell           = ParameterSet._typed_prop("Cell", "셀 정보", lambda: Cell)
-
-
