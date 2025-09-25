@@ -841,11 +841,25 @@ class MappedProperty(PropertyDescriptor):
 
 # %% ../nbs/02_api/02_parameters.ipynb 17
 class TypedProperty(PropertyDescriptor):
-    """Property descriptor for typed parameter sets - DEPRECATED: Use wrap= parameter instead."""
-    
+    """Robust property descriptor for typed parameter sets that always wraps on access."""
+
     def __init__(self, key: str, doc: str, expected_type: Callable):
-        # Convert to new wrap-based approach
         super().__init__(key, doc, wrap=expected_type)
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        value = instance._ps_get(self)
+        # Always wrap if not already wrapped and not None
+        if value is not None and self.wrap is not None:
+            wrapper_class = self.wrap() if callable(self.wrap) else self.wrap
+            if not isinstance(value, wrapper_class):
+                wrapped = wrapper_class(value)
+                instance._ps_set(self, wrapped)
+                instance._wrapper_cache[self.key] = wrapped
+                return wrapped
+        return value
+
 
 # %% ../nbs/02_api/02_parameters.ipynb 18
 class ListProperty(PropertyDescriptor):
