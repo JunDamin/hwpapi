@@ -996,6 +996,8 @@ class ParameterSet(metaclass=ParameterSetMeta):
         # Bind immediately if provided, otherwise start unbound
         if parameterset is not None:
             self.bind(parameterset, backend_factory=backend_factory)
+            # Take a snapshot of all current values for display/serialization
+            self._snapshot = self._take_initial_snapshot()
         else:
             # start empty; snapshot stays empty until bind+reload
             pass
@@ -1005,6 +1007,23 @@ class ParameterSet(metaclass=ParameterSetMeta):
             self.update(initial)
         if kwargs:
             self.update(kwargs)
+
+    def _take_initial_snapshot(self):
+        """
+        Take a snapshot of all current values from the COM object for display/serialization.
+        """
+        snapshot = {}
+        for name in self._property_registry:
+            try:
+                value = getattr(self, name, None)
+                if isinstance(value, ParameterSet):
+                    value = value.serialize()
+                elif hasattr(value, "_oleobj_"):
+                    value = _safe_com_serialize(value)
+                snapshot[name] = value
+            except Exception as e:
+                snapshot[name] = f"<COM error: {e}>"
+        return snapshot
 
     def bind(
         self,
@@ -1376,15 +1395,47 @@ def _update_from_impl(self, pset):
                 continue
     return self
 
-def _serialize_impl(self):
-    """Convert the parameter set to a dictionary."""
+
+def _serialize_impl(self, max_depth=3, _depth=0):
+    """
+    Robustly convert the parameter set to a dictionary, walking the COM tree and handling COM errors.
+    """
+    if _depth > max_depth:
+        return "<max depth reached>"
     result = {}
     for key in self.attributes_names:
-        value = getattr(self, key, None)
-        if isinstance(value, ParameterSet):
-            value = value.serialize()
-        result[key] = value
+        try:
+            value = getattr(self, key, None)
+            if isinstance(value, ParameterSet):
+                value = value.serialize(max_depth=max_depth, _depth=_depth+1)
+            elif hasattr(value, "_oleobj_"):
+                # Try to walk COM object attributes (HSet child)
+                value = _safe_com_serialize(value, max_depth, _depth+1)
+            result[key] = value
+        except Exception as e:
+            # Handle COM errors or any other error gracefully
+            result[key] = f"<COM error: {e}>"
     return result
+
+def _safe_com_serialize(obj, max_depth=3, _depth=0):
+    """
+    Recursively walk a COM object, returning a dict of its properties, handling COM errors.
+    """
+    if _depth > max_depth:
+        return "<max depth reached>"
+    result = {}
+    for attr in dir(obj):
+        if attr.startswith("_"):
+            continue
+        try:
+            value = getattr(obj, attr)
+            if hasattr(value, "_oleobj_"):
+                value = _safe_com_serialize(value, max_depth, _depth+1)
+            result[attr] = value
+        except Exception as e:
+            result[attr] = f"<COM error: {e}>"
+    return result
+
 
 def _str_impl(self):
     """String representation of the parameter set."""
