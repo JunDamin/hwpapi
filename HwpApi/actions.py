@@ -921,70 +921,55 @@ class _Action:
     __repr__ = __str__
 
     def set_parameter(self, key: str, value):
-        self.pset.HSet.SetItem(key, value)
+        # Set staged value in the ParameterSet object
+        setattr(self.pset, key, value)
         return self
 
     def run(self, parameterset=None):
-        # 외부에서 파라미터를 직접 주입하면 기준이 되는 파라미터를 변경한다 
+        """
+        Apply staged changes to the global HParameterSet, then execute the action.
+        """
         pset = self.pset
         if parameterset:
             pset = parameterset
 
-        # 파라미터가 불요한 액션이면 그대로 실행
-        if not pset:
-            return self.act.Execute(None)
-        # parametersets에서 정의된 파라미터가 아니라면 HSet으로 바로 연결
-        if not isinstance(pset, parametersets.ParameterSet):
-            return self.act.Execute(pset.HSet)
-        # 커스텀 플래그를 만든 것이라면 parameterset으로 실행
-        # 왜 이렇게 설계했냐면 하위 컨셉들이 있을 수 있기 때문 
-        if pset._is_pset:
-            return self.act.Execute(pset.parameterset)
-        # 그렇지 않다면 HSet으로 보고 실행
-        # 이렇게 복잡하게 나눠서 진행하는 이유는 Find and Replace와 관련된 기능은 
-        # action과 같이 전달한 parameterset을 사용하지 않고
-        # 프로그램에 저장된 상태값을 사용하기 때문임 
-        return self.act.Execute(pset.parameterset.HSet)
+        # Apply staged changes to the global HParameterSet
+        pset.apply()
+
+        # Always execute using the global HParameterSet node for this action
+        hparam_prefix = pset._get_hparam_prefix()
+        global_hparam = self.App.api.HParameterSet
+        hnode = getattr(global_hparam, hparam_prefix) if hparam_prefix else global_hparam
+
+        # Use .HSet if available, else pass the node directly
+        arg = hnode.HSet if hasattr(hnode, "HSet") else hnode
+        return self.act.Execute(arg)
 
     def _get_hset(self, pset_key=None):
-        if not self.pset_key:
-            return None
-        hset = getattr(self.App.api.HParameterSet, f"H{self.pset_key}")
-        self.App.api.HAction.GetDefault(
-            pset_key if pset_key else self.action_key, hset.HSet
-        )
-        return hset
+        # Deprecated: Only global HParameterSet is used now
+        raise NotImplementedError("Only global HParameterSet is supported.")
 
     def _create_pset(self):
-        pset = self.act.CreateSet()
-        self.act.GetDefault(pset)
-        return pset
+        # Deprecated: Only HSet-based ParameterSet is supported
+        raise NotImplementedError("Only HSet-based ParameterSet is supported.")
 
     def _get_sets(self, pset_key=None):
-        """
-        HParameterset의 값과 해당 Action의 ParameterSet 값을 반환합니다.
-        """
-        return {"hset": self._get_hset(pset_key), "pset": self._create_pset()}
+        # Deprecated: Only HSet-based ParameterSet is supported
+        raise NotImplementedError("Only HSet-based ParameterSet is supported.")
 
     def get_pset(self):
-        """범용성을 높이기 위해서 이런 구조를 잡음
-        일단 개발매뉴얼 문서에 모든 parameterset이 적시되어 있다는 건 확인할 수 없었음
-        따라서 알지 못하는 파라미터가 나오는 것에 대한 대비는 필요함
-        또한 사용성 향상을 위해 생성한 wrapper를 사용할 수 있도록 하고자 함
-        마지막으로 예상치 못한 Hset으로만 작동하는 Action을 위해 특별한 파라미터를 설정할 수 있는 파라미터를 지정함
+        """
+        Always return a ParameterSet instance bound to the global HParameterSet node for this action.
         """
         if not self.pset_key:
             return None
         pset_class = getattr(parametersets, self.pset_key, None)
-        # Hset반환
         if not pset_class:
-            return self._get_hset()
-        # Hset 기반 액션
-        if self.pset_key in ["FindReplace", "FindDlg", "FindAll"]:
-            return pset_class(self._get_hset(), app_instance=self.App)
-        # 일반 Action
-        return pset_class(self._create_pset(), app_instance=self.App)
-        
+            raise ValueError(f"No ParameterSet class found for key: {self.pset_key}")
+        # Bind to the global HParameterSet node
+        hparam_prefix = f"H{self.pset_key}"
+        hnode = getattr(self.App.api.HParameterSet, hparam_prefix)
+        return pset_class(hnode, app_instance=self.App)
 
     def __call__(self, pset=None):
         return self.run(pset)
@@ -3813,4 +3798,3 @@ class _Actions:
     @property    
     def VoiceCommand(self):
         return _Action(self._app, "VoiceCommand")
-

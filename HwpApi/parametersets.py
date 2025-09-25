@@ -356,21 +356,12 @@ class HParamBackend:
 
 def make_backend(obj: Any) -> ParameterBackend:
     """
-    Auto-detect backend type:
-    - ParameterSet: has SetID or all of Item/SetItem/RemoveItem → ComBackend
-    - HParameterSet: COM object with .HSet or HParam child nodes → HParamBackend  
-    - Else → AttrBackend
+    HSet-only backend factory.
+    Only supports HParameterSet (COM object with .HSet or HParam child nodes).
     """
-    # Check for classic ParameterSet first
-    if hasattr(obj, "SetID") or all(hasattr(obj, n) for n in ("Item", "SetItem", "RemoveItem")):
-        return ComBackend(obj)
-    
-    # Check for HParameterSet
     if _looks_like_hparamset(obj):
         return HParamBackend(obj)
-    
-    # Fallback to attribute/dict backend
-    return AttrBackend(obj)
+    raise TypeError("Only HParameterSet (HSet-based COM object) is supported as backend.")
 
 
 
@@ -932,16 +923,28 @@ class ParameterSetMeta(type):
 # %% ../nbs/02_api/02_parameters.ipynb 21
 class ParameterSet(metaclass=ParameterSetMeta):
     """
-    Staged parameter set with flexible value entry and nested wrapping:
-      - Accept initial values at construction (staged).
-      - Accept overrides when calling apply().
-      - Validate required fields at apply-time (configurable).
-      - Reads: staged -> snapshot -> default.
-      - Nested sets: descriptors with wrap=... auto-wrap raw COM/dict values; apply() cascades.
+    HSet-only ParameterSet with robust staging and global apply.
 
-    New behavior:
-      - `parameterset` is optional at __init__; required at apply-time.
-      - Validate the bound parameterset by checking `.SetID`, optionally against REQUIRED_SETID/expected_setid.
+    - All parameter operations are staged locally in the ParameterSet object.
+    - No changes are made to the global HParameterSet until `apply()` is called.
+    - When `apply()` is called, all staged changes are flushed to the global HParameterSet (COM-object, tree-structured).
+    - Supports tree-structured, dotted-key access for nested HSet parameters.
+    - Only HSet/COM-object backends are supported (no classic Pset/ComBackend/AttrBackend).
+    - Designed for use with HWP's global HParameterSet API.
+
+    Usage Example:
+        # 1. Get the ParameterSet for an action (e.g., FindReplace)
+        pset = actions.FindReplace.get_pset()
+
+        # 2. Stage changes locally
+        pset.find_string = "foo"
+        pset.replace_string = "bar"
+        pset.match_case = True
+
+        # 3. Run the action (staged changes are applied to the global HParameterSet before execution)
+        actions.FindReplace.run(pset)
+
+    This ensures all parameter changes are atomic, globally consistent, and only affect the live HParameterSet when intended.
     """
 
     # Optional class-level expected SetID. Subclasses can override.
@@ -3823,5 +3826,3 @@ class Table(ParameterSet):
     # table_char_info = ParameterSet._typed_prop("TableCharInfo", "테이블 관련 문자 정보", TableChartInfo) # Not available now.
     table_border_fill = ParameterSet._typed_prop("TableBorderFill", "테이블 테두리 속성", lambda: BorderFill)
     cell           = ParameterSet._typed_prop("Cell", "셀 정보", lambda: Cell)
-
-
