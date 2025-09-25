@@ -968,43 +968,73 @@ def charshape(app:App,
     logger = get_logger('00_core.charshape')
     logger.debug(f"Calling charshape")
 
-    charshape_pset = app.create_parameterset("CharShape")
-    value_set = {
-        "facename": facename,
-        "fonttype": fonttype,
-        "size": size,
-        "ratio": ratio,
-        "spacing": spacing,
-        "offset": offset,
-        "bold": bold,
-        "italic": italic,
-        "small_caps": small_caps,
-        "emboss": emboss,
-        "engrave": engrave,
-        "superscript": superscript,
-        "subscript": subscript,
-        "underline_type": underline_type,
-        "underline_shape": underline_shape,
-        "outline_type": outline_type,
-        "shadow_type": shadow_type,
-        "text_color": text_color,
-        "shade_color": shade_color,
-        "underline_color": underline_color,
-        "shadow_color": shadow_color,
-        "shadow_offset_x": shadow_offset_x,
-        "shadow_offset_y": shadow_offset_y,
-        "strikeout_color": strikeout_color,
-        "strikeout_type": strikeout_type,
-        "strikeout_shape": strikeout_shape,
-        "diac_sym_mark": diac_sym_mark,
-        "use_font_space": use_font_space,
-        "use_kerning": use_kerning,
-        "height": height,
-        "border_fil": border_fill}
-    for key, value in value_set.items():
-        if not key:
-            continue
-        setattr(charshape_pset, key, value)
+    # Create a wrapped CharShape instance instead of raw COM object
+    from hwpapi.parametersets import CharShape
+    charshape_pset = CharShape(app.create_parameterset("CharShape"))
+    
+    # Set values using the convenience properties when available
+    if facename is not None:
+        charshape_pset.facename = facename
+    if fonttype is not None:
+        charshape_pset.fonttype = fonttype
+    if size is not None:
+        charshape_pset.size = size
+    if ratio is not None:
+        charshape_pset.ratio = ratio
+    if spacing is not None:
+        charshape_pset.spacing = spacing
+    if offset is not None:
+        charshape_pset.offset = offset
+    if bold is not None:
+        charshape_pset.bold = bold
+    if italic is not None:
+        charshape_pset.italic = italic
+    if small_caps is not None:
+        charshape_pset.small_caps = small_caps
+    if emboss is not None:
+        charshape_pset.emboss = emboss
+    if engrave is not None:
+        charshape_pset.engrave = engrave
+    if superscript is not None:
+        charshape_pset.superscript = superscript
+    if subscript is not None:
+        charshape_pset.subscript = subscript
+    if underline_type is not None:
+        charshape_pset.underline_type = underline_type
+    if underline_shape is not None:
+        charshape_pset.underline_shape = underline_shape
+    if outline_type is not None:
+        charshape_pset.outline_type = outline_type
+    if shadow_type is not None:
+        charshape_pset.shadow_type = shadow_type
+    if text_color is not None:
+        charshape_pset.text_color = text_color
+    if shade_color is not None:
+        charshape_pset.shade_color = shade_color
+    if underline_color is not None:
+        charshape_pset.underline_color = underline_color
+    if shadow_color is not None:
+        charshape_pset.shadow_color = shadow_color
+    if shadow_offset_x is not None:
+        charshape_pset.shadow_offset_x = shadow_offset_x
+    if shadow_offset_y is not None:
+        charshape_pset.shadow_offset_y = shadow_offset_y
+    if strikeout_color is not None:
+        charshape_pset.strikeout_color = strikeout_color
+    if strikeout_type is not None:
+        charshape_pset.strikeout_type = strikeout_type
+    if strikeout_shape is not None:
+        charshape_pset.strikeout_shape = strikeout_shape
+    if diac_sym_mark is not None:
+        charshape_pset.diac_sym_mark = diac_sym_mark
+    if use_font_space is not None:
+        charshape_pset.use_font_space = use_font_space
+    if use_kerning is not None:
+        charshape_pset.use_kerning = use_kerning
+    if height is not None:
+        charshape_pset.height = height
+    if border_fill is not None:
+        charshape_pset.border_fill = border_fill
         
     return charshape_pset
 
@@ -1037,7 +1067,7 @@ def get_charshape(app: App):
     logger.debug(f"Calling get_charshape")
     return app.actions.CharShape.pset
 
-# %% ../nbs/02_api/00_core.ipynb 35
+# %% ../nbs/02_api/00_core.ipynb 36
 @patch
 def set_charshape(app: App, charshape: parametersets.CharShape=None, **kwargs):
     """
@@ -1083,7 +1113,7 @@ def set_charshape(app: App, charshape: parametersets.CharShape=None, **kwargs):
         return pset 
     return None
 
-# %% ../nbs/02_api/00_core.ipynb 39
+# %% ../nbs/02_api/00_core.ipynb 40
 @patch
 def get_parashape(app: App):
     """
@@ -1112,7 +1142,7 @@ def get_parashape(app: App):
     logger.debug(f"Calling get_parashape")
     return app.actions.ParagraphShape.pset
 
-# %% ../nbs/02_api/00_core.ipynb 41
+# %% ../nbs/02_api/00_core.ipynb 42
 @patch
 def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     """
@@ -1154,7 +1184,7 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 43
+# %% ../nbs/02_api/00_core.ipynb 44
 @patch
 def insert_text(
     app: App,
@@ -1203,7 +1233,7 @@ def insert_text(
     insert_text.run(p)
     return
 
-# %% ../nbs/02_api/00_core.ipynb 49
+# %% ../nbs/02_api/00_core.ipynb 50
 def _get_text(app):
     """스캔한 텍스트 텍스트 제너레이터"""
     flag, text = 2, ""
@@ -1246,7 +1276,7 @@ def scan(
     yield _get_text(app)
     app.api.ReleaseScan()
 
-# %% ../nbs/02_api/00_core.ipynb 50
+# %% ../nbs/02_api/00_core.ipynb 51
 def move_to_line(app: App, text):
     """인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다."""
     logger = get_logger('00_core.move_to_line')
@@ -1257,7 +1287,7 @@ def move_to_line(app: App, text):
                 return app.move.scan_pos()
     return False
 
-# %% ../nbs/02_api/00_core.ipynb 52
+# %% ../nbs/02_api/00_core.ipynb 53
 @patch
 def setup_page(
     app: App,  # 앱 인스턴스
@@ -1324,7 +1354,7 @@ def setup_page(
 
     return action.run()  # 페이지 설정 실행
 
-# %% ../nbs/02_api/00_core.ipynb 53
+# %% ../nbs/02_api/00_core.ipynb 54
 @patch
 def insert_picture(
     app: App,
@@ -1388,7 +1418,7 @@ def insert_picture(
         effect=effect,  # 시각적 효과
     )
 
-# %% ../nbs/02_api/00_core.ipynb 54
+# %% ../nbs/02_api/00_core.ipynb 55
 @patch
 def select_text(app: App, option=const.SelectionOption.Line):
     """
@@ -1430,7 +1460,7 @@ def select_text(app: App, option=const.SelectionOption.Line):
     return begin_action(), end_action()
 
 
-# %% ../nbs/02_api/00_core.ipynb 57
+# %% ../nbs/02_api/00_core.ipynb 58
 @patch
 def get_selected_text(app: App):
     """
@@ -1462,7 +1492,7 @@ def get_selected_text(app: App):
         text = "\n".join(scan)  # 선택된 텍스트를 줄 단위로 결합
     return text  # 결합된 텍스트 반환
 
-# %% ../nbs/02_api/00_core.ipynb 59
+# %% ../nbs/02_api/00_core.ipynb 60
 # 리팩터링된 get_text 함수
 @patch
 def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosition.Line):
@@ -1496,7 +1526,7 @@ def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosi
         text = "".join(txts)  # 스캔한 텍스트를 하나의 문자열로 결합
     return text  # 결합된 텍스트 반환
 
-# %% ../nbs/02_api/00_core.ipynb 62
+# %% ../nbs/02_api/00_core.ipynb 63
 @patch
 def find_text(
     app: App,
@@ -1590,7 +1620,7 @@ def find_text(
         pset.find_charshape.update_from(charshape)
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 71
+# %% ../nbs/02_api/00_core.ipynb 73
 @patch
 def replace_all(
     app: App,
@@ -1694,7 +1724,7 @@ def replace_all(
         pset.replace_charshape.update_from(new_charshape)
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 75
+# %% ../nbs/02_api/00_core.ipynb 77
 @patch
 def insert_file(
     app: App,
@@ -1753,7 +1783,7 @@ def insert_file(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 76
+# %% ../nbs/02_api/00_core.ipynb 78
 @patch
 def set_cell_border(
     app: App,
@@ -1855,7 +1885,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 77
+# %% ../nbs/02_api/00_core.ipynb 79
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None

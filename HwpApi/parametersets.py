@@ -846,7 +846,9 @@ class TypedProperty(PropertyDescriptor):
     Inherit all logic from PropertyDescriptor; do not override __get__ or __set__.
     Use this for clarity when defining typed sub-ParameterSets.
     """
-    pass
+    def __init__(self, key: str, doc: str = "", wrap=None, **kwargs):
+        """Initialize TypedProperty with support for positional wrap argument."""
+        super().__init__(key, doc, wrap=wrap, **kwargs)
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 18
@@ -1371,33 +1373,62 @@ class ParameterSet(metaclass=ParameterSetMeta):
 # Additional methods for ParameterSet class
 def update_from(self, pset):
     """
-    Update this ParameterSet with values from another ParameterSet instance.
+    Update this ParameterSet with values from another ParameterSet instance or raw COM object.
 
     Only attributes defined in self.attributes_names are updated.
     Nested ParameterSet attributes are updated recursively.
     If a value is None, the attribute is deleted.
     If a value is truthy, it is set on self.
     """
-    if not isinstance(pset, ParameterSet):
-        raise TypeError("update_from expects a ParameterSet instance")
-    for key in self.attributes_names:
-        value = getattr(pset, key, None)
-        if isinstance(value, ParameterSet):
-            target = getattr(self, key)
-            if isinstance(target, ParameterSet):
-                target.update_from(value)
-        elif value is None:
-            self._del_value(key)
-        elif value:
-            try:
-                setattr(self, key, value)
-            except (ValueError, TypeError) as e:
-                import logging
-                logging.warning(f"Skipping invalid value for '{key}': {value}. Error: {e}")
-                continue
+    # Handle both ParameterSet instances and raw COM objects
+    if isinstance(pset, ParameterSet):
+        # Standard ParameterSet - use getattr normally
+        for key in self.attributes_names:
+            value = getattr(pset, key, None)
+            if isinstance(value, ParameterSet):
+                target = getattr(self, key)
+                if isinstance(target, ParameterSet):
+                    target.update_from(value)
+            elif value is None:
+                self._del_value(key)
+            elif value:
+                try:
+                    setattr(self, key, value)
+                except (ValueError, TypeError) as e:
+                    import logging
+                    logging.warning(f"Skipping invalid value for '{key}': {value}. Error: {e}")
+                    continue
+    elif hasattr(pset, '_oleobj_') or str(type(pset)).find('com_gen_py') != -1:
+        # Raw COM object - use COM property names
+        for key in self.attributes_names:
+            # Convert Python attribute name to COM property name
+            com_key = self._python_to_com_key(key)
+            if com_key and hasattr(pset, com_key):
+                try:
+                    value = getattr(pset, com_key)
+                    if value is not None:
+                        setattr(self, key, value)
+                except (ValueError, TypeError, AttributeError) as e:
+                    import logging
+                    logging.warning(f"Skipping invalid COM value for '{key}' (COM: '{com_key}'): {e}")
+                    continue
+    else:
+        raise TypeError("update_from expects a ParameterSet instance or COM object")
     return self
 
+def _python_to_com_key(self, python_key):
+    """
+    Convert Python attribute name to COM property name.
+    Default implementation converts snake_case to PascalCase.
+    Subclasses can override this method for specific mappings.
+    """
+    # Default conversion: snake_case to PascalCase
+    # e.g., "find_string" -> "FindString", "match_case" -> "MatchCase"
+    parts = python_key.split('_')
+    return ''.join(word.capitalize() for word in parts)
+
 ParameterSet.update_from = update_from
+ParameterSet._python_to_com_key = _python_to_com_key
 ParameterSet.serialize = lambda self: self._serialize_impl()
 ParameterSet.__str__ = lambda self: self._str_impl()
 ParameterSet.__repr__ = lambda self: self.__str__()
@@ -2755,6 +2786,76 @@ class CharShape(ParameterSet):
         elif isinstance(value, list):
             for key, val in zip(keys, value):
                 setattr(self, key, val)
+
+    def _python_to_com_key(self, python_key):
+        """
+        Convert Python attribute name to COM property name for CharShape.
+        Handles CharShape-specific naming conventions.
+        """
+        # Handle language-specific attributes
+        if python_key.startswith('facename_'):
+            lang = python_key.split('_')[1]
+            return f"FaceName{lang.capitalize()}"
+        elif python_key.startswith('fonttype_'):
+            lang = python_key.split('_')[1] 
+            return f"FontType{lang.capitalize()}"
+        elif python_key.startswith('size_'):
+            lang = python_key.split('_')[1]
+            return f"Size{lang.capitalize()}"
+        elif python_key.startswith('ratio_'):
+            lang = python_key.split('_')[1]
+            return f"Ratio{lang.capitalize()}"
+        elif python_key.startswith('spacing_'):
+            lang = python_key.split('_')[1]
+            return f"Spacing{lang.capitalize()}"
+        elif python_key.startswith('offset_'):
+            lang = python_key.split('_')[1]
+            return f"Offset{lang.capitalize()}"
+        # Handle special cases
+        elif python_key == 'small_caps':
+            return 'SmallCaps'
+        elif python_key == 'superscript':
+            return 'SuperScript'
+        elif python_key == 'subscript':
+            return 'SubScript'
+        elif python_key == 'underline_type':
+            return 'UnderlineType'
+        elif python_key == 'underline_shape':
+            return 'UnderlineShape'
+        elif python_key == 'outline_type':
+            return 'OutlineType'
+        elif python_key == 'shadow_type':
+            return 'ShadowType'
+        elif python_key == 'text_color':
+            return 'TextColor'
+        elif python_key == 'shade_color':
+            return 'ShadeColor'
+        elif python_key == 'underline_color':
+            return 'UnderlineColor'
+        elif python_key == 'shadow_color':
+            return 'ShadowColor'
+        elif python_key == 'shadow_offset_x':
+            return 'ShadowOffsetX'
+        elif python_key == 'shadow_offset_y':
+            return 'ShadowOffsetY'
+        elif python_key == 'strikeout_color':
+            return 'StrikeOutColor'
+        elif python_key == 'strikeout_type':
+            return 'StrikeOutType'
+        elif python_key == 'strikeout_shape':
+            return 'StrikeOutShape'
+        elif python_key == 'diac_sym_mark':
+            return 'DiacSymMark'
+        elif python_key == 'use_font_space':
+            return 'UseFontSpace'
+        elif python_key == 'use_kerning':
+            return 'UseKerning'
+        elif python_key == 'border_fill':
+            return 'BorderFill'
+        else:
+            # Fall back to default snake_case to PascalCase conversion
+            parts = python_key.split('_')
+            return ''.join(word.capitalize() for word in parts)
 
     def __str__(self):
         attributes = {
