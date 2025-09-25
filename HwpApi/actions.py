@@ -981,9 +981,9 @@ class _Action:
             return self._get_hset()
         # Hset 기반 액션
         if self.pset_key in ["FindReplace", "FindDlg", "FindAll"]:
-            return pset_class(self._get_hset())
+            return pset_class(self._get_hset(), app_instance=self.App)
         # 일반 Action
-        return pset_class(self._create_pset())
+        return pset_class(self._create_pset(), app_instance=self.App)
         
 
     def __call__(self, pset=None):
