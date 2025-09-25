@@ -366,6 +366,8 @@ def make_backend(obj: Any) -> ParameterBackend:
 
 
 
+
+
 # %% ../nbs/02_api/02_parameters.ipynb 10
 # ===================
 # Non-destructive HParam helpers
@@ -923,7 +925,7 @@ class ParameterSetMeta(type):
 # %% ../nbs/02_api/02_parameters.ipynb 21
 class ParameterSet(metaclass=ParameterSetMeta):
     """
-    HSet-only ParameterSet with robust staging and global apply.
+        HSet-only ParameterSet with robust staging and global apply.
 
     - All parameter operations are staged locally in the ParameterSet object.
     - No changes are made to the global HParameterSet until `apply()` is called.
@@ -954,19 +956,23 @@ class ParameterSet(metaclass=ParameterSetMeta):
 
     def __init__(
         self,
-        parameterset: Any = None,                 # <-- now optional
+        parameterset: Any = None,  # <-- now optional
         *,
         backend_factory: Optional[Callable[[Any], ParameterBackend]] = None,
         initial: Optional[Dict[str, Any]] = None,
-        expected_setid: Optional[str] = None,     # <-- new
-        app_instance: Any = None,                 # <-- new: reference to App instance
+        expected_setid: Optional[str] = None,  # <-- new
+        app_instance: Any = None,  # <-- new: reference to App instance
         **kwargs,
     ):
         if backend_factory is None:
             backend_factory = make_backend
 
         # Expected SetID (instance preference > class default)
-        self._expected_setid: Optional[str] = expected_setid if expected_setid is not None else getattr(self.__class__, "REQUIRED_SETID", None)
+        self._expected_setid: Optional[str] = (
+            expected_setid
+            if expected_setid is not None
+            else getattr(self.__class__, "REQUIRED_SETID", None)
+        )
 
         # Store App instance reference for HSet synchronization
         self._app_instance: Any = app_instance
@@ -1000,7 +1006,12 @@ class ParameterSet(metaclass=ParameterSetMeta):
         if kwargs:
             self.update(kwargs)
 
-    def bind(self, parameterset: Any, *, backend_factory: Optional[Callable[[Any], ParameterBackend]] = None):
+    def bind(
+        self,
+        parameterset: Any,
+        *,
+        backend_factory: Optional[Callable[[Any], ParameterBackend]] = None,
+    ):
         """
         Bind/attach a raw parameterset to this instance (or re-bind a new one).
         Validates SetID presence and (optionally) equality to expected SetID.
@@ -1009,11 +1020,17 @@ class ParameterSet(metaclass=ParameterSetMeta):
             raise TypeError("bind(): 'parameterset' must not be None")
 
         # Must expose SetID
-        if not hasattr(parameterset, "SetID") and (self._expected_setid is not None and self._expected_setid not in str(parameterset.__class__)):
+        if not hasattr(parameterset, "SetID") and (
+            self._expected_setid is not None
+            and self._expected_setid not in str(parameterset.__class__)
+        ):
             raise TypeError("bind(): provided object has no 'SetID' attribute")
 
         # If we know what to expect, enforce it
-        if self._expected_setid is not None and ((self._expected_setid not in str(parameterset.__class__)) or (getattr(parameterset, "SetID", None) != self._expected_setid)):
+        if self._expected_setid is not None and (
+            (self._expected_setid not in str(parameterset.__class__))
+            or (getattr(parameterset, "SetID", None) != self._expected_setid)
+        ):
             raise ValueError(
                 f"bind(): parameterset.SetID={getattr(parameterset,'SetID',None)!r} "
                 f"does not match expected {self._expected_setid!r}"
@@ -1063,7 +1080,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
         *,
         require: Literal["error", "warn", "skip"] = "error",
         only_overrides: bool = False,
-        parameterset: Any = None,                 # <-- NEW: allow binding at apply-time
+        parameterset: Any = None,  # <-- NEW: allow binding at apply-time
         **kwargs,
     ):
         """
@@ -1156,39 +1173,42 @@ class ParameterSet(metaclass=ParameterSetMeta):
         self._deleted.clear()
         return self
 
-
     def _sync_hset_global_state(self):
         """
         Synchronize staged changes with global HParameterSet state for HSet-based actions.
-        
-        The core issue: HSet-based actions use the GLOBAL HParameterSet state, but the 
+
+        The core issue: HSet-based actions use the GLOBAL HParameterSet state, but the
         simplified API creates LOCAL copies via HAction.GetDefault(). This method bridges
         that gap by copying staged values to the global HParameterSet using dotted key paths.
         """
         # Only apply to HParamBackend instances with App reference
-        if not (self._raw is not None and isinstance(self._backend, HParamBackend) and self._app_instance):
+        if not (
+            self._raw is not None
+            and isinstance(self._backend, HParamBackend)
+            and self._app_instance
+        ):
             return
-        
+
         try:
             # Get the global HParameterSet
             global_hparam = self._app_instance.api.HParameterSet
             if global_hparam is None:
                 return
-            
+
             # Create a backend for the global HParameterSet
             global_backend = HParamBackend(global_hparam)
-            
+
             # Determine the HParam node prefix based on the local parameter set type
             hparam_prefix = self._get_hparam_prefix()
             if not hparam_prefix:
                 return
-            
+
             # Sync all staged values to the global HParameterSet using dotted paths
             for property_key, value in self._staged.items():
                 # Skip nested ParameterSet objects for now
                 if isinstance(value, ParameterSet):
                     continue
-                    
+
                 try:
                     # Create the full dotted path: "HFindReplace.FindString"
                     global_key = f"{hparam_prefix}.{property_key}"
@@ -1196,11 +1216,14 @@ class ParameterSet(metaclass=ParameterSetMeta):
                 except Exception as e:
                     # Skip properties that can't be set
                     continue
-                    
+
         except Exception as e:
             # Log the error but don't fail the apply operation
             import logging
-            logging.warning(f"ParameterSet: Failed to sync with global HParameterSet: {e}")
+
+            logging.warning(
+                f"ParameterSet: Failed to sync with global HParameterSet: {e}"
+            )
 
     def _get_hparam_prefix(self):
         """
@@ -1208,21 +1231,19 @@ class ParameterSet(metaclass=ParameterSetMeta):
         Returns the appropriate prefix like "HFindReplace", "HCharShape", etc.
         """
         class_name = self.__class__.__name__
-        
+
         # Map parameter set class names to HParam prefixes
         prefix_map = {
-            'FindReplace': 'HFindReplace',
-            'CharShape': 'HCharShape', 
-            'ParaShape': 'HParaShape',
-            'BorderFill': 'HBorderFill',
-            'Table': 'HTable',
+            "FindReplace": "HFindReplace",
+            "CharShape": "HCharShape",
+            "ParaShape": "HParaShape",
+            "BorderFill": "HBorderFill",
+            "Table": "HTable",
             # Add more mappings as needed
         }
-        
+
         return prefix_map.get(class_name, None)
 
-
- 
     # ------ descriptor hooks (staged-aware) ------
     def _ps_get(self, desc: PropertyDescriptor):
         key = desc.key
@@ -1258,7 +1279,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
     def _get_value(self, name):
         """Legacy method - use backend instead."""
         return self._backend.get(name)
-    
+
     def _set_value(self, name, value):
         """Legacy method - use backend instead."""
         return self._backend.set(name, value)
@@ -1275,10 +1296,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
         return self
 
     def to_dict(
-        self,
-        *,
-        include_defaults: bool = True,
-        only: Optional[Iterable[str]] = None
+        self, *, include_defaults: bool = True, only: Optional[Iterable[str]] = None
     ) -> Dict[str, Any]:
         names = list(only) if only is not None else list(self._property_registry.keys())
         out = {}
@@ -1302,7 +1320,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
         for name, desc in self._property_registry.items():
             if desc.required:
                 val = getattr(self, name)  # staged-aware
-                is_missing = (val in (None, "", [], {}, ()))
+                is_missing = val in (None, "", [], {}, ())
                 # If nested PS is required, also ensure it has no missing requireds
                 if not is_missing and isinstance(val, ParameterSet):
                     nested_missing = val._missing_required()
@@ -1310,7 +1328,6 @@ class ParameterSet(metaclass=ParameterSetMeta):
                 if is_missing:
                     missing.append(name)
         return missing
-
 
     def dirty(self) -> Dict[str, Any]:
         """Return staged changes as {attr_name: value}, excluding deletions."""
@@ -1328,11 +1345,6 @@ class ParameterSet(metaclass=ParameterSetMeta):
 
     def __repr__(self):
         return f"<{self.__class__.__name__} staged={self.dirty()} deleted={self.deleted()}>"
-
-
-
-
-
 
 # %% ../nbs/02_api/02_parameters.ipynb 22
 # Additional methods for ParameterSet class
@@ -3826,3 +3838,5 @@ class Table(ParameterSet):
     # table_char_info = ParameterSet._typed_prop("TableCharInfo", "테이블 관련 문자 정보", TableChartInfo) # Not available now.
     table_border_fill = ParameterSet._typed_prop("TableBorderFill", "테이블 테두리 속성", lambda: BorderFill)
     cell           = ParameterSet._typed_prop("Cell", "셀 정보", lambda: Cell)
+
+

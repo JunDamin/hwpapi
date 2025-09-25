@@ -900,7 +900,7 @@ class _Action:
     """한글 Action 클래스 입니다. 엑션의 기능을 사용하기 쉽게 만들고자 했습니다."""
 
     def __init__(self, app, action_key: str):
-        self.App = app
+        self.app = app
         self.action_key = action_key
         self.act = app.api.CreateAction(action_key)
         # create pset and description
@@ -929,6 +929,10 @@ class _Action:
         """
         Apply staged changes to the global HParameterSet, then execute the action.
         """
+
+        if hasattr(parameterset, "HSet"):
+            return self.act.Execute(parameterset.HSet)
+
         pset = self.pset
         if parameterset:
             pset = parameterset
@@ -937,8 +941,8 @@ class _Action:
         pset.apply()
 
         # Always execute using the global HParameterSet node for this action
-        hparam_prefix = pset._get_hparam_prefix()
-        global_hparam = self.App.api.HParameterSet
+        hparam_prefix = f"H{self.pset_key}"
+        global_hparam = self.app.api.HParameterSet
         hnode = getattr(global_hparam, hparam_prefix) if hparam_prefix else global_hparam
 
         # Use .HSet if available, else pass the node directly
@@ -946,16 +950,18 @@ class _Action:
         return self.act.Execute(arg)
 
     def _get_hset(self, pset_key=None):
-        # Deprecated: Only global HParameterSet is used now
-        raise NotImplementedError("Only global HParameterSet is supported.")
+        if not self.pset_key:
+            return None
+        hset = getattr(self.app.api.HParameterSet, f"H{self.pset_key}")
+        self.app.api.HAction.GetDefault(
+            pset_key if pset_key else self.action_key, hset.HSet
+        )
+        return hset
 
     def _create_pset(self):
-        # Deprecated: Only HSet-based ParameterSet is supported
-        raise NotImplementedError("Only HSet-based ParameterSet is supported.")
-
-    def _get_sets(self, pset_key=None):
-        # Deprecated: Only HSet-based ParameterSet is supported
-        raise NotImplementedError("Only HSet-based ParameterSet is supported.")
+        pset = self.act.CreateSet()
+        self.act.GetDefault(pset)
+        return pset
 
     def get_pset(self):
         """
@@ -963,13 +969,15 @@ class _Action:
         """
         if not self.pset_key:
             return None
-        pset_class = getattr(parametersets, self.pset_key, None)
-        if not pset_class:
-            raise ValueError(f"No ParameterSet class found for key: {self.pset_key}")
-        # Bind to the global HParameterSet node
         hparam_prefix = f"H{self.pset_key}"
-        hnode = getattr(self.App.api.HParameterSet, hparam_prefix)
-        return pset_class(hnode, app_instance=self.App)
+        pset_class = getattr(parametersets, self.pset_key, None)
+        # Bind to the global HParameterSet node
+        hnode = getattr(self.app.api.HParameterSet, hparam_prefix)
+        self.act.GetDefault(hnode.HSet)
+
+        if not pset_class:
+            return hnode
+        return pset_class(hnode, app_instance=self.app)
 
     def __call__(self, pset=None):
         return self.run(pset)
@@ -3798,3 +3806,4 @@ class _Actions:
     @property    
     def VoiceCommand(self):
         return _Action(self._app, "VoiceCommand")
+
