@@ -1137,6 +1137,10 @@ class ParameterSet(metaclass=ParameterSetMeta):
                 if k not in self._snapshot or self._snapshot[k] != v:
                     self._staged[k] = v
 
+        # Special handling for HSet-based parameter sets (e.g., FindReplace, FindDlg, FindAll)
+        # These actions use global HParameterSet state instead of local parameter sets
+        self._sync_hset_global_state()
+
         return self
 
     def discard(self):
@@ -1144,6 +1148,82 @@ class ParameterSet(metaclass=ParameterSetMeta):
         self._staged.clear()
         self._deleted.clear()
         return self
+
+    def _sync_hset_global_state(self):
+        """
+        Synchronize staged changes with global HParameterSet state for HSet-based actions.
+        
+        HSet-based actions (FindReplace, FindDlg, FindAll) don't use the local parameter set
+        passed to the action, but instead use the global HParameterSet state. This method
+        ensures that changes made through the simplified API are reflected in the global state.
+        """
+        # Only apply to HParamBackend instances bound to HParameterSet objects
+        if not (self._raw is not None and isinstance(self._backend, HParamBackend)):
+            return
+        
+        try:
+            # Auto-detect the HParam node type and sync accordingly
+            hparam_nodes = {
+                'HFindReplace': self._sync_find_replace,
+                'HCharShape': self._sync_char_shape,
+                'HParaShape': self._sync_para_shape,
+                # Add more HParam node types as needed
+            }
+            
+            for node_name, sync_method in hparam_nodes.items():
+                if hasattr(self._raw, node_name):
+                    sync_method(getattr(self._raw, node_name))
+                    break
+                    
+        except Exception as e:
+            # Log the error but don't fail the apply operation
+            import logging
+            logging.warning(f"ParameterSet: Failed to sync with global HParameterSet: {e}")
+
+    def _sync_find_replace(self, hfind_replace):
+        """Synchronize FindReplace-specific properties with global HParameterSet."""
+        # Sync string properties
+        string_props = ['FindString', 'ReplaceString', 'FindStyle', 'ReplaceStyle']
+        for prop in string_props:
+            if prop in self._snapshot:
+                setattr(hfind_replace, prop, self._snapshot[prop] or "")
+        
+        # Sync boolean properties
+        bool_props = [
+            'MatchCase', 'AllWordForms', 'SeveralWords', 'UseWildCards', 
+            'WholeWordOnly', 'AutoSpell', 'ReplaceMode', 'IgnoreFindString',
+            'IgnoreReplaceString', 'IgnoreMessage', 'HanjaFromHangul', 
+            'FindJaso', 'FindRegExp', 'FindType'
+        ]
+        for prop in bool_props:
+            if prop in self._snapshot and self._snapshot[prop] is not None:
+                setattr(hfind_replace, prop, bool(self._snapshot[prop]))
+        
+        # Sync direction property
+        if 'Direction' in self._snapshot and self._snapshot['Direction'] is not None:
+            hfind_replace.Direction = int(self._snapshot['Direction'])
+
+    def _sync_char_shape(self, hchar_shape):
+        """Synchronize CharShape-specific properties with global HParameterSet."""
+        # Sync common CharShape properties
+        char_props = ['Bold', 'Italic', 'Underline', 'StrikeOut', 'TextColor', 'ShadeColor']
+        for prop in char_props:
+            if prop in self._snapshot and self._snapshot[prop] is not None:
+                try:
+                    setattr(hchar_shape, prop, self._snapshot[prop])
+                except Exception:
+                    pass  # Skip properties that can't be set
+
+    def _sync_para_shape(self, hpara_shape):
+        """Synchronize ParaShape-specific properties with global HParameterSet."""
+        # Sync common ParaShape properties  
+        para_props = ['Align', 'HeadIndent', 'TailIndent', 'LineSpacing', 'PrevSpacing', 'NextSpacing']
+        for prop in para_props:
+            if prop in self._snapshot and self._snapshot[prop] is not None:
+                try:
+                    setattr(hpara_shape, prop, self._snapshot[prop])
+                except Exception:
+                    pass  # Skip properties that can't be set
 
     # ------ descriptor hooks (staged-aware) ------
     def _ps_get(self, desc: PropertyDescriptor):
@@ -3164,71 +3244,6 @@ class FindReplace(ParameterSet):
             "replace_charshape",
             "replace_parashape",
         ]
-
-    def apply(self, overrides=None, *, require="error", only_overrides=False, parameterset=None, **kwargs):
-        """
-        Override apply() to handle HSet-based parameter synchronization.
-        
-        For FindReplace actions, we need to ensure that staged changes are 
-        synchronized with the global HParameterSet state that actions actually use.
-        """
-        # First, apply normally to the local backend
-        result = super().apply(overrides, require=require, only_overrides=only_overrides, 
-                             parameterset=parameterset, **kwargs)
-        
-        # Special handling for HSet-based parameter sets
-        # Check if we're bound to an HParameterSet (has HFindReplace child node)
-        if (self._raw is not None and 
-            hasattr(self._raw, 'HFindReplace') and 
-            isinstance(self._backend, HParamBackend)):
-            
-            try:
-                # Synchronize critical properties with the global HParameterSet
-                # This ensures that actions using the global state see our changes
-                hfind_replace = self._raw.HFindReplace
-                
-                # Sync string properties
-                if 'FindString' in self._snapshot:
-                    hfind_replace.FindString = self._snapshot['FindString'] or ""
-                if 'ReplaceString' in self._snapshot:
-                    hfind_replace.ReplaceString = self._snapshot['ReplaceString'] or ""
-                if 'FindStyle' in self._snapshot:
-                    hfind_replace.FindStyle = self._snapshot['FindStyle'] or ""
-                if 'ReplaceStyle' in self._snapshot:
-                    hfind_replace.ReplaceStyle = self._snapshot['ReplaceStyle'] or ""
-                
-                # Sync boolean properties
-                bool_props = [
-                    ('MatchCase', 'MatchCase'),
-                    ('AllWordForms', 'AllWordForms'),
-                    ('SeveralWords', 'SeveralWords'),
-                    ('UseWildCards', 'UseWildCards'),
-                    ('WholeWordOnly', 'WholeWordOnly'),
-                    ('AutoSpell', 'AutoSpell'),
-                    ('ReplaceMode', 'ReplaceMode'),
-                    ('IgnoreFindString', 'IgnoreFindString'),
-                    ('IgnoreReplaceString', 'IgnoreReplaceString'),
-                    ('IgnoreMessage', 'IgnoreMessage'),
-                    ('HanjaFromHangul', 'HanjaFromHangul'),
-                    ('FindJaso', 'FindJaso'),
-                    ('FindRegExp', 'FindRegExp'),
-                    ('FindType', 'FindType'),
-                ]
-                
-                for snapshot_key, hparam_key in bool_props:
-                    if snapshot_key in self._snapshot and self._snapshot[snapshot_key] is not None:
-                        setattr(hfind_replace, hparam_key, bool(self._snapshot[snapshot_key]))
-                
-                # Sync direction property
-                if 'Direction' in self._snapshot and self._snapshot['Direction'] is not None:
-                    hfind_replace.Direction = int(self._snapshot['Direction'])
-                    
-            except Exception as e:
-                # Log the error but don't fail the apply operation
-                import logging
-                logging.warning(f"FindReplace: Failed to sync with global HParameterSet: {e}")
-        
-        return result
 
     # String properties
     find_string = ParameterSet._str_prop("FindString", "찾을 문자열")
