@@ -987,7 +987,7 @@ class _Action:
         
 
     def __call__(self, pset=None):
-        self.run(pset)
+        return self.run(pset)
 
 # %% ../nbs/02_api/01_actions.ipynb 12
 class _Actions:

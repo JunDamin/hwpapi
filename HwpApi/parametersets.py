@@ -670,6 +670,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
     @property
     def parameterset(self):
         """Return the underlying raw object (COM ParameterSet or Python object), or None if unbound."""
+        self.apply()
         return self._raw
 
     def reload(self):
