@@ -1652,8 +1652,8 @@ class FindReplace(ParameterSet):
     | FindType          | PIT_UI1   |         | 찾기 유형 (on/off)                                                       |
     """
 
-    def __init__(self, parameterset=None):
-        super().__init__(parameterset)
+    def __init__(self, parameterset=None, **kwargs):
+        super().__init__(parameterset, **kwargs)
         self.attributes_names = [
             "find_string",
             "replace_string",
@@ -1886,8 +1886,8 @@ class BorderFill(ParameterSet):
       - CounterSlashFlag (또는 CounterBackSlashFlag)
     """
 
-    def __init__(self, parameterset=None):
-        super().__init__(parameterset)
+    def __init__(self, parameterset=None, **kwargs):
+        super().__init__(parameterset, **kwargs)
         self.attributes_names = [
             "border_type_left",
             "border_type_right",
@@ -2026,8 +2026,8 @@ class Caption(ParameterSet):
     | CapFullSize   | PIT_UI1 |         | 캡션 폭에 여백을 포함할지 여부 (0 = 포함 안 함, 1 = 포함함)              |
     """
 
-    def __init__(self, parameterset=None):
-        super().__init__(parameterset)
+    def __init__(self, parameterset=None, **kwargs):
+        super().__init__(parameterset, **kwargs)
         self.attributes_names = [
             "side",
             "width",
@@ -2072,8 +2072,8 @@ class BulletShape(ParameterSet):
     | BulletImage    | PIT_SET  | DrawImageAttr  | 글머리 기호 이미지 |
     """
 
-    def __init__(self, parameterset=None):
-        super().__init__(parameterset)
+    def __init__(self, parameterset=None, **kwargs):
+        super().__init__(parameterset, **kwargs)
         self.attributes_names = [
             "has_char_shape",
             "char_shape",
@@ -2135,8 +2135,8 @@ class Cell(ParameterSet):
     | CellCtrlData | PIT_SET  | CtrlData  | 셀 제어 데이터               |
     """
 
-    def __init__(self, parameterset=None):
-        super().__init__(parameterset)
+    def __init__(self, parameterset=None, **kwargs):
+        super().__init__(parameterset, **kwargs)
         self.attributes_names = [
             "has_margin",
             "protected",
@@ -2238,8 +2238,8 @@ class CharShape(ParameterSet):
     | BorderFill | PIT_SET | BorderFill | 테두리/배경 (한글2007에 새로 추가) |
     """
 
-    def __init__(self, parameterset=None):
-        super().__init__(parameterset)
+    def __init__(self, parameterset=None, **kwargs):
+        super().__init__(parameterset, **kwargs)
         self.attributes_names = [
             "facename_hangul",
             "facename_latin",
@@ -3256,8 +3256,8 @@ class FindReplace(ParameterSet):
     | FindType          | PIT_UI1   |         | 찾기 유형 (on/off)                                                       |
     """
 
-    def __init__(self, parameterset=None):
-        super().__init__(parameterset)
+    def __init__(self, parameterset=None, **kwargs):
+        super().__init__(parameterset, **kwargs)
         self.attributes_names = [
             "find_string",
             "replace_string",
@@ -3535,8 +3535,8 @@ class ParaShape(ParameterSet):
     | BorderFill       | PIT_SET | BorderFill | 테두리/배경 |
     """
 
-    def __init__(self, parameterset=None):
-        super().__init__(parameterset)
+    def __init__(self, parameterset=None, **kwargs):
+        super().__init__(parameterset, **kwargs)
         self.attributes_names = [
             "left_margin",
             "right_margin",
@@ -3701,8 +3701,8 @@ class ShapeObject(ParameterSet):
     | AdjustTextBox      | PIT_UI1   |           | 텍스트 박스 조정 여부                         |
     | AdjustPrevObjAttr  | PIT_UI1   |           | 이전 객체 속성 조정 여부                       |
     """
-    def __init__(self, parameterset=None):
-        super().__init__(parameterset)
+    def __init__(self, parameterset=None, **kwargs):
+        super().__init__(parameterset, **kwargs)
         self.attributes_names = [
 "treat_as_char", 
 "affects_line", 
