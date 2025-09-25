@@ -1550,7 +1550,7 @@ def find_text(
     # 반복 검색 액션 생성
     action = app.actions.RepeatFind
     pset = action.pset
-    pset.find_charshape.update_from(app.charshape())
+    # pset.find_charshape.update_from(app.charshape())
 
 
     # 옵션 설정
