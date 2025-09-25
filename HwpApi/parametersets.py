@@ -841,24 +841,12 @@ class MappedProperty(PropertyDescriptor):
 
 # %% ../nbs/02_api/02_parameters.ipynb 17
 class TypedProperty(PropertyDescriptor):
-    """Robust property descriptor for typed parameter sets that always wraps on access."""
-
-    def __init__(self, key: str, doc: str, expected_type: Callable):
-        super().__init__(key, doc, wrap=expected_type)
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        value = instance._ps_get(self)
-        # Always wrap if not already wrapped and not None
-        if value is not None and self.wrap is not None:
-            wrapper_class = self.wrap() if callable(self.wrap) else self.wrap
-            if not isinstance(value, wrapper_class):
-                wrapped = wrapper_class(value)
-                instance._ps_set(self, wrapped)
-                instance._wrapper_cache[self.key] = wrapped
-                return wrapped
-        return value
+    """
+    Alias for PropertyDescriptor for typed parameter sets.
+    Inherit all logic from PropertyDescriptor; do not override __get__ or __set__.
+    Use this for clarity when defining typed sub-ParameterSets.
+    """
+    pass
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 18
