@@ -973,6 +973,22 @@ class _Action:
         self.act.GetDefault(pset)
         return pset
 
+    def get_pset(self):
+        """
+        Always return a ParameterSet instance bound to the global HParameterSet node for this action.
+        """
+        if not self.pset_key:
+            return None
+        hparam_prefix = f"H{self.pset_key}"
+        pset_class = getattr(parametersets, self.pset_key, None)
+        # Bind to the global HParameterSet node
+        hnode = getattr(self.app.api.HParameterSet, hparam_prefix)
+        self.act.GetDefault(hnode.HSet)
+
+        if not pset_class:
+            return hnode
+        return pset_class(hnode, app_instance=self.app)
+
     def _create_pset_parameterset(self):
         """
         Create a ParameterSet instance using the pset-based approach.
@@ -994,22 +1010,6 @@ class _Action:
             # Fallback to generic ParameterSet with pset backend
             return parametersets.ParameterSet(pset)
 
-    def get_pset(self):
-        """
-        Legacy method - now redirects to pset-based approach.
-        Always return a ParameterSet instance bound to the global HParameterSet node for this action.
-        """
-        if not self.pset_key:
-            return None
-        hparam_prefix = f"H{self.pset_key}"
-        pset_class = getattr(parametersets, self.pset_key, None)
-        # Bind to the global HParameterSet node
-        hnode = getattr(self.app.api.HParameterSet, hparam_prefix)
-        self.act.GetDefault(hnode.HSet)
-
-        if not pset_class:
-            return hnode
-        return pset_class(hnode, app_instance=self.app)
 
     def __call__(self, pset=None):
         return self.run(pset)

@@ -68,7 +68,7 @@ class Engine:
         hwp_object : object, optional
             Engine에 의해 캡슐화될 Hwp 객체. 기본값은 "HWPFrame.HwpObject"입니다.
         """
-        self.logger = get_logger('core.Engine')
+        self.logger = get_logger('core')
         try:
             if not hwp_object:
                 hwp_object = "HWPFrame.HwpObject"
@@ -430,7 +430,7 @@ class App:
         -----
         engine이 제공되지 않은 경우, `Engines`를 통해 엔진을 생성하거나 선택합니다.
         """
-        self.logger = get_logger('core.App')
+        self.logger = get_logger('core')
         self.logger.debug(f"Initializing App with new_app={new_app}, is_visible={is_visible}, dll_path={dll_path}")
         
         self._load(new_app=new_app, dll_path=dll_path, engine=engine)
@@ -583,14 +583,14 @@ def set_visible(app: App, is_visible=True, window_i=0):
     >>> set_visible(app, is_visible=True, window_i=0)
     >>> set_visible(app, is_visible=False, window_i=1)
     """
-    logger = get_logger('00_core.set_visible')
+    logger = get_logger('core')
     logger.debug(f"Calling set_visible")
     app.api.XHwpWindows.Item(window_i).Visible = is_visible
 
 # %% ../nbs/02_api/00_core.ipynb 11
 @patch
 def create_parameterset(app: App, key:str):
-    logger = get_logger('00_core.create_parameterset')
+    logger = get_logger('core')
     logger.debug(f"Calling create_parameterset")
     return getattr(app.api.HParameterSet, f"H{key}")
 
@@ -620,7 +620,7 @@ def reload(app: App, new_app=False, dll_path=None):
     >>> app = App()
     >>> reload(app, dll_path="path/to/dll")
     """
-    logger = get_logger('00_core.reload')
+    logger = get_logger('core')
     logger.debug(f"Calling reload")
     app._load(new_app=new_app, dll_path=dll_path)
 
@@ -649,7 +649,7 @@ def get_filepath(app: App):
     >>> filepath = get_filepath(app)
     >>> print(filepath)
     """
-    logger = get_logger('00_core.get_filepath')
+    logger = get_logger('core')
     logger.debug(f"Calling get_filepath")
     doc = app.api.XHwpDocuments.Active_XHwpDocument
     return doc.FullName
@@ -681,7 +681,7 @@ def create_action(app: App, action_key: str):
     >>> action = create_action(app, 'some_action_key')
     >>> print(action)
     """
-    logger = get_logger('00_core.create_action')
+    logger = get_logger('core')
     logger.debug(f"Calling create_action")
     return _Action(app, action_key)
 
@@ -712,7 +712,7 @@ def open(app: App, path: str):
     >>> opened_file_path = open(app, 'path/to/document.hwp')
     >>> print(opened_file_path)
     """
-    logger = get_logger('00_core.open')
+    logger = get_logger('core')
     logger.debug(f"Calling open")
     name = get_absolute_path(path)
     app.api.Open(name)
@@ -744,7 +744,7 @@ def get_hwnd(app: App):
     >>> hwnd = get_hwnd(app)
     >>> print(hwnd)
     """
-    logger = get_logger('00_core.get_hwnd')
+    logger = get_logger('core')
     logger.debug(f"Calling get_hwnd")
     return app.api.XHwpWindows.Active_XHwpWindow.WindowHandle
 
@@ -776,7 +776,7 @@ def save(app: App, path=None):
     >>> saved_file_path = save(app, 'path/to/document.hwp')
     >>> print(saved_file_path)
     """
-    logger = get_logger('00_core.save')
+    logger = get_logger('core')
     logger.debug(f"Calling save")
     if not path:
         app.api.Save()
@@ -825,7 +825,7 @@ def save_block(app: App, path: Path):
     >>> saved_path = save_block(app, Path('path/to/save/block.hwp'))
     >>> print(saved_path)
     """
-    logger = get_logger('00_core.save_block')
+    logger = get_logger('core')
     logger.debug(f"Calling save_block")
 
     name = get_absolute_path(path)
@@ -865,7 +865,7 @@ def close(app: App):
     >>> # Open and manipulate the document
     >>> close(app)
     """
-    logger = get_logger('00_core.close')
+    logger = get_logger('core')
     logger.debug(f"Calling close")
     app.api.Run("FileClose")
 
@@ -889,7 +889,7 @@ def quit(app: App):
     >>> # Perform actions with the app
     >>> quit(app)
     """
-    logger = get_logger('00_core.quit')
+    logger = get_logger('core')
     logger.debug(f"Calling quit")
     app.api.Run("FileQuit")
 
@@ -919,7 +919,7 @@ def get_font_list(app:App):
     >>> font_list = app.get_font_list()
     >>> print(font_list)
     """
-    logger = get_logger('00_core.get_font_list')
+    logger = get_logger('core')
     logger.debug(f"Calling get_font_list")
     app.api.ScanFont()
     result = app.api.GetFontList()
@@ -965,76 +965,46 @@ def charshape(app:App,
     """return null charshape
     """
 
-    logger = get_logger('00_core.charshape')
+    logger = get_logger('core')
     logger.debug(f"Calling charshape")
 
-    # Create a wrapped CharShape instance instead of raw COM object
-    from hwpapi.parametersets import CharShape
-    charshape_pset = CharShape(app.create_parameterset("CharShape"))
-    
-    # Set values using the convenience properties when available
-    if facename is not None:
-        charshape_pset.facename = facename
-    if fonttype is not None:
-        charshape_pset.fonttype = fonttype
-    if size is not None:
-        charshape_pset.size = size
-    if ratio is not None:
-        charshape_pset.ratio = ratio
-    if spacing is not None:
-        charshape_pset.spacing = spacing
-    if offset is not None:
-        charshape_pset.offset = offset
-    if bold is not None:
-        charshape_pset.bold = bold
-    if italic is not None:
-        charshape_pset.italic = italic
-    if small_caps is not None:
-        charshape_pset.small_caps = small_caps
-    if emboss is not None:
-        charshape_pset.emboss = emboss
-    if engrave is not None:
-        charshape_pset.engrave = engrave
-    if superscript is not None:
-        charshape_pset.superscript = superscript
-    if subscript is not None:
-        charshape_pset.subscript = subscript
-    if underline_type is not None:
-        charshape_pset.underline_type = underline_type
-    if underline_shape is not None:
-        charshape_pset.underline_shape = underline_shape
-    if outline_type is not None:
-        charshape_pset.outline_type = outline_type
-    if shadow_type is not None:
-        charshape_pset.shadow_type = shadow_type
-    if text_color is not None:
-        charshape_pset.text_color = text_color
-    if shade_color is not None:
-        charshape_pset.shade_color = shade_color
-    if underline_color is not None:
-        charshape_pset.underline_color = underline_color
-    if shadow_color is not None:
-        charshape_pset.shadow_color = shadow_color
-    if shadow_offset_x is not None:
-        charshape_pset.shadow_offset_x = shadow_offset_x
-    if shadow_offset_y is not None:
-        charshape_pset.shadow_offset_y = shadow_offset_y
-    if strikeout_color is not None:
-        charshape_pset.strikeout_color = strikeout_color
-    if strikeout_type is not None:
-        charshape_pset.strikeout_type = strikeout_type
-    if strikeout_shape is not None:
-        charshape_pset.strikeout_shape = strikeout_shape
-    if diac_sym_mark is not None:
-        charshape_pset.diac_sym_mark = diac_sym_mark
-    if use_font_space is not None:
-        charshape_pset.use_font_space = use_font_space
-    if use_kerning is not None:
-        charshape_pset.use_kerning = use_kerning
-    if height is not None:
-        charshape_pset.height = height
-    if border_fill is not None:
-        charshape_pset.border_fill = border_fill
+    charshape_pset = app.create_parameterset("CharShape")
+    value_set = {
+        "facename": facename,
+        "fonttype": fonttype,
+        "size": size,
+        "ratio": ratio,
+        "spacing": spacing,
+        "offset": offset,
+        "bold": bold,
+        "italic": italic,
+        "small_caps": small_caps,
+        "emboss": emboss,
+        "engrave": engrave,
+        "superscript": superscript,
+        "subscript": subscript,
+        "underline_type": underline_type,
+        "underline_shape": underline_shape,
+        "outline_type": outline_type,
+        "shadow_type": shadow_type,
+        "text_color": text_color,
+        "shade_color": shade_color,
+        "underline_color": underline_color,
+        "shadow_color": shadow_color,
+        "shadow_offset_x": shadow_offset_x,
+        "shadow_offset_y": shadow_offset_y,
+        "strikeout_color": strikeout_color,
+        "strikeout_type": strikeout_type,
+        "strikeout_shape": strikeout_shape,
+        "diac_sym_mark": diac_sym_mark,
+        "use_font_space": use_font_space,
+        "use_kerning": use_kerning,
+        "height": height,
+        "border_fil": border_fill}
+    for key, value in value_set.items():
+        if not key:
+            continue
+        setattr(charshape_pset, key, value)
         
     return charshape_pset
 
@@ -1063,7 +1033,7 @@ def get_charshape(app: App):
     >>> char_shape = get_charshape(app)
     >>> print(char_shape)
     """
-    logger = get_logger('00_core.get_charshape')
+    logger = get_logger('core')
     logger.debug(f"Calling get_charshape")
     return app.actions.CharShape.pset
 
@@ -1098,7 +1068,7 @@ def set_charshape(app: App, charshape: parametersets.CharShape=None, **kwargs):
     >>> success = set_charshape(app, charshape=char_shape, fontName='Arial', fontSize=10)
     >>> print(success)
     """
-    logger = get_logger('00_core.set_charshape')
+    logger = get_logger('core')
     logger.debug(f"Calling set_charshape")
     action = app.actions.CharShape
     pset = action.pset
@@ -1138,7 +1108,7 @@ def get_parashape(app: App):
     >>> para_shape = get_parashape(app)
     >>> print(para_shape)
     """
-    logger = get_logger('00_core.get_parashape')
+    logger = get_logger('core')
     logger.debug(f"Calling get_parashape")
     return app.actions.ParagraphShape.pset
 
@@ -1172,7 +1142,7 @@ def set_parashape(app: App, parashape: ParaShape = None, **kwargs):
     >>> success = set_parashape(app, parashape=para_shape, align='Left', indent=10)
     >>> print(success)
     """
-    logger = get_logger('00_core.set_parashape')
+    logger = get_logger('core')
     logger.debug(f"Calling set_parashape")
     action = app.actions.ParagraphShape
     pset = action.pset
@@ -1217,7 +1187,7 @@ def insert_text(
     """
 
     
-    logger = get_logger('00_core.insert_text')
+    logger = get_logger('core')
     logger.debug(f"Calling insert_text")
     
     if not charshape:
@@ -1257,7 +1227,7 @@ def scan(
 ):
 
     
-    logger = get_logger('00_core.scan')
+    logger = get_logger('core')
     logger.debug(f"Calling scan")
 
     range_ = scan_spos.value + scan_epos.value
@@ -1279,7 +1249,7 @@ def scan(
 # %% ../nbs/02_api/00_core.ipynb 51
 def move_to_line(app: App, text):
     """인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다."""
-    logger = get_logger('00_core.move_to_line')
+    logger = get_logger('core')
     logger.debug(f"Calling move_to_line")
     with app.scan(scan_spos=const.ScanStartPosition.Line) as scan:
         for line in scan:
@@ -1337,7 +1307,7 @@ def setup_page(
 
 
     
-    logger = get_logger('00_core.setup_page')
+    logger = get_logger('core')
     logger.debug(f"Calling setup_page")
     
     action = app.actions.PageSetup
@@ -1401,7 +1371,7 @@ def insert_picture(
     """
 
     
-    logger = get_logger('00_core.insert_picture')
+    logger = get_logger('core')
     logger.debug(f"Calling insert_picture")
 
     path = Path(fpath)  # 이미지 파일 경로 처리
@@ -1442,7 +1412,7 @@ def select_text(app: App, option=const.SelectionOption.Line):
     >>> select_text(app, option=SelectionOption.Para)
     """
 
-    logger = get_logger('00_core.select_text')
+    logger = get_logger('core')
     logger.debug(f"Calling select_text with option={option}")
 
     # 문자열 입력 처리
@@ -1485,7 +1455,7 @@ def get_selected_text(app: App):
     >>> selected_text = get_selected_text(app)
     >>> print(selected_text)
     """
-    logger = get_logger('00_core.get_selected_text')
+    logger = get_logger('core')
     logger.debug(f"Calling get_selected_text")
 
     with app.scan(selection=True) as scan:  # 선택된 영역 스캔
@@ -1519,7 +1489,7 @@ def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosi
     >>> text = get_text(app, spos=ScanStartPosition.Paragraph, epos=ScanEndPosition.Paragraph)
     >>> print(text)
     """
-    logger = get_logger('00_core.get_text')
+    logger = get_logger('core')
     logger.debug(f"Calling get_text")
 
     with app.scan(scan_spos=spos, scan_epos=epos) as txts:  # 지정된 위치 범위에서 텍스트 스캔
@@ -1531,9 +1501,8 @@ def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosi
 def find_text(
     app: App,
     text="",  # 찾을 텍스트
-    charshape:parametersets.CharShape=None,  # 문자 모양 설정
     ignore_message=True,  # 메시지 무시 여부
-    direction=None,  # 검색 방향
+    direction=0,  # 검색 방향
     match_case=None,  # 대소문자 구분
     all_word_forms=None,  # 모든 단어 형태 검색
     several_words=None,  # 여러 단어 검색
@@ -1542,11 +1511,16 @@ def find_text(
     replace_mode=None,  # 찾아 바꾸기 모드
     ignore_find_string=None,  # 찾을 문자열 무시
     ignore_replace_string=None,  # 바꿀 문자열 무시
-    find_style=None,  # 찾을 스타일
-    replace_style=None,  # 바꿀 스타일
+    find_style="",  # 찾을 스타일
+    replace_style="",  # 바꿀 스타일
     find_jaso=None,  # 자소로 검색
     find_regexp=None,  # 정규표현식으로 검색
-    find_type=None,  # 마지막 검색(True), 새 검색(False)
+    find_type=True,  # 마지막 검색(True), 새 검색(False)
+    facename=None,
+    text_color=None,
+    bold = None,
+    charshape: parametersets.CharShape = None, 
+
 ):
     """
     문서에서 다양한 옵션을 사용해 특정 텍스트를 검색합니다.
@@ -1572,7 +1546,7 @@ def find_text(
     """
 
     
-    logger = get_logger('00_core.find_text')
+    logger = get_logger('core')
     logger.debug(f"Calling find_text")
 
     # 반복 검색 액션 생성
@@ -1580,6 +1554,8 @@ def find_text(
     pset = action.pset
     # pset.find_charshape.update_from(app.charshape())
 
+    if charshape:
+        pset.find_charshape.update_from(charshape)
 
     # 옵션 설정
     if text is not None:
@@ -1614,13 +1590,19 @@ def find_text(
         pset.find_regexp = find_regexp
     if find_type is not None:
         pset.find_type = find_type
+    if facename is not None:
+        pset.find_charshape.facename = facename
+        from hwpapi.constants import korean_fonts, english_fonts
+        fonts = set(korean_fonts + english_fonts)
+        pset.find_charshape.fonttype = 1 if facename not in fonts else 2
+    if text_color is not None:
+        pset.find_charshape.text_color = text_color
+    if bold is not None:
+        pset.find_charshape.bold = bold
 
-    # 문자 모양 설정
-    if charshape:
-        pset.find_charshape.update_from(charshape)
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 73
+# %% ../nbs/02_api/00_core.ipynb 88
 @patch
 def replace_all(
     app: App,
@@ -1672,7 +1654,7 @@ def replace_all(
     """
 
 
-    logger = get_logger('00_core.replace_all')
+    logger = get_logger('core')
     logger.debug(f"Calling replace_all")
 
     # 반복 검색 액션 생성
@@ -1724,7 +1706,7 @@ def replace_all(
         pset.replace_charshape.update_from(new_charshape)
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 77
+# %% ../nbs/02_api/00_core.ipynb 92
 @patch
 def insert_file(
     app: App,
@@ -1769,7 +1751,7 @@ def insert_file(
 
 
     
-    logger = get_logger('00_core.insert_file')
+    logger = get_logger('core')
     logger.debug(f"Calling insert_file")
 
     
@@ -1783,7 +1765,7 @@ def insert_file(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 78
+# %% ../nbs/02_api/00_core.ipynb 93
 @patch
 def set_cell_border(
     app: App,
@@ -1872,7 +1854,7 @@ def set_cell_border(
     }
 
     
-    logger = get_logger('00_core.set_cell_border')
+    logger = get_logger('core')
     logger.debug(f"Calling set_cell_border")
 
     action = app.actions.CellFill
@@ -1885,7 +1867,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 79
+# %% ../nbs/02_api/00_core.ipynb 94
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None
@@ -1927,7 +1909,7 @@ def set_cell_color(
     """
 
 
-    logger = get_logger('00_core.set_cell_color')
+    logger = get_logger('core')
     logger.debug(f"Calling set_cell_color")
 
     fill_type = windows_brush = None

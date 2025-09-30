@@ -15,15 +15,15 @@ __all__ = ['DIRECTION_MAP', 'CAP_FULL_SIZE_MAP', 'ALIGNMENT_MAP', 'VERT_ALIGN_MA
            'ROTATION_SETTING_MAP', 'PIC_EFFECT_MAP', 'SEARCH_DIRECTION_MAP', 'BORDER_TEXT_MAP', 'UNDERLINE_TYPE_MAP',
            'OUTLINE_TYPE_MAP', 'STRIKEOUT_TYPE_MAP', 'USE_KERNING_MAP', 'DIAC_SYM_MARK_MAP', 'USE_FONT_SPACE_MAP',
            'HEADING_TYPE_MAP', 'NUMBERING_TYPE_MAP', 'NUMBER_FORMAT_MAP', 'PAGE_BREAK_MAP', 'ALL_MAPPINGS',
-           'ParameterBackend', 'ComBackend', 'AttrBackend', 'PsetBackend', 'HParamBackend', 'make_backend', 'to_dict_hparam',
-           'snapshot_hparam', 'apply_dict_hparam', 'temp_edit_hparam', 'resolve_action_args', 'apply_staged_to_backend',
-           'MissingRequiredError', 'PropertyDescriptor', 'IntProperty', 'BoolProperty', 'StringProperty',
-           'ColorProperty', 'UnitProperty', 'MappedProperty', 'TypedProperty', 'ListProperty', 'ParameterSetMeta',
-           'ParameterSet', 'update_from', 'BorderFill', 'Caption', 'FindReplace', 'DrawFillAttr', 'CharShape',
-           'ParaShape', 'ShapeObject', 'Table', 'BulletShape', 'Cell', 'CtrlData', 'DrawArcType', 'DrawCoordInfo',
-           'DrawCtrlHyperlink', 'DrawEditDetail', 'DrawImageAttr', 'DrawImageScissoring', 'DrawLayout', 'DrawLineAttr',
-           'DrawRectType', 'DrawResize', 'DrawRotate', 'DrawScAction', 'DrawShadow', 'DrawShear', 'DrawTextart',
-           'ListProperties', 'NumberingShape', 'TabDef']
+           'ParameterBackend', 'ComBackend', 'AttrBackend', 'PsetBackend', 'HParamBackend', 'make_backend',
+           'to_dict_hparam', 'snapshot_hparam', 'apply_dict_hparam', 'temp_edit_hparam', 'resolve_action_args',
+           'apply_staged_to_backend', 'MissingRequiredError', 'PropertyDescriptor', 'IntProperty', 'BoolProperty',
+           'StringProperty', 'ColorProperty', 'UnitProperty', 'MappedProperty', 'TypedProperty', 'ListProperty',
+           'ParameterSetMeta', 'ParameterSet', 'update_from', 'BorderFill', 'Caption', 'FindReplace', 'DrawFillAttr',
+           'CharShape', 'ParaShape', 'ShapeObject', 'Table', 'BulletShape', 'Cell', 'CtrlData', 'DrawArcType',
+           'DrawCoordInfo', 'DrawCtrlHyperlink', 'DrawEditDetail', 'DrawImageAttr', 'DrawImageScissoring', 'DrawLayout',
+           'DrawLineAttr', 'DrawRectType', 'DrawResize', 'DrawRotate', 'DrawScAction', 'DrawShadow', 'DrawShear',
+           'DrawTextart', 'ListProperties', 'NumberingShape', 'TabDef']
 
 # %% ../nbs/02_api/02_parameters.ipynb 6
 # Direction mappings
@@ -162,6 +162,7 @@ class ComBackend:
             return False
 
 
+
 class AttrBackend:
     """
     Fallback for plain Python objects:
@@ -200,6 +201,7 @@ class AttrBackend:
             return True
         except Exception:
             return False
+
 
 
 class PsetBackend:
@@ -252,7 +254,6 @@ class PsetBackend:
             return True
         except Exception:
             return False
-
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 9
@@ -434,7 +435,7 @@ class HParamBackend:
 
 def make_backend(obj: Any) -> ParameterBackend:
     """
-    Backend factory with pset priority.
+        Backend factory with pset priority.
     Supports pset objects (from action.CreateSet()) and HParameterSet objects.
     """
     # Priority 1: pset objects (direct from action.CreateSet())
@@ -444,16 +445,13 @@ def make_backend(obj: Any) -> ParameterBackend:
     # Priority 2: HParameterSet objects (legacy HSet-based)
     if _looks_like_hparamset(obj):
         return HParamBackend(obj)
-    
+
     # Priority 3: COM objects (fallback to ComBackend)
     if _is_com(obj):
         return ComBackend(obj)
     
     # Priority 4: Plain objects (fallback to AttrBackend)
     return AttrBackend(obj)
-
-
-
 
 
 
@@ -1043,7 +1041,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
         pset.find_string = "foo"
         pset.apply()
         actions.FindReplace.run(pset)
-    """
+"""
 
     # Optional class-level expected SetID. Subclasses can override.
     REQUIRED_SETID: Optional[str] = None
@@ -1288,6 +1286,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
         self._deleted.clear()
         return self
 
+
     def create_itemset(self, key: str, setid: str) -> "ParameterSet":
         """
         Create a nested parameter set using CreateItemSet (pset-based) or direct access (HSet-based).
@@ -1404,7 +1403,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
             return None
         if key in self._staged:
             return self._staged[key]
-        
+   
         # For pset backends, try to get live value first
         if isinstance(self._backend, PsetBackend):
             try:
@@ -1415,13 +1414,13 @@ class ParameterSet(metaclass=ParameterSetMeta):
             except Exception:
                 # Fall back to snapshot if live read fails
                 pass
-        
+
         return self._snapshot.get(key, None)
 
     def _ps_set(self, desc: PropertyDescriptor, value: Any):
         key = desc.key
         self._deleted.discard(key)
-        
+       
         # For pset backends, apply immediately (no staging)
         if isinstance(self._backend, PsetBackend):
             try:
@@ -1436,7 +1435,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
         else:
             # For other backends (HSet, etc.), use staging
             self._staged[key] = value
-        
+ 
         # If setting a nested PS directly, keep cache aligned
         if isinstance(value, ParameterSet):
             self._wrapper_cache[key] = value
@@ -1530,7 +1529,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
 # Additional methods for ParameterSet class
 def update_from(self, pset):
     """
-    Update this ParameterSet with values from another ParameterSet instance or raw COM object.
+    Update this ParameterSet with values from another ParameterSet instance.
 
     Only attributes defined in self.attributes_names are updated.
     Nested ParameterSet attributes are updated recursively.
@@ -2943,76 +2942,6 @@ class CharShape(ParameterSet):
         elif isinstance(value, list):
             for key, val in zip(keys, value):
                 setattr(self, key, val)
-
-    def _python_to_com_key(self, python_key):
-        """
-        Convert Python attribute name to COM property name for CharShape.
-        Handles CharShape-specific naming conventions.
-        """
-        # Handle language-specific attributes
-        if python_key.startswith('facename_'):
-            lang = python_key.split('_')[1]
-            return f"FaceName{lang.capitalize()}"
-        elif python_key.startswith('fonttype_'):
-            lang = python_key.split('_')[1] 
-            return f"FontType{lang.capitalize()}"
-        elif python_key.startswith('size_'):
-            lang = python_key.split('_')[1]
-            return f"Size{lang.capitalize()}"
-        elif python_key.startswith('ratio_'):
-            lang = python_key.split('_')[1]
-            return f"Ratio{lang.capitalize()}"
-        elif python_key.startswith('spacing_'):
-            lang = python_key.split('_')[1]
-            return f"Spacing{lang.capitalize()}"
-        elif python_key.startswith('offset_'):
-            lang = python_key.split('_')[1]
-            return f"Offset{lang.capitalize()}"
-        # Handle special cases
-        elif python_key == 'small_caps':
-            return 'SmallCaps'
-        elif python_key == 'superscript':
-            return 'SuperScript'
-        elif python_key == 'subscript':
-            return 'SubScript'
-        elif python_key == 'underline_type':
-            return 'UnderlineType'
-        elif python_key == 'underline_shape':
-            return 'UnderlineShape'
-        elif python_key == 'outline_type':
-            return 'OutlineType'
-        elif python_key == 'shadow_type':
-            return 'ShadowType'
-        elif python_key == 'text_color':
-            return 'TextColor'
-        elif python_key == 'shade_color':
-            return 'ShadeColor'
-        elif python_key == 'underline_color':
-            return 'UnderlineColor'
-        elif python_key == 'shadow_color':
-            return 'ShadowColor'
-        elif python_key == 'shadow_offset_x':
-            return 'ShadowOffsetX'
-        elif python_key == 'shadow_offset_y':
-            return 'ShadowOffsetY'
-        elif python_key == 'strikeout_color':
-            return 'StrikeOutColor'
-        elif python_key == 'strikeout_type':
-            return 'StrikeOutType'
-        elif python_key == 'strikeout_shape':
-            return 'StrikeOutShape'
-        elif python_key == 'diac_sym_mark':
-            return 'DiacSymMark'
-        elif python_key == 'use_font_space':
-            return 'UseFontSpace'
-        elif python_key == 'use_kerning':
-            return 'UseKerning'
-        elif python_key == 'border_fill':
-            return 'BorderFill'
-        else:
-            # Fall back to default snake_case to PascalCase conversion
-            parts = python_key.split('_')
-            return ''.join(word.capitalize() for word in parts)
 
     def __str__(self):
         attributes = {
