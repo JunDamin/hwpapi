@@ -15,7 +15,7 @@ __all__ = ['DIRECTION_MAP', 'CAP_FULL_SIZE_MAP', 'ALIGNMENT_MAP', 'VERT_ALIGN_MA
            'ROTATION_SETTING_MAP', 'PIC_EFFECT_MAP', 'SEARCH_DIRECTION_MAP', 'BORDER_TEXT_MAP', 'UNDERLINE_TYPE_MAP',
            'OUTLINE_TYPE_MAP', 'STRIKEOUT_TYPE_MAP', 'USE_KERNING_MAP', 'DIAC_SYM_MARK_MAP', 'USE_FONT_SPACE_MAP',
            'HEADING_TYPE_MAP', 'NUMBERING_TYPE_MAP', 'NUMBER_FORMAT_MAP', 'PAGE_BREAK_MAP', 'ALL_MAPPINGS',
-           'ParameterBackend', 'ComBackend', 'AttrBackend', 'HParamBackend', 'make_backend', 'to_dict_hparam',
+           'ParameterBackend', 'ComBackend', 'AttrBackend', 'PsetBackend', 'HParamBackend', 'make_backend', 'to_dict_hparam',
            'snapshot_hparam', 'apply_dict_hparam', 'temp_edit_hparam', 'resolve_action_args', 'apply_staged_to_backend',
            'MissingRequiredError', 'PropertyDescriptor', 'IntProperty', 'BoolProperty', 'StringProperty',
            'ColorProperty', 'UnitProperty', 'MappedProperty', 'TypedProperty', 'ListProperty', 'ParameterSetMeta',
@@ -202,6 +202,58 @@ class AttrBackend:
             return False
 
 
+class PsetBackend:
+    """
+    Backend for pset objects created via action.CreateSet().
+    Supports direct pset operations: Item, SetItem, CreateItemSet.
+    """
+    def __init__(self, pset: Any):
+        self._pset = pset
+
+    def get(self, key: str) -> Any:
+        """Get value using pset.Item(key)."""
+        try:
+            return self._pset.Item(key)
+        except Exception as e:
+            raise KeyError(f"Cannot get '{key}': {e}") from e
+
+    def set(self, key: str, value: Any) -> None:
+        """Set value using pset.SetItem(key, value)."""
+        try:
+            self._pset.SetItem(key, value)
+        except Exception as e:
+            raise KeyError(f"Cannot set '{key}': {e}") from e
+
+    def delete(self, key: str) -> bool:
+        """Delete item if supported by pset."""
+        try:
+            # Some pset objects may support RemoveItem
+            if hasattr(self._pset, 'RemoveItem'):
+                self._pset.RemoveItem(key)
+                return True
+            return False
+        except Exception:
+            return False
+
+    def create_itemset(self, key: str, setid: str) -> Any:
+        """Create nested parameter set using pset.CreateItemSet(key, setid)."""
+        try:
+            return self._pset.CreateItemSet(key, setid)
+        except Exception as e:
+            raise KeyError(f"Cannot create itemset '{key}' with SetID '{setid}': {e}") from e
+
+    def item_exists(self, key: str) -> bool:
+        """Check if item exists using pset.ItemExist(key) if available."""
+        try:
+            if hasattr(self._pset, 'ItemExist'):
+                return self._pset.ItemExist(key)
+            # Fallback: try to get the item
+            self._pset.Item(key)
+            return True
+        except Exception:
+            return False
+
+
 
 # %% ../nbs/02_api/02_parameters.ipynb 9
 # ===================
@@ -293,6 +345,32 @@ def _looks_like_hparamset(obj: Any) -> bool:
     return False
 
 
+def _looks_like_pset(obj: Any) -> bool:
+    """
+    Check if object looks like a pset created by action.CreateSet().
+    
+    Pset objects have methods like Item, SetItem, CreateItemSet, and SetID property.
+    """
+    if not _is_com(obj):
+        return False
+    
+    # Check for pset-specific methods and properties
+    pset_methods = ["Item", "SetItem", "CreateItemSet"]
+    pset_properties = ["SetID"]
+    
+    # Must have all core methods
+    for method in pset_methods:
+        if not hasattr(obj, method):
+            return False
+    
+    # Should have SetID property
+    for prop in pset_properties:
+        if not hasattr(obj, prop):
+            return False
+    
+    return True
+
+
 class HParamBackend:
     """
     Backend for HParameterSet (tree-structured, shared state).
@@ -356,12 +434,23 @@ class HParamBackend:
 
 def make_backend(obj: Any) -> ParameterBackend:
     """
-    HSet-only backend factory.
-    Only supports HParameterSet (COM object with .HSet or HParam child nodes).
+    Backend factory with pset priority.
+    Supports pset objects (from action.CreateSet()) and HParameterSet objects.
     """
+    # Priority 1: pset objects (direct from action.CreateSet())
+    if _looks_like_pset(obj):
+        return PsetBackend(obj)
+    
+    # Priority 2: HParameterSet objects (legacy HSet-based)
     if _looks_like_hparamset(obj):
         return HParamBackend(obj)
-    raise TypeError("Only HParameterSet (HSet-based COM object) is supported as backend.")
+    
+    # Priority 3: COM objects (fallback to ComBackend)
+    if _is_com(obj):
+        return ComBackend(obj)
+    
+    # Priority 4: Plain objects (fallback to AttrBackend)
+    return AttrBackend(obj)
 
 
 
@@ -929,28 +1018,31 @@ class ParameterSetMeta(type):
 # %% ../nbs/02_api/02_parameters.ipynb 21
 class ParameterSet(metaclass=ParameterSetMeta):
     """
-        HSet-only ParameterSet with robust staging and global apply.
+    Unified ParameterSet supporting both pset and HSet backends.
 
-    - All parameter operations are staged locally in the ParameterSet object.
-    - No changes are made to the global HParameterSet until `apply()` is called.
-    - When `apply()` is called, all staged changes are flushed to the global HParameterSet (COM-object, tree-structured).
-    - Supports tree-structured, dotted-key access for nested HSet parameters.
-    - Only HSet/COM-object backends are supported (no classic Pset/ComBackend/AttrBackend).
-    - Designed for use with HWP's global HParameterSet API.
+    - Prioritizes pset objects (from action.CreateSet()) for direct operation
+    - Falls back to HSet objects for backward compatibility
+    - Supports immediate parameter changes (no staging required for pset)
+    - Maintains staging for HSet objects to preserve existing behavior
 
-    Usage Example:
+    Usage Example (pset-based - preferred):
         # 1. Get the ParameterSet for an action (e.g., FindReplace)
-        pset = actions.FindReplace.get_pset()
+        pset = actions.FindReplace.pset
 
-        # 2. Stage changes locally
+        # 2. Set parameters directly (immediate effect)
         pset.find_string = "foo"
         pset.replace_string = "bar"
         pset.match_case = True
 
-        # 3. Run the action (staged changes are applied to the global HParameterSet before execution)
-        actions.FindReplace.run(pset)
+        # 3. Run the action (parameters already set)
+        actions.FindReplace.run()
 
-    This ensures all parameter changes are atomic, globally consistent, and only affect the live HParameterSet when intended.
+    Usage Example (HSet-based - legacy):
+        # Same as before with staging and apply()
+        pset = actions.FindReplace.get_pset()
+        pset.find_string = "foo"
+        pset.apply()
+        actions.FindReplace.run(pset)
     """
 
     # Optional class-level expected SetID. Subclasses can override.
@@ -1196,6 +1288,44 @@ class ParameterSet(metaclass=ParameterSetMeta):
         self._deleted.clear()
         return self
 
+    def create_itemset(self, key: str, setid: str) -> "ParameterSet":
+        """
+        Create a nested parameter set using CreateItemSet (pset-based) or direct access (HSet-based).
+        
+        Args:
+            key: The parameter key for the nested set
+            setid: The SetID for the nested parameter set
+            
+        Returns:
+            ParameterSet instance wrapping the nested parameter set
+        """
+        if self._backend is None:
+            raise RuntimeError("create_itemset(): no parameterset is bound. Call .bind() first.")
+        
+        # Handle pset-based backend
+        if hasattr(self._backend, "create_itemset"):
+            # PsetBackend - use CreateItemSet method
+            nested_pset = self._backend.create_itemset(key, setid)
+            return ParameterSet(nested_pset)
+        
+        # Handle HSet-based backend (legacy)
+        elif isinstance(self._backend, HParamBackend):
+            # Try to get nested parameter set from HSet structure
+            try:
+                nested_obj = self._backend.get(key)
+                return ParameterSet(nested_obj)
+            except KeyError:
+                # Create new nested parameter set if possible
+                raise NotImplementedError(f"Cannot create nested parameter set '{key}' with HSet backend")
+        
+        # Handle other backends
+        else:
+            try:
+                nested_obj = self._backend.get(key)
+                return ParameterSet(nested_obj)
+            except KeyError:
+                raise NotImplementedError(f"Cannot create nested parameter set '{key}' with {type(self._backend)} backend")
+
     def _sync_hset_global_state(self):
         """
         Synchronize staged changes with global HParameterSet state for HSet-based actions.
@@ -1274,12 +1404,39 @@ class ParameterSet(metaclass=ParameterSetMeta):
             return None
         if key in self._staged:
             return self._staged[key]
+        
+        # For pset backends, try to get live value first
+        if isinstance(self._backend, PsetBackend):
+            try:
+                live_value = self._backend.get(key)
+                # Update snapshot with live value
+                self._snapshot[key] = live_value
+                return live_value
+            except Exception:
+                # Fall back to snapshot if live read fails
+                pass
+        
         return self._snapshot.get(key, None)
 
     def _ps_set(self, desc: PropertyDescriptor, value: Any):
         key = desc.key
         self._deleted.discard(key)
-        self._staged[key] = value
+        
+        # For pset backends, apply immediately (no staging)
+        if isinstance(self._backend, PsetBackend):
+            try:
+                self._backend.set(key, value)
+                # Update snapshot to reflect the change
+                self._snapshot[key] = value
+                # Clear from staged since it's already applied
+                self._staged.pop(key, None)
+            except Exception as e:
+                # If immediate set fails, fall back to staging
+                self._staged[key] = value
+        else:
+            # For other backends (HSet, etc.), use staging
+            self._staged[key] = value
+        
         # If setting a nested PS directly, keep cache aligned
         if isinstance(value, ParameterSet):
             self._wrapper_cache[key] = value

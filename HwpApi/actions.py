@@ -913,7 +913,7 @@ class _Action:
             assert pset_key == pset.SetID, f"({pset_key}), ({pset.SetID}) parameter set 정보에 대한 오류 발생"
             pset_key = pset.SetID
         self.pset_key = pset_key
-        self.pset = self.get_pset()
+        self.pset = self._create_pset_parameterset()
 
     def __str__(self):
         return f"<Action {self.action_key}: {self.description}>"
@@ -927,27 +927,37 @@ class _Action:
 
     def run(self, parameterset=None):
         """
-        Apply staged changes to the global HParameterSet, then execute the action.
+        Execute the action using pset-based approach.
+        Direct execution with pset objects without HSet synchronization.
         """
-
-        if hasattr(parameterset, "HSet"):
-            return self.act.Execute(parameterset.HSet)
-
-        pset = self.pset
-        if parameterset:
-            pset = parameterset
-
-        # Apply staged changes to the global HParameterSet
-        pset.apply()
-
-        # Always execute using the global HParameterSet node for this action
-        hparam_prefix = f"H{self.pset_key}"
-        global_hparam = self.app.api.HParameterSet
-        hnode = getattr(global_hparam, hparam_prefix) if hparam_prefix else global_hparam
-
-        # Use .HSet if available, else pass the node directly
-        arg = hnode.HSet if hasattr(hnode, "HSet") else hnode
-        return self.act.Execute(arg)
+        # Use provided parameterset or default
+        pset = parameterset if parameterset else self.pset
+        
+        if pset is None:
+            # No parameter set available, execute with None
+            return self.act.Execute(None)
+        
+        # Handle different parameter set types
+        if hasattr(pset, "_raw") and hasattr(pset, "_backend"):
+            # This is our ParameterSet wrapper - use the raw pset object
+            if hasattr(pset._backend, "_pset"):
+                # PsetBackend - use the raw pset directly
+                return self.act.Execute(pset._backend._pset)
+            elif hasattr(pset, "_raw") and hasattr(pset._raw, "HSet"):
+                # HParamBackend - use HSet for backward compatibility
+                return self.act.Execute(pset._raw.HSet)
+            else:
+                # Other backend types - use raw object
+                return self.act.Execute(pset._raw)
+        elif hasattr(pset, "HSet"):
+            # Direct HSet object
+            return self.act.Execute(pset.HSet)
+        elif hasattr(pset, "SetID"):
+            # Direct pset object
+            return self.act.Execute(pset)
+        else:
+            # Unknown type - try direct execution
+            return self.act.Execute(pset)
 
     def _get_hset(self, pset_key=None):
         if not self.pset_key:
@@ -963,8 +973,30 @@ class _Action:
         self.act.GetDefault(pset)
         return pset
 
+    def _create_pset_parameterset(self):
+        """
+        Create a ParameterSet instance using the pset-based approach.
+        This directly uses action.CreateSet() without HSet synchronization.
+        """
+        if not self.pset_key:
+            return None
+        
+        # Create raw pset object
+        pset = self._create_pset()
+        
+        # Get the appropriate ParameterSet class
+        pset_class = getattr(parametersets, self.pset_key, None)
+        
+        if pset_class:
+            # Use specific ParameterSet subclass with pset backend
+            return pset_class(pset)
+        else:
+            # Fallback to generic ParameterSet with pset backend
+            return parametersets.ParameterSet(pset)
+
     def get_pset(self):
         """
+        Legacy method - now redirects to pset-based approach.
         Always return a ParameterSet instance bound to the global HParameterSet node for this action.
         """
         if not self.pset_key:
