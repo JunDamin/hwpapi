@@ -1198,12 +1198,12 @@ def insert_text(
     
     insert_text = app.actions.InsertText
     p = insert_text.pset
-    p.Text = text
+    p.text = text
     
     insert_text.run(p)
     return
 
-# %% ../nbs/02_api/00_core.ipynb 50
+# %% ../nbs/02_api/00_core.ipynb 51
 def _get_text(app):
     """스캔한 텍스트 텍스트 제너레이터"""
     flag, text = 2, ""
@@ -1246,7 +1246,7 @@ def scan(
     yield _get_text(app)
     app.api.ReleaseScan()
 
-# %% ../nbs/02_api/00_core.ipynb 51
+# %% ../nbs/02_api/00_core.ipynb 52
 def move_to_line(app: App, text):
     """인자로 전달한 텍스트가 있는 줄의 시작지점으로 이동합니다."""
     logger = get_logger('core')
@@ -1257,7 +1257,7 @@ def move_to_line(app: App, text):
                 return app.move.scan_pos()
     return False
 
-# %% ../nbs/02_api/00_core.ipynb 53
+# %% ../nbs/02_api/00_core.ipynb 54
 @patch
 def setup_page(
     app: App,  # 앱 인스턴스
@@ -1324,7 +1324,7 @@ def setup_page(
 
     return action.run()  # 페이지 설정 실행
 
-# %% ../nbs/02_api/00_core.ipynb 54
+# %% ../nbs/02_api/00_core.ipynb 55
 @patch
 def insert_picture(
     app: App,
@@ -1388,7 +1388,7 @@ def insert_picture(
         effect=effect,  # 시각적 효과
     )
 
-# %% ../nbs/02_api/00_core.ipynb 55
+# %% ../nbs/02_api/00_core.ipynb 56
 @patch
 def select_text(app: App, option=const.SelectionOption.Line):
     """
@@ -1430,7 +1430,7 @@ def select_text(app: App, option=const.SelectionOption.Line):
     return begin_action(), end_action()
 
 
-# %% ../nbs/02_api/00_core.ipynb 58
+# %% ../nbs/02_api/00_core.ipynb 59
 @patch
 def get_selected_text(app: App):
     """
@@ -1462,7 +1462,7 @@ def get_selected_text(app: App):
         text = "\n".join(scan)  # 선택된 텍스트를 줄 단위로 결합
     return text  # 결합된 텍스트 반환
 
-# %% ../nbs/02_api/00_core.ipynb 60
+# %% ../nbs/02_api/00_core.ipynb 61
 # 리팩터링된 get_text 함수
 @patch
 def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosition.Line):
@@ -1496,7 +1496,7 @@ def get_text(app: App, spos=const.ScanStartPosition.Line, epos=const.ScanEndPosi
         text = "".join(txts)  # 스캔한 텍스트를 하나의 문자열로 결합
     return text  # 결합된 텍스트 반환
 
-# %% ../nbs/02_api/00_core.ipynb 63
+# %% ../nbs/02_api/00_core.ipynb 64
 @patch
 def find_text(
     app: App,
@@ -1602,7 +1602,7 @@ def find_text(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 88
+# %% ../nbs/02_api/00_core.ipynb 89
 @patch
 def replace_all(
     app: App,
@@ -1706,7 +1706,7 @@ def replace_all(
         pset.replace_charshape.update_from(new_charshape)
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 92
+# %% ../nbs/02_api/00_core.ipynb 93
 @patch
 def insert_file(
     app: App,
@@ -1765,7 +1765,7 @@ def insert_file(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 93
+# %% ../nbs/02_api/00_core.ipynb 94
 @patch
 def set_cell_border(
     app: App,
@@ -1867,7 +1867,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 94
+# %% ../nbs/02_api/00_core.ipynb 95
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None

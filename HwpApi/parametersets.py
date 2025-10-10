@@ -23,7 +23,7 @@ __all__ = ['DIRECTION_MAP', 'CAP_FULL_SIZE_MAP', 'ALIGNMENT_MAP', 'VERT_ALIGN_MA
            'CharShape', 'ParaShape', 'ShapeObject', 'Table', 'BulletShape', 'Cell', 'CtrlData', 'DrawArcType',
            'DrawCoordInfo', 'DrawCtrlHyperlink', 'DrawEditDetail', 'DrawImageAttr', 'DrawImageScissoring', 'DrawLayout',
            'DrawLineAttr', 'DrawRectType', 'DrawResize', 'DrawRotate', 'DrawScAction', 'DrawShadow', 'DrawShear',
-           'DrawTextart', 'ListProperties', 'NumberingShape', 'TabDef']
+           'DrawTextart', 'InsertText', 'ListProperties', 'NumberingShape', 'TabDef']
 
 # %% ../nbs/02_api/02_parameters.ipynb 6
 # Direction mappings
@@ -3581,6 +3581,19 @@ class FindReplace(ParameterSet):
     )
 
 # %% ../nbs/02_api/02_parameters.ipynb 79
+class InsertText(ParameterSet):
+    """
+
+    ### InsertText 
+| Item ID | Type | SubType | Description |
+| --- | --- | --- | --- |
+| Text | PIT\_BSTR |  | 삽입할 텍스트 |
+
+"""
+
+    text = StringProperty("Text", "삽입할 텍스트")
+
+# %% ../nbs/02_api/02_parameters.ipynb 81
 class ListProperties(ParameterSet):
     """
     ### ListProperties
@@ -3610,7 +3623,7 @@ class ListProperties(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 81
+# %% ../nbs/02_api/02_parameters.ipynb 83
 class NumberingShape(ParameterSet):
     """
     ### NumberingShape
@@ -3735,7 +3748,7 @@ class NumberingShape(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 83
+# %% ../nbs/02_api/02_parameters.ipynb 85
 class ParaShape(ParameterSet):
     """
     ### ParaShape
@@ -3902,7 +3915,7 @@ class ParaShape(ParameterSet):
         "BorderFill", "테두리/배경", lambda: BorderFill
     )
 
-# %% ../nbs/02_api/02_parameters.ipynb 85
+# %% ../nbs/02_api/02_parameters.ipynb 87
 class ShapeObject(ParameterSet):
     """
     ### ShapeObject
@@ -4053,7 +4066,7 @@ class ShapeObject(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 87
+# %% ../nbs/02_api/02_parameters.ipynb 89
 class TabDef(ParameterSet):
     """
     ### TabDef
@@ -4073,7 +4086,7 @@ class TabDef(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 89
+# %% ../nbs/02_api/02_parameters.ipynb 91
 class Table(ParameterSet):
     """
     ### Table
