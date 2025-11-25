@@ -120,3 +120,101 @@ app.set_charshape(italic=True)
 
 다만 이런 형태의 작업을 통해서 어쩌면 hwp api wrapper가 활성화 되어서
 단순 작업을 자동화 할 수 있기를 바라고 있습니다.
+
+## HWP to JSON Parser (NEW!)
+
+HWP 문서를 파싱하여 JSON 형식으로 변환하는 기능이 추가되었습니다.
+이 기능을 사용하면 HWP 문서의 구조, 텍스트, 서식 정보를 JSON 데이터로 추출할 수 있습니다.
+
+### 간단한 사용법
+
+``` python
+from HwpApi import hwp_to_json
+
+# HWP 파일을 JSON으로 변환 (가장 간단한 방법)
+hwp_to_json("document.hwp")  # document.json 생성
+```
+
+### 파싱 후 데이터 분석
+
+``` python
+from HwpApi import parse_hwp
+
+# HWP 파일 파싱
+data = parse_hwp("document.hwp")
+
+# 메타데이터 확인
+print(data['metadata']['file_name'])
+
+# 모든 문단 텍스트 출력
+for section in data['sections']:
+    for para in section['paragraphs']:
+        print(para['text'])
+```
+
+### 고급 사용법
+
+``` python
+from HwpApi import HwpParser, export_to_json
+
+# 컨텍스트 매니저를 사용한 파싱
+with HwpParser("document.hwp", visible=False) as parser:
+    data = parser.parse()
+
+    # 데이터 분석 및 처리
+    print(f"섹션 수: {len(data['sections'])}")
+
+    # JSON으로 저장
+    export_to_json(data, "output.json", indent=4)
+```
+
+### JSON 출력 구조
+
+파싱된 JSON 데이터는 다음과 같은 구조를 가집니다:
+
+``` json
+{
+  "metadata": {
+    "file_path": "경로/파일명.hwp",
+    "file_name": "파일명.hwp",
+    "full_path": "전체 경로"
+  },
+  "sections": [
+    {
+      "section_number": 0,
+      "paragraphs": [
+        {
+          "paragraph_number": 0,
+          "text": "문단 텍스트",
+          "char_shape": {
+            "FaceNameHangul": "맑은 고딕",
+            "Height": 1000,
+            "TextColor": 0
+          },
+          "para_shape": {
+            "AlignType": 0,
+            "LeftMargin": 0,
+            "RightMargin": 0
+          }
+        }
+      ]
+    }
+  ],
+  "fonts": ["맑은 고딕", "Arial", ...]
+}
+```
+
+### 주요 기능
+
+- **모듈화된 설계**: 파싱과 내보내기를 분리하여 유연한 사용 가능
+- **컨텍스트 매니저 지원**: `with` 문을 통한 자동 리소스 관리
+- **한글 완벽 지원**: UTF-8 인코딩으로 한글 문서 완벽 처리
+- **상세한 서식 정보**: 문자 모양, 문단 모양, 폰트 정보 추출
+- **일괄 처리**: 여러 HWP 파일을 한 번에 JSON으로 변환 가능
+
+### 사용 예제
+
+더 많은 예제는 `examples/` 폴더를 참조하세요:
+
+- `simple_parser_example.py`: 기본 사용법
+- `hwp_to_json_example.py`: 다양한 사용 시나리오
