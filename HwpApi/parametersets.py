@@ -15,14 +15,15 @@ __all__ = ['DIRECTION_MAP', 'CAP_FULL_SIZE_MAP', 'ALIGNMENT_MAP', 'VERT_ALIGN_MA
            'ROTATION_SETTING_MAP', 'PIC_EFFECT_MAP', 'SEARCH_DIRECTION_MAP', 'BORDER_TEXT_MAP', 'UNDERLINE_TYPE_MAP',
            'OUTLINE_TYPE_MAP', 'STRIKEOUT_TYPE_MAP', 'USE_KERNING_MAP', 'DIAC_SYM_MARK_MAP', 'USE_FONT_SPACE_MAP',
            'HEADING_TYPE_MAP', 'NUMBERING_TYPE_MAP', 'NUMBER_FORMAT_MAP', 'PAGE_BREAK_MAP', 'ALL_MAPPINGS',
-           'ParameterBackend', 'ComBackend', 'AttrBackend', 'PsetBackend', 'make_backend', 'resolve_action_args',
-           'apply_staged_to_backend', 'MissingRequiredError', 'PropertyDescriptor', 'IntProperty', 'BoolProperty',
-           'StringProperty', 'ColorProperty', 'UnitProperty', 'MappedProperty', 'TypedProperty', 'ListProperty',
-           'ParameterSetMeta', 'ParameterSet', 'update_from', 'BorderFill', 'Caption', 'FindReplace', 'DrawFillAttr',
-           'CharShape', 'ParaShape', 'ShapeObject', 'Table', 'BulletShape', 'Cell', 'CtrlData', 'DrawArcType',
-           'DrawCoordInfo', 'DrawCtrlHyperlink', 'DrawEditDetail', 'DrawImageAttr', 'DrawImageScissoring', 'DrawLayout',
-           'DrawLineAttr', 'DrawRectType', 'DrawResize', 'DrawRotate', 'DrawScAction', 'DrawShadow', 'DrawShear',
-           'DrawTextart', 'InsertText', 'ListProperties', 'NumberingShape', 'TabDef']
+           'ParameterBackend', 'ComBackend', 'AttrBackend', 'PsetBackend', 'HParamBackend', 'make_backend',
+           'resolve_action_args', 'apply_staged_to_backend', 'MissingRequiredError', 'PropertyDescriptor',
+           'IntProperty', 'BoolProperty', 'StringProperty', 'ColorProperty', 'UnitProperty', 'MappedProperty',
+           'TypedProperty', 'ListProperty', 'ParameterSetMeta', 'ParameterSet', 'update_from', 'BorderFill', 'Caption',
+           'FindReplace', 'DrawFillAttr', 'CharShape', 'ParaShape', 'ShapeObject', 'Table', 'BulletShape', 'Cell',
+           'CtrlData', 'DrawArcType', 'DrawCoordInfo', 'DrawCtrlHyperlink', 'DrawEditDetail', 'DrawImageAttr',
+           'DrawImageScissoring', 'DrawLayout', 'DrawLineAttr', 'DrawRectType', 'DrawResize', 'DrawRotate',
+           'DrawScAction', 'DrawShadow', 'DrawShear', 'DrawTextart', 'InsertText', 'ListProperties', 'NumberingShape',
+           'TabDef']
 
 # %% ../nbs/02_api/02_parameters.ipynb 6
 # Direction mappings
@@ -256,6 +257,121 @@ class PsetBackend:
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 9
+class HParamBackend:
+    """
+    Backend for HParameterSet objects (legacy HSet-based approach).
+    Supports dotted key paths for accessing nested parameter set structures.
+    Example: "HFindReplace.FindString" navigates to HFindReplace.FindString attribute.
+    """
+    def __init__(self, root: Any):
+        """Initialize with root HParameterSet or any child node."""
+        self._root = root
+
+    def get(self, key: str) -> Any:
+        """Get value using dotted key path."""
+        try:
+            parent, leaf = self._resolve_parent_and_leaf(key)
+            return getattr(parent, leaf)
+        except (AttributeError, KeyError) as e:
+            raise KeyError(f"Cannot get '{key}': {e}") from e
+
+    def set(self, key: str, value: Any) -> None:
+        """Set value using dotted key path with type-aware coercion."""
+        try:
+            parent, leaf = self._resolve_parent_and_leaf(key)
+            coerced_value = self._coerce_for_put(parent, leaf, value)
+            setattr(parent, leaf, coerced_value)
+        except (AttributeError, KeyError) as e:
+            raise KeyError(f"Cannot set '{key}': {e}") from e
+        except TypeError as e:
+            # Re-raise with dotted path context
+            raise TypeError(f"Cannot set '{key}': {e}") from e
+
+    def delete(self, key: str) -> bool:
+        """
+        Best-effort neutralization (not true deletion).
+        Sets property to neutral value: 0/False/"" based on current type.
+
+        Note: This is neutralization, not true deletion, due to HParameterSet's
+        shared/global nature.
+        """
+        try:
+            parent, leaf = self._resolve_parent_and_leaf(key)
+            current = getattr(parent, leaf)
+
+            # Determine neutral value based on current type
+            if isinstance(current, bool):
+                neutral = False
+            elif isinstance(current, (int, float)):
+                neutral = 0
+            elif isinstance(current, str):
+                neutral = ""
+            else:
+                neutral = None
+
+            if neutral is not None:
+                setattr(parent, leaf, neutral)
+                return True
+            return False
+        except (AttributeError, KeyError):
+            return False
+
+    def _resolve_parent_and_leaf(self, key: str):
+        """
+        Resolve dotted key path to (parent_object, leaf_attribute).
+        Example: "HFindReplace.FindString" -> (HFindReplace_obj, "FindString")
+        """
+        if '.' not in key:
+            return (self._root, key)
+
+        parts = key.split('.')
+        current = self._root
+
+        # Navigate to parent (all but last part)
+        for part in parts[:-1]:
+            current = getattr(current, part)
+
+        # Return parent and leaf attribute name
+        return (current, parts[-1])
+
+    def _coerce_for_put(self, parent: Any, leaf: str, value: Any) -> Any:
+        """
+        Type-aware coercion for HParameterSet attributes.
+        Ensures type compatibility with existing attribute type.
+        """
+        try:
+            current = getattr(parent, leaf)
+            current_type = type(current)
+
+            # If types match, return as-is
+            if isinstance(value, current_type):
+                return value
+
+            # Type coercion
+            if current_type == bool:
+                return bool(value)
+            elif current_type == int:
+                return int(value)
+            elif current_type == float:
+                return float(value)
+            elif current_type == str:
+                return str(value)
+            else:
+                return value
+        except (AttributeError, TypeError):
+            # If can't determine type, return as-is
+            return value
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 10
+def _is_com(obj: Any) -> bool:
+    """Check if object is a COM object."""
+    if obj is None:
+        return False
+    return hasattr(obj, '_oleobj_') or 'com_gen_py' in str(type(obj))
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 11
 def _looks_like_pset(obj: Any) -> bool:
     """
     Check if object looks like a pset created by action.CreateSet().
@@ -301,7 +417,7 @@ def make_backend(obj: Any) -> ParameterBackend:
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 10
+# %% ../nbs/02_api/02_parameters.ipynb 12
 def resolve_action_args(app: Any, action_name: str, hnode: Any) -> tuple[str, Any]:
     """
     Resolve action arguments for HAction.GetDefault/Execute calls.
@@ -434,9 +550,28 @@ class PropertyDescriptor:
 
             # If value is None, fall through to default handling below
 
-        # Non-wrapped (or None) path
-        if val is None and self.default is not None:
-            return self.default
+        # Non-wrapped (or None) path - but for wrapped properties, create empty object
+        if val is None:
+            # For wrapped properties, return an empty instance instead of None
+            if self.wrap is not None:
+                # Create empty wrapped object and cache it
+                if callable(self.wrap):
+                    try:
+                        wrapper_class = self.wrap()
+                        wrapped = wrapper_class()
+                    except TypeError:
+                        wrapped = self.wrap()
+                else:
+                    wrapped = self.wrap()
+
+                instance._wrapper_cache[self.key] = wrapped
+                instance._staged[self.key] = wrapped
+                return wrapped
+
+            # For non-wrapped properties, return default if available
+            if self.default is not None:
+                return self.default
+
         return self.to_python(val) if (val is not None and self.to_python) else val
 
     def __set__(self, instance: "ParameterSet", value: Any):
@@ -469,7 +604,7 @@ class PropertyDescriptor:
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 11
+# %% ../nbs/02_api/02_parameters.ipynb 13
 class IntProperty(PropertyDescriptor):
     """Property descriptor for integer values with optional range validation."""
     
@@ -501,7 +636,7 @@ class IntProperty(PropertyDescriptor):
         return self._set_value(instance, value)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 12
+# %% ../nbs/02_api/02_parameters.ipynb 14
 class BoolProperty(PropertyDescriptor):
     """Property descriptor for boolean values (0 or 1)."""
     
@@ -525,7 +660,7 @@ class BoolProperty(PropertyDescriptor):
         return self._set_value(instance, numeric_value)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 13
+# %% ../nbs/02_api/02_parameters.ipynb 15
 class StringProperty(PropertyDescriptor):
     """Property descriptor for string values."""
     
@@ -545,7 +680,7 @@ class StringProperty(PropertyDescriptor):
         return self._set_value(instance, value)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 14
+# %% ../nbs/02_api/02_parameters.ipynb 16
 class ColorProperty(PropertyDescriptor):
     """Property descriptor for color values with hex conversion."""
     
@@ -563,7 +698,7 @@ class ColorProperty(PropertyDescriptor):
         return self._set_value(instance, numeric_value)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 15
+# %% ../nbs/02_api/02_parameters.ipynb 17
 class UnitProperty(PropertyDescriptor):
     """Property descriptor for unit-based values with automatic conversion."""
     
@@ -590,7 +725,7 @@ class UnitProperty(PropertyDescriptor):
         return self._set_value(instance, hwp_value)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 16
+# %% ../nbs/02_api/02_parameters.ipynb 18
 class MappedProperty(PropertyDescriptor):
     """Property descriptor for mapped values (string <-> integer)."""
     
@@ -627,7 +762,7 @@ class MappedProperty(PropertyDescriptor):
         return self._set_value(instance, numeric_value)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 17
+# %% ../nbs/02_api/02_parameters.ipynb 19
 class TypedProperty(PropertyDescriptor):
     """
     Alias for PropertyDescriptor for typed parameter sets.
@@ -639,14 +774,10 @@ class TypedProperty(PropertyDescriptor):
         super().__init__(key, doc, wrap=wrap, **kwargs)
 
     
-    def __get__(self, instance: Optional["ParameterSet"], owner):
-        pass
-
-    def __set__(self, instance, value):
-        pass
+    # Inherits __get__ and __set__ from PropertyDescriptor
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 18
+# %% ../nbs/02_api/02_parameters.ipynb 20
 class ListProperty(PropertyDescriptor):
     """Property descriptor for list values."""
     
@@ -693,7 +824,7 @@ class ListProperty(PropertyDescriptor):
         return self._set_value(instance, value)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 20
+# %% ../nbs/02_api/02_parameters.ipynb 22
 class ParameterSetMeta(type):
     """Metaclass for automatic property registration."""
     
@@ -721,7 +852,7 @@ class ParameterSetMeta(type):
         return new_class
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 21
+# %% ../nbs/02_api/02_parameters.ipynb 23
 class ParameterSet(metaclass=ParameterSetMeta):
     """
     Unified ParameterSet supporting both pset and HSet backends.
@@ -967,8 +1098,15 @@ class ParameterSet(metaclass=ParameterSetMeta):
         for key, value in list(self._staged.items()):
             if isinstance(value, ParameterSet):
                 # Ensure nested staged values are flushed first
-                value.apply(require=require)
-                raw_value = value.parameterset
+                # Only apply if the nested ParameterSet is bound
+                if value._backend is not None:
+                    value.apply(require=require)
+                    raw_value = value.parameterset
+                else:
+                    # Unbound nested ParameterSet - skip setting it
+                    # This can happen with TypedProperty empty wrapped objects
+                    # Don't try to set empty dict or None - just skip
+                    continue
             else:
                 raw_value = value
             self._backend.set(key, raw_value)
@@ -1223,7 +1361,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 22
+# %% ../nbs/02_api/02_parameters.ipynb 24
 # Additional methods for ParameterSet class
 def update_from(self, pset):
     """
@@ -1366,7 +1504,7 @@ ParameterSet._serialize_impl = _serialize_impl
 ParameterSet._str_impl = _str_impl
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 23
+# %% ../nbs/02_api/02_parameters.ipynb 25
 # Static methods for creating properties
 @staticmethod        
 def _typed_prop(key, doc, expected_type):
@@ -1449,7 +1587,7 @@ ParameterSet._tuple_list_prop = _tuple_list_prop
 ParameterSet._gradation_color_prop = _gradation_color_prop
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 25
+# %% ../nbs/02_api/02_parameters.ipynb 27
 class BorderFill(ParameterSet):
     """
     ### BorderFill
@@ -1533,7 +1671,7 @@ class BorderFill(ParameterSet):
     fill_attr = TypedProperty("FillAttr", "배경 채우기 속성", lambda: DrawFillAttr)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 26
+# %% ../nbs/02_api/02_parameters.ipynb 28
 class Caption(ParameterSet):
     """
     ### Caption
@@ -1559,7 +1697,7 @@ class Caption(ParameterSet):
     cap_full_size = MappedProperty("CapFullSize", CAP_FULL_SIZE_MAP, "캡션 폭에 여백 포함 여부 (CapFullSize): 0 = exclude, 1 = include")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 27
+# %% ../nbs/02_api/02_parameters.ipynb 29
 class FindReplace(ParameterSet):
     """
     ### FindReplace
@@ -1650,7 +1788,7 @@ class FindReplace(ParameterSet):
     )
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 28
+# %% ../nbs/02_api/02_parameters.ipynb 30
 # Forward declarations for commonly referenced parameter sets
 # These are minimal implementations - full implementations would be added as needed
 
@@ -1675,7 +1813,7 @@ class Table(ParameterSet):
     pass
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 30
+# %% ../nbs/02_api/02_parameters.ipynb 32
 # Direction mappings
 DIRECTION_MAP = {"left": 0, "right": 1, "top": 2, "bottom": 3}
 
@@ -1759,7 +1897,7 @@ LINE_SPACING_TYPE_MAP = {"font": 0, "fixed": 1, "space": 2}
 PIC_EFFECT_MAP = {"none": 0, "bw": 1, "sepia": 2}
 PAGE_BREAK_MAP = {"none": 0, "cell": 1, "text": 2}
 
-# %% ../nbs/02_api/02_parameters.ipynb 32
+# %% ../nbs/02_api/02_parameters.ipynb 34
 class BorderFill(ParameterSet):
     """
     ### BorderFill
@@ -1898,7 +2036,7 @@ class BorderFill(ParameterSet):
     # Typed property for fill attribute
     fill_attr = ParameterSet._typed_prop("FillAttr", "배경 채우기 속성", lambda: DrawFillAttr)
 
-# %% ../nbs/02_api/02_parameters.ipynb 34
+# %% ../nbs/02_api/02_parameters.ipynb 36
 class Caption(ParameterSet):
     """
     ### Caption
@@ -1933,7 +2071,7 @@ class Caption(ParameterSet):
     )
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 36
+# %% ../nbs/02_api/02_parameters.ipynb 38
 class BulletShape(ParameterSet):
     """
     ### BulletShape
@@ -1984,7 +2122,7 @@ class BulletShape(ParameterSet):
         "BulletImage", "글머리 기호 이미지", lambda: DrawImageAttr
     )
 
-# %% ../nbs/02_api/02_parameters.ipynb 38
+# %% ../nbs/02_api/02_parameters.ipynb 40
 class Cell(ParameterSet):
     """
     ### Cell
@@ -2019,7 +2157,7 @@ class Cell(ParameterSet):
         "CellCtrlData", "셀 제어 데이터", lambda: CtrlData
     )
 
-# %% ../nbs/02_api/02_parameters.ipynb 40
+# %% ../nbs/02_api/02_parameters.ipynb 42
 class CharShape(ParameterSet):
     """
         ### CharShape
@@ -2525,7 +2663,7 @@ class CharShape(ParameterSet):
     def __repr__(self):
         return self.__str__()
 
-# %% ../nbs/02_api/02_parameters.ipynb 42
+# %% ../nbs/02_api/02_parameters.ipynb 44
 class CtrlData(ParameterSet):
     """
     ### CtrlData
@@ -2540,7 +2678,7 @@ class CtrlData(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 44
+# %% ../nbs/02_api/02_parameters.ipynb 46
 class DrawArcType(ParameterSet):
     """
     ### DrawArcType
@@ -2559,7 +2697,7 @@ class DrawArcType(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 46
+# %% ../nbs/02_api/02_parameters.ipynb 48
 class DrawCoordInfo(ParameterSet):
     """
     ### DrawCoordInfo
@@ -2580,7 +2718,7 @@ class DrawCoordInfo(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 48
+# %% ../nbs/02_api/02_parameters.ipynb 50
 class DrawCtrlHyperlink(ParameterSet):
     """
     ### DrawCtrlHyperlink
@@ -2597,7 +2735,7 @@ class DrawCtrlHyperlink(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 50
+# %% ../nbs/02_api/02_parameters.ipynb 52
 class DrawEditDetail(ParameterSet):
     """
     ### DrawEditDetail
@@ -2617,7 +2755,7 @@ class DrawEditDetail(ParameterSet):
     point_y = ParameterSet._int_prop("PointY", "PointY: 교점의 Y 좌표.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 52
+# %% ../nbs/02_api/02_parameters.ipynb 54
 class DrawFillAttr(ParameterSet):
     """
     ### DrawFillAttr
@@ -2718,7 +2856,7 @@ class DrawFillAttr(ParameterSet):
     image_alpha = ParameterSet._int_prop("ImageAlpha", "그림 개체/배경 투명도", 0, 255)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 55
+# %% ../nbs/02_api/02_parameters.ipynb 57
 class DrawImageAttr(ParameterSet):
     """
     ### DrawImageAttr
@@ -2785,7 +2923,7 @@ class DrawImageAttr(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 57
+# %% ../nbs/02_api/02_parameters.ipynb 59
 class DrawImageScissoring(ParameterSet):
     """
     ### DrawImageScissoring
@@ -2805,7 +2943,7 @@ class DrawImageScissoring(ParameterSet):
     handle_index = ParameterSet._int_prop("HandleIndex", "Reserved: 정수 값을 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 59
+# %% ../nbs/02_api/02_parameters.ipynb 61
 class DrawLayout(ParameterSet):
     """
     ### DrawLayout
@@ -2823,7 +2961,7 @@ class DrawLayout(ParameterSet):
     curve_segment_info = ParameterSet._int_list_prop("CurveSegmentInfo", "곡선 세그먼트 정보: 정수 리스트")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 61
+# %% ../nbs/02_api/02_parameters.ipynb 63
 class DrawLineAttr(ParameterSet):
     """
     ### DrawLineAttr
@@ -2859,7 +2997,7 @@ class DrawLineAttr(ParameterSet):
     alpha         = ParameterSet._int_prop("Alpha", "투명도: 정수를 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 63
+# %% ../nbs/02_api/02_parameters.ipynb 65
 class DrawRectType(ParameterSet):
     """
     ### DrawRectType
@@ -2874,7 +3012,7 @@ class DrawRectType(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 65
+# %% ../nbs/02_api/02_parameters.ipynb 67
 class DrawResize(ParameterSet):
     """
     ### DrawResize
@@ -2894,7 +3032,7 @@ class DrawResize(ParameterSet):
     mode = ParameterSet._int_prop("Mode", "Reserved: 정수 값을 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 67
+# %% ../nbs/02_api/02_parameters.ipynb 69
 class DrawRotate(ParameterSet):
     """
     ### DrawRotate
@@ -2920,7 +3058,7 @@ class DrawRotate(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 69
+# %% ../nbs/02_api/02_parameters.ipynb 71
 class DrawScAction(ParameterSet):
     """
     ### DrawScAction
@@ -2945,7 +3083,7 @@ class DrawScAction(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 71
+# %% ../nbs/02_api/02_parameters.ipynb 73
 class DrawShadow(ParameterSet):
     """
     ### DrawShadow
@@ -2968,7 +3106,7 @@ class DrawShadow(ParameterSet):
     shadow_alpha   = ParameterSet._int_prop("ShadowAlpha", "그림자 투명도 (0 ~ 255)", 0, 255)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 73
+# %% ../nbs/02_api/02_parameters.ipynb 75
 class DrawShear(ParameterSet):
     """
     ### DrawShear
@@ -2985,7 +3123,7 @@ class DrawShear(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 75
+# %% ../nbs/02_api/02_parameters.ipynb 77
 class DrawTextart(ParameterSet):
     """
     ### DrawTextart
@@ -3010,7 +3148,7 @@ class DrawTextart(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 77
+# %% ../nbs/02_api/02_parameters.ipynb 79
 class FindReplace(ParameterSet):
     """
     ### FindReplace
@@ -3100,7 +3238,7 @@ class FindReplace(ParameterSet):
         "ReplaceParaShape", "바꿀 문단 모양", lambda: ParaShape
     )
 
-# %% ../nbs/02_api/02_parameters.ipynb 79
+# %% ../nbs/02_api/02_parameters.ipynb 81
 class InsertText(ParameterSet):
     """
 
@@ -3113,7 +3251,7 @@ class InsertText(ParameterSet):
 
     text = StringProperty("Text", "삽입할 텍스트")
 
-# %% ../nbs/02_api/02_parameters.ipynb 81
+# %% ../nbs/02_api/02_parameters.ipynb 83
 class ListProperties(ParameterSet):
     """
     ### ListProperties
@@ -3143,7 +3281,7 @@ class ListProperties(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 83
+# %% ../nbs/02_api/02_parameters.ipynb 85
 class NumberingShape(ParameterSet):
     """
     ### NumberingShape
@@ -3268,7 +3406,7 @@ class NumberingShape(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 85
+# %% ../nbs/02_api/02_parameters.ipynb 87
 class ParaShape(ParameterSet):
     """
     ### ParaShape
@@ -3401,7 +3539,7 @@ class ParaShape(ParameterSet):
         "BorderFill", "테두리/배경", lambda: BorderFill
     )
 
-# %% ../nbs/02_api/02_parameters.ipynb 87
+# %% ../nbs/02_api/02_parameters.ipynb 89
 class ShapeObject(ParameterSet):
     """
     ### ShapeObject
@@ -3501,7 +3639,7 @@ class ShapeObject(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 89
+# %% ../nbs/02_api/02_parameters.ipynb 91
 class TabDef(ParameterSet):
     """
     ### TabDef
@@ -3521,7 +3659,7 @@ class TabDef(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 91
+# %% ../nbs/02_api/02_parameters.ipynb 93
 class Table(ParameterSet):
     """
     ### Table
