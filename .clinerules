@@ -56,9 +56,7 @@ Accessors:
   - TableAccessor          # Table manipulation
   - PageAccessor           # Page operations
 ```
-
-### Action-ParameterSet Pattern
-
+G'N m<>
 Actions represent HWP operations (e.g., `InsertText`, `FindReplace`). ParameterSets configure action parameters.
 
 **Two modes:**

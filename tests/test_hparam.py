@@ -323,14 +323,18 @@ class TestParameterSetUpdateFrom(unittest.TestCase):
     """Test ParameterSet.update_from for attribute-based copying."""
 
     def test_update_from_simple(self):
-        from hwpapi.parametersets import ParameterSet
+        from hwpapi.parametersets import ParameterSet, IntProperty
 
         class SimplePS(ParameterSet):
+            a = IntProperty("a", "Value a")
+            b = IntProperty("b", "Value b")
+
             def __init__(self, a=None, b=None):
                 super().__init__()
-                self.attributes_names = ["a", "b"]
-                self.a = a
-                self.b = b
+                if a is not None:
+                    self.a = a
+                if b is not None:
+                    self.b = b
 
         src = SimplePS(a=1, b=2)
         dst = SimplePS(a=0, b=0)
@@ -338,27 +342,18 @@ class TestParameterSetUpdateFrom(unittest.TestCase):
         self.assertEqual(dst.a, 1)
         self.assertEqual(dst.b, 2)
 
-    def test_update_from_nested(self):
-        from hwpapi.parametersets import ParameterSet
+    def test_attributes_names_auto_generation(self):
+        """Test that attributes_names property works correctly."""
+        from hwpapi.parametersets import CharShape
 
-        class ChildPS(ParameterSet):
-            def __init__(self, x=None):
-                super().__init__()
-                self.attributes_names = ["x"]
-                self.x = x
-
-        class ParentPS(ParameterSet):
-            def __init__(self, child=None, y=None):
-                super().__init__()
-                self.attributes_names = ["child", "y"]
-                self.child = child if child else ChildPS()
-                self.y = y
-
-        src = ParentPS(child=ChildPS(x=42), y=99)
-        dst = ParentPS(child=ChildPS(x=0), y=0)
-        dst.update_from(src)
-        self.assertEqual(dst.y, 99)
-        self.assertEqual(dst.child.x, 42)
+        # Test that attributes_names is auto-generated from property registry
+        ps = CharShape()
+        self.assertIsInstance(ps.attributes_names, list)
+        self.assertEqual(len(ps.attributes_names), 67)  # CharShape has 67 properties
+        # Should contain known CharShape attributes
+        self.assertIn('bold', ps.attributes_names)
+        self.assertIn('italic', ps.attributes_names)
+        self.assertIn('size_hangul', ps.attributes_names)
 
 def run_tests():
     """Run all tests with appropriate skipping."""

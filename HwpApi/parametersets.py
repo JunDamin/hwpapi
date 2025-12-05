@@ -15,8 +15,7 @@ __all__ = ['DIRECTION_MAP', 'CAP_FULL_SIZE_MAP', 'ALIGNMENT_MAP', 'VERT_ALIGN_MA
            'ROTATION_SETTING_MAP', 'PIC_EFFECT_MAP', 'SEARCH_DIRECTION_MAP', 'BORDER_TEXT_MAP', 'UNDERLINE_TYPE_MAP',
            'OUTLINE_TYPE_MAP', 'STRIKEOUT_TYPE_MAP', 'USE_KERNING_MAP', 'DIAC_SYM_MARK_MAP', 'USE_FONT_SPACE_MAP',
            'HEADING_TYPE_MAP', 'NUMBERING_TYPE_MAP', 'NUMBER_FORMAT_MAP', 'PAGE_BREAK_MAP', 'ALL_MAPPINGS',
-           'ParameterBackend', 'ComBackend', 'AttrBackend', 'PsetBackend', 'HParamBackend', 'make_backend',
-           'to_dict_hparam', 'snapshot_hparam', 'apply_dict_hparam', 'temp_edit_hparam', 'resolve_action_args',
+           'ParameterBackend', 'ComBackend', 'AttrBackend', 'PsetBackend', 'make_backend', 'resolve_action_args',
            'apply_staged_to_backend', 'MissingRequiredError', 'PropertyDescriptor', 'IntProperty', 'BoolProperty',
            'StringProperty', 'ColorProperty', 'UnitProperty', 'MappedProperty', 'TypedProperty', 'ListProperty',
            'ParameterSetMeta', 'ParameterSet', 'update_from', 'BorderFill', 'Caption', 'FindReplace', 'DrawFillAttr',
@@ -257,95 +256,6 @@ class PsetBackend:
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 9
-# ===================
-# HParam Utilities (for HParameterSet support)
-# ===================
-# HParam utilities for tree access and VT coercion
-
-def _is_com(obj) -> bool:
-    """Check if object is a COM object."""
-    return hasattr(obj, '_oleobj_') or str(type(obj)).find('com_gen_py') != -1
-
-def _prop_map_get(obj) -> dict:
-    """Get property map for reading COM object properties."""
-    return getattr(obj, '_prop_map_get_', {})
-
-def _prop_map_put(obj) -> dict:
-    """Get property map for writing COM object properties."""
-    return getattr(obj, '_prop_map_put_', {})
-
-def _split_dotted(key: str) -> list[str]:
-    """Split dotted key like 'HFindReplace.FindString' into ['HFindReplace', 'FindString']."""
-    return key.split('.')
-
-def _resolve_parent_and_leaf(root, dotted: str) -> tuple[Any, str]:
-    """
-    Resolve dotted path to (parent_object, leaf_name).
-    E.g., 'HFindReplace.FindString' -> (root.HFindReplace, 'FindString')
-    """
-    parts = _split_dotted(dotted)
-    if len(parts) == 1:
-        return root, parts[0]
-    
-    current = root
-    for part in parts[:-1]:
-        if not hasattr(current, part):
-            raise KeyError(f"Path '{dotted}' not found: missing '{part}' in {type(current)}")
-        current = getattr(current, part)
-    
-    return current, parts[-1]
-
-def _coerce_for_put(parent, prop, value) -> Any:
-    """
-    Coerce value for COM property using VT codes when available.
-    Uses _prop_map_put_ VT codes for type conversion.
-    """
-    prop_map = _prop_map_put(parent)
-    if prop in prop_map:
-        vt_info = prop_map[prop]
-        # VT_I4=3, VT_BOOL=11, VT_BSTR=8, VT_R8=5, etc.
-        if isinstance(vt_info, tuple) and len(vt_info) > 1:
-            vt_code = vt_info[1]  # Usually (flags, vt_code)
-        elif isinstance(vt_info, int):
-            vt_code = vt_info
-        else:
-            return value  # Can't determine VT, pass through
-            
-        # Basic VT coercion
-        if vt_code == 11:  # VT_BOOL
-            return bool(value)
-        elif vt_code in (2, 3, 22):  # VT_I2, VT_I4, VT_UI4
-            return int(value)
-        elif vt_code in (4, 5):  # VT_R4, VT_R8
-            return float(value)
-        elif vt_code == 8:  # VT_BSTR
-            return str(value)
-    
-    return value  # Default: pass through unchanged
-
-
-
-def _looks_like_hparamset(obj: Any) -> bool:
-    """
-    Check if object appears to be an HParameterSet:
-    - Has .HSet attribute, OR
-    - Is a COM object with child nodes that look like HParam nodes
-    """
-    if hasattr(obj, 'HSet'):
-        return True
-    
-    if not _is_com(obj):
-        return False
-    
-    # Check for common HParam child nodes
-    common_hparam_nodes = ['HFindReplace', 'HCharShape', 'HParaShape', 'HTable', 'HBorderFill']
-    for node in common_hparam_nodes:
-        if hasattr(obj, node):
-            return True
-    
-    return False
-
-
 def _looks_like_pset(obj: Any) -> bool:
     """
     Check if object looks like a pset created by action.CreateSet().
@@ -372,66 +282,6 @@ def _looks_like_pset(obj: Any) -> bool:
     return True
 
 
-class HParamBackend:
-    """
-    Backend for HParameterSet (tree-structured, shared state).
-    Supports dotted keys like 'HFindReplace.FindString', 'HCharShape.Bold'.
-    Uses _prop_map_put_ for type-aware coercion when available.
-    """
-    
-    def __init__(self, root: Any):
-        """Initialize with root HParameterSet or any child node."""
-        self._root = root
-
-    def get(self, key: str) -> Any:
-        """Get value using dotted key path."""
-        try:
-            parent, leaf = _resolve_parent_and_leaf(self._root, key)
-            return getattr(parent, leaf)
-        except (AttributeError, KeyError) as e:
-            raise KeyError(f"Cannot get '{key}': {e}") from e
-
-    def set(self, key: str, value: Any) -> None:
-        """Set value using dotted key path with type-aware coercion."""
-        try:
-            parent, leaf = _resolve_parent_and_leaf(self._root, key)
-            coerced_value = _coerce_for_put(parent, leaf, value)
-            setattr(parent, leaf, coerced_value)
-        except (AttributeError, KeyError) as e:
-            raise KeyError(f"Cannot set '{key}': {e}") from e
-        except TypeError as e:
-            # Re-raise with dotted path context
-            raise TypeError(f"Cannot set '{key}': {e}") from e
-
-    def delete(self, key: str) -> bool:
-        """
-        Best-effort neutralization (not true deletion).
-        Sets property to neutral value: 0/False/"" based on current type.
-        
-        Note: This is neutralization, not true deletion, due to HParameterSet's
-        shared/global nature.
-        """
-        try:
-            parent, leaf = _resolve_parent_and_leaf(self._root, key)
-            current = getattr(parent, leaf)
-            
-            # Determine neutral value based on current type
-            if isinstance(current, bool):
-                neutral = False
-            elif isinstance(current, (int, float)):
-                neutral = 0
-            elif isinstance(current, str):
-                neutral = ""
-            else:
-                neutral = None
-            
-            if neutral is not None:
-                setattr(parent, leaf, neutral)
-                return True
-            return False
-        except Exception:
-            return False
-
 
 def make_backend(obj: Any) -> ParameterBackend:
     """
@@ -441,10 +291,6 @@ def make_backend(obj: Any) -> ParameterBackend:
     # Priority 1: pset objects (direct from action.CreateSet())
     if _looks_like_pset(obj):
         return PsetBackend(obj)
-    
-    # Priority 2: HParameterSet objects (legacy HSet-based)
-    if _looks_like_hparamset(obj):
-        return HParamBackend(obj)
 
     # Priority 3: COM objects (fallback to ComBackend)
     if _is_com(obj):
@@ -456,151 +302,6 @@ def make_backend(obj: Any) -> ParameterBackend:
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 10
-# ===================
-# Non-destructive HParam helpers
-# ===================
-
-def to_dict_hparam(root: Any, base: str, depth: int = 4) -> dict:
-    """
-    Convert HParameterSet node to nested dict of primitives.
-    Avoids COM dumps/callables by only including basic types.
-    
-    Args:
-        root: HParameterSet root object
-        base: Base path like "HFindReplace" or "HCharShape"  
-        depth: Maximum recursion depth to prevent infinite loops
-    
-    Returns:
-        Nested dict with primitive values only
-    """
-    if depth <= 0:
-        return {}
-    
-    try:
-        parent, leaf = _resolve_parent_and_leaf(root, base)
-        node = getattr(parent, leaf)
-    except (KeyError, AttributeError):
-        return {}
-    
-    result = {}
-    
-    # Get all attributes that look like properties (not methods/internals)
-    for attr_name in dir(node):
-        if attr_name.startswith('_') or attr_name.startswith('__'):
-            continue
-            
-        try:
-            attr_value = getattr(node, attr_name)
-            
-            # Only include primitive types or recursively handle COM objects
-            if isinstance(attr_value, (int, float, bool, str)):
-                result[attr_name] = attr_value
-            elif _is_com(attr_value) and depth > 1:
-                # Recursively handle nested COM objects
-                nested = to_dict_hparam(root, f"{base}.{attr_name}", depth - 1)
-                if nested:
-                    result[attr_name] = nested
-        except Exception:
-            # Skip properties that can't be read
-            continue
-    
-    return result
-
-
-def snapshot_hparam(root: Any, base: str) -> dict:
-    """
-    Create a snapshot of HParameterSet node as a flat dict with dotted keys.
-    
-    Args:
-        root: HParameterSet root object
-        base: Base path like "HFindReplace"
-        
-    Returns:
-        Flat dict like {"FindString": "text", "IgnoreCase": True}
-    """
-    nested_dict = to_dict_hparam(root, base, depth=2)
-    
-    def flatten_dict(d: dict, prefix: str = "") -> dict:
-        result = {}
-        for key, value in d.items():
-            new_key = f"{prefix}.{key}" if prefix else key
-            if isinstance(value, dict):
-                result.update(flatten_dict(value, new_key))
-            else:
-                result[new_key] = value
-        return result
-    
-    return flatten_dict(nested_dict)
-
-
-def apply_dict_hparam(root: Any, base: str, data: dict, strict: bool = True) -> None:
-    """
-    Apply flat dict with dotted keys to HParameterSet node.
-    
-    Args:
-        root: HParameterSet root object  
-        base: Base path like "HFindReplace"
-        data: Flat dict like {"FindString": "text", "IgnoreCase": True}
-        strict: If True, raise on missing properties; if False, skip silently
-    """
-    backend = HParamBackend(root)
-    
-    for key, value in data.items():
-        full_key = f"{base}.{key}" if not key.startswith(base) else key
-        try:
-            backend.set(full_key, value)
-        except (KeyError, TypeError) as e:
-            if strict:
-                raise
-            # Silently skip if not strict
-
-
-def temp_edit_hparam(root: Any, base: str, changes: dict):
-    """
-    Context manager for non-destructive editing of HParameterSet.
-    Snapshots current state, applies changes, then restores on exit.
-    
-    Args:
-        root: HParameterSet root object
-        base: Base path like "HFindReplace"  
-        changes: Dict of changes to apply
-        
-    Usage:
-        with temp_edit_hparam(app.api.HParameterSet, "HFindReplace", {"FindString": "test"}):
-            # HFindReplace.FindString is temporarily "test"
-            app.HAction.Execute("FindReplace", app.api.HParameterSet.HFindReplace)
-        # HFindReplace.FindString is restored to original value
-    """
-    return _TempEditHParam(root, base, changes)
-
-
-class _TempEditHParam:
-    """Context manager implementation for temp_edit_hparam."""
-    
-    def __init__(self, root: Any, base: str, changes: dict):
-        self.root = root
-        self.base = base
-        self.changes = changes
-        self.snapshot = {}
-        
-    def __enter__(self):
-        # Take snapshot of current values
-        self.snapshot = snapshot_hparam(self.root, self.base)
-        
-        # Apply changes
-        apply_dict_hparam(self.root, self.base, self.changes, strict=False)
-        
-        return self
-        
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        # Restore original values
-        try:
-            apply_dict_hparam(self.root, self.base, self.snapshot, strict=False)
-        except Exception:
-            # Best effort restore - don't mask original exceptions
-            pass
-
-
 def resolve_action_args(app: Any, action_name: str, hnode: Any) -> tuple[str, Any]:
     """
     Resolve action arguments for HAction.GetDefault/Execute calls.
@@ -937,6 +638,13 @@ class TypedProperty(PropertyDescriptor):
         """Initialize TypedProperty with support for positional wrap argument."""
         super().__init__(key, doc, wrap=wrap, **kwargs)
 
+    
+    def __get__(self, instance: Optional["ParameterSet"], owner):
+        pass
+
+    def __set__(self, instance, value):
+        pass
+
 
 # %% ../nbs/02_api/02_parameters.ipynb 18
 class ListProperty(PropertyDescriptor):
@@ -1076,7 +784,6 @@ class ParameterSet(metaclass=ParameterSetMeta):
         self._backend: Optional[ParameterBackend] = None
         self._pset: Any = None
         self._is_pset: bool = False
-        self.attributes_names = []
 
         # A stable snapshot of current remote values (keyed by descriptor.key)
         self._snapshot: Dict[str, Any] = {}
@@ -1377,24 +1084,6 @@ class ParameterSet(metaclass=ParameterSetMeta):
                 f"ParameterSet: Failed to sync with global HParameterSet: {e}"
             )
 
-    def _get_hparam_prefix(self):
-        """
-        Determine the HParam prefix based on the parameter set class name.
-        Returns the appropriate prefix like "HFindReplace", "HCharShape", etc.
-        """
-        class_name = self.__class__.__name__
-
-        # Map parameter set class names to HParam prefixes
-        prefix_map = {
-            "FindReplace": "HFindReplace",
-            "CharShape": "HCharShape",
-            "ParaShape": "HParaShape",
-            "BorderFill": "HBorderFill",
-            "Table": "HTable",
-            # Add more mappings as needed
-        }
-
-        return prefix_map.get(class_name, None)
 
     # ------ descriptor hooks (staged-aware) ------
     def _ps_get(self, desc: PropertyDescriptor):
@@ -1465,6 +1154,8 @@ class ParameterSet(metaclass=ParameterSetMeta):
 
     def _del_value(self, name):
         """Legacy method - use backend instead."""
+        if self._backend is None:
+            return False
         return self._backend.delete(name)
 
     def update(self, data: Dict[str, Any]):
@@ -1524,6 +1215,13 @@ class ParameterSet(metaclass=ParameterSetMeta):
 
     def __repr__(self):
         return f"<{self.__class__.__name__} staged={self.dirty()} deleted={self.deleted()}>"
+
+    @property
+    def attributes_names(self):
+        """Auto-generated list of attribute names from property registry."""
+        return list(self._property_registry.keys())
+
+
 
 # %% ../nbs/02_api/02_parameters.ipynb 22
 # Additional methods for ParameterSet class
@@ -1897,31 +1595,6 @@ class FindReplace(ParameterSet):
 
     def __init__(self, parameterset=None, **kwargs):
         super().__init__(parameterset, **kwargs)
-        self.attributes_names = [
-            "find_string",
-            "replace_string",
-            "find_style",
-            "replace_style",
-            "direction",
-            "match_case",
-            "all_word_forms",
-            "several_words",
-            "use_wildcards",
-            "whole_word_only",
-            "auto_spell",
-            "replace_mode",
-            "ignore_find_string",
-            "ignore_replace_string",
-            "ignore_message",
-            "hanja_from_hangul",
-            "find_jaso",
-            "find_regexp",
-            "find_type",
-            "find_charshape",
-            "find_parashape",
-            "replace_charshape",
-            "replace_parashape",
-        ]
 
     # String properties
     find_string = StringProperty("FindString", "찾을 문자열")
@@ -2131,35 +1804,6 @@ class BorderFill(ParameterSet):
 
     def __init__(self, parameterset=None, **kwargs):
         super().__init__(parameterset, **kwargs)
-        self.attributes_names = [
-            "border_type_left",
-            "border_type_right",
-            "border_type_top",
-            "border_type_bottom",
-            "border_width_left",
-            "border_width_right",
-            "border_width_top",
-            "border_width_bottom",
-            "border_color_left",
-            "border_color_right",
-            "border_color_top",
-            "border_color_bottom",
-            "diagonal_color",
-            "slash_flag",
-            "backslash_flag",
-            "diagonal_type",
-            "diagonal_width",
-            "crooked_slash_flag",
-            "border_fill_3d",
-            "shadow",
-            "break_cell_separate_line",
-            "counter_slash_flag",
-            "counter_back_slash_flag",
-            "center_line_flag",
-            "crooked_slash_flag1",
-            "crooked_slash_flag2",
-            "fill_attr",
-        ]
 
     # Integer properties
     border_type_left = ParameterSet._int_prop(
@@ -2271,12 +1915,6 @@ class Caption(ParameterSet):
 
     def __init__(self, parameterset=None, **kwargs):
         super().__init__(parameterset, **kwargs)
-        self.attributes_names = [
-            "side",
-            "width",
-            "gap",
-            "cap_full_size",
-        ]
 
     # 'side' must be one of the allowed values
     side = ParameterSet._mapped_prop(
@@ -2317,19 +1955,6 @@ class BulletShape(ParameterSet):
 
     def __init__(self, parameterset=None, **kwargs):
         super().__init__(parameterset, **kwargs)
-        self.attributes_names = [
-            "has_char_shape",
-            "char_shape",
-            "width_adjust",
-            "text_offset",
-            "alignment",
-            "use_inst_width",
-            "auto_indent",
-            "text_offset_type",
-            "bullet_char",
-            "has_image",
-            "bullet_image",
-        ]
 
     has_char_shape = ParameterSet._bool_prop(
         "HasCharShape", "글자 모양 사용 여부: 0 = 기본, 1 = 사용자 정의"
@@ -2380,16 +2005,6 @@ class Cell(ParameterSet):
 
     def __init__(self, parameterset=None, **kwargs):
         super().__init__(parameterset, **kwargs)
-        self.attributes_names = [
-            "has_margin",
-            "protected",
-            "header",
-            "width",
-            "height",
-            "editable",
-            "dirty",
-            "cell_ctrl_data",
-        ]
 
     has_margin = ParameterSet._bool_prop(
         "HasMargin", "셀 여백 여부 (on / off): 0 또는 1."
@@ -2410,7 +2025,6 @@ class CharShape(ParameterSet):
         ### CharShape
 
         13) CharShape : 글자 모양
-
 
     | Item ID | Type | SubType | Description |
     | --- | --- | --- | --- |
@@ -2483,75 +2097,6 @@ class CharShape(ParameterSet):
 
     def __init__(self, parameterset=None, **kwargs):
         super().__init__(parameterset, **kwargs)
-        self.attributes_names = [
-            "facename_hangul",
-            "facename_latin",
-            "facename_hanja",
-            "facename_japanese",
-            "facename_other",
-            "facename_symbol",
-            "facename_user",
-            "fonttype_hangul",
-            "fonttype_latin",
-            "fonttype_hanja",
-            "fonttype_japanese",
-            "fonttype_other",
-            "fonttype_symbol",
-            "fonttype_user",
-            "size_hangul",
-            "size_latin",
-            "size_hanja",
-            "size_japanese",
-            "size_other",
-            "size_symbol",
-            "size_user",
-            "ratio_hangul",
-            "ratio_latin",
-            "ratio_hanja",
-            "ratio_japanese",
-            "ratio_other",
-            "ratio_symbol",
-            "ratio_user",
-            "spacing_hangul",
-            "spacing_latin",
-            "spacing_hanja",
-            "spacing_japanese",
-            "spacing_other",
-            "spacing_symbol",
-            "spacing_user",
-            "offset_hangul",
-            "offset_latin",
-            "offset_hanja",
-            "offset_japanese",
-            "offset_other",
-            "offset_symbol",
-            "offset_user",
-            "bold",
-            "italic",
-            "small_caps",
-            "emboss",
-            "engrave",
-            "superscript",
-            "subscript",
-            "underline_type",
-            "underline_shape",
-            "outline_type",
-            "shadow_type",
-            "text_color",
-            "shade_color",
-            "underline_color",
-            "shadow_color",
-            "shadow_offset_x",
-            "shadow_offset_y",
-            "strikeout_color",
-            "strikeout_type",
-            "strikeout_shape",
-            "diac_sym_mark",
-            "use_font_space",
-            "use_kerning",
-            "height",
-            "border_fill",
-        ]
 
     # Facename properties (strings)
     facename_hangul = ParameterSet._str_prop("FaceNameHangul", "글꼴 이름 (한글)")
@@ -3501,31 +3046,6 @@ class FindReplace(ParameterSet):
 
     def __init__(self, parameterset=None, **kwargs):
         super().__init__(parameterset, **kwargs)
-        self.attributes_names = [
-            "find_string",
-            "replace_string",
-            "find_style",
-            "replace_style",
-            "direction",
-            "match_case",
-            "all_word_forms",
-            "several_words",
-            "use_wildcards",
-            "whole_word_only",
-            "auto_spell",
-            "replace_mode",
-            "ignore_find_string",
-            "ignore_replace_string",
-            "ignore_message",
-            "hanja_from_hangul",
-            "find_jaso",
-            "find_regexp",
-            "find_type",
-            "find_charshape",
-            "find_parashape",
-            "replace_charshape",
-            "replace_parashape",
-        ]
 
     # String properties
     find_string = ParameterSet._str_prop("FindString", "찾을 문자열")
@@ -3793,40 +3313,6 @@ class ParaShape(ParameterSet):
 
     def __init__(self, parameterset=None, **kwargs):
         super().__init__(parameterset, **kwargs)
-        self.attributes_names = [
-            "left_margin",
-            "right_margin",
-            "indentation",
-            "prev_spacing",
-            "next_spacing",
-            "line_spacing_type",
-            "line_spacing",
-            "align_type",
-            "break_latin_word",
-            "break_non_latin_word",
-            "snap_to_grid",
-            "condense",
-            "widow_orphan",
-            "keep_with_next",
-            "keep_lines_together",
-            "pagebreak_before",
-            "text_alignment",
-            "font_line_height",
-            "heading_type",
-            "level",
-            "border_connect",
-            "border_text",
-            "border_offset_left",
-            "border_offset_right",
-            "border_offset_top",
-            "border_offset_bottom",
-            "tail_type",
-            "line_wrap",
-            "tab_def",
-            "numbering",
-            "bullet",
-            "border_fill",
-        ]
 
     left_margin = ParameterSet._int_prop("LeftMargin", "왼쪽 여백 (URC)")
     right_margin = ParameterSet._int_prop("RightMargin", "오른쪽 여백 (URC)")
@@ -3959,56 +3445,7 @@ class ShapeObject(ParameterSet):
     """
     def __init__(self, parameterset=None, **kwargs):
         super().__init__(parameterset, **kwargs)
-        self.attributes_names = [
-"treat_as_char", 
-"affects_line", 
-"vert_rel_to", 
-"vert_align", 
-"vert_offset", 
-"horz_rel_to", 
-"horz_align", 
-"horz_offset", 
-"flow_with_text", 
-"allow_overlap", 
-"width_rel_to", 
-"width", 
-"height_rel_to", 
-"height", 
-"protect_size", 
-"text_wrap", 
-"text_flow", 
-"outside_margin_left", 
-"outside_margin_right", 
-"outside_margin_top", 
-"outside_margin_bottom", 
-"numbering_type", 
-"layout_width", 
-"layout_height", 
-"lock", 
-"hold_anchor_obj", 
-"page_number", 
-"adjust_selection", 
-"adjust_text_box", 
-"adjust_prev_obj_attr", 
-"shape_draw_layout", 
-"shape_draw_line_attr", 
-"shape_draw_fill_attr", 
-"shape_draw_image_attr", 
-"shape_draw_rect_type", 
-"shape_draw_arc_type", 
-"shape_draw_resize", 
-"shape_draw_rotate", 
-"shape_draw_edit_detail", 
-"shape_draw_image_scissoring", 
-"shape_draw_sc_action", 
-"shape_draw_ctrl_hyperlink", 
-"shape_draw_coord_info", 
-"shape_draw_shear", 
-"shape_draw_textart", 
-"shape_table_cell", 
-"shape_list_properties", 
-"shape_caption", 
-        ]
+
             
     treat_as_char    = ParameterSet._bool_prop("TreatAsChar", "글자처럼 처리 여부 (on/off)")
     affects_line     = ParameterSet._bool_prop("AffectsLine", "줄에 영향을 미치는지 여부 (on/off)")
@@ -4061,8 +3498,6 @@ class ShapeObject(ParameterSet):
     shape_table_cell       = ParameterSet._typed_prop("ShapeTableCell", "셀 정보", lambda: Cell)
     shape_list_properties  = ParameterSet._typed_prop("ShapeListProperties", "서브 list 속성", lambda: ListProperties)
     shape_caption          = ParameterSet._typed_prop("ShapeCaption", "캡션", lambda: Caption)
-
-
 
 
 
