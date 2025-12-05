@@ -4,7 +4,9 @@
       "Bash(cat:*)",
       "Bash(wc:*)",
       "Bash(python:*)",
-      "Bash(nbdev_export)"
+      "Bash(nbdev_export)",
+      "Bash(jupyter nbconvert:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
