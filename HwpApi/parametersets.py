@@ -1603,204 +1603,69 @@ ParameterSet._gradation_color_prop = _gradation_color_prop
 
 # %% ../nbs/02_api/02_parameters.ipynb 27
 class BorderFill(ParameterSet):
-    """
-    ### BorderFill
-
-    5) BorderFill : 테두리/배경의 일반 속성
-
-    | Item ID | Type | SubType | Description |
-    | --- | --- | --- | --- |
-    | BorderTypeLeft | PIT_UI2 |  | 4방향 테두리 종류 : 왼쪽 [선 종류] |
-    | BorderTypeRight | PIT_UI2 |  | 4방향 테두리 종류 : 오른쪽 |
-    | BorderTypeTop | PIT_UI2 |  | 4방향 테두리 종류 : 위 |
-    | BorderTypeBottom | PIT_UI2 |  | 4방향 테두리 종류 : 아래 |
-    | BorderWidthLeft | PIT_UI1 |  | 4방향 테두리 두께 : 왼쪽 [선 굵기] |
-    | BorderWidthRight | PIT_UI1 |  | 4방향 테두리 두께 : 오른쪽 |
-    | BorderWidthTop | PIT_UI1 |  | 4방향 테두리 두께 : 위 |
-    | BorderWidthBottom | PIT_UI1 |  | 4방향 테두리 두께 : 아래 |
-    | BorderColorLeft | PIT_UI4 |  | 4방향 테두리 색깔 : 왼쪽 (RGB color: 0x00BBGGRR) |
-    | BorderColorRight | PIT_UI4 |  | 4방향 테두리 색깔 : 오른쪽 (RGB color: 0x00BBGGRR) |
-    | BorderColorTop | PIT_UI4 |  | 4방향 테두리 색깔 : 위 (RGB color: 0x00BBGGRR) |
-    | BorderColorBottom | PIT_UI4 |  | 4방향 테두리 색깔 : 아래 (정수값 그대로 사용) |
-    | SlashFlag | PIT_UI2 |  | 대각선 플래그 (비트 플래그 조합) |
-    | BackSlashFlag | PIT_UI2 |  | 역대각선 플래그 (비트 플래그 조합) |
-    | DiagonalType | PIT_UI2 |  | 대각선 유형 (셀 또는 자동 분할 경계선에 사용) |
-    | DiagonalWidth | PIT_UI1 |  | 대각선 두께 (셀 또는 자동 분할 경계선에 사용) |
-    | DiagonalColor | PIT_UI4 |  | 대각선 색상 (RGB color: 0x00BBGGRR) |
-    | BorderFill3D | PIT_UI1 |  | 3차원 효과: 0 = off, 1 = on |
-    | Shadow | PIT_UI1 |  | 그림자 효과: 0 = off, 1 = on |
-    | FillAttr | PIT_SET | DrawFillAttr | 배경 채우기 속성 |
-    | CrookedSlashFlag | PIT_UI2 |  | 꺾인 대각선 플래그 (bit 0, 1) |
-    | BreakCellSeparateLine | PIT_UI1 |  | 자동으로 나뉜 표의 경계선 설정: 0 = 기본, 1 = 사용자 설정 |
-    | CounterSlashFlag | PIT_UI1 |  | 슬래쉬 대각선 역방향 플래그: 0 = 순방향, 1 = 역방향 |
-    | CounterBackSlashFlag | PIT_UI1 |  | 역슬래쉬 대각선 역방향 플래그: 0 = 순방향, 1 = 역방향 |
-    | CenterLineFlag | PIT_UI1 |  | 중심선 플래그: 0 = 없음, 1 = 있음 |
-    | CrookedSlashFlag1 | PIT_UI1 |  | 슬래쉬 대각선 꺾임 여부 (저바이트) |
-    | CrookedSlashFlag2 | PIT_UI1 |  | 역슬래쉬 대각선 꺾임 여부 (고바이트) |
-
-    ※ 대각선의 형태는 다음의 3가지 아이템으로 결정됩니다:
-      - SlashFlag (또는 BackSlashFlag)
-      - CrookedSlashFlag1 (또는 CrookedSlashFlag2)
-      - CounterSlashFlag (또는 CounterBackSlashFlag)
-    """
-
-    # Integer properties
-    border_type_left = IntProperty("BorderTypeLeft", "테두리 유형 (왼쪽): 정수 값을 입력하세요.")
-    border_type_right = IntProperty("BorderTypeRight", "테두리 유형 (오른쪽): 정수 값을 입력하세요.")
-    border_type_top = IntProperty("BorderTypeTop", "테두리 유형 (위): 정수 값을 입력하세요.")
-    border_type_bottom = IntProperty("BorderTypeBottom", "테두리 유형 (아래): 정수 값을 입력하세요.")
-
-    border_width_left = IntProperty("BorderWidthLeft", "테두리 두께 (왼쪽): 정수 값을 입력하세요.")
-    border_width_right = IntProperty("BorderWidthRight", "테두리 두께 (오른쪽): 정수 값을 입력하세요.")
-    border_width_top = IntProperty("BorderWidthTop", "테두리 두께 (위): 정수 값을 입력하세요.")
-    border_width_bottom = IntProperty("BorderWidthBottom", "테두리 두께 (아래): 정수 값을 입력하세요.")
-
-    # Color properties (with conversion)
-    border_color_left = ColorProperty("BorderColorLeft", "테두리 색상 (왼쪽): 정수 값을 입력하세요.")
-    border_color_right = ColorProperty("BorderColorRight", "테두리 색상 (오른쪽): 정수 값을 입력하세요.")
-    border_color_top = ColorProperty("BorderColorTop", "테두리 색상 (위): 정수 값을 입력하세요.")
-    border_color_bottom = IntProperty("BorderColorBottom", "테두리 색상 (아래): 정수 값을 입력하세요.")
-
-    # 대각선 색상 (setter now completes properly)
-    diagonal_color = IntProperty("DiagonalColor", "대각선 색상: 정수 값을 입력하세요.")
-
-    # Other integer properties
-    slash_flag = IntProperty("SlashFlag", "대각선 플래그: 정수 값을 입력하세요.")
-    backslash_flag = IntProperty("BackSlashFlag", "역대각선 플래그: 정수 값을 입력하세요.")
-    diagonal_type = IntProperty("DiagonalType", "대각선 유형: 정수 값을 입력하세요.")
-    diagonal_width = IntProperty("DiagonalWidth", "대각선 두께: 정수 값을 입력하세요.")
-    crooked_slash_flag = IntProperty("CrookedSlashFlag", "꺾인 대각선 플래그 (bit 0, 1): 정수 값을 입력하세요.")
-
-    # Boolean properties
-    border_fill_3d = BoolProperty("BorderFill3D", "3차원 효과: 0 = off, 1 = on")
-    shadow = BoolProperty("Shadow", "그림자 효과: 0 = off, 1 = on")
-    break_cell_separate_line = BoolProperty("BreakCellSeparateLine", "자동으로 나뉜 표의 경계선 설정: 0 = 기본, 1 = 사용자 설정")
-    counter_slash_flag = BoolProperty("CounterSlashFlag", "슬래쉬 대각선의 역방향 플래그: 0 = 순방향, 1 = 역방향")
-    counter_back_slash_flag = BoolProperty("CounterBackSlashFlag", "역슬래쉬 대각선의 역방향 플래그: 0 = 순방향, 1 = 역방향")
-    center_line_flag = BoolProperty("CenterLineFlag", "중심선 플래그: 0 = 없음, 1 = 있음")
-    crooked_slash_flag1 = BoolProperty("CrookedSlashFlag1", "슬래쉬 대각선의 꺾임 여부 (저바이트): 0 = 아니오, 1 = 예")
-    crooked_slash_flag2 = BoolProperty("CrookedSlashFlag2", "역슬래쉬 대각선의 꺾임 여부 (고바이트): 0 = 아니오, 1 = 예")
-
-    # Typed property for fill attribute
-    fill_attr = TypedProperty("FillAttr", "배경 채우기 속성", lambda: DrawFillAttr)
-
+    """BorderFill ParameterSet."""
+    BorderTypeLeft = PropertyDescriptor("BorderTypeLeft", r"""4방향 테두리 종류 : 왼쪽 \[선 종류]""")
+    BorderTypeRight = PropertyDescriptor("BorderTypeRight", r"""4방향 테두리 종류 : 오른쪽""")
+    BorderTypeTop = PropertyDescriptor("BorderTypeTop", r"""4방향 테두리 종류 : 위""")
+    BorderTypeBottom = PropertyDescriptor("BorderTypeBottom", r"""4방향 테두리 종류 : 아래""")
+    BorderWidthLeft = PropertyDescriptor("BorderWidthLeft", r"""4방향 테두리 두께 : 왼쪽 \[선 굵기]""")
+    BorderWidthRight = PropertyDescriptor("BorderWidthRight", r"""4방향 테두리 두께 : 오른쪽""")
+    BorderWidthTop = PropertyDescriptor("BorderWidthTop", r"""4방향 테두리 두께 : 위""")
+    BorderWidthBottom = PropertyDescriptor("BorderWidthBottom", r"""4방향 테두리 두께 : 아래""")
+    BorderCorlorLeft = PropertyDescriptor("BorderCorlorLeft", r"""4방향 테두리 색깔 : 왼쪽RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
+    BorderColorRight = PropertyDescriptor("BorderColorRight", r"""4방향 테두리 색깔 : 오른쪽RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
+    BorderColorTop = PropertyDescriptor("BorderColorTop", r"""4방향 테두리 색깔 : 위RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
+    BorderColorBottom = PropertyDescriptor("BorderColorBottom", r"""4방향 테두리 색깔 :아래RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
+    SlashFlag = PropertyDescriptor("SlashFlag", r"""슬래쉬 대각선 플래그 : 비트 플래그의 조합으로 표현되며 각 위치의 비트는 다음을 나타낸다.bit 0 \= 하단 대각선bit 1 \= 중앙 대각선bit 2 \= 상단 대각선더 자세한 내용은 하단의 ※ 대각선의 형태를 참고한다.""")
+    BackSlashFlag = PropertyDescriptor("BackSlashFlag", r"""백슬래쉬 대각선 플래그 : 비트 플래그의 조합으로 표현되며 각 위치의 비트는 다음을 나타낸다.bit 0 \= 하단 대각선bit 1 \= 중앙 대각선bit 2 \= 상단 대각선더 자세한 내용은 하단의 ※ 대각선의 형태를 참고한다.""")
+    DiagonalType = PropertyDescriptor("DiagonalType", r"""선 종류 셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용""")
+    DiagonalWidth = PropertyDescriptor("DiagonalWidth", r"""선 굵기 셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용""")
+    DiagonalColor = PropertyDescriptor("DiagonalColor", r"""선 색상RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용""")
+    BorderFill3D = PropertyDescriptor("BorderFill3D", r"""3차원 효과 : 0 \= off, 1 \= on""")
+    Shadow = PropertyDescriptor("Shadow", r"""그림자 효과 : 0 \= off, 1 \= on""")
+    FillAttr = PropertyDescriptor("FillAttr", r"""배경 채우기 속성""")
+    CrookedSlashFlag = PropertyDescriptor("CrookedSlashFlag", r"""꺾인 대각선 플래그 (bit 0, 1이 각각 slash, back slash의 가운데 대각선이 꺾인 대각선임을 나타낸다.)""")
+    BreakCellSeparateLine = PropertyDescriptor("BreakCellSeparateLine", r"""자동으로 나뉜 표의 경계선 설정 :0 \= 경계선 설정을 기본 값에 따름, 1 \= 사용자가 경계선 설정""")
+    CounterSlashFlag = PropertyDescriptor("CounterSlashFlag", r"""슬래쉬 대각선의 역방향 플래그(우상향 대각선) :0 \= 순방향, 1 \= 역방향""")
+    CounterBackSlashFlag = PropertyDescriptor("CounterBackSlashFlag", r"""역슬래쉬 대각선의 역방향 플래그(좌상향 대각선) :0 \= 순방향, 1 \= 역방향""")
+    CenterLineFlag = PropertyDescriptor("CenterLineFlag", r"""중심선 : ( 0 \= 중심선 없음, 1 \= 중심선 있음)더 자세한 내용은 하단의 ※ 중심선의 형태를 참고한다.""")
+    CrookedSlashFlag1 = PropertyDescriptor("CrookedSlashFlag1", r"""Low Byte CrookedSlashFlag (슬래쉬 대각선의 꺾임 여부)(CrookedSlashFlag를 쓰기 편하도록 CrookedSlashFlag1,2로 나눔)""")
+    CrookedSlashFlag2 = PropertyDescriptor("CrookedSlashFlag2", r"""High Byte CrookedSlashFlag (역슬래쉬 대각선의 꺾임 여부)(CrookedSlashFlag를 쓰기 편하도록 CrookedSlashFlag1,2로 나눔)""")
 
 # %% ../nbs/02_api/02_parameters.ipynb 28
 class Caption(ParameterSet):
-    """
-    ### Caption
-
-    8) Caption : 캡션 속성
-
-    | Item ID       | Type    | SubType | Description                                                                 |
-    | ------------- | ------- | ------- | --------------------------------------------------------------------------- |
-    | Side          | PIT_UI1 |         | 방향. 0 = 왼쪽, 1 = 오른쪽, 2 = 위, 3 = 아래                               |
-    | Width         | PIT_I   |         | 캡션 폭 (가로 방향이면 높이를 사용함. 단위: HWPUNIT)                      |
-    | Gap           | PIT_I   |         | 캡션과의 사이 간격 (단위: HWPUNIT)                                        |
-    | CapFullSize   | PIT_UI1 |         | 캡션 폭에 여백을 포함할지 여부 (0 = 포함 안 함, 1 = 포함함)              |
-    """
-
-    # 'side' must be one of the allowed values
-    side = MappedProperty("Side", DIRECTION_MAP, "방향: 0 = 왼쪽, 1 = 오른쪽, 2 = 위, 3 = 아래")
-
-    # 'width' and 'gap' are stored in HWPUNIT; convert to/from mili
-    width = UnitProperty("Width", "mili", "캡션 폭 (단위: HWPUNIT)")
-    gap = UnitProperty("Gap", "mili", "캡션과의 간격 (단위: HWPUNIT)")
-
-    # Mapping for 'cap_full_size': 0 means 'exclude', 1 means 'include'
-    cap_full_size = MappedProperty("CapFullSize", CAP_FULL_SIZE_MAP, "캡션 폭에 여백 포함 여부 (CapFullSize): 0 = exclude, 1 = include")
-
+    """Caption ParameterSet."""
+    Side = PropertyDescriptor("Side", r"""방향. 0 \= 왼쪽, 1 \= 오른쪽, 2 \= 위, 3 \= 아래""")
+    Width = PropertyDescriptor("Width", r"""캡션 폭 (가로 방향일 때만 사용됨. 단위 HWPUNIT)""")
+    Gap = PropertyDescriptor("Gap", r"""캡션과 틀 사이 간격(HWPUNIT)""")
+    CapFullSize = PropertyDescriptor("CapFullSize", r"""캡션 폭에 여백을 포함할지 여부 (세로 방향일 때만 사용됨)""")
 
 # %% ../nbs/02_api/02_parameters.ipynb 29
 class FindReplace(ParameterSet):
-    """
-    ### FindReplace
-
-    56) FindReplace : 찾기/찾아 바꾸기
-
-    | Item ID           | Type      | SubType | Description                                                               |
-    |-------------------|-----------|---------|---------------------------------------------------------------------------|
-    | FindString        | PIT_BSTR  |         | 찾을 문자열                                                              |
-    | ReplaceString     | PIT_BSTR  |         | 바꿀 문자열                                                              |
-    | Direction         | PIT_UI1   |         | 찾을 방향 : 0 = 아래쪽, 1 = 위쪽, 2 = 문서 전체                           |
-    | MatchCase         | PIT_UI1   |         | 대소문자 구별 (on/off)                                                     |
-    | AllWordForms      | PIT_UI1   |         | 모든 단어 형태 (on/off)                                                   |
-    | SeveralWords      | PIT_UI1   |         | 여러 단어 찾기 (on/off)                                                    |
-    | UseWildCards      | PIT_UI1   |         | 와일드카드 사용 (on/off)                                                   |
-    | WholeWordOnly     | PIT_UI1   |         | 전체 단어만 찾기 (on/off)                                                   |
-    | AutoSpell         | PIT_UI1   |         | 자동 맞춤법 사용 (on/off)                                                  |
-    | ReplaceMode       | PIT_UI1   |         | 찾아 바꾸기 모드 (on/off)                                                  |
-    | IgnoreFindString  | PIT_UI1   |         | 찾을 문자열 무시 (on/off)                                                  |
-    | IgnoreReplaceString| PIT_UI1  |         | 바꿀 문자열 무시 (on/off)                                                   |
-    | FindCharShape     | PIT_SET   | CharShape | 찾을 글자 모양                                                          |
-    | FindParaShape     | PIT_SET   | ParaShape | 찾을 문단 모양                                                          |
-    | ReplaceCharShape  | PIT_SET   | CharShape | 바꿀 글자 모양                                                          |
-    | ReplaceParaShape  | PIT_SET   | ParaShape | 바꿀 문단 모양                                                          |
-    | FindStyle         | PIT_BSTR  |         | 찾을 스타일                                                              |
-    | ReplaceStyle      | PIT_BSTR  |         | 바꿀 스타일                                                              |
-    | IgnoreMessage     | PIT_UI1   |         | 메시지박스 표시 안함 (on/off)                                              |
-    | HanjaFromHangul   | PIT_UI1   |         | 한글임으로 한자 차기                                                      |
-    | FindJaso          | PIT_UI1   |         | 자소로 찾기 (on/off)                                                      |
-    | FindRegExp        | PIT_UI1   |         | 정규식(조건식)으로 찾기 (on/off)                                           |
-    | FindType          | PIT_UI1   |         | 찾기 유형 (on/off)                                                       |
-    """
-
-    def __init__(self, parameterset=None, **kwargs):
-        super().__init__(parameterset, **kwargs)
-
-    # String properties
-    find_string = StringProperty("FindString", "찾을 문자열")
-    replace_string = StringProperty("ReplaceString", "바꿀 문자열")
-    find_style = StringProperty("FindStyle", "찾을 스타일")
-    replace_style = StringProperty("ReplaceStyle", "바꿀 스타일")
-
-    # Enum property for direction
-    direction = MappedProperty(
-        "Direction",
-        SEARCH_DIRECTION_MAP,
-        "찾을 방향: 0 = 아래쪽, 1 = 위쪽, 2 = 문서 전체",
-    )
-
-    # Boolean properties (on/off flags)
-    match_case = BoolProperty("MatchCase", "대소문자 구별 (on/off)")
-    all_word_forms = BoolProperty("AllWordForms", "모든 단어 형태 (on/off)")
-    several_words = BoolProperty("SeveralWords", "여러 단어 찾기 (on/off)")
-    use_wildcards = BoolProperty("UseWildCards", "와일드카드 사용 (on/off)")
-    whole_word_only = BoolProperty(
-        "WholeWordOnly", "전체 단어만 찾기 (on/off)"
-    )
-    auto_spell = BoolProperty("AutoSpell", "자동 맞춤법 사용 (on/off)")
-    find_jaso = BoolProperty("FindJaso", "자소로 찾기 (on/off)")
-    find_regexp = BoolProperty("FindRegExp", "정규식 찾기 (on/off)")
-    find_type = BoolProperty("FindType", "찾기 유형 (on/off)")
-
-    ignore_replace_string = BoolProperty(
-        "IgnoreReplaceString", "바꿀 문자열 무시 (on/off)"
-    )
-    ignore_message = BoolProperty(
-        "IgnoreMessage", "메시지박스 표시 안함 (on/off)"
-    )
-    hanja_from_hangul = BoolProperty(
-        "HanjaFromHangul", "한글임으로 한자 차기"
-    )
-    find_jaso = BoolProperty("FindJaso", "자소로 찾기 (on/off)")
-    find_regexp = BoolProperty("FindRegExp", "정규식 찾기 (on/off)")
-    find_type = BoolProperty("FindType", "찾기 유형 (on/off)")
-
-    # Composite properties using _typed_prop
-    find_charshape = TypedProperty(
-        "FindCharShape", "찾을 글자 모양", lambda: CharShape
-    )
-    find_parashape = TypedProperty(
-        "FindParaShape", "찾을 문단 모양", lambda: ParaShape
-    )
-    replace_charshape = TypedProperty(
-        "ReplaceCharShape", "바꿀 글자 모양", lambda: CharShape
-    )
-    replace_parashape = TypedProperty(
-        "ReplaceParaShape", "바꿀 문단 모양", lambda: ParaShape
-    )
-
+    """FindReplace ParameterSet."""
+    FindString = PropertyDescriptor("FindString", r"""찾을 문자열""")
+    ReplaceString = PropertyDescriptor("ReplaceString", r"""바꿀 문자열""")
+    Direction = PropertyDescriptor("Direction", r"""찾을 방향 :0 \= 아래쪽, 1 \= 위쪽, 2 \= 문서 전체""")
+    MatchCase = PropertyDescriptor("MatchCase", r"""대소문자 구별 (on / off)""")
+    AllWordForms = PropertyDescriptor("AllWordForms", r"""문자열 결합 (on / off)""")
+    SeveralWords = PropertyDescriptor("SeveralWords", r"""여러 단어 찾기 (on / off)""")
+    UseWildCards = PropertyDescriptor("UseWildCards", r"""아무개 문자 (on / off)""")
+    WholeWordOnly = PropertyDescriptor("WholeWordOnly", r"""온전한 낱말 (on / off)""")
+    AutoSpell = PropertyDescriptor("AutoSpell", r"""토씨 자동 교정 (on / off)""")
+    ReplaceMode = PropertyDescriptor("ReplaceMode", r"""찾아 바꾸기 모드 (on / off)""")
+    IgnoreFindString = PropertyDescriptor("IgnoreFindString", r"""찾을 문자열 무시 (on / off)""")
+    IgnoreReplaceString = PropertyDescriptor("IgnoreReplaceString", r"""바꿀 문자열 무시 (on / off)""")
+    FindCharShape = PropertyDescriptor("FindCharShape", r"""찾을 글자 모양""")
+    FindParaShape = PropertyDescriptor("FindParaShape", r"""찾을 문단 모양""")
+    ReplaceCharShape = PropertyDescriptor("ReplaceCharShape", r"""바꿀 글자 모양""")
+    ReplaceParaShape = PropertyDescriptor("ReplaceParaShape", r"""바꿀 문단 모양""")
+    FindStyle = PropertyDescriptor("FindStyle", r"""찾을 스타일""")
+    ReplaceStyle = PropertyDescriptor("ReplaceStyle", r"""바꿀 스타일""")
+    IgnoreMessage = PropertyDescriptor("IgnoreMessage", r"""메시지박스 표시 안함. (on / off)""")
+    HanjaFromHangul = PropertyDescriptor("HanjaFromHangul", r"""한글임으로 한자 차기""")
+    FindJaso = PropertyDescriptor("FindJaso", r"""자소로 찾기 (on / off)""")
+    FindRegExp = PropertyDescriptor("FindRegExp", r"""정규식(조건식)으로 찾기 (on / off) (ver:0x06050107\)""")
+    FindType = PropertyDescriptor("FindType", r"""다시 찾기를 할 때 마지막으로 실행한 \[찾기 TRUE]를 할 것인가 \[찾아가기 FALSE]할 것인가의 여부 (ver:0x06050110\)""")
 
 # %% ../nbs/02_api/02_parameters.ipynb 30
 # Forward declarations for commonly referenced parameter sets
@@ -1811,21 +1676,154 @@ class DrawFillAttr(ParameterSet):
     pass
 
 class CharShape(ParameterSet):
-    """CharShape parameter set - placeholder implementation"""
-    pass
+    """CharShape ParameterSet."""
+    FaceNameHangul = PropertyDescriptor("FaceNameHangul", r"""글꼴 이름 (한글)""")
+    FaceNameLatin = PropertyDescriptor("FaceNameLatin", r"""글꼴 이름 (영문)""")
+    FaceNameHanja = PropertyDescriptor("FaceNameHanja", r"""글꼴 이름 (한자)""")
+    FaceNameJapanese = PropertyDescriptor("FaceNameJapanese", r"""글꼴 이름 (일본어)""")
+    FaceNameOther = PropertyDescriptor("FaceNameOther", r"""글꼴 이름 (기타)""")
+    FaceNameSymbol = PropertyDescriptor("FaceNameSymbol", r"""글꼴 이름 (심벌)""")
+    FaceNameUser = PropertyDescriptor("FaceNameUser", r"""글꼴 이름 (사용자)""")
+    FontTypeHangul = PropertyDescriptor("FontTypeHangul", r"""폰트 종류 (한글) : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
+    FontTypeLatin = PropertyDescriptor("FontTypeLatin", r"""폰트 종류 (영문) : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
+    FontTypeHanja = PropertyDescriptor("FontTypeHanja", r"""폰트 종류 (한자) : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
+    FontTypeJapanese = PropertyDescriptor("FontTypeJapanese", r"""폰트 종류 (일본어) : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
+    FontTypeOther = PropertyDescriptor("FontTypeOther", r"""폰트 종류 (기타) : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
+    FontTypeSymbol = PropertyDescriptor("FontTypeSymbol", r"""폰트 종류 (심벌) : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
+    FontTypeUser = PropertyDescriptor("FontTypeUser", r"""폰트 종류 (사용자) : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
+    SizeHangul = PropertyDescriptor("SizeHangul", r"""각 언어별 크기 비율. (한글) 10% \- 250%""")
+    SizeLatin = PropertyDescriptor("SizeLatin", r"""각 언어별 크기 비율. (영문) 10% \- 250%""")
+    SizeHanja = PropertyDescriptor("SizeHanja", r"""각 언어별 크기 비율. (한자) 10% \- 250%""")
+    SizeJapanese = PropertyDescriptor("SizeJapanese", r"""각 언어별 크기 비율. (일본어) 10% \- 250%""")
+    SizeOther = PropertyDescriptor("SizeOther", r"""각 언어별 크기 비율. (기타) 10% \- 250%""")
+    SizeSymbol = PropertyDescriptor("SizeSymbol", r"""각 언어별 크기 비율. (심벌) 10% \- 250%""")
+    SizeUser = PropertyDescriptor("SizeUser", r"""각 언어별 크기 비율. (사용자) 10% \- 250%""")
+    RatioHangul = PropertyDescriptor("RatioHangul", r"""각 언어별 장평 비율. (한글) 50% \- 200%""")
+    RatioLatin = PropertyDescriptor("RatioLatin", r"""각 언어별 장평 비율. (영문) 50% \- 200%""")
+    RatioHanja = PropertyDescriptor("RatioHanja", r"""각 언어별 장평 비율. (한자) 50% \- 200%""")
+    RatioJapanese = PropertyDescriptor("RatioJapanese", r"""각 언어별 장평 비율. (일본어) 50% \- 200%""")
+    RatioOther = PropertyDescriptor("RatioOther", r"""각 언어별 장평 비율. (기타) 50% \- 200%""")
+    RatioSymbol = PropertyDescriptor("RatioSymbol", r"""각 언어별 장평 비율. (심벌) 50% \- 200%""")
+    RatioUser = PropertyDescriptor("RatioUser", r"""각 언어별 장평 비율. (사용자) 50% \- 200%""")
+    SpacingHangul = PropertyDescriptor("SpacingHangul", r"""각 언어별 자간. (한글) \-50% \- 50%""")
+    SpacingLatin = PropertyDescriptor("SpacingLatin", r"""각 언어별 자간. (영문) \-50% \- 50%""")
+    SpacingHanja = PropertyDescriptor("SpacingHanja", r"""각 언어별 자간. (한자) \-50% \- 50%""")
+    SpacingJapanese = PropertyDescriptor("SpacingJapanese", r"""각 언어별 자간. (일본어) \-50% \- 50%""")
+    SpacingOther = PropertyDescriptor("SpacingOther", r"""각 언어별 자간. (기타) \-50% \- 50%""")
+    SpacingSymbol = PropertyDescriptor("SpacingSymbol", r"""각 언어별 자간. (심벌) \-50% \- 50%""")
+    SpacingUser = PropertyDescriptor("SpacingUser", r"""각 언어별 자간. (사용자) \-50% \- 50%""")
+    OffsetHangul = PropertyDescriptor("OffsetHangul", r"""각 언어별 오프셋. (한글) \-100% \- 100%""")
+    OffsetLatin = PropertyDescriptor("OffsetLatin", r"""각 언어별 오프셋. (영문) \-100% \- 100%""")
+    OffsetHanja = PropertyDescriptor("OffsetHanja", r"""각 언어별 오프셋. (한자) \-100% \- 100%""")
+    OffsetJapanese = PropertyDescriptor("OffsetJapanese", r"""각 언어별 오프셋. (일본어) \-100% \- 100%""")
+    OffsetOther = PropertyDescriptor("OffsetOther", r"""각 언어별 오프셋. (기타) \-100% \- 100%""")
+    OffsetSymbol = PropertyDescriptor("OffsetSymbol", r"""각 언어별 오프셋. (심벌) \-100% \- 100%""")
+    OffsetUser = PropertyDescriptor("OffsetUser", r"""각 언어별 오프셋. (사용자) \-100% \- 100%""")
+    Bold = PropertyDescriptor("Bold", r"""Bold : 0 \= off, 1 \= on""")
+    Italic = PropertyDescriptor("Italic", r"""Italic : 0 \= off, 1 \= on""")
+    SmallCaps = PropertyDescriptor("SmallCaps", r"""Small Caps : 0 \= off, 1 \= on""")
+    Emboss = PropertyDescriptor("Emboss", r"""Emboss : 0 \= off, 1 \= on""")
+    Engrave = PropertyDescriptor("Engrave", r"""Engrave : 0 \= off, 1 \= on""")
+    SuperScript = PropertyDescriptor("SuperScript", r"""Superscript : 0 \= off, 1 \= on""")
+    SubScript = PropertyDescriptor("SubScript", r"""Subscript : 0 \= off, 1 \= on""")
+    UnderlineType = PropertyDescriptor("UnderlineType", r"""밑줄 종류 : 0 \= none, 1 \= bottom, 2 \= center, 3 \= top""")
+    OutlineType = PropertyDescriptor("OutlineType", r"""외곽선 종류 : 0 \= none, 1 \= solid, 2 \= dot, 3 \= thick, 4 \= dash, 5 \= dashdot, 6 \= dashdotdot""")
+    ShadowType = PropertyDescriptor("ShadowType", r"""그림자 종류 : 0 \= none, 1 \= drop, 2 \= continuous""")
+    TextColor = PropertyDescriptor("TextColor", r"""글자색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
+    ShadeColor = PropertyDescriptor("ShadeColor", r"""음영색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
+    UnderlineShape = PropertyDescriptor("UnderlineShape", r"""밑줄 모양 : 선 종류""")
+    UnderlineColor = PropertyDescriptor("UnderlineColor", r"""밑줄 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
+    ShadowOffsetX = PropertyDescriptor("ShadowOffsetX", r"""그림자 간격 (X 방향) \-100% \- 100%""")
+    ShadowOffsetY = PropertyDescriptor("ShadowOffsetY", r"""그림자 간격 (Y 방향) \-100% \- 100%""")
+    ShadowColor = PropertyDescriptor("ShadowColor", r"""그림자 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
+    StrikeOutType = PropertyDescriptor("StrikeOutType", r"""취소선 종류 : 0 \= none, 1 \= red single, 2 \= red double, 3 \= text single, 4 \= text double""")
+    DiacSymMark = PropertyDescriptor("DiacSymMark", r"""강조점 종류 : 0 \= none, 1 \= 검정 동그라미, 2 \= 속 빈 동그라미""")
+    UseFontSpace = PropertyDescriptor("UseFontSpace", r"""글꼴에 어울리는 빈칸 : 0 \= off, 1 \= on""")
+    UseKerning = PropertyDescriptor("UseKerning", r"""커닝 : 0 \= off, 1 \= on""")
+    Height = PropertyDescriptor("Height", r"""글자 크기 (HWPUNIT)""")
+    BorderFill = PropertyDescriptor("BorderFill", r"""테두리/배경 (한글2007에 새로 추가)""")
 
 class ParaShape(ParameterSet):
-    """ParaShape parameter set - placeholder implementation"""
-    pass
+    """ParaShape ParameterSet."""
+    LeftMargin = PropertyDescriptor("LeftMargin", r"""왼쪽 여백 (URC)""")
+    RightMargin = PropertyDescriptor("RightMargin", r"""오른쪽 여백 (URC)""")
+    Indentation = PropertyDescriptor("Indentation", r"""들여쓰기/내어 쓰기 (URC)""")
+    PrevSpacing = PropertyDescriptor("PrevSpacing", r"""문단 간격 위 (URC)""")
+    NextSpacing = PropertyDescriptor("NextSpacing", r"""문단 간격 아래 (URC)""")
+    LineSpacingType = PropertyDescriptor("LineSpacingType", r"""줄 간격 종류 (HWPUNIT)0 \= 글자에 따라1 \= 고정 값2 \= 여백만 지정""")
+    LineSpacing = PropertyDescriptor("LineSpacing", r"""줄 간격 값. 줄 간격 종류(LineSpacingType)에 따라 :\- 글자에 따라일 경우(0 \- 500%)\- “고정 값”일 경우(URC)\- “여백만 지정”일 경우(URC)""")
+    AlignType = PropertyDescriptor("AlignType", r"""정렬 방식0 \= 양쪽 정렬1 \= 왼쪽 정렬2 \= 오른쪽 정렬3 \= 가운데 정렬4 \= 배분 정렬5 \= 나눔 정렬 (공백에만 배분)""")
+    BreakLatinWord = PropertyDescriptor("BreakLatinWord", r"""줄 나눔 단위 (라틴 문자)0 \= 단어1 \= 하이픈2 \= 글자""")
+    BreakNonLatinWord = PropertyDescriptor("BreakNonLatinWord", r"""단위 (비 라틴 문자) TRUE \= 글자, FALSE \= 어절""")
+    SnapToGrid = PropertyDescriptor("SnapToGrid", r"""편집 용지의 줄 격자 사용 (on / off)""")
+    Condense = PropertyDescriptor("Condense", r"""공백 최소값 (0 \- 75%)""")
+    WidowOrphan = PropertyDescriptor("WidowOrphan", r"""외톨이줄 보호 (on / off)""")
+    KeepWithNext = PropertyDescriptor("KeepWithNext", r"""다음 문단과 함께 (on / off)""")
+    KeepLinesTogether = PropertyDescriptor("KeepLinesTogether", r"""문단 보호 (on / off)""")
+    PagebreakBefore = PropertyDescriptor("PagebreakBefore", r"""문단 앞에서 항상 쪽 나눔 (on / off)""")
+    TextAlignment = PropertyDescriptor("TextAlignment", r"""세로 정렬0 \= 글꼴기준1 \= 위2 \= 가운데3 \= 아래""")
+    FontLineHeight = PropertyDescriptor("FontLineHeight", r"""글꼴에 어울리는 줄 높이 (on / off)""")
+    HeadingType = PropertyDescriptor("HeadingType", r"""문단 머리 모양0 \= 없음1 \= 개요2 \= 번호3 \= 불릿""")
+    Level = PropertyDescriptor("Level", r"""단계 (0 \- 6\)""")
+    BorderConnect = PropertyDescriptor("BorderConnect", r"""문단 테두리/배경 \- 테두리 연결 (on / off)""")
+    BorderText = PropertyDescriptor("BorderText", r"""문단 테두리/배경 \- 여백 무시 (0 \= 단, 1 \= 텍스트)""")
+    BorderOffsetLeft = PropertyDescriptor("BorderOffsetLeft", r"""문단 테두리/배경 \- 4방향 간격 (HWPUNIT) : 왼쪽""")
+    BorderOffsetRight = PropertyDescriptor("BorderOffsetRight", r"""문단 테두리/배경 \- 4방향 간격 (HWPUNIT) : 오른쪽""")
+    BorderOffsetTop = PropertyDescriptor("BorderOffsetTop", r"""문단 테두리/배경 \- 4방향 간격 (HWPUNIT) : 위""")
+    BorderOffsetBottom = PropertyDescriptor("BorderOffsetBottom", r"""문단 테두리/배경 \- 4방향 간격 (HWPUNIT) : 아래""")
+    TailType = PropertyDescriptor("TailType", r"""문단 꼬리 모양 (마지막 꼬리 줄 적용) on/off""")
+    LineWrap = PropertyDescriptor("LineWrap", r"""글꼴에 어울리는 줄 높이 (on/off)""")
+    TabDef = PropertyDescriptor("TabDef", r"""탭 정의""")
+    Numbering = PropertyDescriptor("Numbering", r"""문단 번호문단 머리 모양(HeadingType)이 ‘개요’, ‘번호’ 일 때 사용""")
+    Bullet = PropertyDescriptor("Bullet", r"""불릿 모양문단 머리 모양(HeadingType)이 ‘불릿’(글머리표) 일 때 사용""")
+    BorderFill = PropertyDescriptor("BorderFill", r"""테두리/배경""")
 
 class ShapeObject(ParameterSet):
-    """ShapeObject parameter set - placeholder implementation"""
-    pass
+    """ShapeObject ParameterSet."""
+    TreatAsChar = PropertyDescriptor("TreatAsChar", r"""글자처럼 취급 on / off""")
+    AffectsLine = PropertyDescriptor("AffectsLine", r"""줄 간격에 영향을 줄지 여부 on / off (TreatAsChar가 TRUE일 경우에만 사용된다)""")
+    VertRelTo = PropertyDescriptor("VertRelTo", r"""세로 위치의 기준.0 \= 종이 영역(Paper)1 \= 쪽 영역(Page)2 \= 문단 영역(Paragraph)(TreatAsChar가 FALSE일 경우에만 사용된다)""")
+    VertAlign = PropertyDescriptor("VertAlign", r"""VertRelTo값에 따른 상대적인 정렬 기준.VertRelTo값이 2(문단영역)일 경우 0 값만 사용할 수 있다.0 \= 위(Top)1 \= 가운데(Center)2 \= 아래(Bottom)""")
+    VertOffset = PropertyDescriptor("VertOffset", r"""VertRelTo와 VertAlign을 기준으로 한 Y축 위치 오프셋 값. HWPUNIT 단위.""")
+    HorzRelTo = PropertyDescriptor("HorzRelTo", r"""가로 위치의 기준.0 \= 종이 영역(Paper)1 \= 쪽 영역(Page)2 \= 다단 영역(Column)3 \= 문단 영역(Paragraph)(TreatAsChar가 FALSE일 경우에만 사용된다)""")
+    HorzAlign = PropertyDescriptor("HorzAlign", r"""HorzRelTo값에 따른 상대적인 정렬 기준.HorzRelTo값이 3(문단영역)일 경우 0\~2 사이의 값만 사용할 수 있다.0 \= 왼쪽(Left)1 \= 가운데(Center)2 \= 오른쪽(Right)3 \= 안쪽(Inside)4 \= 바깥쪽(Outside)""")
+    HorzOffset = PropertyDescriptor("HorzOffset", r"""HorzRelTo와 HorzAlign을 기준으로 한 X축 위치 오프셋 값. HWPUNIT 단위.""")
+    FlowWithText = PropertyDescriptor("FlowWithText", r"""그리기 개체의 세로 위치를 쪽 영역 안쪽으로 제한할지 여부 on / offVertRelTo값이 2(문단영역)일 경우에만 의미가 있다.""")
+    AllowOverlap = PropertyDescriptor("AllowOverlap", r"""다른 개체와 겹치는 것을 허용할지 여부 on / offTreatAsChar가 FALSE일 때만 의미가 있으며, FlowWithText가 TRUE이면 AllowOverlap은 항상 FALSE로 간주한다.""")
+    WidthRelTo = PropertyDescriptor("WidthRelTo", r"""개체 너비 기준.0 \= 종이(Paper)1 \= 쪽(Page)2 \= 다단(Column)3 \= 문단(Paragraph)4 \= 고정 값(Absolute)""")
+    Width = PropertyDescriptor("Width", r"""개체 너비 값.WidthRelTo에 따라 값의 의미 및 단위가 달라진다.""")
+    HeightRelTo = PropertyDescriptor("HeightRelTo", r"""개체 높이 기준.0 \= 종이(Paper)1 \= 쪽(Page)2 \= 고정 값(Absolute)""")
+    Height = PropertyDescriptor("Height", r"""개체 높이 값.HeightRelTo에 다라 값의 의미 및 단위가 달라진다.""")
+    ProtectSize = PropertyDescriptor("ProtectSize", r"""크기 보호 on / off""")
+    TextWrap = PropertyDescriptor("TextWrap", r"""그리기 개체와 본문 사이의 배치 방법.0 \= 어울림(Square)1 \= 자리 차지(Top \& Bottom)2 \= 글 뒤로(Behind Text)3 \= 글 앞으로(In front of Text)4 \= 경계를 명확히 지킴(Tight) \- 현재 사용안함5 \= 경계를 통과함(Through) \- 현재 사용안함(TreatAsChar가 FALSE일 경우에만 사용된다)""")
+    TextFlow = PropertyDescriptor("TextFlow", r"""그리기 개체의 좌/우 어느 쪽에 글을 배치할지 지정하는 옵션. TextWrap의 값이 0일 때만 유효하다.0 \= 양쪽 모두(Both)1 \= 왼쪽만(Left Only)2 \= 오른쪽만(Right Only)3 \= 왼쪽과 오른쪽 중 넓은 쪽(Largest Only)""")
+    OutsideMarginLeft = PropertyDescriptor("OutsideMarginLeft", r"""개체의 바깥 여백. (왼쪽) HWPUNIT 단위""")
+    OutsideMarginRight = PropertyDescriptor("OutsideMarginRight", r"""개체의 바깥 여백. (오른쪽) HWPUNIT 단위""")
+    OutsideMarginTop = PropertyDescriptor("OutsideMarginTop", r"""개체의 바깥 여백. (위) HWPUNIT 단위""")
+    OutsideMarginBottom = PropertyDescriptor("OutsideMarginBottom", r"""개체의 바깥 여백. (아래) HWPUNIT 단위""")
+    NumberingType = PropertyDescriptor("NumberingType", r"""이 개체가 속하는 번호 범주.0 \= 없음, 1 \= 그림, 2 \= 표, 3 \= 수식""")
+    LayoutWidth = PropertyDescriptor("LayoutWidth", r"""개체가 페이지에 배열될 때 계산되는 폭의 값""")
+    LayoutHeight = PropertyDescriptor("LayoutHeight", r"""개체가 페이지에 배열될 때 계산되는 높이 값""")
+    Lock = PropertyDescriptor("Lock", r"""개체 보호하기 on / off""")
+    HoldAnchorObj = PropertyDescriptor("HoldAnchorObj", r"""쪽 나눔 방지 on / off (한글2007에 새로 추가)""")
+    PageNumber = PropertyDescriptor("PageNumber", r"""개체가 존재 하는 페이지 (한글2007에 새로 추가)""")
+    AdjustSelection = PropertyDescriptor("AdjustSelection", r"""개체 Selection 상태 TRUE/FASLE (한글2007에 새로 추가)""")
+    AdjustTextBox = PropertyDescriptor("AdjustTextBox", r"""글상자로 TRUE/FASLE (한글2007에 새로 추가)""")
+    AdjustPrevObjAttr = PropertyDescriptor("AdjustPrevObjAttr", r"""앞개체 속성 따라가기 TRUE/FASLE (한글2007에 새로 추가)""")
 
 class Table(ParameterSet):
-    """Table parameter set - placeholder implementation"""
-    pass
-
+    """Table ParameterSet."""
+    PageBreak = PropertyDescriptor("PageBreak", r"""표가 페이지 경계에 걸렸을 때의 처리 방식0 \= 나누지 않는다.1 \= 테이블은 나누지만 셀은 나누지 않는다.2 \= 셀 내의 텍스트도 나눈다.""")
+    RepeatHeader = PropertyDescriptor("RepeatHeader", r"""제목 행을 반복할지 여부. (on / off)""")
+    CellSpacing = PropertyDescriptor("CellSpacing", r"""셀 간격(HTML의 셀 간격과 동일 의미. HWPUNIT)""")
+    CellMarginLeft = PropertyDescriptor("CellMarginLeft", r"""기본 셀 안쪽 여백(왼쪽)""")
+    CellMarginRight = PropertyDescriptor("CellMarginRight", r"""기본 셀 안쪽 여백(오른쪽)""")
+    CellMarginTop = PropertyDescriptor("CellMarginTop", r"""기본 셀 안쪽 여백(위쪽)""")
+    CellMarginBottom = PropertyDescriptor("CellMarginBottom", r"""기본 셀 안쪽 여백(아래쪽)""")
+    BorderFill = PropertyDescriptor("BorderFill", r"""표에 적용되는 테두리/배경""")
+    TableCharInfo = PropertyDescriptor("TableCharInfo", r"""표와 연결된 차트 정보 \- 차트 미완성""")
+    TableBorderFill = PropertyDescriptor("TableBorderFill", r"""표에 적용되는 테두리/배경""")
+    Cell = PropertyDescriptor("Cell", r"""셀 속성""")
 
 # %% ../nbs/02_api/02_parameters.ipynb 32
 # Direction mappings
@@ -1911,773 +1909,34 @@ LINE_SPACING_TYPE_MAP = {"font": 0, "fixed": 1, "space": 2}
 PIC_EFFECT_MAP = {"none": 0, "bw": 1, "sepia": 2}
 PAGE_BREAK_MAP = {"none": 0, "cell": 1, "text": 2}
 
-# %% ../nbs/02_api/02_parameters.ipynb 34
-class BorderFill(ParameterSet):
-    """
-    ### BorderFill
-
-    5) BorderFill : 테두리/배경의 일반 속성
-
-    | Item ID | Type | SubType | Description |
-    | --- | --- | --- | --- |
-    | BorderTypeLeft | PIT_UI2 |  | 4방향 테두리 종류 : 왼쪽 [선 종류] |
-    | BorderTypeRight | PIT_UI2 |  | 4방향 테두리 종류 : 오른쪽 |
-    | BorderTypeTop | PIT_UI2 |  | 4방향 테두리 종류 : 위 |
-    | BorderTypeBottom | PIT_UI2 |  | 4방향 테두리 종류 : 아래 |
-    | BorderWidthLeft | PIT_UI1 |  | 4방향 테두리 두께 : 왼쪽 [선 굵기] |
-    | BorderWidthRight | PIT_UI1 |  | 4방향 테두리 두께 : 오른쪽 |
-    | BorderWidthTop | PIT_UI1 |  | 4방향 테두리 두께 : 위 |
-    | BorderWidthBottom | PIT_UI1 |  | 4방향 테두리 두께 : 아래 |
-    | BorderColorLeft | PIT_UI4 |  | 4방향 테두리 색깔 : 왼쪽 (RGB color: 0x00BBGGRR) |
-    | BorderColorRight | PIT_UI4 |  | 4방향 테두리 색깔 : 오른쪽 (RGB color: 0x00BBGGRR) |
-    | BorderColorTop | PIT_UI4 |  | 4방향 테두리 색깔 : 위 (RGB color: 0x00BBGGRR) |
-    | BorderColorBottom | PIT_UI4 |  | 4방향 테두리 색깔 : 아래 (정수값 그대로 사용) |
-    | SlashFlag | PIT_UI2 |  | 대각선 플래그 (비트 플래그 조합) |
-    | BackSlashFlag | PIT_UI2 |  | 역대각선 플래그 (비트 플래그 조합) |
-    | DiagonalType | PIT_UI2 |  | 대각선 유형 (셀 또는 자동 분할 경계선에 사용) |
-    | DiagonalWidth | PIT_UI1 |  | 대각선 두께 (셀 또는 자동 분할 경계선에 사용) |
-    | DiagonalColor | PIT_UI4 |  | 대각선 색상 (RGB color: 0x00BBGGRR) |
-    | BorderFill3D | PIT_UI1 |  | 3차원 효과: 0 = off, 1 = on |
-    | Shadow | PIT_UI1 |  | 그림자 효과: 0 = off, 1 = on |
-    | FillAttr | PIT_SET | DrawFillAttr | 배경 채우기 속성 |
-    | CrookedSlashFlag | PIT_UI2 |  | 꺾인 대각선 플래그 (bit 0, 1) |
-    | BreakCellSeparateLine | PIT_UI1 |  | 자동으로 나뉜 표의 경계선 설정: 0 = 기본, 1 = 사용자 설정 |
-    | CounterSlashFlag | PIT_UI1 |  | 슬래쉬 대각선 역방향 플래그: 0 = 순방향, 1 = 역방향 |
-    | CounterBackSlashFlag | PIT_UI1 |  | 역슬래쉬 대각선 역방향 플래그: 0 = 순방향, 1 = 역방향 |
-    | CenterLineFlag | PIT_UI1 |  | 중심선 플래그: 0 = 없음, 1 = 있음 |
-    | CrookedSlashFlag1 | PIT_UI1 |  | 슬래쉬 대각선 꺾임 여부 (저바이트) |
-    | CrookedSlashFlag2 | PIT_UI1 |  | 역슬래쉬 대각선 꺾임 여부 (고바이트) |
-
-    ※ 대각선의 형태는 다음의 3가지 아이템으로 결정됩니다:
-      - SlashFlag (또는 BackSlashFlag)
-      - CrookedSlashFlag1 (또는 CrookedSlashFlag2)
-      - CounterSlashFlag (또는 CounterBackSlashFlag)
-    """
-
-    def __init__(self, parameterset=None, **kwargs):
-        super().__init__(parameterset, **kwargs)
-
-    # Integer properties
-    border_type_left = ParameterSet._int_prop(
-        "BorderTypeLeft", "테두리 유형 (왼쪽): 정수 값을 입력하세요."
-    )
-    border_type_right = ParameterSet._int_prop(
-        "BorderTypeRight", "테두리 유형 (오른쪽): 정수 값을 입력하세요."
-    )
-    border_type_top = ParameterSet._int_prop(
-        "BorderTypeTop", "테두리 유형 (위): 정수 값을 입력하세요."
-    )
-    border_type_bottom = ParameterSet._int_prop(
-        "BorderTypeBottom", "테두리 유형 (아래): 정수 값을 입력하세요."
-    )
-
-    border_width_left = ParameterSet._int_prop(
-        "BorderWidthLeft", "테두리 두께 (왼쪽): 정수 값을 입력하세요."
-    )
-    border_width_right = ParameterSet._int_prop(
-        "BorderWidthRight", "테두리 두께 (오른쪽): 정수 값을 입력하세요."
-    )
-    border_width_top = ParameterSet._int_prop(
-        "BorderWidthTop", "테두리 두께 (위): 정수 값을 입력하세요."
-    )
-    border_width_bottom = ParameterSet._int_prop(
-        "BorderWidthBottom", "테두리 두께 (아래): 정수 값을 입력하세요."
-    )
-
-    # Color properties (with conversion)
-    border_color_left = ParameterSet._color_prop(
-        "BorderCorlorLeft", "테두리 색상 (왼쪽): 정수 값을 입력하세요."
-    )
-    border_color_right = ParameterSet._color_prop(
-        "BorderColorRight", "테두리 색상 (오른쪽): 정수 값을 입력하세요."
-    )
-    border_color_top = ParameterSet._color_prop(
-        "BorderColorTop", "테두리 색상 (위): 정수 값을 입력하세요."
-    )
-    border_color_bottom = ParameterSet._int_prop(
-        "BorderColorBottom", "테두리 색상 (아래): 정수 값을 입력하세요."
-    )
-
-    # 대각선 색상 (setter now completes properly)
-    diagonal_color = ParameterSet._int_prop(
-        "DiagonalColor", "대각선 색상: 정수 값을 입력하세요."
-    )
-
-    # Other integer properties
-    slash_flag = ParameterSet._int_prop(
-        "SlashFlag", "대각선 플래그: 정수 값을 입력하세요."
-    )
-    backslash_flag = ParameterSet._int_prop(
-        "BackSlashFlag", "역대각선 플래그: 정수 값을 입력하세요."
-    )
-    diagonal_type = ParameterSet._int_prop(
-        "DiagonalType", "대각선 유형: 정수 값을 입력하세요."
-    )
-    diagonal_width = ParameterSet._int_prop(
-        "DiagonalWidth", "대각선 두께: 정수 값을 입력하세요."
-    )
-    crooked_slash_flag = ParameterSet._int_prop(
-        "CrookedSlashFlag", "꺾인 대각선 플래그 (bit 0, 1): 정수 값을 입력하세요."
-    )
-
-    # Boolean properties
-    border_fill_3d = ParameterSet._bool_prop(
-        "BorderFill3D", "3차원 효과: 0 = off, 1 = on"
-    )
-    shadow = ParameterSet._bool_prop("Shadow", "그림자 효과: 0 = off, 1 = on")
-    break_cell_separate_line = ParameterSet._bool_prop(
-        "BreakCellSeparateLine",
-        "자동으로 나뉜 표의 경계선 설정: 0 = 기본, 1 = 사용자 설정",
-    )
-    counter_slash_flag = ParameterSet._bool_prop(
-        "CounterSlashFlag", "슬래쉬 대각선의 역방향 플래그: 0 = 순방향, 1 = 역방향"
-    )
-    counter_back_slash_flag = ParameterSet._bool_prop(
-        "CounterBackSlashFlag",
-        "역슬래쉬 대각선의 역방향 플래그: 0 = 순방향, 1 = 역방향",
-    )
-    center_line_flag = ParameterSet._bool_prop(
-        "CenterLineFlag", "중심선 플래그: 0 = 없음, 1 = 있음"
-    )
-    crooked_slash_flag1 = ParameterSet._bool_prop(
-        "CrookedSlashFlag1", "슬래쉬 대각선의 꺾임 여부 (저바이트): 0 = 아니오, 1 = 예"
-    )
-    crooked_slash_flag2 = ParameterSet._bool_prop(
-        "CrookedSlashFlag2",
-        "역슬래쉬 대각선의 꺾임 여부 (고바이트): 0 = 아니오, 1 = 예",
-    )
-
-    # Typed property for fill attribute
-    fill_attr = ParameterSet._typed_prop("FillAttr", "배경 채우기 속성", lambda: DrawFillAttr)
-
 # %% ../nbs/02_api/02_parameters.ipynb 36
-class Caption(ParameterSet):
-    """
-    ### Caption
-
-    8) Caption : 캡션 속성
-
-    | Item ID       | Type    | SubType | Description                                                                 |
-    | ------------- | ------- | ------- | --------------------------------------------------------------------------- |
-    | Side          | PIT_UI1 |         | 방향. 0 = 왼쪽, 1 = 오른쪽, 2 = 위, 3 = 아래                               |
-    | Width         | PIT_I   |         | 캡션 폭 (가로 방향이면 높이를 사용함. 단위: HWPUNIT)                      |
-    | Gap           | PIT_I   |         | 캡션과의 사이 간격 (단위: HWPUNIT)                                        |
-    | CapFullSize   | PIT_UI1 |         | 캡션 폭에 여백을 포함할지 여부 (0 = 포함 안 함, 1 = 포함함)              |
-    """
-
-    def __init__(self, parameterset=None, **kwargs):
-        super().__init__(parameterset, **kwargs)
-
-    # 'side' must be one of the allowed values
-    side = ParameterSet._mapped_prop(
-        "Side", DIRECTION_MAP, doc="방향: 0 = 왼쪽, 1 = 오른쪽, 2 = 위, 3 = 아래"
-    )
-
-    # 'width' and 'gap' are stored in HWPUNIT; convert to/from mili
-    width = ParameterSet._unit_prop("Width", unit="mili", doc="캡션 폭 (단위: HWPUNIT)")
-    gap = ParameterSet._unit_prop("Gap", unit="mili", doc="캡션과의 간격 (단위: HWPUNIT)")
-
-    # Mapping for 'cap_full_size': 0 means 'exclude', 1 means 'include'
-    cap_full_size = ParameterSet._mapped_prop(
-        "CapFullSize",
-        mapping=CAP_FULL_SIZE_MAP,
-        doc="캡션 폭에 여백 포함 여부 (CapFullSize): 0 = exclude, 1 = include",
-    )
-
+class BulletShape(ParameterSet):
+    """BulletShape ParameterSet."""
+    HasCharShape = PropertyDescriptor("HasCharShape", r"""자체적인 글자 모양을 사용할지 여부 :0 \= 스타일을 따라감, 1 \= 자체 모양을 가짐""")
+    CharShape = PropertyDescriptor("CharShape", r"""글자 모양 (HasCharShape가 1일 경우에만 사용)""")
+    WidthAdjust = PropertyDescriptor("WidthAdjust", r"""번호 너비 보정 값 (HWPUNIT)""")
+    TextOffset = PropertyDescriptor("TextOffset", r"""본문과의 거리 (percent or HWPUNIT)""")
+    Alignment = PropertyDescriptor("Alignment", r"""번호 정렬 :0 \= 왼쪽 정렬, 1 \= 가운데 정렬, 2 \= 오른쪽 정렬""")
+    UseInstWidth = PropertyDescriptor("UseInstWidth", r"""번호 너비를 문서 내 문자열의 너비에 따를지 여부 on / off""")
+    AutoIndent = PropertyDescriptor("AutoIndent", r"""번호 너비 자동 들여쓰기 여부 : 0 \= 들여쓰기 안함, 1 \= 들여쓰기""")
+    TextOffsetType = PropertyDescriptor("TextOffsetType", r"""본문과의 거리 종류 : 0 \= percent, 1 \= HWPUNIT""")
+    BulletChar = PropertyDescriptor("BulletChar", r"""불릿 문자 코드""")
+    HasImage = PropertyDescriptor("HasImage", r"""그림 글머리표 여부 : 0 \= 일반 글머리표, 1 \= 그림 글머리표""")
+    BulletImage = PropertyDescriptor("BulletImage", r"""글머리표 이미지""")
 
 # %% ../nbs/02_api/02_parameters.ipynb 38
-class BulletShape(ParameterSet):
-    """
-    ### BulletShape
-
-    | Item ID        | Type     | SubType        | Description |
-    |----------------|----------|----------------|-------------|
-    | HasCharShape   | PIT_UI1  |                | 글자 모양 사용 여부: 0 = 기본, 1 = 사용자 정의 |
-    | CharShape      | PIT_SET  | CharShape      | 글자 모양 (HasCharShape가 1일 경우 사용) |
-    | WidthAdjust    | PIT_I    |                | 글자 크기 보정 값 (HWPUNIT) |
-    | TextOffset     | PIT_I    |                | 텍스트 오프셋 (percent or HWPUNIT) |
-    | Alignment      | PIT_UI1  |                | 정렬 방식: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽 |
-    | UseInstWidth   | PIT_UI1  |                | 인스턴스 폭 사용 여부 (on/off) |
-    | AutoIndent     | PIT_UI1  |                | 자동 들여쓰기 (on/off) |
-    | TextOffsetType | PIT_UI1  |                | 텍스트 오프셋 타입: 0 = percent, 1 = HWPUNIT |
-    | BulletChar     | PIT_UI2  |                | 글머리 기호 문자 |
-    | HasImage       | PIT_UI1  |                | 이미지 글머리 기호 여부: 0 = 없음, 1 = 있음 |
-    | BulletImage    | PIT_SET  | DrawImageAttr  | 글머리 기호 이미지 |
-    """
-
-    def __init__(self, parameterset=None, **kwargs):
-        super().__init__(parameterset, **kwargs)
-
-    has_char_shape = ParameterSet._bool_prop(
-        "HasCharShape", "글자 모양 사용 여부: 0 = 기본, 1 = 사용자 정의"
-    )
-    char_shape = ParameterSet._typed_prop("CharShape", "글자 모양", lambda: CharShape)
-    width_adjust = ParameterSet._int_prop("WidthAdjust", "글자 크기 보정 값 (HWPUNIT)")
-    text_offset = ParameterSet._int_prop(
-        "TextOffset", "텍스트 오프셋 (percent or HWPUNIT)"
-    )
-    alignment = ParameterSet._mapped_prop(
-        "Alignment",
-        ALIGNMENT_MAP,
-        doc="정렬 방식: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽",
-    )
-    use_inst_width = ParameterSet._bool_prop(
-        "UseInstWidth", "인스턴스 폭 사용 여부 (on/off)"
-    )
-    auto_indent = ParameterSet._bool_prop("AutoIndent", "자동 들여쓰기 (on/off)")
-    text_offset_type = ParameterSet._bool_prop(
-        "TextOffsetType", "텍스트 오프셋 타입: 0 = percent, 1 = HWPUNIT"
-    )
-    bullet_char = ParameterSet._int_prop("BulletChar", "글머리 기호 문자")
-    has_image = ParameterSet._bool_prop(
-        "HasImage", "이미지 글머리 기호 여부: 0 = 없음, 1 = 있음"
-    )
-    bullet_image = ParameterSet._typed_prop(
-        "BulletImage", "글머리 기호 이미지", lambda: DrawImageAttr
-    )
-
-# %% ../nbs/02_api/02_parameters.ipynb 40
 class Cell(ParameterSet):
-    """
-    ### Cell
+    """Cell ParameterSet."""
+    HasMargin = PropertyDescriptor("HasMargin", r"""테이블의 기본 셀 여백 대신 자체 셀 여백을 적용할지 여부. (on / off)""")
+    Protected = PropertyDescriptor("Protected", r"""사용자 편집을 막을지 여부 : 0 \= off, 1 \= on""")
+    Header = PropertyDescriptor("Header", r"""제목 셀인지 여부 : 0 \= off, 1 \= on""")
+    Width = PropertyDescriptor("Width", r"""셀의 폭 (HWPUNIT)""")
+    Height = PropertyDescriptor("Height", r"""셀의 높이 (HWPUNIT)""")
+    Editable = PropertyDescriptor("Editable", r"""양식모드에서 편집 가능 여부 : 0 \= off, 1 \= on""")
+    Dirty = PropertyDescriptor("Dirty", r"""초기화 상태인지 수정된 상태인지 여부 : 0 \= off, 1 \= on(한글2007에 새로 추가)""")
+    CellCtrlData = PropertyDescriptor("CellCtrlData", r"""셀 데이터 (한글2007에 새로 추가)""")
 
-    10) Cell : 셀 속성 정의
-
-    | Item ID      | Type     | SubType   | Description                   |
-    |--------------|----------|-----------|-------------------------------|
-    | HasMargin    | PIT_UI1  |           | 셀 여백 여부 (on / off)       |
-    | Protected    | PIT_UI1  |           | 보호 설정 여부: 0 = off, 1 = on|
-    | Header       | PIT_UI1  |           | 헤더 여부: 0 = off, 1 = on     |
-    | Width        | PIT_I4   |           | 셀의 너비 (HWPUNIT)           |
-    | Height       | PIT_I4   |           | 셀의 높이 (HWPUNIT)           |
-    | Editable     | PIT_UI1  |           | 편집 가능 여부: 0 = off, 1 = on|
-    | Dirty        | PIT_UI1  |           | 변경 여부: 0 = off, 1 = on     |
-    | CellCtrlData | PIT_SET  | CtrlData  | 셀 제어 데이터               |
-    """
-
-    def __init__(self, parameterset=None, **kwargs):
-        super().__init__(parameterset, **kwargs)
-
-    has_margin = ParameterSet._bool_prop(
-        "HasMargin", "셀 여백 여부 (on / off): 0 또는 1."
-    )
-    protected = ParameterSet._bool_prop("Protected", "보호 설정 여부: 0 = off, 1 = on.")
-    header = ParameterSet._bool_prop("Header", "헤더 여부: 0 = off, 1 = on.")
-    width = ParameterSet._unit_prop("Width", "mili", "셀의 너비 (mm).")
-    height = ParameterSet._unit_prop("Height", "mili", "셀의 높이 (mm).")
-    editable = ParameterSet._bool_prop("Editable", "편집 가능 여부: 0 = off, 1 = on.")
-    dirty = ParameterSet._bool_prop("Dirty", "변경 여부: 0 = off, 1 = on.")
-    cell_ctrl_data = ParameterSet._typed_prop(
-        "CellCtrlData", "셀 제어 데이터", lambda: CtrlData
-    )
-
-# %% ../nbs/02_api/02_parameters.ipynb 42
-class CharShape(ParameterSet):
-    """
-        ### CharShape
-
-        13) CharShape : 글자 모양
-
-    | Item ID | Type | SubType | Description |
-    | --- | --- | --- | --- |
-    | FaceNameHangul | PIT_BSTR |  | 글꼴 이름 (한글) |
-    | FaceNameLatin | PIT_BSTR |  | 글꼴 이름 (영문) |
-    | FaceNameHanja | PIT_BSTR |  | 글꼴 이름 (한자) |
-    | FaceNameJapanese | PIT_BSTR |  | 글꼴 이름 (일본어) |
-    | FaceNameOther | PIT_BSTR |  | 글꼴 이름 (기타) |
-    | FaceNameSymbol | PIT_BSTR |  | 글꼴 이름 (심벌) |
-    | FaceNameUser | PIT_BSTR |  | 글꼴 이름 (사용자) |
-    | FontTypeHangul | PIT_UI1 |  | 폰트 종류 (한글) : 0 = don't care, 1 = TTF, 2 = HFT |
-    | FontTypeLatin | PIT_UI1 |  | 폰트 종류 (영문) : 0 = don't care, 1 = TTF, 2 = HFT |
-    | FontTypeHanja | PIT_UI1 |  | 폰트 종류 (한자) : 0 = don't care, 1 = TTF, 2 = HFT |
-    | FontTypeJapanese | PIT_UI1 |  | 폰트 종류 (일본어) : 0 = don't care, 1 = TTF, 2 = HFT |
-    | FontTypeOther | PIT_UI1 |  | 폰트 종류 (기타) : 0 = don't care, 1 = TTF, 2 = HFT |
-    | FontTypeSymbol | PIT_UI1 |  | 폰트 종류 (심벌) : 0 = don't care, 1 = TTF, 2 = HFT |
-    | FontTypeUser | PIT_UI1 |  | 폰트 종류 (사용자) : 0 = don't care, 1 = TTF, 2 = HFT |
-    | SizeHangul | PIT_UI1 |  | 각 언어별 크기 비율. (한글) 10% - 250% |
-    | SizeLatin | PIT_UI1 |  | 각 언어별 크기 비율. (영문) 10% - 250% |
-    | SizeHanja | PIT_UI1 |  | 각 언어별 크기 비율. (한자) 10% - 250% |
-    | SizeJapanese | PIT_UI1 |  | 각 언어별 크기 비율. (일본어) 10% - 250% |
-    | SizeOther | PIT_UI1 |  | 각 언어별 크기 비율. (기타) 10% - 250% |
-    | SizeSymbol | PIT_UI1 |  | 각 언어별 크기 비율. (심벌) 10% - 250% |
-    | SizeUser | PIT_UI1 |  | 각 언어별 크기 비율. (사용자) 10% - 250% |
-    | RatioHangul | PIT_UI1 |  | 각 언어별 장평 비율. (한글) 50% - 200% |
-    | RatioLatin | PIT_UI1 |  | 각 언어별 장평 비율. (영문) 50% - 200% |
-    | RatioHanja | PIT_UI1 |  | 각 언어별 장평 비율. (한자) 50% - 200% |
-    | RatioJapanese | PIT_UI1 |  | 각 언어별 장평 비율. (일본어) 50% - 200% |
-    | RatioOther | PIT_UI1 |  | 각 언어별 장평 비율. (기타) 50% - 200% |
-    | RatioSymbol | PIT_UI1 |  | 각 언어별 장평 비율. (심벌) 50% - 200% |
-    | RatioUser | PIT_UI1 |  | 각 언어별 장평 비율. (사용자) 50% - 200% |
-    | SpacingHangul | PIT_I1 |  | 각 언어별 자간. (한글) -50% - 50% |
-    | SpacingLatin | PIT_I1 |  | 각 언어별 자간. (영문) -50% - 50% |
-    | SpacingHanja | PIT_I1 |  | 각 언어별 자간. (한자) -50% - 50% |
-    | SpacingJapanese | PIT_I1 |  | 각 언어별 자간. (일본어) -50% - 50% |
-    | SpacingOther | PIT_I1 |  | 각 언어별 자간. (기타) -50% - 50% |
-    | SpacingSymbol | PIT_I1 |  | 각 언어별 자간. (심벌) -50% - 50% |
-    | SpacingUser | PIT_I1 |  | 각 언어별 자간. (사용자) -50% - 50% |
-    | OffsetHangul | PIT_I1 |  | 각 언어별 오프셋. (한글) -100% - 100% |
-    | OffsetLatin | PIT_I1 |  | 각 언어별 오프셋. (영문) -100% - 100% |
-    | OffsetHanja | PIT_I1 |  | 각 언어별 오프셋. (한자) -100% - 100% |
-    | OffsetJapanese | PIT_I1 |  | 각 언어별 오프셋. (일본어) -100% - 100% |
-    | OffsetOther | PIT_I1 |  | 각 언어별 오프셋. (기타) -100% - 100% |
-    | OffsetSymbol | PIT_I1 |  | 각 언어별 오프셋. (심벌) -100% - 100% |
-    | OffsetUser | PIT_I1 |  | 각 언어별 오프셋. (사용자) -100% - 100% |
-    | Bold | PIT_UI1 |  | Bold : 0 = off, 1 = on |
-    | Italic | PIT_UI1 |  | Italic : 0 = off, 1 = on |
-    | SmallCaps | PIT_UI1 |  | Small Caps : 0 = off, 1 = on |
-    | Emboss | PIT_UI1 |  | Emboss : 0 = off, 1 = on |
-    | Engrave | PIT_UI1 |  | Engrave : 0 = off, 1 = on |
-    | SuperScript | PIT_UI1 |  | Superscript : 0 = off, 1 = on |
-    | SubScript | PIT_UI1 |  | Subscript : 0 = off, 1 = on |
-    | UnderlineType | PIT_UI1 |  | 밑줄 종류 :  0 = none, 1 = bottom, 2 = center, 3 = top |
-    | OutlineType | PIT_UI1 |  | 외곽선 종류 : 0 = none, 1 = solid, 2 = dot, 3 = thick,  4 = dash, 5 = dashdot, 6 = dashdotdot |
-    | ShadowType | PIT_UI1 |  | 그림자 종류 : 0 = none, 1 = drop, 2 = continuous |
-    | TextColor | PIT_UI4 |  | 글자색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-    | ShadeColor | PIT_UI4 |  | 음영색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-    | UnderlineShape | PIT_UI1 |  | 밑줄 모양 : 선 종류 |
-    | UnderlineColor | PIT_UI4 |  | 밑줄 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-    | ShadowOffsetX | PIT_I1 |  | 그림자 간격 (X 방향) -100% - 100% |
-    | ShadowOffsetY | PIT_I1 |  | 그림자 간격 (Y 방향) -100% - 100% |
-    | ShadowColor | PIT_UI4 |  | 그림자 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-    | StrikeOutType | PIT_UI1 |  | 취소선 종류 : 0 = none, 1 = red single, 2 = red double,  3 = text single, 4 = text double |
-    | DiacSymMark | PIT_UI1 |  | 강조점 종류 : 0 = none, 1 = 검정 동그라미, 2 = 속 빈 동그라미 |
-    | UseFontSpace | PIT_UI1 |  | 글꼴에 어울리는 빈칸 : 0 = off, 1 = on |
-    | UseKerning | PIT_UI1 |  | 커닝 : 0 = off, 1 = on |
-    | Height | PIT_I4 |  | 글자 크기 (HWPUNIT) |
-    | BorderFill | PIT_SET | BorderFill | 테두리/배경 (한글2007에 새로 추가) |
-    """
-
-    def __init__(self, parameterset=None, **kwargs):
-        super().__init__(parameterset, **kwargs)
-
-    # Facename properties (strings)
-    facename_hangul = ParameterSet._str_prop("FaceNameHangul", "글꼴 이름 (한글)")
-    facename_latin = ParameterSet._str_prop("FaceNameLatin", "글꼴 이름 (영문)")
-    facename_hanja = ParameterSet._str_prop("FaceNameHanja", "글꼴 이름 (한자)")
-    facename_japanese = ParameterSet._str_prop("FaceNameJapanese", "글꼴 이름 (일본어)")
-    facename_other = ParameterSet._str_prop("FaceNameOther", "글꼴 이름 (기타)")
-    facename_symbol = ParameterSet._str_prop("FaceNameSymbol", "글꼴 이름 (심벌)")
-    facename_user = ParameterSet._str_prop("FaceNameUser", "글꼴 이름 (사용자)")
-
-    # FontType properties: mapped from numbers to human‐readable strings
-    fonttype_hangul = ParameterSet._mapped_prop(
-        "FontTypeHangul",
-        FONTTYPE_MAP,
-        "폰트 종류 (한글): 0 = don't care, 1 = TTF, 2 = HFT",
-    )
-    fonttype_latin = ParameterSet._mapped_prop(
-        "FontTypeLatin",
-        FONTTYPE_MAP,
-        "폰트 종류 (영문): 0 = don't care, 1 = TTF, 2 = HFT",
-    )
-    fonttype_hanja = ParameterSet._mapped_prop(
-        "FontTypeHanja",
-        FONTTYPE_MAP,
-        "폰트 종류 (한자): 0 = don't care, 1 = TTF, 2 = HFT",
-    )
-    fonttype_japanese = ParameterSet._mapped_prop(
-        "FontTypeJapanese",
-        FONTTYPE_MAP,
-        "폰트 종류 (일본어): 0 = don't care, 1 = TTF, 2 = HFT",
-    )
-    fonttype_other = ParameterSet._mapped_prop(
-        "FontTypeOther",
-        FONTTYPE_MAP,
-        "폰트 종류 (기타): 0 = don't care, 1 = TTF, 2 = HFT",
-    )
-    fonttype_symbol = ParameterSet._mapped_prop(
-        "FontTypeSymbol",
-        FONTTYPE_MAP,
-        "폰트 종류 (심벌): 0 = don't care, 1 = TTF, 2 = HFT",
-    )
-    fonttype_user = ParameterSet._mapped_prop(
-        "FontTypeUser",
-        FONTTYPE_MAP,
-        "폰트 종류 (사용자): 0 = don't care, 1 = TTF, 2 = HFT",
-    )
-
-    # Size properties (10% ~ 250%)
-    size_hangul = ParameterSet._int_prop(
-        "SizeHangul", "크기 (한글): 10% - 250%", 10, 250
-    )
-    size_latin = ParameterSet._int_prop("SizeLatin", "크기 (영문): 10% - 250%", 10, 250)
-    size_hanja = ParameterSet._int_prop("SizeHanja", "크기 (한자): 10% - 250%", 10, 250)
-    size_japanese = ParameterSet._int_prop(
-        "SizeJapanese", "크기 (일본어): 10% - 250%", 10, 250
-    )
-    size_other = ParameterSet._int_prop("SizeOther", "크기 (기타): 10% - 250%", 10, 250)
-    size_symbol = ParameterSet._int_prop(
-        "SizeSymbol", "크기 (심벌): 10% - 250%", 10, 250
-    )
-    size_user = ParameterSet._int_prop("SizeUser", "크기 (사용자): 10% - 250%", 10, 250)
-
-    # Ratio properties (50% ~ 200%)
-    ratio_hangul = ParameterSet._int_prop(
-        "RatioHangul", "장평 (한글): 50% - 200%", 50, 200
-    )
-    ratio_latin = ParameterSet._int_prop(
-        "RatioLatin", "장평 (영문): 50% - 200%", 50, 200
-    )
-    ratio_hanja = ParameterSet._int_prop(
-        "RatioHanja", "장평 (한자): 50% - 200%", 50, 200
-    )
-    ratio_japanese = ParameterSet._int_prop(
-        "RatioJapanese", "장평 (일본어): 50% - 200%", 50, 200
-    )
-    ratio_other = ParameterSet._int_prop(
-        "RatioOther", "장평 (기타): 50% - 200%", 50, 200
-    )
-    ratio_symbol = ParameterSet._int_prop(
-        "RatioSymbol", "장평 (심벌): 50% - 200%", 50, 200
-    )
-    ratio_user = ParameterSet._int_prop(
-        "RatioUser", "장평 (사용자): 50% - 200%", 50, 200
-    )
-
-    # Spacing properties (-50% ~ 50%)
-    spacing_hangul = ParameterSet._int_prop(
-        "SpacingHangul", "자간 (한글): -50% - 50%", -50, 50
-    )
-    spacing_latin = ParameterSet._int_prop(
-        "SpacingLatin", "자간 (영문): -50% - 50%", -50, 50
-    )
-    spacing_hanja = ParameterSet._int_prop(
-        "SpacingHanja", "자간 (한자): -50% - 50%", -50, 50
-    )
-    spacing_japanese = ParameterSet._int_prop(
-        "SpacingJapanese", "자간 (일본어): -50% - 50%", -50, 50
-    )
-    spacing_other = ParameterSet._int_prop(
-        "SpacingOther", "자간 (기타): -50% - 50%", -50, 50
-    )
-    spacing_symbol = ParameterSet._int_prop(
-        "SpacingSymbol", "자간 (심벌): -50% - 50%", -50, 50
-    )
-    spacing_user = ParameterSet._int_prop(
-        "SpacingUser", "자간 (사용자): -50% - 50%", -50, 50
-    )
-
-    # Offset properties (-100% ~ 100%)
-    offset_hangul = ParameterSet._int_prop(
-        "OffsetHangul", "오프셋 (한글): -100% - 100%", -100, 100
-    )
-    offset_latin = ParameterSet._int_prop(
-        "OffsetLatin", "오프셋 (영문): -100% - 100%", -100, 100
-    )
-    offset_hanja = ParameterSet._int_prop(
-        "OffsetHanja", "오프셋 (한자): -100% - 100%", -100, 100
-    )
-    offset_japanese = ParameterSet._int_prop(
-        "OffsetJapanese", "오프셋 (일본어): -100% - 100%", -100, 100
-    )
-    offset_other = ParameterSet._int_prop(
-        "OffsetOther", "오프셋 (기타): -100% - 100%", -100, 100
-    )
-    offset_symbol = ParameterSet._int_prop(
-        "OffsetSymbol", "오프셋 (심벌): -100% - 100%", -100, 100
-    )
-    offset_user = ParameterSet._int_prop(
-        "OffsetUser", "오프셋 (사용자): -100% - 100%", -100, 100
-    )
-
-    # Boolean properties
-    bold = ParameterSet._bool_prop("Bold", "Bold: 0 = off, 1 = on")
-    italic = ParameterSet._bool_prop("Italic", "Italic: 0 = off, 1 = on")
-    small_caps = ParameterSet._bool_prop("SmallCaps", "Small Caps: 0 = off, 1 = on")
-    emboss = ParameterSet._bool_prop("Emboss", "Emboss: 0 = off, 1 = on")
-    engrave = ParameterSet._bool_prop("Engrave", "Engrave: 0 = off, 1 = on")
-    superscript = ParameterSet._bool_prop("SuperScript", "Superscript: 0 = off, 1 = on")
-    subscript = ParameterSet._bool_prop("SubScript", "Subscript: 0 = off, 1 = on")
-
-    # Underline type (mapped)
-    underline_type = ParameterSet._mapped_prop(
-        "UnderlineType",
-        UNDERLINE_TYPE_MAP,
-        "밑줄 종류: 0 = none, 1 = bottom, 2 = center, 3 = top",
-    )
-    underline_shape = ParameterSet._int_prop("UnderlineShape", "선모양")
-
-    # Outline type (mapped)
-
-    outline_type = ParameterSet._mapped_prop(
-        "OutLineType",
-        OUTLINE_TYPE_MAP,
-        "외곽선 종류: 0 = none, 1 = solid, 2 = dot, 3 = thick, 4 = dash, 5 = dashdot, 6 = dashdotdot",
-    )
-
-    # Shadow type (mapped)
-    shadow_type = ParameterSet._mapped_prop(
-        "ShadowType",
-        SHADOW_TYPE_MAP,
-        "그림자 종류: 0 = none, 1 = drop, 2 = continuous",
-    )
-
-    # Color properties
-    text_color = ParameterSet._color_prop("TextColor", "글자색 (COLORREF)")
-    shade_color = ParameterSet._color_prop("ShadeColor", "음영색 (COLORREF)")
-    underline_color = ParameterSet._color_prop("UnderlineColor", "밑줄 색상 (COLORREF)")
-    shadow_color = ParameterSet._color_prop("ShadowColor", "그림자 색 (COLORREF)")
-
-    # Shadow offset properties (-100% ~ 100%)
-    shadow_offset_x = ParameterSet._int_prop(
-        "ShadowOffsetX", "그림자 간격 (X 방향): -100% - 100%", -100, 100
-    )
-    shadow_offset_y = ParameterSet._int_prop(
-        "ShadowOffsetY", "그림자 간격 (Y 방향): -100% - 100%", -100, 100
-    )
-
-    # Strikeout properties
-    strikeout_color = ParameterSet._color_prop("StrikeOutColor", "취소선 색 (COLORREF)")
-
-    strikeout_type = ParameterSet._mapped_prop(
-        "StrikeOutType",
-        STRIKEOUT_TYPE_MAP,
-        "취소선 종류: 0 = none, 1 = red single, 2 = red double, 3 = text single, 4 = text double",
-    )
-    strikeout_shape = ParameterSet._int_prop("StrikeOutShape", "선모양")
-
-    # DiacSymMark (mapped)
-    diac_sym_mark = ParameterSet._mapped_prop(
-        "DiacSymMark",
-        DIAC_SYM_MARK_MAP,
-        "강조점 종류: 0 = none, 1 = black circle, 2 = empty circle",
-    )
-
-    # UseFontSpace (mapped)
-    use_font_space = ParameterSet._mapped_prop(
-        "UseFontSpace", USE_FONT_SPACE_MAP, "글꼴에 어울리는 빈칸: 0 = off, 1 = on"
-    )
-
-    # UseKerning (mapped)
-    use_kerning = ParameterSet._mapped_prop(
-        "UseKerning", USE_KERNING_MAP, "커닝: 0 = off, 1 = on"
-    )
-
-    # Height property
-    height = ParameterSet._unit_prop("Height", "pt", "글자 크기 (HWPUNIT)")
-
-    # BorderFill property (explicit)
-    border_fill    = ParameterSet._typed_prop("BorderFill", "테두리/채우기 속성", lambda: BorderFill)
-
-    # Aggregated properties for convenience
-    @property
-    def facename(self):
-        return {
-            "한글": self.facename_hangul,
-            "영어": self.facename_latin,
-            "한자": self.facename_hanja,
-            "일어": self.facename_japanese,
-            "기타": self.facename_other,
-            "기호": self.facename_symbol,
-            "사용자": self.facename_user,
-        }
-
-    @facename.setter
-    def facename(self, value):
-        keys = [
-            "facename_hangul",
-            "facename_latin",
-            "facename_hanja",
-            "facename_japanese",
-            "facename_other",
-            "facename_symbol",
-            "facename_user",
-        ]
-        if isinstance(value, str):
-            for key in keys:
-                setattr(self, key, value)
-        elif isinstance(value, list):
-            for key, val in zip(keys, value):
-                setattr(self, key, val)
-
-    @property
-    def fonttype(self):
-        return {
-            "한글": self.fonttype_hangul,
-            "영어": self.fonttype_latin,
-            "한자": self.fonttype_hanja,
-            "일어": self.fonttype_japanese,
-            "기타": self.fonttype_other,
-            "기호": self.fonttype_symbol,
-            "사용자": self.fonttype_user,
-        }
-
-    @fonttype.setter
-    def fonttype(self, value):
-        keys = [
-            "fonttype_hangul",
-            "fonttype_latin",
-            "fonttype_hanja",
-            "fonttype_japanese",
-            "fonttype_other",
-            "fonttype_symbol",
-            "fonttype_user",
-        ]
-        if isinstance(value, int):
-            for key in keys:
-                setattr(self, key, value)
-        elif isinstance(value, list):
-            for key, val in zip(keys, value):
-                setattr(self, key, val)
-
-    @property
-    def size(self):
-        return {
-            "한글": self.size_hangul,
-            "영어": self.size_latin,
-            "한자": self.size_hanja,
-            "일어": self.size_japanese,
-            "기타": self.size_other,
-            "기호": self.size_symbol,
-            "사용자": self.size_user,
-        }
-
-    @size.setter
-    def size(self, value):
-        keys = [
-            "size_hangul",
-            "size_latin",
-            "size_hanja",
-            "size_japanese",
-            "size_other",
-            "size_symbol",
-            "size_user",
-        ]
-        if isinstance(value, int):
-            for key in keys:
-                setattr(self, key, value)
-        elif isinstance(value, list):
-            for key, val in zip(keys, value):
-                setattr(self, key, val)
-
-    @property
-    def ratio(self):
-        return {
-            "한글": self.ratio_hangul,
-            "영어": self.ratio_latin,
-            "한자": self.ratio_hanja,
-            "일어": self.ratio_japanese,
-            "기타": self.ratio_other,
-            "기호": self.ratio_symbol,
-            "사용자": self.ratio_user,
-        }
-
-    @ratio.setter
-    def ratio(self, value):
-        keys = [
-            "ratio_hangul",
-            "ratio_latin",
-            "ratio_hanja",
-            "ratio_japanese",
-            "ratio_other",
-            "ratio_symbol",
-            "ratio_user",
-        ]
-        if isinstance(value, int):
-            for key in keys:
-                setattr(self, key, value)
-        elif isinstance(value, list):
-            for key, val in zip(keys, value):
-                setattr(self, key, val)
-
-    @property
-    def spacing(self):
-        return {
-            "한글": self.spacing_hangul,
-            "영어": self.spacing_latin,
-            "한자": self.spacing_hanja,
-            "일어": self.spacing_japanese,
-            "기타": self.spacing_other,
-            "기호": self.spacing_symbol,
-            "사용자": self.spacing_user,
-        }
-
-    @spacing.setter
-    def spacing(self, value):
-        keys = [
-            "spacing_hangul",
-            "spacing_latin",
-            "spacing_hanja",
-            "spacing_japanese",
-            "spacing_other",
-            "spacing_symbol",
-            "spacing_user",
-        ]
-        if isinstance(value, int):
-            for key in keys:
-                setattr(self, key, value)
-        elif isinstance(value, list):
-            for key, val in zip(keys, value):
-                setattr(self, key, val)
-
-    @property
-    def offset(self):
-        return {
-            "한글": self.offset_hangul,
-            "영어": self.offset_latin,
-            "한자": self.offset_hanja,
-            "일어": self.offset_japanese,
-            "기타": self.offset_other,
-            "기호": self.offset_symbol,
-            "사용자": self.offset_user,
-        }
-
-    @offset.setter
-    def offset(self, value):
-        keys = [
-            "offset_hangul",
-            "offset_latin",
-            "offset_hanja",
-            "offset_japanese",
-            "offset_other",
-            "offset_symbol",
-            "offset_user",
-        ]
-        if isinstance(value, int):
-            for key in keys:
-                setattr(self, key, value)
-        elif isinstance(value, list):
-            for key, val in zip(keys, value):
-                setattr(self, key, val)
-
-    def __str__(self):
-        attributes = {
-            "facename": self.facename, 
-            "fonttype": self.fonttype,
-            "size": self.size,
-            "ratio": self.ratio,
-            "spacing": self.spacing,
-            "Offset": self.offset,
-            "bold": self.bold,
-            "italic": self.italic,
-            "small_caps": self.small_caps,
-            "emboss": self.emboss,
-            "engrave": self.engrave,
-            "superscript": self.superscript,
-            "subscript": self.subscript,
-            "underline_type": self.underline_type,
-            "outline_type": self.outline_type,
-            "shadow_type": self.shadow_type,
-            "text_color": self.text_color,
-            "shade_color": self.shade_color,
-            "underline_colo": self.underline_color,
-            "shadow_offset_x": self.shadow_offset_x,
-            "shadow_offset_y": self.shadow_offset_y,
-            "shadow_color": self.shadow_color,
-            "strikeout_type": self.strikeout_type,
-            "diac_sym_mark": self.diac_sym_mark,
-            "use_font_space": self.use_font_space,
-            "use_kerning": self.use_kerning,
-            "height": self.height,
-            "border_fill": self.border_fill.serialize() if self.border_fill else None,
-            }
-        data = {"name": self.__class__.__name__, "values": attributes}
-        return pprint.pformat(data, indent=4, width=60)
-
-    def __repr__(self):
-        return self.__str__()
-
-# %% ../nbs/02_api/02_parameters.ipynb 44
+# %% ../nbs/02_api/02_parameters.ipynb 41
 class CtrlData(ParameterSet):
     """
     ### CtrlData
@@ -2692,7 +1951,7 @@ class CtrlData(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 46
+# %% ../nbs/02_api/02_parameters.ipynb 43
 class DrawArcType(ParameterSet):
     """
     ### DrawArcType
@@ -2711,7 +1970,7 @@ class DrawArcType(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 48
+# %% ../nbs/02_api/02_parameters.ipynb 45
 class DrawCoordInfo(ParameterSet):
     """
     ### DrawCoordInfo
@@ -2732,7 +1991,7 @@ class DrawCoordInfo(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 50
+# %% ../nbs/02_api/02_parameters.ipynb 47
 class DrawCtrlHyperlink(ParameterSet):
     """
     ### DrawCtrlHyperlink
@@ -2749,7 +2008,7 @@ class DrawCtrlHyperlink(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 52
+# %% ../nbs/02_api/02_parameters.ipynb 49
 class DrawEditDetail(ParameterSet):
     """
     ### DrawEditDetail
@@ -2769,175 +2028,32 @@ class DrawEditDetail(ParameterSet):
     point_y = ParameterSet._int_prop("PointY", "PointY: 교점의 Y 좌표.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 54
-class DrawFillAttr(ParameterSet):
-    """
-    ### DrawFillAttr
-
-    30) DrawEditDetail : 그림의 교정과 관련된 상세 설정
-
-    | Item ID               | Type         | SubType   | Description                                                                                         |
-    |-----------------------|--------------|-----------|-----------------------------------------------------------------------------------------------------|
-    | Type                  | PIT_UI       |           | 배경 유형: 0 = 채우기 없음, 1 = 단색 또는 무늬 채우기, 2 = 그림, 3 = 그라데이션                      |
-    | GradationType         | PIT_I        |           | 그라데이션 형태: 1 = 줄무늬형, 2 = 원형, 3 = 원뿔형, 4 = 사각형                                       |
-    | GradationAngle        | PIT_I        |           | 그라데이션의 기울기(회전 각도)                                                                       |
-    | GradationCenterX      | PIT_I        |           | 그라데이션의 가로 중심 (X 좌표)                                                                      |
-    | GradationCenterY      | PIT_I        |           | 그라데이션의 세로 중심 (Y 좌표)                                                                      |
-    | GradationStep         | PIT_I        |           | 그라데이션 단계 설정 (0..100)                                                                        |
-    | GradationColorNum     | PIT_I        |           | 그라데이션의 색 수                                                                                  |
-    | GradationColor        | PIT_ARRAY    | PIT_I     | 그라데이션의 색상 (시작색, 중간색들, 끝색), 길이는 2~10                                               |
-    | GradationIndexPos     | PIT_ARRAY    | PIT_I     | 그라데이션 단계 색상들과의 위치                                                                      |
-    | GradationStepCenter   | PIT_UI1      |           | 그라데이션 단계 설정의 중심 (0..100)                                                                 |
-    | GradationAlpha        | PIT_UI1      |           | 그라데이션 투명도 (0..255)                                                                           |
-    | WinBrushFaceColor     | PIT_UI       |           | 단색 (RGB 0x00BBGGRR)                                                                                |
-    | WinBrushHatchColor    | PIT_UI       |           | 무늬 (RGB 0x00BBGGRR)                                                                                |
-    | WinBrushFaceStyle     | PIT_I1       |           | 무늬 스타일 (0~6)                                                                                   |
-    | WinBrushAlpha         | PIT_UI       |           | 단색/무늬 투명도 (0..255)                                                                             |
-    | FileName              | PIT_BSTR     |           | 그림 파일 경로                                                                                      |
-    | Embedded              | PIT_UI1      |           | 그림이 문서에 직접 삽입(TRUE) / 파일로 연결(FALSE)                                                    |
-    | PicEffect             | PIT_UI1      |           | 그림 효과: 0 = 그대로, 1 = 그레이스케일, 2 = 흑백 효과                                               |
-    | Brightness            | PIT_I1       |           | 명도 (-100 ~ 100)                                                                                   |
-    | Contrast              | PIT_I1       |           | 대비 (-100 ~ 100)                                                                                   |
-    | Reverse               | PIT_UI1      |           | 반전 유무 (0 또는 1)                                                                                |
-    | DrawFillImageType     | PIT_I        |           | 배경 채우는 방식 (0~14)                                                                              |
-    | SkipLeft              | PIT_UI       |           | 왼쪽 자르기                                                                                        |
-    | SkipRight             | PIT_UI       |           | 오른쪽 자르기                                                                                      |
-    | SkipTop               | PIT_UI       |           | 위 자르기                                                                                          |
-    | SkipBottom            | PIT_UI       |           | 아래 자르기                                                                                        |
-    | OriginalSizeX         | PIT_I        |           | 이미지 원본 크기 X                                                                                   |
-    | OriginalSizeY         | PIT_I        |           | 이미지 원본 크기 Y                                                                                   |
-    | InsideMarginLeft      | PIT_I4       |           | 이미지 안쪽 여백 (왼쪽)                                                                              |
-    | InsideMarginRight     | PIT_I4       |           | 이미지 안쪽 여백 (오른쪽)                                                                            |
-    | InsideMarginTop       | PIT_I4       |           | 이미지 안쪽 여백 (위)                                                                                |
-    | InsideMarginBottom    | PIT_I4       |           | 이미지 안쪽 여백 (아래)                                                                              |
-    | WindowsBrush          | PIT_UI1      |           | 면/무늬 브러시 여부 (0 또는 1)                                                                       |
-    | GradationBrush        | PIT_UI1      |           | 그러데이션 브러시 여부 (0 또는 1)                                                                    |
-    | ImageBrush            | PIT_UI1      |           | 그림 브러시 여부 (0 또는 1)                                                                          |
-    | ImageCreateOnDrag     | PIT_UI1      |           | 그림 개체 생성 시 드래그 여부 (0 또는 1)                                                             |
-    | ImageAlpha            | PIT_UI1      |           | 그림 개체/배경 투명도 (0..255)                                                                        |
-    """
-
-    # Basic Properties
-    
-    type = ParameterSet._mapped_prop("Type", BACKGROUND_TYPE_MAP,
-                                     doc="배경 유형: 0 = 채우기 없음, 1 = 단색 또는 무늬 채우기, 2 = 그림, 3 = 그라데이션")
-    gradation_type = ParameterSet._mapped_prop("GradationType", GRADATION_TYPE_MAP,
-                                             doc="그라데이션 형태: 1 = 줄무늬형, 2 = 원형, 3 = 원뿔형, 4 = 사각형")
-    gradation_angle = ParameterSet._int_prop("GradationAngle", "그라데이션의 기울기(회전 각도)")
-    gradation_center_x = ParameterSet._int_prop("GradationCenterX", "그라데이션의 가로 중심 (X 좌표)")
-    gradation_center_y = ParameterSet._int_prop("GradationCenterY", "그라데이션의 세로 중심 (Y 좌표)")
-    gradation_step = ParameterSet._int_prop("GradationStep", "그라데이션 단계 설정 (0..100)", 0, 100)
-    gradation_color_num = ParameterSet._int_prop("GradationColorNum", "그라데이션의 색 수")
-    
-    gradation_color = ParameterSet._gradation_color_prop("GradationColor", "그라데이션의 색상 (시작색, 중간색들, 끝색)")
-    
-    gradation_index_pos = ParameterSet._int_list_prop("GradationIndexPos", "그라데이션 단계 색상들과의 위치")
-    gradation_step_center = ParameterSet._int_prop("GradationStepCenter", "그라데이션 단계 설정의 중심 (0..100)", 0, 100)
-    gradation_alpha = ParameterSet._int_prop("GradationAlpha", "그라데이션 투명도", 0, 255)
-    
-    win_brush_face_color = ParameterSet._int_prop("WinBrushFaceColor", "단색 (RGB 0x00BBGGRR)", 0, 0xFFFFFF)
-    win_brush_hatch_color = ParameterSet._int_prop("WinBrushHatchColor", "무늬 (RGB 0x00BBGGRR)", 0, 0xFFFFFF)
-    win_brush_face_style = ParameterSet._int_prop("WinBrushFaceStyle", "무늬 스타일", 0, 6)
-    win_brush_alpha = ParameterSet._int_prop("WinBrushAlpha", "단색/무늬 투명도", 0, 255)
-    
-    filename = ParameterSet._str_prop("FileName", "그림 파일 경로")
-    embedded = ParameterSet._bool_prop("Embedded", "그림이 문서에 직접 삽입(TRUE) / 파일로 연결(FALSE)")
-    _pic_effect_map = {"none": 0, "gray": 1, "black and white": 2}
-    pic_effect = ParameterSet._mapped_prop("PicEffect", _pic_effect_map,
-                                           doc="그림 효과: 0 = 실제 이미지 그대로, 1 = 그레이스케일, 2 = 흑백 효과")
-    brightness = ParameterSet._int_prop("Brightness", "명도 (-100 ~ 100)", -100, 100)
-    contrast = ParameterSet._int_prop("Contrast", "대비 (-100 ~ 100)", -100, 100)
-    reverse = ParameterSet._bool_prop("Reverse", "반전 유무: 0 (FALSE) 또는 1 (TRUE)")
-    draw_fill_image_type = ParameterSet._int_prop("DrawFillImageType", "배경을 채우는 방식", 0, 14)
-    
-    skip_left = ParameterSet._int_prop("SkipLeft", "왼쪽 자르기")
-    skip_right = ParameterSet._int_prop("SkipRight", "오른쪽 자르기")
-    skip_top = ParameterSet._int_prop("SkipTop", "위 자르기")
-    skip_bottom = ParameterSet._int_prop("SkipBottom", "아래 자르기")
-    
-    original_size_x = ParameterSet._int_prop("OriginalSizeX", "이미지 원본 크기 X")
-    original_size_y = ParameterSet._int_prop("OriginalSizeY", "이미지 원본 크기 Y")
-    
-    inside_margin_left = ParameterSet._int_prop("InsideMarginLeft", "이미지 안쪽 여백 (왼쪽)")
-    inside_margin_right = ParameterSet._int_prop("InsideMarginRight", "이미지 안쪽 여백 (오른쪽)")
-    inside_margin_top = ParameterSet._int_prop("InsideMarginTop", "이미지 안쪽 여백 (위)")
-    inside_margin_bottom = ParameterSet._int_prop("InsideMarginBottom", "이미지 안쪽 여백 (아래)")
-    
-    windows_brush = ParameterSet._bool_prop("WindowsBrush", "면/무늬 브러시 여부 (0 또는 1)")
-    gradation_brush = ParameterSet._bool_prop("GradationBrush", "그러데이션 브러시 여부 (0 또는 1)")
-    image_brush = ParameterSet._bool_prop("ImageBrush", "그림 브러시 여부 (0 또는 1)")
-    image_create_on_drag = ParameterSet._bool_prop("ImageCreateOnDrag", "마우스로 그림 개체 생성 여부 (0 또는 1)")
-    image_alpha = ParameterSet._int_prop("ImageAlpha", "그림 개체/배경 투명도", 0, 255)
-
-
-# %% ../nbs/02_api/02_parameters.ipynb 57
+# %% ../nbs/02_api/02_parameters.ipynb 53
 class DrawImageAttr(ParameterSet):
-    """
-    ### DrawImageAttr
+    """DrawImageAttr ParameterSet."""
+    FileName = PropertyDescriptor("FileName", r"""ShapeObject의 배경을 그림으로 선택했을 경우 또는 그림개체일 경우의 그림파일 경로""")
+    Embedded = PropertyDescriptor("Embedded", r"""그림이 문서에 직접 삽입(TRUE) / 파일로 연결(FALSE)""")
+    PicEffect = PropertyDescriptor("PicEffect", r"""그림 효과 0 \= 실제 이미지 그대로1 \= 그레이스케일2 \= 흑백 효과""")
+    Brightness = PropertyDescriptor("Brightness", r"""명도 (\-100 \~ 100\)""")
+    Contrast = PropertyDescriptor("Contrast", r"""밝기 (\-100 \~ 100\)""")
+    Reverse = PropertyDescriptor("Reverse", r"""반전 유무""")
+    DrawFillImageType = PropertyDescriptor("DrawFillImageType", r"""ShapeObject의 배경일 경우에만 의미 있는 아이템, 배경을 채우는 방식을 결정한다. (그림개체에는 해당사항 없음)0 \= 바둑판식으로1 \= 가로/위만 바둑판식으로 배열2 \= 가로/아래만 바둑판식으로 배열3 \= 세로/왼쪽만 바둑판식으로 배열4 \= 세로/오른쪽만 바둑판식으로 배열5 \= 크기에 맞추어6 \= 가운데로7 \= 가운데 위로8 \= 가운데 아래로9 \= 왼쪽 가운데로10 \= 왼쪽 위로11 \= 왼쪽 아래로12 \= 오른쪽 가운데로13 \= 오른쪽 위로14 \= 오른쪽 아래로""")
+    SkipLeft = PropertyDescriptor("SkipLeft", r"""그림 개체일 경우에만 의미 있는 아이템, 왼쪽 자르기""")
+    SkipRight = PropertyDescriptor("SkipRight", r"""그림 개체일 경우에만 의미 있는 아이템, 오른쪽 자르기""")
+    SkipTop = PropertyDescriptor("SkipTop", r"""그림 개체일 경우에만 의미 있는 아이템, 위 자르기""")
+    SkipBottom = PropertyDescriptor("SkipBottom", r"""그림 개체일 경우에만 의미 있는 아이템, 아래 자르기""")
+    OriginalSizeX = PropertyDescriptor("OriginalSizeX", r"""그림 개체일 경우에만 의미 있는 아이템, 이미지 원본 크기 X size""")
+    OriginalSizeY = PropertyDescriptor("OriginalSizeY", r"""그림 개체일 경우에만 의미 있는 아이템, 이미지 원본 크기 Y size""")
+    InsideMarginLeft = PropertyDescriptor("InsideMarginLeft", r"""그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (왼쪽)""")
+    InsideMarginRight = PropertyDescriptor("InsideMarginRight", r"""그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (오른쪽)""")
+    InsideMarginTop = PropertyDescriptor("InsideMarginTop", r"""그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (위)""")
+    InsideMarginBottom = PropertyDescriptor("InsideMarginBottom", r"""그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (아래)""")
+    WindowsBrush = PropertyDescriptor("WindowsBrush", r"""현재 선택된 brush의 type이 면/무늬 브러시인가를 나타냄""")
+    GradationBrush = PropertyDescriptor("GradationBrush", r"""현재 선택된 brush의 type이 그러데이션 브러시인가를 나타냄""")
+    ImageBrush = PropertyDescriptor("ImageBrush", r"""현재 선택된 brush의 type이 그림 브러시인가를 나타냄""")
+    ImageCreateOnDrag = PropertyDescriptor("ImageCreateOnDrag", r"""그림 개체 생성 시 마우스로 끌어 생성할지 여부(한글2007에 새로 추가)""")
 
-    32) DrawImageAttr : 그림 개체 속성
-
-    ImageAttr(한글2005)에서 DrawImageAttr로 이름이 변경되었다.
-    그림 개체의 속성을 지정하기 위한 파라메터셋.
-    DrawFillAttr에서 그림과 관련된 속성만 빼서 파라메터셋으로 지정되었다.
-    (현재 DrawFillAttr와 상속관계가 지정되지 않음)
-
-    | Item ID              | Type     | SubType   | Description                                                                                         |
-    |----------------------|----------|-----------|-----------------------------------------------------------------------------------------------------|
-    | FileName             | PIT_BSTR |           | ShapeObject의 배경을 그림으로 선택했을 경우 또는 그림개체일 경우의 그림파일 경로                    |
-    | Embedded             | PIT_UI1  |           | 그림이 문서에 삽입(T)/링크(F)                                                                         |
-    | PicEffect            | PIT_UI1  |           | 그림 효과: 0 = 그대로, 1 = 흑백, 2 = 세피아 등                                                      |
-    | Brightness           | PIT_I1   |           | 명도 (-100 ~ 100)                                                                                   |
-    | Contrast             | PIT_I1   |           | 밝기 (-100 ~ 100)                                                                                   |
-    | Reverse              | PIT_UI1  |           | 반전 유무                                                                                           |
-    | DrawFillImageType    | PIT_I    |           | 배경을 채우는 방식 (0~14)                                                                             |
-    | SkipLeft             | PIT_UI   |           | 그림 개체일 경우에만 의미 있는 아이템, 왼쪽 자르기                                                  |
-    | SkipRight            | PIT_UI   |           | 그림 개체일 경우에만 의미 있는 아이템, 오른쪽 자르기                                                |
-    | SkipTop              | PIT_UI   |           | 그림 개체일 경우에만 의미 있는 아이템, 위 자르기                                                    |
-    | SkipBottom           | PIT_UI   |           | 그림 개체일 경우에만 의미 있는 아이템, 아래 자르기                                                  |
-    | OriginalSizeX        | PIT_UI   |           | 이미지 원본 크기 X                                                                                   |
-    | OriginalSizeY        | PIT_UI   |           | 이미지 원본 크기 Y                                                                                   |
-    | InsideMarginLeft     | PIT_I4   |           | 이미지 안쪽 여백 (왼쪽)                                                                              |
-    | InsideMarginRight    | PIT_I4   |           | 이미지 안쪽 여백 (오른쪽)                                                                            |
-    | InsideMarginTop      | PIT_I4   |           | 이미지 안쪽 여백 (위)                                                                                |
-    | InsideMarginBottom   | PIT_I4   |           | 이미지 안쪽 여백 (아래)                                                                              |
-    | WindowsBrush         | PIT_UI1  |           | 현재 선택된 brush의 type이 면/무늬 브러시 여부                                                       |
-    | GradationBrush       | PIT_UI1  |           | 현재 선택된 brush의 type이 그러데이션 브러시 여부                                                    |
-    | ImageBrush           | PIT_UI1  |           | 현재 선택된 brush의 type이 그림 브러시 여부                                                          |
-    | ImageCreateOnDrag    | PIT_UI1  |           | 그림 개체 생성 시 마우스로 끌어 생성 여부 (한글2007에 새로 추가)                                      |
-    | ImageAlpha           | PIT_UI1  |           | 그림 개체/배경 투명도 (0~255)                                                                         |
-    """
-    file_name = ParameterSet._str_prop("FileName", "그림 파일 경로")
-    embedded = ParameterSet._bool_prop("Embedded", "그림이 문서에 삽입(T)/링크(F)")
-    pic_effect = ParameterSet._mapped_prop("PicEffect", PIC_EFFECT_MAP,
-                                           doc="그림 효과: 0 = 그대로, 1 = 흑백, 2 = 세피아 등")
-    brightness = ParameterSet._int_prop("Brightness", "명도 (-100 ~ 100)", -100, 100)
-    contrast = ParameterSet._int_prop("Contrast", "밝기 (-100 ~ 100)", -100, 100)
-    reverse = ParameterSet._bool_prop("Reverse", "반전 유무: 0 (off) 또는 1 (on)")
-    draw_fill_image_type = ParameterSet._int_prop("DrawFillImageType", "배경을 채우는 방식", 0, 14)
-    
-    skip_left = ParameterSet._int_prop("SkipLeft", "왼쪽 자르기")
-    skip_right = ParameterSet._int_prop("SkipRight", "오른쪽 자르기")
-    skip_top = ParameterSet._int_prop("SkipTop", "위 자르기")
-    skip_bottom = ParameterSet._int_prop("SkipBottom", "아래 자르기")
-    
-    original_size_x = ParameterSet._int_prop("OriginalSizeX", "이미지 원본 크기 X")
-    original_size_y = ParameterSet._int_prop("OriginalSizeY", "이미지 원본 크기 Y")
-    
-    inside_margin_left = ParameterSet._int_prop("InsideMarginLeft", "이미지 안쪽 여백 (왼쪽)")
-    inside_margin_right = ParameterSet._int_prop("InsideMarginRight", "이미지 안쪽 여백 (오른쪽)")
-    inside_margin_top = ParameterSet._int_prop("InsideMarginTop", "이미지 안쪽 여백 (위)")
-    inside_margin_bottom = ParameterSet._int_prop("InsideMarginBottom", "이미지 안쪽 여백 (아래)")
-    
-    windows_brush = ParameterSet._bool_prop("WindowsBrush", "면/무늬 브러시 여부: 0 또는 1")
-    gradation_brush = ParameterSet._bool_prop("GradationBrush", "그러데이션 브러시 여부: 0 또는 1")
-    image_brush = ParameterSet._bool_prop("ImageBrush", "그림 브러시 여부: 0 또는 1")
-    image_create_on_drag = ParameterSet._bool_prop("ImageCreateOnDrag", "그림 개체 생성 시 마우스로 끌어 생성 여부: 0 또는 1")
-    image_alpha = ParameterSet._int_prop("ImageAlpha", "그림 개체/배경 투명도 (0~255)", 0, 255)
-
-
-
-# %% ../nbs/02_api/02_parameters.ipynb 59
+# %% ../nbs/02_api/02_parameters.ipynb 55
 class DrawImageScissoring(ParameterSet):
     """
     ### DrawImageScissoring
@@ -2957,7 +2073,7 @@ class DrawImageScissoring(ParameterSet):
     handle_index = ParameterSet._int_prop("HandleIndex", "Reserved: 정수 값을 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 61
+# %% ../nbs/02_api/02_parameters.ipynb 57
 class DrawLayout(ParameterSet):
     """
     ### DrawLayout
@@ -2975,7 +2091,7 @@ class DrawLayout(ParameterSet):
     curve_segment_info = ParameterSet._int_list_prop("CurveSegmentInfo", "곡선 세그먼트 정보: 정수 리스트")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 63
+# %% ../nbs/02_api/02_parameters.ipynb 59
 class DrawLineAttr(ParameterSet):
     """
     ### DrawLineAttr
@@ -3011,7 +2127,7 @@ class DrawLineAttr(ParameterSet):
     alpha         = ParameterSet._int_prop("Alpha", "투명도: 정수를 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 65
+# %% ../nbs/02_api/02_parameters.ipynb 61
 class DrawRectType(ParameterSet):
     """
     ### DrawRectType
@@ -3026,7 +2142,7 @@ class DrawRectType(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 67
+# %% ../nbs/02_api/02_parameters.ipynb 63
 class DrawResize(ParameterSet):
     """
     ### DrawResize
@@ -3046,7 +2162,7 @@ class DrawResize(ParameterSet):
     mode = ParameterSet._int_prop("Mode", "Reserved: 정수 값을 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 69
+# %% ../nbs/02_api/02_parameters.ipynb 65
 class DrawRotate(ParameterSet):
     """
     ### DrawRotate
@@ -3072,7 +2188,7 @@ class DrawRotate(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 71
+# %% ../nbs/02_api/02_parameters.ipynb 67
 class DrawScAction(ParameterSet):
     """
     ### DrawScAction
@@ -3097,7 +2213,7 @@ class DrawScAction(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 73
+# %% ../nbs/02_api/02_parameters.ipynb 69
 class DrawShadow(ParameterSet):
     """
     ### DrawShadow
@@ -3120,7 +2236,7 @@ class DrawShadow(ParameterSet):
     shadow_alpha   = ParameterSet._int_prop("ShadowAlpha", "그림자 투명도 (0 ~ 255)", 0, 255)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 75
+# %% ../nbs/02_api/02_parameters.ipynb 71
 class DrawShear(ParameterSet):
     """
     ### DrawShear
@@ -3137,7 +2253,7 @@ class DrawShear(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 77
+# %% ../nbs/02_api/02_parameters.ipynb 73
 class DrawTextart(ParameterSet):
     """
     ### DrawTextart
@@ -3162,97 +2278,7 @@ class DrawTextart(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 79
-class FindReplace(ParameterSet):
-    """
-    ### FindReplace
-
-    56) FindReplace : 찾기/찾아 바꾸기
-
-    | Item ID           | Type      | SubType | Description                                                               |
-    |-------------------|-----------|---------|---------------------------------------------------------------------------|
-    | FindString        | PIT_BSTR  |         | 찾을 문자열                                                              |
-    | ReplaceString     | PIT_BSTR  |         | 바꿀 문자열                                                              |
-    | Direction         | PIT_UI1   |         | 찾을 방향 : 0 = 아래쪽, 1 = 위쪽, 2 = 문서 전체                           |
-    | MatchCase         | PIT_UI1   |         | 대소문자 구별 (on/off)                                                     |
-    | AllWordForms      | PIT_UI1   |         | 모든 단어 형태 (on/off)                                                   |
-    | SeveralWords      | PIT_UI1   |         | 여러 단어 찾기 (on/off)                                                    |
-    | UseWildCards      | PIT_UI1   |         | 와일드카드 사용 (on/off)                                                   |
-    | WholeWordOnly     | PIT_UI1   |         | 전체 단어만 찾기 (on/off)                                                   |
-    | AutoSpell         | PIT_UI1   |         | 자동 맞춤법 사용 (on/off)                                                  |
-    | ReplaceMode       | PIT_UI1   |         | 찾아 바꾸기 모드 (on/off)                                                  |
-    | IgnoreFindString  | PIT_UI1   |         | 찾을 문자열 무시 (on/off)                                                  |
-    | IgnoreReplaceString| PIT_UI1  |         | 바꿀 문자열 무시 (on/off)                                                   |
-    | FindCharShape     | PIT_SET   | CharShape | 찾을 글자 모양                                                          |
-    | FindParaShape     | PIT_SET   | ParaShape | 찾을 문단 모양                                                          |
-    | ReplaceCharShape  | PIT_SET   | CharShape | 바꿀 글자 모양                                                          |
-    | ReplaceParaShape  | PIT_SET   | ParaShape | 바꿀 문단 모양                                                          |
-    | FindStyle         | PIT_BSTR  |         | 찾을 스타일                                                              |
-    | ReplaceStyle      | PIT_BSTR  |         | 바꿀 스타일                                                              |
-    | IgnoreMessage     | PIT_UI1   |         | 메시지박스 표시 안함 (on/off)                                              |
-    | HanjaFromHangul   | PIT_UI1   |         | 한글임으로 한자 차기                                                      |
-    | FindJaso          | PIT_UI1   |         | 자소로 찾기 (on/off)                                                      |
-    | FindRegExp        | PIT_UI1   |         | 정규식(조건식)으로 찾기 (on/off)                                           |
-    | FindType          | PIT_UI1   |         | 찾기 유형 (on/off)                                                       |
-    """
-
-    def __init__(self, parameterset=None, **kwargs):
-        super().__init__(parameterset, **kwargs)
-
-    # String properties
-    find_string = ParameterSet._str_prop("FindString", "찾을 문자열")
-    replace_string = ParameterSet._str_prop("ReplaceString", "바꿀 문자열")
-    find_style = ParameterSet._str_prop("FindStyle", "찾을 스타일")
-    replace_style = ParameterSet._str_prop("ReplaceStyle", "바꿀 스타일")
-
-    # Enum property for direction
-    direction = ParameterSet._mapped_prop(
-        "Direction",
-        SEARCH_DIRECTION_MAP,
-        doc="찾을 방향: 0 = 아래쪽, 1 = 위쪽, 2 = 문서 전체",
-    )
-
-    # Boolean properties (on/off flags)
-    match_case = ParameterSet._bool_prop("MatchCase", "대소문자 구별 (on/off)")
-    all_word_forms = ParameterSet._bool_prop("AllWordForms", "모든 단어 형태 (on/off)")
-    several_words = ParameterSet._bool_prop("SeveralWords", "여러 단어 찾기 (on/off)")
-    use_wildcards = ParameterSet._bool_prop("UseWildCards", "와일드카드 사용 (on/off)")
-    whole_word_only = ParameterSet._bool_prop(
-        "WholeWordOnly", "전체 단어만 찾기 (on/off)"
-    )
-    auto_spell = ParameterSet._bool_prop("AutoSpell", "자동 맞춤법 사용 (on/off)")
-    replace_mode = ParameterSet._bool_prop("ReplaceMode", "찾아 바꾸기 모드 (on/off)")
-    ignore_find_string = ParameterSet._bool_prop(
-        "IgnoreFindString", "찾을 문자열 무시 (on/off)"
-    )
-    ignore_replace_string = ParameterSet._bool_prop(
-        "IgnoreReplaceString", "바꿀 문자열 무시 (on/off)"
-    )
-    ignore_message = ParameterSet._bool_prop(
-        "IgnoreMessage", "메시지박스 표시 안함 (on/off)"
-    )
-    hanja_from_hangul = ParameterSet._bool_prop(
-        "HanjaFromHangul", "한글임으로 한자 차기"
-    )
-    find_jaso = ParameterSet._bool_prop("FindJaso", "자소로 찾기 (on/off)")
-    find_regexp = ParameterSet._bool_prop("FindRegExp", "정규식 찾기 (on/off)")
-    find_type = ParameterSet._bool_prop("FindType", "찾기 유형 (on/off)")
-
-    # Composite properties using _typed_prop
-    find_charshape = ParameterSet._typed_prop(
-        "FindCharShape", "찾을 글자 모양", lambda: CharShape
-    )
-    find_parashape = ParameterSet._typed_prop(
-        "FindParaShape", "찾을 문단 모양", lambda: ParaShape
-    )
-    replace_charshape = ParameterSet._typed_prop(
-        "ReplaceCharShape", "바꿀 글자 모양", lambda: CharShape
-    )
-    replace_parashape = ParameterSet._typed_prop(
-        "ReplaceParaShape", "바꿀 문단 모양", lambda: ParaShape
-    )
-
-# %% ../nbs/02_api/02_parameters.ipynb 81
+# %% ../nbs/02_api/02_parameters.ipynb 76
 class InsertText(ParameterSet):
     """
 
@@ -3265,7 +2291,7 @@ class InsertText(ParameterSet):
 
     text = StringProperty("Text", "삽입할 텍스트")
 
-# %% ../nbs/02_api/02_parameters.ipynb 83
+# %% ../nbs/02_api/02_parameters.ipynb 78
 class ListProperties(ParameterSet):
     """
     ### ListProperties
@@ -3295,365 +2321,13 @@ class ListProperties(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 85
+# %% ../nbs/02_api/02_parameters.ipynb 80
 class NumberingShape(ParameterSet):
-    """
-    ### NumberingShape
+    """NumberingShape ParameterSet."""
+    StartNumber = PropertyDescriptor("StartNumber", r"""시작 번호 (0 \= 앞 구역에 이어, n \= 지정한 번호로 시작)\* 0은 구역의 개요 정의에만 사용된다.""")
+    NewList = PropertyDescriptor("NewList", r"""새로운 번호 목록을 시작할지 여부\* 문단 모양(ParaShap)의 서브셋으로 포함될 때만 의미 있다.\* get일 때는 이 아이템은 아예 생성되지 않으며, set일 때는 TRUE가 아니면 NumberingShape 서브셋 전체가 지정되지 않은 것처럼 무시된다.""")
 
-    | Item ID                                  | Type      | SubType   | Description                                           |
-    |------------------------------------------|-----------|-----------|-------------------------------------------------------|
-    | HasCharShapeLevel0 ~ HasCharShapeLevel6   | PIT_UI1   |           | 7단 수준별 지정 여부 (0 = 기본값, 1 = 지정)           |
-    | CharShapeLevel0 ~ CharShapeLevel6         | PIT_SET   | CharShape | 수준별 글자 모양 지정                                 |
-    | WidthAdjustLevel0 ~ WidthAdjustLevel6     | PIT_I     |           | 수준별 너비 조정 값 (HWPUNIT)                         |
-    | TextOffsetLevel0 ~ TextOffsetLevel6       | PIT_I     |           | 수준별 텍스트 오프셋 (percent or HWPUNIT)              |
-    | AlignmentLevel0 ~ AlignmentLevel6         | PIT_UI1   |           | 수준별 정렬 (0 = 왼쪽, 1 = 가운데, 2 = 오른쪽)         |
-    | UseInstWidthLevel0 ~ UseInstWidthLevel6     | PIT_UI1   |           | 수준별 너비를 문서 내부 너비에 맞출지 여부             |
-    | AutoIndentLevel0 ~ AutoIndentLevel6       | PIT_UI1   |           | 수준별 자동 들여쓰기 여부                             |
-    | TextOffsetTypeLevel0 ~ TextOffsetTypeLevel6 | PIT_UI1   |           | 텍스트 오프셋 타입 (0 = 기본값, 1 = HWPUNIT)            |
-    | StrFormatLevel0 ~ StrFormatLevel6         | PIT_BSTR  |           | 수준별 문자열 포맷                                   |
-    | NumFormatLevel0 ~ NumFormatLevel6         | PIT_UI1   |           | 수준별 번호 포맷 (0 또는 1)                            |
-    | StartNumber                              | PIT_UI2   |           | 시작 번호 (0 = 기본값, n = 지정 번호)                 |
-    | NewList                                  | PIT_UI1   |           | 새 목록 생성 여부                                   |
-    """
-    start_number = ParameterSet._int_prop("StartNumber", "시작 번호 (0 = 기본값, n = 지정 번호)")
-    new_list     = ParameterSet._bool_prop("NewList", "새 목록 생성 여부 (0 = off, 1 = on)")
-
-    # Level 0 properties
-    has_char_shape_level0  = ParameterSet._bool_prop("HasCharShapeLevel0", "수준0 지정 여부 (0 = 기본값, 1 = 지정)")
-    char_shape_level0      = ParameterSet._typed_prop("CharShapeLevel0", "수준0 글자 모양 지정", lambda: CharShape)
-    width_adjust_level0    = ParameterSet._int_prop("WidthAdjustLevel0", "수준0 너비 조정 값 (HWPUNIT)")
-    text_offset_level0     = ParameterSet._int_prop("TextOffsetLevel0", "수준0 텍스트 오프셋 (percent or HWPUNIT)")
-    alignment_level0       = ParameterSet._mapped_prop("AlignmentLevel0", ALIGNMENT_MAP,
-                                                     doc="수준0 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
-    use_inst_width_level0  = ParameterSet._bool_prop("UseInstWidthLevel0", "수준0 문서 내부 너비 맞춤 여부")
-    auto_indent_level0     = ParameterSet._bool_prop("AutoIndentLevel0", "수준0 자동 들여쓰기 여부")
-    text_offset_type_level0 = ParameterSet._bool_prop("TextOffsetTypeLevel0", "수준0 텍스트 오프셋 타입 (0 = 기본값, 1 = HWPUNIT)")
-    str_format_level0      = ParameterSet._str_prop("StrFormatLevel0", "수준0 문자열 포맷")
-    num_format_level0      = ParameterSet._mapped_prop("NumFormatLevel0", NUMBER_FORMAT_MAP,
-                                                     doc="수준0 번호 포맷 (0 또는 1)")
-
-    # Level 1 properties
-    has_char_shape_level1  = ParameterSet._bool_prop("HasCharShapeLevel1", "수준1 지정 여부")
-    char_shape_level1      = ParameterSet._typed_prop("CharShapeLevel1", "수준1 글자 모양 지정", lambda: CharShape)
-    width_adjust_level1    = ParameterSet._int_prop("WidthAdjustLevel1", "수준1 너비 조정 값 (HWPUNIT)")
-    text_offset_level1     = ParameterSet._int_prop("TextOffsetLevel1", "수준1 텍스트 오프셋")
-    alignment_level1       = ParameterSet._mapped_prop("AlignmentLevel1", ALIGNMENT_MAP,
-                                                     doc="수준1 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
-    use_inst_width_level1  = ParameterSet._bool_prop("UseInstWidthLevel1", "수준1 문서 내부 너비 맞춤 여부")
-    auto_indent_level1     = ParameterSet._bool_prop("AutoIndentLevel1", "수준1 자동 들여쓰기 여부")
-    text_offset_type_level1 = ParameterSet._bool_prop("TextOffsetTypeLevel1", "수준1 텍스트 오프셋 타입")
-    str_format_level1      = ParameterSet._str_prop("StrFormatLevel1", "수준1 문자열 포맷")
-    num_format_level1      = ParameterSet._mapped_prop("NumFormatLevel1", NUMBER_FORMAT_MAP,
-                                                     doc="수준1 번호 포맷")
-
-    # Level 2 properties
-    has_char_shape_level2  = ParameterSet._bool_prop("HasCharShapeLevel2", "수준2 지정 여부")
-    char_shape_level2      = ParameterSet._typed_prop("CharShapeLevel2", "수준2 글자 모양 지정", lambda: CharShape)
-    width_adjust_level2    = ParameterSet._int_prop("WidthAdjustLevel2", "수준2 너비 조정 값 (HWPUNIT)")
-    text_offset_level2     = ParameterSet._int_prop("TextOffsetLevel2", "수준2 텍스트 오프셋")
-    alignment_level2       = ParameterSet._mapped_prop("AlignmentLevel2", ALIGNMENT_MAP,
-                                                     doc="수준2 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
-    use_inst_width_level2  = ParameterSet._bool_prop("UseInstWidthLevel2", "수준2 문서 내부 너비 맞춤 여부")
-    auto_indent_level2     = ParameterSet._bool_prop("AutoIndentLevel2", "수준2 자동 들여쓰기 여부")
-    text_offset_type_level2 = ParameterSet._bool_prop("TextOffsetTypeLevel2", "수준2 텍스트 오프셋 타입")
-    str_format_level2      = ParameterSet._str_prop("StrFormatLevel2", "수준2 문자열 포맷")
-    num_format_level2      = ParameterSet._mapped_prop("NumFormatLevel2", NUMBER_FORMAT_MAP,
-                                                     doc="수준2 번호 포맷")
-
-    # Level 3 properties
-    has_char_shape_level3  = ParameterSet._bool_prop("HasCharShapeLevel3", "수준3 지정 여부")
-    char_shape_level3      = ParameterSet._typed_prop("CharShapeLevel3", "수준3 글자 모양 지정", lambda: CharShape)
-    width_adjust_level3    = ParameterSet._int_prop("WidthAdjustLevel3", "수준3 너비 조정 값 (HWPUNIT)")
-    text_offset_level3     = ParameterSet._int_prop("TextOffsetLevel3", "수준3 텍스트 오프셋")
-    alignment_level3       = ParameterSet._mapped_prop("AlignmentLevel3", ALIGNMENT_MAP,
-                                                     doc="수준3 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
-    use_inst_width_level3  = ParameterSet._bool_prop("UseInstWidthLevel3", "수준3 문서 내부 너비 맞춤 여부")
-    auto_indent_level3     = ParameterSet._bool_prop("AutoIndentLevel3", "수준3 자동 들여쓰기 여부")
-    text_offset_type_level3 = ParameterSet._bool_prop("TextOffsetTypeLevel3", "수준3 텍스트 오프셋 타입")
-    str_format_level3      = ParameterSet._str_prop("StrFormatLevel3", "수준3 문자열 포맷")
-    num_format_level3      = ParameterSet._mapped_prop("NumFormatLevel3", NUMBER_FORMAT_MAP,
-                                                     doc="수준3 번호 포맷")
-
-    # Level 4 properties
-    has_char_shape_level4  = ParameterSet._bool_prop("HasCharShapeLevel4", "수준4 지정 여부")
-    char_shape_level4      = ParameterSet._typed_prop("CharShapeLevel4", "수준4 글자 모양 지정", lambda: CharShape)
-    width_adjust_level4    = ParameterSet._int_prop("WidthAdjustLevel4", "수준4 너비 조정 값 (HWPUNIT)")
-    text_offset_level4     = ParameterSet._int_prop("TextOffsetLevel4", "수준4 텍스트 오프셋")
-    alignment_level4       = ParameterSet._mapped_prop("AlignmentLevel4", ALIGNMENT_MAP,
-                                                     doc="수준4 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
-    use_inst_width_level4  = ParameterSet._bool_prop("UseInstWidthLevel4", "수준4 문서 내부 너비 맞춤 여부")
-    auto_indent_level4     = ParameterSet._bool_prop("AutoIndentLevel4", "수준4 자동 들여쓰기 여부")
-    text_offset_type_level4 = ParameterSet._bool_prop("TextOffsetTypeLevel4", "수준4 텍스트 오프셋 타입")
-    str_format_level4      = ParameterSet._str_prop("StrFormatLevel4", "수준4 문자열 포맷")
-    num_format_level4      = ParameterSet._mapped_prop("NumFormatLevel4", NUMBER_FORMAT_MAP,
-                                                     doc="수준4 번호 포맷")
-
-    # Level 5 properties
-    has_char_shape_level5  = ParameterSet._bool_prop("HasCharShapeLevel5", "수준5 지정 여부")
-    char_shape_level5      = ParameterSet._typed_prop("CharShapeLevel5", "수준5 글자 모양 지정", lambda: CharShape)
-    width_adjust_level5    = ParameterSet._int_prop("WidthAdjustLevel5", "수준5 너비 조정 값 (HWPUNIT)")
-    text_offset_level5     = ParameterSet._int_prop("TextOffsetLevel5", "수준5 텍스트 오프셋")
-    alignment_level5       = ParameterSet._mapped_prop("AlignmentLevel5", ALIGNMENT_MAP,
-                                                     doc="수준5 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
-    use_inst_width_level5  = ParameterSet._bool_prop("UseInstWidthLevel5", "수준5 문서 내부 너비 맞춤 여부")
-    auto_indent_level5     = ParameterSet._bool_prop("AutoIndentLevel5", "수준5 자동 들여쓰기 여부")
-    text_offset_type_level5 = ParameterSet._bool_prop("TextOffsetTypeLevel5", "수준5 텍스트 오프셋 타입")
-    str_format_level5      = ParameterSet._str_prop("StrFormatLevel5", "수준5 문자열 포맷")
-    num_format_level5      = ParameterSet._mapped_prop("NumFormatLevel5", NUMBER_FORMAT_MAP,
-                                                     doc="수준5 번호 포맷")
-
-    # Level 6 properties
-    has_char_shape_level6  = ParameterSet._bool_prop("HasCharShapeLevel6", "수준6 지정 여부")
-    char_shape_level6      = ParameterSet._typed_prop("CharShapeLevel6", "수준6 글자 모양 지정", lambda: CharShape)
-    width_adjust_level6    = ParameterSet._int_prop("WidthAdjustLevel6", "수준6 너비 조정 값 (HWPUNIT)")
-    text_offset_level6     = ParameterSet._int_prop("TextOffsetLevel6", "수준6 텍스트 오프셋")
-    alignment_level6       = ParameterSet._mapped_prop("AlignmentLevel6", ALIGNMENT_MAP,
-                                                     doc="수준6 정렬: 0 = 왼쪽, 1 = 가운데, 2 = 오른쪽")
-    use_inst_width_level6  = ParameterSet._bool_prop("UseInstWidthLevel6", "수준6 문서 내부 너비 맞춤 여부")
-    auto_indent_level6     = ParameterSet._bool_prop("AutoIndentLevel6", "수준6 자동 들여쓰기 여부")
-    text_offset_type_level6 = ParameterSet._bool_prop("TextOffsetTypeLevel6", "수준6 텍스트 오프셋 타입")
-    str_format_level6      = ParameterSet._str_prop("StrFormatLevel6", "수준6 문자열 포맷")
-    num_format_level6      = ParameterSet._mapped_prop("NumFormatLevel6", NUMBER_FORMAT_MAP,
-                                                     doc="수준6 번호 포맷")
-
-        
-
-
-
-# %% ../nbs/02_api/02_parameters.ipynb 87
-class ParaShape(ParameterSet):
-    """
-    ### ParaShape
-
-    91) ParaShape : 문단 모양
-
-    | Item ID          | Type    | SubType | Description |
-    |------------------|---------|---------|-------------|
-    | LeftMargin       | PIT_I4  |         | 왼쪽 여백 (URC) |
-    | RightMargin      | PIT_I4  |         | 오른쪽 여백 (URC) |
-    | Indentation      | PIT_I4  |         | 들여쓰기/내어 쓰기 (URC) |
-    | PrevSpacing      | PIT_I4  |         | 문단 간격 위 (URC) |
-    | NextSpacing      | PIT_I4  |         | 문단 간격 아래 (URC) |
-    | LineSpacingType  | PIT_UI1 |         | 줄 간격 종류 (HWPUNIT): 0 = 글꼴 기준, 1 = 고정 값, 2 = 여백만 지정 |
-    | LineSpacing      | PIT_I4  |         | 줄 간격 값 |
-    | AlignType        | PIT_UI1 |         | 정렬 방식: 0 = 양쪽 정렬, 1 = 왼쪽 정렬, 2 = 오른쪽 정렬, 3 = 가운데 정렬, 4 = 배분 정렬, 5 = 나눔 정렬 |
-    | BreakLatinWord   | PIT_UI1 |         | 줄 나눔 방식 (라틴): 0 = 단어, 1 = 하이픈, 2 = 글자 |
-    | BreakNonLatinWord| PIT_UI1 |         | 줄 나눔 (비 라틴): 0 = 어절, 1 = 글자 |
-    | SnapToGrid       | PIT_UI1 |         | 편집 용지의 줄 격자 사용 (on/off) |
-    | Condense         | PIT_UI1 |         | 공백 최소값 (0 - 75%) |
-    | WidowOrphan      | PIT_UI1 |         | 외톨이줄 보호 (on/off) |
-    | KeepWithNext     | PIT_UI1 |         | 다음 문단과 함께 (on/off) |
-    | KeepLinesTogether| PIT_UI1 |         | 문단 보호 (on/off) |
-    | PagebreakBefore  | PIT_UI1 |         | 문단 앞에서 항상 쪽 나눔 (on/off) |
-    | TextAlignment    | PIT_UI1 |         | 세로 정렬: 0 = 글꼴 기준, 1 = 위, 2 = 가운데, 3 = 아래 |
-    | FontLineHeight   | PIT_UI1 |         | 글꼴에 어울리는 줄 높이 (on/off) |
-    | HeadingType      | PIT_UI1 |         | 문단 머리 모양: 0 = 없음, 1 = 개요, 2 = 번호, 3 = 불릿 |
-    | Level            | PIT_UI1 |         | 단계 (0 - 6) |
-    | BorderConnect    | PIT_UI1 |         | 문단 테두리/배경 - 테두리 연결 (on/off) |
-    | BorderText       | PIT_UI1 |         | 문단 테두리/배경 - 여백 무시: 0 = 단, 1 = 텍스트 |
-    | BorderOffsetLeft | PIT_I   |         | 문단 테두리/배경 - 4방향 간격 (HWPUNIT): 왼쪽 |
-    | BorderOffsetRight| PIT_I   |         | 문단 테두리/배경 - 4방향 간격 (HWPUNIT): 오른쪽 |
-    | BorderOffsetTop  | PIT_I   |         | 문단 테두리/배경 - 4방향 간격 (HWPUNIT): 위 |
-    | BorderOffsetBottom| PIT_I  |         | 문단 테두리/배경 - 4방향 간격 (HWPUNIT): 아래 |
-    | TailType         | PIT_UI1 |         | 문단 꼬리 모양 (마지막 꼬리 줄 적용) (on/off) |
-    | LineWrap         | PIT_UI1 |         | 글꼴에 어울리는 줄 높이 (on/off) |
-    | TabDef           | PIT_SET | TabDef  | 탭 정의 |
-    | Numbering        | PIT_SET | NumberingShape | 문단 번호 (머리 모양이 ‘개요’, ‘번호’일 때 사용) |
-    | Bullet           | PIT_SET | BulletShape | 불릿 모양 (머리 모양이 ‘불릿’일 때 사용) |
-    | BorderFill       | PIT_SET | BorderFill | 테두리/배경 |
-    """
-
-    def __init__(self, parameterset=None, **kwargs):
-        super().__init__(parameterset, **kwargs)
-
-    left_margin = ParameterSet._int_prop("LeftMargin", "왼쪽 여백 (URC)")
-    right_margin = ParameterSet._int_prop("RightMargin", "오른쪽 여백 (URC)")
-    indentation = ParameterSet._int_prop("Indentation", "들여쓰기/내어 쓰기 (URC)")
-    prev_spacing = ParameterSet._int_prop("PrevSpacing", "문단 간격 위 (URC)")
-    next_spacing = ParameterSet._int_prop("NextSpacing", "문단 간격 아래 (URC)")
-    line_spacing_type = ParameterSet._mapped_prop(
-        "LineSpacingType",
-        LINE_SPACING_TYPE_MAP,
-        doc="줄 간격 종류: 0 = 글꼴 기준, 1 = 고정 값, 2 = 여백만 지정",
-    )
-    line_spacing = ParameterSet._int_prop("LineSpacing", "줄 간격 값")
-    align_type = ParameterSet._mapped_prop(
-        "AlignType",
-        ALIGN_TYPE_MAP,
-        doc="정렬 방식: 0 = 양쪽 정렬, 1 = 왼쪽 정렬, 2 = 오른쪽 정렬, 3 = 가운데 정렬, 4 = 배분 정렬, 5 = 나눔 정렬",
-    )
-    break_latin_word = ParameterSet._mapped_prop(
-        "BreakLatinWord",
-        LATIN_LINE_BREAK_MAP,
-        doc="줄 나눔 (라틴): 0 = 단어, 1 = 하이픈, 2 = 글자",
-    )
-    break_non_latin_word = ParameterSet._mapped_prop(
-        "BreakNonLatinWord",
-        NONLATIN_LINE_BREAK_MAP,
-        "줄 나눔 (비 라틴): 0 = 어절, 1 = 글자",
-    )
-    snap_to_grid = ParameterSet._bool_prop(
-        "SnapToGrid", "편집 용지의 줄 격자 사용 (on/off)"
-    )
-    condense = ParameterSet._int_prop("Condense", "공백 최소값 (0 - 75%)", 0, 75)
-    widow_orphan = ParameterSet._bool_prop("WidowOrphan", "외톨이줄 보호 (on/off)")
-    keep_with_next = ParameterSet._bool_prop(
-        "KeepWithNext", "다음 문단과 함께 (on/off)"
-    )
-    keep_lines_together = ParameterSet._bool_prop(
-        "KeepLinesTogether", "문단 보호 (on/off)"
-    )
-    pagebreak_before = ParameterSet._bool_prop(
-        "PagebreakBefore", "문단 앞에서 항상 쪽 나눔 (on/off)"
-    )
-    text_alignment = ParameterSet._mapped_prop(
-        "TextAlignment",
-        TEXT_ALIGN_MAP,
-        doc="세로 정렬: 0 = 글꼴 기준, 1 = 위, 2 = 가운데, 3 = 아래",
-    )
-    font_line_height = ParameterSet._bool_prop(
-        "FontLineHeight", "글꼴에 어울리는 줄 높이 (on/off)"
-    )
-    heading_type = ParameterSet._mapped_prop(
-        "HeadingType",
-        HEADING_TYPE_MAP,
-        doc="문단 머리 모양: 0 = 없음, 1 = 개요, 2 = 번호, 3 = 불릿",
-    )
-    level = ParameterSet._int_prop("Level", "단계 (0 - 6)", 0, 6)
-    border_connect = ParameterSet._bool_prop(
-        "BorderConnect", "문단 테두리/배경 - 테두리 연결 (on/off)"
-    )
-    border_text = ParameterSet._mapped_prop(
-        "BorderText",
-        BORDER_TEXT_MAP,
-        doc="문단 테두리/배경 - 여백 무시: 0 = 단, 1 = 텍스트",
-    )
-    border_offset_left = ParameterSet._int_prop(
-        "BorderOffsetLeft", "문단 테두리/배경 - 4방향 간격 (HWPUNIT): 왼쪽"
-    )
-    border_offset_right = ParameterSet._int_prop(
-        "BorderOffsetRight", "문단 테두리/배경 - 4방향 간격 (HWPUNIT): 오른쪽"
-    )
-    border_offset_top = ParameterSet._int_prop(
-        "BorderOffsetTop", "문단 테두리/배경 - 4방향 간격 (HWPUNIT): 위"
-    )
-    border_offset_bottom = ParameterSet._int_prop(
-        "BorderOffsetBottom", "문단 테두리/배경 - 4방향 간격 (HWPUNIT): 아래"
-    )
-    tail_type = ParameterSet._bool_prop(
-        "TailType", "문단 꼬리 모양 (마지막 꼬리 줄 적용) (on/off)"
-    )
-    line_wrap = ParameterSet._bool_prop("LineWrap", "글꼴에 어울리는 줄 높이 (on/off)")
-    tab_def = ParameterSet._typed_prop("TabDef", "탭 정의", lambda: TabDef)
-    numbering = ParameterSet._typed_prop(
-        "Numbering", "문단 번호", lambda: NumberingShape
-    )
-    bullet = ParameterSet._typed_prop("Bullet", "불릿 모양", lambda: BulletShape)
-    border_fill = ParameterSet._typed_prop(
-        "BorderFill", "테두리/배경", lambda: BorderFill
-    )
-
-# %% ../nbs/02_api/02_parameters.ipynb 89
-class ShapeObject(ParameterSet):
-    """
-    ### ShapeObject
-
-    105) ShapeObject : 도형 개체의 속성 정의 (테이블, 수식, 그림 포함)
-
-    이 객체는 한글의 도형 관련 속성을 조작하고 정의할 수 있으며, 도형의 크기, 위치, 스타일 등을 설정할 수 있습니다.
-
-    | Item ID            | Type      | SubType   | Description                                   |
-    |--------------------|-----------|-----------|-----------------------------------------------|
-    | TreatAsChar        | PIT_UI1   |           | 글자처럼 처리 여부 (on/off)                    |
-    | AffectsLine        | PIT_UI1   |           | 줄에 영향을 미치는지 여부 (on/off)             |
-    | VertRelTo          | PIT_UI1   |           | 수직 기준 위치 설정                           |
-    | VertAlign          | PIT_UI1   |           | 수직 정렬 방식                                |
-    | VertOffset         | PIT_I4    |           | 수직 오프셋 (HWPUNIT)                          |
-    | HorzRelTo          | PIT_UI1   |           | 수평 기준 위치 설정                           |
-    | HorzAlign          | PIT_UI1   |           | 수평 정렬 방식                                |
-    | HorzOffset         | PIT_I4    |           | 수평 오프셋 (HWPUNIT)                          |
-    | FlowWithText       | PIT_UI1   |           | 텍스트 흐름에 따라 이동 여부 (on/off)           |
-    | AllowOverlap       | PIT_UI1   |           | 겹침 허용 여부 (on/off)                        |
-    | WidthRelTo         | PIT_UI1   |           | 너비 기준 위치 설정                           |
-    | Width              | PIT_I4    |           | 도형의 너비                                   |
-    | HeightRelTo        | PIT_UI1   |           | 높이 기준 위치 설정                           |
-    | Height             | PIT_I4    |           | 도형의 높이                                   |
-    | ProtectSize        | PIT_UI1   |           | 크기 보호 여부 (on/off)                        |
-    | TextWrap           | PIT_UI1   |           | 텍스트 랩 설정                                |
-    | TextFlow           | PIT_UI1   |           | 텍스트 흐름 방향                              |
-    | OutsideMarginLeft  | PIT_I4    |           | 외부 여백 (왼쪽)                              |
-    | OutsideMarginRight | PIT_I4    |           | 외부 여백 (오른쪽)                            |
-    | OutsideMarginTop   | PIT_I4    |           | 외부 여백 (위)                                |
-    | OutsideMarginBottom| PIT_I4    |           | 외부 여백 (아래)                              |
-    | NumberingType      | PIT_UI1   |           | 번호 매기기 방식                              |
-    | LayoutWidth        | PIT_I4    |           | 레이아웃 너비                                 |
-    | LayoutHeight       | PIT_I4    |           | 레이아웃 높이                                 |
-    | Lock               | PIT_UI1   |           | 잠금 여부 (on/off)                            |
-    | HoldAnchorObj      | PIT_UI1   |           | 기준 객체 고정 여부                           |
-    | PageNumber         | PIT_UI    |           | 페이지 번호                                   |
-    | AdjustSelection    | PIT_UI1   |           | 선택 영역 조정 여부                           |
-    | AdjustTextBox      | PIT_UI1   |           | 텍스트 박스 조정 여부                         |
-    | AdjustPrevObjAttr  | PIT_UI1   |           | 이전 객체 속성 조정 여부                       |
-    """
-    def __init__(self, parameterset=None, **kwargs):
-        super().__init__(parameterset, **kwargs)
-
-            
-    treat_as_char    = ParameterSet._bool_prop("TreatAsChar", "글자처럼 처리 여부 (on/off)")
-    affects_line     = ParameterSet._bool_prop("AffectsLine", "줄에 영향을 미치는지 여부 (on/off)")
-    vert_rel_to      = ParameterSet._mapped_prop("VertRelTo", VERT_REL_TO_MAP, doc="수직 기준 위치 설정")
-    vert_align       = ParameterSet._mapped_prop("VertAlign", VERT_ALIGN_MAP, doc="수직 정렬 방식")
-    vert_offset      = ParameterSet._int_prop("VertOffset", "수직 오프셋 (HWPUNIT)")
-    horz_rel_to      = ParameterSet._mapped_prop("HorzRelTo", HORZ_REL_TO_MAP, doc="수평 기준 위치 설정")
-    horz_align       = ParameterSet._mapped_prop("HorzAlign", HORZ_ALIGN_MAP, doc="수평 정렬 방식")
-    horz_offset      = ParameterSet._int_prop("HorzOffset", "수평 오프셋 (HWPUNIT)")
-    flow_with_text   = ParameterSet._bool_prop("FlowWithText", "텍스트 흐름에 따라 이동 여부 (on/off)")
-    allow_overlap    = ParameterSet._bool_prop("AllowOverlap", "겹침 허용 여부 (on/off)")
-    width_rel_to     = ParameterSet._mapped_prop("WidthRelTo", HORZ_REL_TO_MAP, doc="너비 기준 위치 설정")
-    width            = ParameterSet._int_prop("Width", "도형의 너비. WidthRelTo 값에 따라 의미가 달라짐(absolute는 hwpunit 나머지는 퍼센트(%))")
-    height_rel_to    = ParameterSet._mapped_prop("HeightRelTo", VERT_REL_TO_MAP, doc="높이 기준 위치 설정")
-    height           = ParameterSet._int_prop("Height", "도형의 높이 HeightRelTo 값에 따라 의미가 달라짐(absolute는 hwpunit 나머지는 퍼센트(%))")
-    protect_size     = ParameterSet._bool_prop("ProtectSize", "크기 보호 여부 (on/off)")
-    text_wrap        = ParameterSet._mapped_prop("TextWrap", TEXT_WRAP_MAP, doc="텍스트 랩 설정")
-    text_flow        = ParameterSet._mapped_prop("TextFlow", TEXT_FLOW_MAP, doc="텍스트 흐름 방향 그리기 개체의 좌/우 어느 쪽에 글을 배치할지 지정하는 옵션. TextWrap의 값이 0일 때만 유효하다. 0 = 양쪽 모두(Both) 1 = 왼쪽만(Left Only) 2 = 오른쪽만(Right Only) 3 = 왼쪽과 오른쪽 중 넓은 쪽(Largest Only)")
-    outside_margin_left  = ParameterSet._unit_prop("OutsideMarginLeft", "mili", "외부 여백 (왼쪽)")
-    outside_margin_right = ParameterSet._unit_prop("OutsideMarginRight", "mili", "외부 여백 (오른쪽)")
-    horz_rel_to      = ParameterSet._mapped_prop("HorzRelTo", HORZ_REL_TO_MAP, doc="수평 기준 위치 설정")
-    horz_align       = ParameterSet._mapped_prop("HorzAlign", HORZ_ALIGN_MAP, doc="수평 정렬 방식")
-    horz_offset      = ParameterSet._int_prop("HorzOffset", "수평 오프셋 (HWPUNIT)")
-    layout_width     = ParameterSet._int_prop("LayoutWidth", "레이아웃 너비")
-    layout_height    = ParameterSet._int_prop("LayoutHeight", "레이아웃 높이")
-    lock             = ParameterSet._bool_prop("Lock", "잠금 여부 (on/off)")
-    hold_anchor_obj  = ParameterSet._bool_prop("HoldAnchorObj", "기준 객체 고정 여부")
-    page_number      = ParameterSet._int_prop("PageNumber", "페이지 번호")
-    adjust_selection = ParameterSet._bool_prop("AdjustSelection", "선택 영역 조정 여부")
-    adjust_text_box  = ParameterSet._bool_prop("AdjustTextBox", "텍스트 박스 조정 여부")
-    adjust_prev_obj_attr = ParameterSet._bool_prop("AdjustPrevObjAttr", "이전 객체 속성 조정 여부")
-
-    # Composite properties using _typed_prop
-    shape_draw_layout      = ParameterSet._typed_prop("ShapeDrawLayOut", "그리기 개체의 Layout", lambda: DrawLayout)
-    shape_draw_line_attr   = ParameterSet._typed_prop("ShapeDrawLineAttr", "그리기 개체의 Line 속성", lambda: DrawLineAttr)
-    shape_draw_fill_attr   = ParameterSet._typed_prop("ShapeDrawFillAttr", "그리기 개체의 Fill 속성", lambda: DrawFillAttr)
-    shape_draw_image_attr  = ParameterSet._typed_prop("ShapeDrawImageAttr", "그림 개체 속성", lambda: DrawImageAttr)
-    shape_draw_rect_type   = ParameterSet._typed_prop("ShapeDrawRectType", "사각형 그리기 개체 유형", lambda: DrawRectType)
-    shape_draw_arc_type    = ParameterSet._typed_prop("ShapeDrawArcType", "호 그리기 개체 유형", lambda: DrawArcType)
-    shape_draw_resize      = ParameterSet._typed_prop("ShapeDrawResize", "그리기 개체 리사이징", lambda: DrawResize)
-    shape_draw_rotate      = ParameterSet._typed_prop("ShapeDrawRotate", "그리기 개체 회전", lambda: DrawRotate)
-    shape_draw_edit_detail = ParameterSet._typed_prop("ShapeDrawEditDetail", "그리기 개체 EditDetail", lambda: DrawEditDetail)
-    shape_draw_image_scissoring = ParameterSet._typed_prop("ShapeDrawImageScissoring", "그림 개체 자르기", lambda: DrawImageScissoring)
-    shape_draw_sc_action   = ParameterSet._typed_prop("ShapeDrawScAction", "그리기 개체 회전/flip", lambda: DrawScAction)
-    shape_draw_ctrl_hyperlink = ParameterSet._typed_prop("ShapeDrawCtrlHyperlink", "그리기 개체 하이퍼링크", lambda: DrawCtrlHyperlink)
-    shape_draw_coord_info  = ParameterSet._typed_prop("ShapeDrawCoordInfo", "그리기 개체 좌표정보", lambda: DrawCoordInfo)
-    shape_draw_shear       = ParameterSet._typed_prop("ShapeDrawShear", "그리기 개체 기울이기", lambda: DrawShear)
-    shape_draw_textart     = ParameterSet._typed_prop("ShapeDrawTextart", "글맵시", lambda: DrawTextart)
-
-    shape_table_cell       = ParameterSet._typed_prop("ShapeTableCell", "셀 정보", lambda: Cell)
-    shape_list_properties  = ParameterSet._typed_prop("ShapeListProperties", "서브 list 속성", lambda: ListProperties)
-    shape_caption          = ParameterSet._typed_prop("ShapeCaption", "캡션", lambda: Caption)
-
-
-
-# %% ../nbs/02_api/02_parameters.ipynb 91
+# %% ../nbs/02_api/02_parameters.ipynb 84
 class TabDef(ParameterSet):
     """
     ### TabDef
@@ -3673,43 +2347,7 @@ class TabDef(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 93
-class Table(ParameterSet):
-    """
-    ### Table
-
-    114) Table : 테이블 속성 정의
-
-    | Item ID          | Type      | SubType         | Description                   |
-    |------------------|-----------|-----------------|-------------------------------|
-    | PageBreak        | PIT_UI1   |                 | 페이지 나눔 처리 방식         |
-    | RepeatHeader     | PIT_UI1   |                 | 반복 헤더 여부 (on / off)      |
-    | CellSpacing      | PIT_UI4   |                 | 셀 간격 (HWPUNIT)             |
-    | CellMarginLeft   | PIT_I4    |                 | 셀 왼쪽 여백                 |
-    | CellMarginRight  | PIT_I4    |                 | 셀 오른쪽 여백               |
-    | CellMarginTop    | PIT_I4    |                 | 셀 위쪽 여백                 |
-    | CellMarginBottom | PIT_I4    |                 | 셀 아래쪽 여백               |
-    | BorderFill       | PIT_SET   | BorderFill      | 테두리/채우기 속성           |
-    | TableCharInfo    | PIT_SET   | TableChartInfo  | 테이블 관련 문자 정보        |
-    | TableBorderFill  | PIT_SET   | BorderFill      | 테이블 테두리 속성           |
-    | Cell             | PIT_SET   | Cell            | 셀 정보                      |
-    """
-    page_break     = ParameterSet._mapped_prop("PageBreak", PAGE_BREAK_MAP,
-                                               doc="표가 페이지 경계에 걸렸을 때의 처리 방식 0 = 나누지 않는다.  1 = 테이블은 나누지만 셀은 나누지 않는다. 2 = 셀 내의 텍스트도 나눈다.")
-    repeat_header  = ParameterSet._bool_prop("RepeatHeader", "반복 헤더 여부 (on/off)")
-    cell_spacing   = ParameterSet._int_prop("CellSpacing", "셀 간격 (HWPUNIT)")
-    cell_margin_left  = ParameterSet._int_prop("CellMarginLeft", "셀 왼쪽 여백")
-    cell_margin_right = ParameterSet._int_prop("CellMarginRight", "셀 오른쪽 여백")
-    cell_margin_top   = ParameterSet._int_prop("CellMarginTop", "셀 위쪽 여백")
-    cell_margin_bottom = ParameterSet._int_prop("CellMarginBottom", "셀 아래쪽 여백")
-    border_fill    = ParameterSet._typed_prop("BorderFill", "테두리/채우기 속성", lambda: BorderFill)
-    # table_char_info = ParameterSet._typed_prop("TableCharInfo", "테이블 관련 문자 정보", TableChartInfo) # Not available now.
-    table_border_fill = ParameterSet._typed_prop("TableBorderFill", "테이블 테두리 속성", lambda: BorderFill)
-    cell           = ParameterSet._typed_prop("Cell", "셀 정보", lambda: Cell)
-
-
-
-# %% ../nbs/02_api/02_parameters.ipynb 94
+# %% ../nbs/02_api/02_parameters.ipynb 86
 class ActionCrossRef(ParameterSet):
     """ActionCrossRef ParameterSet."""
     Command = PropertyDescriptor("Command", r"""※command string 참조 (한글2007에 새로 추가)""")

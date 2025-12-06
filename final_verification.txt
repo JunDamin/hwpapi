@@ -1,0 +1,24 @@
+Reading markdown documentation...
+Found 128 documented classes
+
+Reading notebook classes...
+Found 127 implemented classes
+
+================================================================================
+VERIFICATION RESULTS
+================================================================================
+[MISMATCH] Found mismatches in 1 classes:
+
+
+NumberingShape:
+  Missing properties (in docs but not in code):
+    - AlignmentLevel0\~ AlignmentLevel6
+    - AutoIndentLevel0\~ AutoIndentLevel6
+    - CharShapeLevel0\~ CharShapeLevel6
+    - HasCharShapeLevel0\~ HasCharShapeLevel6
+    - NumFormatLevel0\~ NumFormatLevel6
+    - StrFormatLevel0\~ StrFormatLevel6
+    - TextOffsetLevel0\~ TextOffsetLevel6
+    - TextOffsetTypeLevel0\~ TextOffsetTypeLevel6
+    - UseInstWidthLevel0\~ UseInstWidthLevel6
+    - WidthAdjustLevel0\~ WidthAdjustLevel6

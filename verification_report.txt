@@ -1,0 +1,258 @@
+Reading markdown documentation...
+Found 128 documented classes
+
+Reading notebook classes...
+Found 128 implemented classes
+
+================================================================================
+VERIFICATION RESULTS
+================================================================================
+[MISMATCH] Found mismatches in 11 classes:
+
+
+BorderFill:
+  Missing properties (in docs but not in code):
+    - BackSlashFlag
+    - BorderColorBottom
+    - BorderColorRight
+    - BorderColorTop
+    - BorderCorlorLeft
+    - BorderFill3D
+    - BorderTypeBottom
+    - BorderTypeLeft
+    - BorderTypeRight
+    - BorderTypeTop
+    - BorderWidthBottom
+    - BorderWidthLeft
+    - BorderWidthRight
+    - BorderWidthTop
+    - BreakCellSeparateLine
+    - CenterLineFlag
+    - CounterBackSlashFlag
+    - CounterSlashFlag
+    - CrookedSlashFlag
+    - CrookedSlashFlag1
+    - CrookedSlashFlag2
+    - DiagonalColor
+    - DiagonalType
+    - DiagonalWidth
+    - SlashFlag
+
+BulletShape:
+  Missing properties (in docs but not in code):
+    - Alignment
+    - BulletImage
+    - HasCharShape
+    - HasImage
+    - TextOffset
+    - TextOffsetType
+    - UseInstWidth
+
+Caption:
+  Missing properties (in docs but not in code):
+    - CapFullSize
+    - Side
+
+Cell:
+  Missing properties (in docs but not in code):
+    - CellCtrlData
+    - HasMargin
+
+CharShape:
+  Missing properties (in docs but not in code):
+    - DiacSymMark
+    - FontTypeHangul
+    - FontTypeHanja
+    - FontTypeJapanese
+    - FontTypeLatin
+    - FontTypeOther
+    - FontTypeSymbol
+    - FontTypeUser
+    - OffsetHangul
+    - OffsetHanja
+    - OffsetJapanese
+    - OffsetLatin
+    - OffsetOther
+    - OffsetSymbol
+    - OffsetUser
+    - OutlineType
+    - RatioHangul
+    - RatioHanja
+    - RatioJapanese
+    - RatioLatin
+    - RatioOther
+    - RatioSymbol
+    - RatioUser
+    - ShadowOffsetX
+    - ShadowOffsetY
+    - ShadowType
+    - SizeHangul
+    - SizeJapanese
+    - SizeSymbol
+    - SpacingHangul
+    - SpacingHanja
+    - SpacingJapanese
+    - SpacingLatin
+    - SpacingOther
+    - SpacingSymbol
+    - SpacingUser
+    - StrikeOutType
+    - UnderlineType
+    - UseFontSpace
+    - UseKerning
+  Extra properties (in code but not in docs):
+    - StrikeOutColor
+    - StrikeOutShape
+
+DrawImageAttr:
+  Extra properties (in code but not in docs):
+    - ImageAlpha
+
+FindReplace:
+  Missing properties (in docs but not in code):
+    - Direction
+    - FindCharShape
+    - FindParaShape
+    - HanjaFromHangul
+    - IgnoreFindString
+    - IgnoreMessage
+    - IgnoreReplaceString
+    - ReplaceCharShape
+    - ReplaceParaShape
+    - WholeWordOnly
+
+NumberingShape:
+  Missing properties (in docs but not in code):
+    - AlignmentLevel0\~ AlignmentLevel6
+    - AutoIndentLevel0\~ AutoIndentLevel6
+    - CharShapeLevel0\~ CharShapeLevel6
+    - HasCharShapeLevel0\~ HasCharShapeLevel6
+    - NumFormatLevel0\~ NumFormatLevel6
+    - StrFormatLevel0\~ StrFormatLevel6
+    - TextOffsetLevel0\~ TextOffsetLevel6
+    - TextOffsetTypeLevel0\~ TextOffsetTypeLevel6
+    - UseInstWidthLevel0\~ UseInstWidthLevel6
+    - WidthAdjustLevel0\~ WidthAdjustLevel6
+  Extra properties (in code but not in docs):
+    - AlignmentLevel0
+    - AlignmentLevel1
+    - AlignmentLevel2
+    - AlignmentLevel3
+    - AlignmentLevel4
+    - AlignmentLevel5
+    - AlignmentLevel6
+    - AutoIndentLevel0
+    - AutoIndentLevel1
+    - AutoIndentLevel2
+    - AutoIndentLevel3
+    - AutoIndentLevel4
+    - AutoIndentLevel5
+    - AutoIndentLevel6
+    - CharShapeLevel0
+    - CharShapeLevel1
+    - CharShapeLevel2
+    - CharShapeLevel3
+    - CharShapeLevel4
+    - CharShapeLevel5
+    - CharShapeLevel6
+    - HasCharShapeLevel0
+    - HasCharShapeLevel1
+    - HasCharShapeLevel2
+    - HasCharShapeLevel3
+    - HasCharShapeLevel4
+    - HasCharShapeLevel5
+    - HasCharShapeLevel6
+    - NumFormatLevel0
+    - NumFormatLevel1
+    - NumFormatLevel2
+    - NumFormatLevel3
+    - NumFormatLevel4
+    - NumFormatLevel5
+    - NumFormatLevel6
+    - StrFormatLevel0
+    - StrFormatLevel1
+    - StrFormatLevel2
+    - StrFormatLevel3
+    - StrFormatLevel4
+    - StrFormatLevel5
+    - StrFormatLevel6
+    - TextOffsetLevel0
+    - TextOffsetLevel1
+    - TextOffsetLevel2
+    - TextOffsetLevel3
+    - TextOffsetLevel4
+    - TextOffsetLevel5
+    - TextOffsetLevel6
+    - TextOffsetTypeLevel0
+    - TextOffsetTypeLevel1
+    - TextOffsetTypeLevel2
+    - TextOffsetTypeLevel3
+    - TextOffsetTypeLevel4
+    - TextOffsetTypeLevel5
+    - TextOffsetTypeLevel6
+    - UseInstWidthLevel0
+    - UseInstWidthLevel1
+    - UseInstWidthLevel2
+    - UseInstWidthLevel3
+    - UseInstWidthLevel4
+    - UseInstWidthLevel5
+    - UseInstWidthLevel6
+    - WidthAdjustLevel0
+    - WidthAdjustLevel1
+    - WidthAdjustLevel2
+    - WidthAdjustLevel3
+    - WidthAdjustLevel4
+    - WidthAdjustLevel5
+    - WidthAdjustLevel6
+
+ParaShape:
+  Missing properties (in docs but not in code):
+    - AlignType
+    - BorderConnect
+    - BorderFill
+    - BorderOffsetBottom
+    - BorderOffsetLeft
+    - BorderOffsetRight
+    - BorderOffsetTop
+    - BorderText
+    - BreakLatinWord
+    - BreakNonLatinWord
+    - FontLineHeight
+    - HeadingType
+    - KeepLinesTogether
+    - KeepWithNext
+    - LineSpacingType
+    - Numbering
+    - PagebreakBefore
+    - SnapToGrid
+    - TailType
+    - TextAlignment
+
+ShapeObject:
+  Missing properties (in docs but not in code):
+    - NumberingType
+    - OutsideMarginBottom
+    - OutsideMarginTop
+  Extra properties (in code but not in docs):
+    - ShapeCaption
+    - ShapeDrawArcType
+    - ShapeDrawCoordInfo
+    - ShapeDrawCtrlHyperlink
+    - ShapeDrawEditDetail
+    - ShapeDrawFillAttr
+    - ShapeDrawImageAttr
+    - ShapeDrawImageScissoring
+    - ShapeDrawLayOut
+    - ShapeDrawLineAttr
+    - ShapeDrawRectType
+    - ShapeDrawResize
+    - ShapeDrawRotate
+    - ShapeDrawScAction
+    - ShapeDrawShear
+    - ShapeDrawTextart
+    - ShapeListProperties
+    - ShapeTableCell
+
+Table:
+  Missing properties (in docs but not in code):
+    - TableCharInfo

@@ -82,6 +82,9 @@ def clean_property_name(name: str) -> str:
     name = clean_markdown_links(name)
     # Remove any remaining brackets
     name = name.replace('[', '').replace(']', '')
+    # Skip range notations like "PropLevel0~ PropLevel6"
+    if '~' in name or '\\~' in name:
+        return None
     return name.strip()
 
 def clean_description(desc: str) -> str:
@@ -103,6 +106,11 @@ def generate_class_code(class_name: str, properties: List[Dict[str, str]]) -> st
 
     for prop in properties:
         prop_name = clean_property_name(prop['name'])
+
+        # Skip invalid property names (range notations, etc.)
+        if prop_name is None:
+            continue
+
         pit_type = prop['type']
         subtype = prop['subtype']
         description = clean_description(prop['description'])
@@ -112,6 +120,8 @@ def generate_class_code(class_name: str, properties: List[Dict[str, str]]) -> st
         if property_type == 'TypedProperty' and subtype:
             # Extract class name from subtype (remove markdown links)
             subtype_clean = clean_property_name(subtype)
+            if subtype_clean is None:
+                continue
             lines.append(f'    {prop_name} = {property_type}("{prop_name}", r"""{description}""", wrap=lambda: {subtype_clean})')
         else:
             lines.append(f'    {prop_name} = {property_type}("{prop_name}", r"""{description}""")')
