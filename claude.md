@@ -91,7 +91,7 @@ class CharShape(ParameterSet):
 - `BoolProperty` - Boolean values
 - `StringProperty` - String values
 - `ColorProperty` - Hex color ↔ HWP color conversion
-- `UnitProperty` - Point ↔ HWPUNIT conversion
+- **`UnitProperty`** - 🆕 Smart unit conversion (mm, cm, in, pt ↔ HWPUNIT)
 - `MappedProperty` - String ↔ Integer via mapping dict
 - `TypedProperty` - Nested ParameterSet (manual)
 - `ListProperty` - List of values (basic Python lists)
@@ -526,6 +526,87 @@ pset.find_char_shape.text_color = "#FF0000"
 - ✅ **Cached** - Subsequent access returns same instance
 - ✅ **Lazy** - Only created when actually accessed
 
+### UnitProperty - Smart Unit Conversion
+
+**Purpose:** Automatically convert between user-friendly units (mm, cm, in, pt) and HWPUNIT.
+
+**Problem:** HWPUNIT is not intuitive (1mm = 283 HWPUNIT, 1pt = 100 HWPUNIT)
+
+**Solution:** Accept familiar units, auto-convert internally
+
+**Signature:**
+```python
+UnitProperty(key: str, doc: str,
+             default_unit: str = "mm",
+             output_unit: Optional[str] = None,
+             min_value: Optional[float] = None,
+             max_value: Optional[float] = None)
+```
+
+**Example Definition:**
+```python
+class PageDef(ParameterSet):
+    """Page layout."""
+
+    # Dimensions in millimeters (most common for paper)
+    width = UnitProperty("Width", "Page width", default_unit="mm")
+    height = UnitProperty("Height", "Page height", default_unit="mm")
+
+    # Margins in millimeters
+    left_margin = UnitProperty("LeftMargin", "Left margin", default_unit="mm")
+
+class CharShape(ParameterSet):
+    """Character formatting."""
+
+    # Font size in points (standard for typography)
+    fontsize = UnitProperty("Height", "Font size", default_unit="pt")
+```
+
+**Example Usage:**
+```python
+# Page dimensions - ALL of these work!
+page = PageDef(action.CreateSet())
+
+# String with unit (most explicit)
+page.width = "210mm"   # A4 width
+page.height = "297mm"  # A4 height
+
+# Different units (auto-converts)
+page.width = "21cm"    # Same as 210mm
+page.width = "8.27in"  # Same as 210mm
+
+# Bare number (uses default_unit = mm)
+page.width = 210       # Assumes mm
+
+# Set margins with mixed units
+page.left_margin = 25        # 25mm (bare number)
+page.right_margin = "2.5cm"  # 25mm (converted)
+page.top_margin = "1in"      # ~25.4mm (converted)
+
+# Get value (returns in mm)
+print(f"Width: {page.width}mm")  # Output: Width: 210.0mm
+
+# Font size in points
+char = CharShape(action.CreateSet())
+char.fontsize = 12       # 12pt
+char.fontsize = "12pt"   # Same
+char.fontsize = "4.23mm" # Converts to pt internally
+print(f"Font: {char.fontsize}pt")  # Output: Font: 12.0pt
+```
+
+**Supported Units:**
+- `mm` - Millimeters (1mm = 283 HWPUNIT) - **Default for dimensions**
+- `cm` - Centimeters (1cm = 2830 HWPUNIT)
+- `in` - Inches (1in = 7200 HWPUNIT)
+- `pt` - Points (1pt = 100 HWPUNIT) - **Default for fonts**
+
+**Benefits:**
+- ✅ **Intuitive** - Use familiar units (210mm instead of 59430 HWPUNIT)
+- ✅ **Flexible** - String "210mm" or number 210 both work
+- ✅ **Auto-converting** - Handles HWPUNIT internally
+- ✅ **Validated** - Optional min/max in user units
+- ✅ **Standard units** - mm for paper, pt for fonts
+
 ### ArrayProperty - Auto-Creating HArray with List Interface
 
 **Purpose:** Provide Pythonic list interface for HWP's HArray (PIT_ARRAY) parameters.
@@ -618,7 +699,7 @@ for item in array: ...       # Iteration
 
 ```python
 class AdvancedTable(ParameterSet):
-    """Table with all property types."""
+    """Table with all property types demonstrated."""
 
     # Simple properties
     rows = IntProperty("Rows", "Number of rows")
@@ -627,9 +708,13 @@ class AdvancedTable(ParameterSet):
     title = StringProperty("Title", "Table title")
     align = MappedProperty("Align", "Alignment", ALIGN_MAP)
 
+    # Unit properties - AUTO-CONVERTING!
+    table_width = UnitProperty("Width", "Table width", default_unit="mm")
+    table_height = UnitProperty("Height", "Table height", default_unit="mm")
+
     # Array properties - AUTO-CREATING!
-    column_widths = ArrayProperty("ColWidths", int, "Width of each column")
-    row_heights = ArrayProperty("RowHeights", int, "Height of each row")
+    column_widths = ArrayProperty("ColWidths", int, "Width of each column in HWPUNIT")
+    row_heights = ArrayProperty("RowHeights", int, "Height of each row in HWPUNIT")
 
     # Nested property - AUTO-CREATING!
     border_fill = NestedProperty("BorderFill", "BorderFill", BorderFill,
@@ -638,15 +723,22 @@ class AdvancedTable(ParameterSet):
 # Usage - everything just works!
 table = AdvancedTable(action.CreateSet())
 
-# Simple assignments
+# Simple properties
 table.rows = 3
 table.cols = 4
 table.has_header = True
 table.title = "Sales Report"
 table.align = "center"
 
+# Unit properties (auto-converts to HWPUNIT)
+table.table_width = "150mm"   # String with unit
+table.table_height = 80       # Bare number, assumes mm
+# OR use different units:
+table.table_width = "15cm"    # Same as 150mm
+table.table_width = "5.91in"  # Same as 150mm
+
 # Array assignments (auto-creates HArray)
-table.column_widths = [2000, 3000, 2500, 2000]
+table.column_widths = [2000, 3000, 2500, 2000]  # HWPUNIT values
 table.row_heights = [1000, 1000, 1000]
 
 # Array modifications
@@ -657,8 +749,9 @@ table.column_widths[2] = 3500
 table.border_fill.border_type = "solid"
 table.border_fill.fill_color = "#EEEEEE"
 
-# Even nested arrays work!
-table.border_fill.border_widths = [10, 10, 10, 10]
+# If border_fill has UnitProperty for border widths:
+table.border_fill.border_left = "2mm"
+table.border_fill.border_right = "0.2cm"  # Same as 2mm
 
 # Execute
 table.run()
@@ -734,9 +827,16 @@ Does this parameter exist in HWP documentation?
     ├─ Enum/mapped value → Use MappedProperty
     ├─ Nested ParameterSet → Use NestedProperty (auto-creating!)
     ├─ Array (PIT_ARRAY) → Use ArrayProperty (auto-creating!)
-    ├─ Unit value (HWPUNIT) → Use UnitProperty
+    ├─ Unit value (HWPUNIT) → Use UnitProperty (auto-converts mm/cm/in/pt!)
     └─ Color value → Use ColorProperty
 ```
+
+**Unit Selection Guide:**
+- **Page/table dimensions** → UnitProperty with `default_unit="mm"`
+- **Margins/spacing** → UnitProperty with `default_unit="mm"`
+- **Font size** → UnitProperty with `default_unit="pt"`
+- **Border widths** → UnitProperty with `default_unit="mm"`
+- **Line spacing** → UnitProperty with `default_unit="pt"` or `"mm"`
 
 ### Implementation Checklist
 
@@ -1580,13 +1680,20 @@ When implementing the restructuring:
 **2025-01-08 - Auto-Creating Properties Design**
 - Designed `NestedProperty` for auto-creating nested ParameterSets
 - Designed `ArrayProperty` for Pythonic HArray interface
-- Created comprehensive AUTO_PROPERTY_DESIGN.md specification
+- **Enhanced `UnitProperty`** for smart unit conversion (mm, cm, in, pt ↔ HWPUNIT)
+- Created comprehensive design documents:
+  - AUTO_PROPERTY_DESIGN.md - NestedProperty & ArrayProperty specification
+  - UNIT_PROPERTY_ENHANCEMENT.md - Smart unit conversion specification
 - Updated CLAUDE.md with complete documentation:
   - "Auto-Creating Properties" section with full examples
-  - Migration guide from TypedProperty to NestedProperty
-  - Migration guide from ListProperty to ArrayProperty
-  - Property type decision tree
-- Benefits: Tab completion, no manual create_itemset(), Pythonic array interface
+  - UnitProperty section with unit conversion examples
+  - Migration guides for all property types
+  - Property type decision tree with unit selection guide
+- Key improvements:
+  - Tab completion for nested properties
+  - No manual create_itemset() calls
+  - Pythonic array interface (append, insert, pop, etc.)
+  - **Intuitive units: "210mm", "21cm", "8.27in" instead of HWPUNIT**
 - Result: Intuitive API that feels natural for Python developers
 - Status: Design complete, ready for implementation
 
