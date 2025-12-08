@@ -632,9 +632,566 @@ git checkout nbs/02_api/02_parameters.ipynb
 
 ---
 
+## 🏛️ HWP Object Model: Official vs Current Architecture
+
+### Overview
+
+This section compares the **official HWP Automation Object Model** (from HwpAutomation_2504.pdf) with the **current hwpapi implementation** to identify gaps, misalignments, and opportunities for better code organization.
+
+**Documentation Source:** `hwp_docs/HwpAutomation_2504.pdf` (Korean, dated 2025-04-15)
+
+---
+
+### Official HWP Object Model Structure
+
+The official HWP automation follows a **hierarchical object model** similar to Microsoft Office:
+
+```
+IHwpObject (Root COM Object)
+│
+├── IXHwpDocuments (Collection)
+│   └── IXHwpDocument (Single)
+│       ├── Properties: FullName, Name, Path, Saved, etc.
+│       └── Methods: Save(), SaveAs(), Close(), Print(), etc.
+│
+├── IXHwpWindows (Collection)
+│   └── IXHwpWindow (Single)
+│       ├── Properties: Width, Height, Left, Top, Active, etc.
+│       └── Methods: Activate(), Close(), etc.
+│
+├── IXHwpForms (Collection)
+│   └── Form Controls (Various types)
+│       ├── IXHwpFormPushButtons (Collection)
+│       ├── IXHwpFormCheckButtons (Collection)
+│       ├── IXHwpFormRadioButtons (Collection)
+│       ├── IXHwpFormComboBoxes (Collection)
+│       └── etc.
+│
+├── HAction (Action Execution System)
+│   ├── GetActionIDByName(name) → ActionID
+│   ├── Run(ActionID)
+│   └── Execute(ActionID, ParameterSet)
+│
+├── HParameterSet (Parameter Management)
+│   ├── CreateItemSet(SetID, ParamIndex)
+│   ├── Item(ParamIndex)
+│   ├── SetItem(ParamIndex, Value)
+│   └── Clear()
+│
+├── HSet (Parameter Collection)
+│   └── Parameter arrays for complex actions
+│
+└── HArray (Parameter Arrays)
+    └── Multi-value parameters
+```
+
+**Key Characteristics:**
+1. **Collection Pattern**: Documents, Windows, Forms follow "Collection → Single Object" pattern
+2. **Hierarchical Navigation**: Document → Sections → Paragraphs → Characters
+3. **Action System**: Centralized via HAction.Execute() with HParameterSet
+4. **900+ Actions**: Each with specific parameter requirements
+5. **Type-Safe Parameters**: Strongly typed via HParameterSet interface
+
+---
+
+### Current hwpapi Architecture
+
+The current implementation uses a **wrapper-based approach** with custom patterns:
+
+```
+App (Main Entry Point)
+│
+├── Engine
+│   └── impl (HwpObject COM object)
+│       └── Direct COM access: self.api.MovePos(), self.api.Run(), etc.
+│
+├── _Actions (900+ actions as properties)
+│   ├── CharShape → _Action("CharShape", CharShape parameterset)
+│   ├── ParaShape → _Action("ParaShape", ParaShape parameterset)
+│   └── [899+ more actions...]
+│
+├── ParameterSet System (130+ classes in parametersets.py)
+│   ├── Base: ParameterSet, ParameterSetMeta
+│   ├── Backend Abstraction:
+│   │   ├── PsetBackend (modern, immediate)
+│   │   ├── HParamBackend (legacy, staging)
+│   │   ├── ComBackend (generic COM)
+│   │   └── AttrBackend (pure Python)
+│   ├── Property Descriptors:
+│   │   ├── IntProperty, BoolProperty, StringProperty
+│   │   ├── ColorProperty, UnitProperty
+│   │   ├── MappedProperty, TypedProperty, ListProperty
+│   │   └── Auto-registration via ParameterSetMeta
+│   └── 130+ ParameterSet Subclasses:
+│       ├── Text/Char: CharShape, ParaShape, BulletShape, etc.
+│       ├── Tables: Table, Cell, TableCreation, etc.
+│       ├── Drawing: ShapeObject, DrawLineAttr, DrawImageAttr, etc.
+│       ├── Document: DocumentInfo, PageDef, SecDef, etc.
+│       └── [All mixed in single 3,357-line file]
+│
+├── Custom Accessors (Pythonic convenience layer)
+│   ├── MoveAccessor: Navigation (move.top_of_file(), move.bottom(), etc.)
+│   ├── CellAccessor: Table cell operations
+│   ├── TableAccessor: Table operations
+│   └── PageAccessor: Page operations
+│
+└── Dataclasses (Alternative representation)
+    ├── Character, CharShape (dataclass)
+    ├── Paragraph, ParaShape (dataclass)
+    └── PageShape (dataclass)
+```
+
+**Key Characteristics:**
+1. **Flat Entry Point**: Single `App` object, no collections exposed
+2. **Action Properties**: 900+ actions as dynamic properties on `_Actions`
+3. **Backend Polymorphism**: 4 backend types handle different parameter storage
+4. **Pythonic Wrappers**: Custom accessors hide COM complexity
+5. **Monolithic ParameterSets**: All 130+ classes in one file
+
+---
+
+### Comparison Matrix
+
+| Aspect | Official HWP Model | Current hwpapi | Alignment |
+|--------|-------------------|----------------|-----------|
+| **Entry Point** | `IHwpObject` COM object | `App` wrapper around `Engine` | ✅ Aligned (wrapped) |
+| **Document Access** | `IXHwpDocuments` collection | `App.api` direct access | ❌ Collection pattern not exposed |
+| **Window Management** | `IXHwpWindows` collection | `App.set_visible()` only | ⚠️ Partial (no multi-window support) |
+| **Form Controls** | `IXHwpForms` collection | Not exposed | ❌ Missing |
+| **Action Execution** | `HAction.Execute(id, pset)` | `app.actions.ActionName(pset)` | ✅ Aligned (pythonic wrapper) |
+| **Parameter Sets** | `HParameterSet` COM object | `ParameterSet` Python classes | ✅ Well abstracted |
+| **Parameter Typing** | COM types | Python property descriptors | ✅ Excellent (better than COM) |
+| **Navigation** | Object hierarchy | Custom accessors | ⚠️ Different paradigm |
+| **Organization** | Domain-based modules | Single monolithic file | ❌ Poor organization |
+
+---
+
+### Identified Gaps and Misalignments
+
+#### 1. Missing Collection Objects ❌
+
+**Issue:** hwpapi doesn't expose collection objects like `IXHwpDocuments`, `IXHwpWindows`, `IXHwpForms`
+
+**Impact:**
+- Cannot enumerate open documents
+- Cannot manage multiple windows
+- No access to form controls
+- Limits multi-document workflows
+
+**Example (What's Missing):**
+```python
+# This is possible in official HWP but not in hwpapi:
+documents = hwp.Documents  # Collection of all open documents
+doc = documents.Item(0)    # Get first document
+doc.Save()                 # Save specific document
+```
+
+**Current hwpapi:**
+```python
+# Only single document access:
+app = App()  # Always refers to "current" document
+app.save()   # Saves "current" document only
+```
+
+#### 2. Monolithic ParameterSets Module ❌
+
+**Issue:** All 130+ ParameterSet classes crammed into single 3,357-line file
+
+**Impact:**
+- Hard to navigate and maintain
+- No logical grouping by domain
+- Merge conflicts in team development
+- Slow IDE performance
+
+**Breakdown:**
+```
+parametersets.py (3,357 lines):
+├── Mappings (147 lines): All DIRECTION_MAP, ALIGNMENT_MAP, etc.
+├── Backend System (350 lines): Protocols, backend classes
+├── Property Descriptors (250 lines): IntProperty, BoolProperty, etc.
+├── ParameterSet Base (150 lines): Base class, metaclass
+└── 130+ ParameterSet Classes (2,460 lines):
+    ├── Text/Character (15 classes): CharShape, ParaShape, BulletShape, etc.
+    ├── Tables (12 classes): Table, Cell, TableCreation, etc.
+    ├── Drawing/Shapes (25 classes): ShapeObject, DrawLineAttr, etc.
+    ├── Document (18 classes): DocumentInfo, PageDef, SecDef, etc.
+    ├── Find/Replace (5 classes): FindReplace, DocFindInfo, etc.
+    ├── Forms (8 classes): AutoFill, AutoNum, FieldCtrl, etc.
+    ├── Formatting (12 classes): BorderFill, Caption, DropCap, etc.
+    ├── Actions (15 classes): FileOpen, FileSaveAs, Print, etc.
+    └── Misc (20 classes): Everything else
+```
+
+#### 3. Navigation Paradigm Mismatch ⚠️
+
+**Issue:** Official model uses object hierarchy, hwpapi uses position-based accessors
+
+**Official Model (Object-Based):**
+```python
+# Hypothetical object-based navigation:
+document = app.ActiveDocument
+section = document.Sections[0]
+paragraph = section.Paragraphs[5]
+text = paragraph.Text
+```
+
+**Current hwpapi (Position-Based):**
+```python
+# Position-based navigation:
+app.move.current_list(para=5, pos=0)
+app.actions.CharShape(...)
+```
+
+**Analysis:** Current approach is more pragmatic for HWP's position-based model. No change needed.
+
+#### 4. Form Controls Not Exposed ❌
+
+**Issue:** No access to IXHwpForms, form button controls, etc.
+
+**Impact:**
+- Cannot automate form-based documents
+- Cannot create interactive PDFs with forms
+- Missing feature parity with official API
+
+---
+
+### Proposed Restructuring Plan
+
+#### Phase 1: Reorganize ParameterSets Module (High Priority)
+
+**Goal:** Split monolithic `parametersets.py` into domain-based submodules
+
+**New Structure:**
+```
+hwpapi/
+├── parametersets/
+│   ├── __init__.py              # Re-export all classes for compatibility
+│   ├── base.py                  # ParameterSet base class, metaclass
+│   ├── backends.py              # Backend protocol, implementations
+│   ├── properties.py            # Property descriptors
+│   ├── mappings.py              # All DIRECTION_MAP, ALIGNMENT_MAP, etc.
+│   ├── text/
+│   │   ├── __init__.py
+│   │   ├── character.py         # CharShape, BulletShape
+│   │   ├── paragraph.py         # ParaShape, TabDef, ListProperties
+│   │   └── numbering.py         # NumberingShape, AutoNum
+│   ├── table/
+│   │   ├── __init__.py
+│   │   ├── table.py             # Table, TableCreation
+│   │   └── cell.py              # Cell, CellBorderFill
+│   ├── drawing/
+│   │   ├── __init__.py
+│   │   ├── shape.py             # ShapeObject, DrawLayout
+│   │   ├── line.py              # DrawLineAttr
+│   │   ├── image.py             # DrawImageAttr, DrawImageScissoring
+│   │   └── effects.py           # DrawShadow, DrawRotate, DrawTextart
+│   ├── document/
+│   │   ├── __init__.py
+│   │   ├── info.py              # DocumentInfo, SummaryInfo, VersionInfo
+│   │   ├── page.py              # PageDef, PageBorderFill, MasterPage
+│   │   └── section.py           # SecDef, ColDef
+│   ├── formatting/
+│   │   ├── __init__.py
+│   │   ├── border.py            # BorderFill, BorderFillExt
+│   │   ├── caption.py           # Caption, FootnoteShape
+│   │   └── style.py             # Style, StyleTemplate
+│   ├── actions/
+│   │   ├── __init__.py
+│   │   ├── file.py              # FileOpen, FileSaveAs, FileConvert
+│   │   ├── edit.py              # FindReplace, ConvertCase, etc.
+│   │   └── print.py             # Print, PrintToImage, PrintWatermark
+│   └── forms/
+│       ├── __init__.py
+│       └── fields.py            # AutoFill, FieldCtrl, HyperLink
+```
+
+**Benefits:**
+- **Maintainability**: Find CharShape in `text/character.py`, not line 850 of monolith
+- **Team Development**: Fewer merge conflicts with separated files
+- **IDE Performance**: Faster autocomplete, syntax highlighting
+- **Logical Grouping**: Related classes together by domain
+- **Backward Compatible**: Re-export from `__init__.py` preserves existing imports
+
+**Migration:**
+```python
+# Old import (still works):
+from hwpapi.parametersets import CharShape, ParaShape, Table
+
+# New import (also works):
+from hwpapi.parametersets.text.character import CharShape
+from hwpapi.parametersets.text.paragraph import ParaShape
+from hwpapi.parametersets.table.table import Table
+```
+
+**Estimated Impact:**
+- Lines reduced: 0 (reorganization, not deletion)
+- Files created: ~20 new files
+- Maintainability: 🔼 Significantly improved
+- IDE performance: 🔼 Improved
+
+#### Phase 2: Expose Collection Objects (Medium Priority)
+
+**Goal:** Expose `Documents`, `Windows` collections to match official API
+
+**New API:**
+```python
+# Add to App class:
+class App:
+    @property
+    def documents(self):
+        """Access to IXHwpDocuments collection."""
+        return DocumentsCollection(self.api)
+
+    @property
+    def windows(self):
+        """Access to IXHwpWindows collection."""
+        return WindowsCollection(self.api)
+
+    @property
+    def active_document(self):
+        """Currently active document."""
+        return Document(self.api.ActiveDocument)
+
+# New collection classes:
+class DocumentsCollection:
+    def __init__(self, hwp_object):
+        self._hwp = hwp_object
+
+    def __len__(self):
+        return self._hwp.Documents.Count
+
+    def __getitem__(self, index):
+        return Document(self._hwp.Documents.Item(index))
+
+    def add(self):
+        """Create new document."""
+        return Document(self._hwp.Documents.Add())
+
+class Document:
+    def __init__(self, doc_com_object):
+        self._doc = doc_com_object
+
+    @property
+    def full_name(self):
+        return self._doc.FullName
+
+    def save(self):
+        return self._doc.Save()
+
+    def close(self):
+        return self._doc.Close()
+```
+
+**Usage:**
+```python
+app = App()
+
+# Access collections:
+print(f"Open documents: {len(app.documents)}")
+doc1 = app.documents[0]
+doc2 = app.documents[1]
+
+# Multi-document workflows:
+for doc in app.documents:
+    print(doc.full_name)
+    doc.save()
+
+# Create new document:
+new_doc = app.documents.add()
+```
+
+**Benefits:**
+- Feature parity with official API
+- Multi-document support
+- More explicit than implicit "current document"
+- Better for automation scripts
+
+#### Phase 3: Add Form Controls Support (Low Priority)
+
+**Goal:** Expose form controls for interactive documents
+
+**New Classes:**
+```python
+# Add to App:
+class App:
+    @property
+    def forms(self):
+        """Access to form controls."""
+        return FormsCollection(self.api)
+
+class FormsCollection:
+    def __init__(self, hwp_object):
+        self._hwp = hwp_object
+
+    @property
+    def push_buttons(self):
+        return PushButtonsCollection(self._hwp.Forms.PushButtons)
+
+    @property
+    def check_buttons(self):
+        return CheckButtonsCollection(self._hwp.Forms.CheckButtons)
+
+    # etc...
+```
+
+**Benefits:**
+- Support form-based documents
+- Enable interactive workflows
+- Complete API coverage
+
+---
+
+### Restructuring Priorities (Updated)
+
+| Priority | Task | Lines Saved | Complexity Reduction | User Impact |
+|----------|------|-------------|---------------------|-------------|
+| **1** | Split parametersets.py by domain | 0 (reorg) | 🔼🔼🔼 High | Low (internal) |
+| **2** | Unify backend modes | ~200 | 🔼🔼 Medium | Low (internal) |
+| **3** | Expose Documents/Windows collections | +150 | 🔽 Slight increase | 🔼🔼 High (feature) |
+| **4** | Consolidate property types | ~200 | 🔼 Medium | Low (internal) |
+| **5** | Add Form controls support | +200 | 🔽 Slight increase | 🔼 Medium (feature) |
+| **6** | Remove forward declarations | ~25 | 🔼 Small | None |
+
+**Recommendation:** Start with Priority 1 (split parametersets.py) as it has:
+- Highest maintainability impact
+- Zero breaking changes
+- Easiest to implement (move code, update imports)
+
+---
+
+### Implementation Strategy
+
+#### Step 1: Prepare New Structure (parametersets/ package)
+
+1. Create directory structure:
+   ```bash
+   mkdir -p hwpapi/parametersets/{text,table,drawing,document,formatting,actions,forms}
+   ```
+
+2. Create `__init__.py` files with re-exports:
+   ```python
+   # hwpapi/parametersets/__init__.py
+   from .base import ParameterSet, ParameterSetMeta
+   from .backends import *
+   from .properties import *
+   from .text.character import CharShape, BulletShape
+   from .text.paragraph import ParaShape, TabDef
+   # ... (re-export all classes to preserve imports)
+
+   __all__ = ['ParameterSet', 'CharShape', 'ParaShape', ...]  # Full list
+   ```
+
+3. Move classes to domain files:
+   - Extract CharShape, BulletShape → `text/character.py`
+   - Extract ParaShape, TabDef → `text/paragraph.py`
+   - Continue for all 130+ classes
+
+4. Update notebook:
+   - Split `nbs/02_api/02_parameters.ipynb` into multiple notebooks:
+     - `02_parameters_base.ipynb` → `base.py`
+     - `02_parameters_text_char.ipynb` → `text/character.py`
+     - etc.
+   - Or keep single notebook with clear section markers
+
+5. Test imports:
+   ```python
+   # Ensure backward compatibility:
+   from hwpapi.parametersets import CharShape  # Should still work
+   ```
+
+#### Step 2: Document Migration
+
+1. Update CLAUDE.md with new file mappings
+2. Update README with new structure
+3. Create migration guide for contributors
+
+#### Step 3: Gradual Rollout
+
+1. **Phase 1a**: Move base classes, backends, properties (low risk)
+2. **Phase 1b**: Move text-related classes (medium risk)
+3. **Phase 1c**: Move remaining classes (high risk, test thoroughly)
+4. **Phase 1d**: Update documentation, examples
+
+---
+
+### Benefits Summary
+
+**Immediate Benefits (Phase 1 - Reorganization):**
+- ✅ **Navigability**: Find classes 10x faster
+- ✅ **Maintainability**: Logical grouping by domain
+- ✅ **Team Collaboration**: Fewer merge conflicts
+- ✅ **IDE Performance**: Faster autocomplete
+- ✅ **Code Reviews**: Easier to review focused changes
+- ✅ **Zero Breaking Changes**: Backward compatible via re-exports
+
+**Long-term Benefits (Phase 2-3 - New Features):**
+- ✅ **API Completeness**: Match official HWP API surface
+- ✅ **Multi-document Support**: Automate across multiple files
+- ✅ **Form Support**: Interactive document automation
+- ✅ **Better Alignment**: Official docs map directly to code structure
+
+**Non-Goals:**
+- ❌ Don't change the property descriptor system (it's excellent)
+- ❌ Don't change the backend abstraction (it works well)
+- ❌ Don't change the Actions pattern (pythonic and convenient)
+- ❌ Don't add complexity for theoretical future needs
+
+---
+
+### Migration Checklist
+
+When implementing the restructuring:
+
+**Preparation:**
+- [ ] Read official HwpAutomation_2504.pdf documentation
+- [ ] Understand current parametersets.py organization
+- [ ] Create domain-based file structure
+
+**Phase 1 Execution:**
+- [ ] Create `hwpapi/parametersets/` package structure
+- [ ] Split notebooks (or keep single notebook with sections)
+- [ ] Move base classes to `base.py`
+- [ ] Move backend classes to `backends.py`
+- [ ] Move property descriptors to `properties.py`
+- [ ] Move mappings to `mappings.py`
+- [ ] Move ParameterSet subclasses to domain files
+- [ ] Create `__init__.py` with full re-exports
+- [ ] Run `nbdev_export`
+- [ ] Test all imports: `python -c "from hwpapi.parametersets import CharShape, ParaShape, Table"`
+- [ ] Run full test suite: `python -m pytest tests/ -v`
+- [ ] Update CLAUDE.md file mapping table
+- [ ] Commit changes
+
+**Phase 2 Execution (Optional):**
+- [ ] Design DocumentsCollection, WindowsCollection classes
+- [ ] Add `app.documents`, `app.windows` properties
+- [ ] Write tests for multi-document workflows
+- [ ] Update documentation with examples
+- [ ] Commit changes
+
+**Phase 3 Execution (Optional):**
+- [ ] Design FormsCollection classes
+- [ ] Add `app.forms` property
+- [ ] Write tests for form controls
+- [ ] Update documentation
+- [ ] Commit changes
+
+---
+
 ## 🔄 Version History
 
 ### Recent Changes
+
+**2025-01-08 - Architecture Analysis & Restructuring Plan**
+- Analyzed official HWP Automation Object Model (HwpAutomation_2504.pdf)
+- Compared official structure with current hwpapi implementation
+- Identified 4 major gaps: Collection objects, monolithic parametersets.py, form controls, organization
+- Designed 3-phase restructuring plan:
+  - Phase 1: Split parametersets.py into domain-based modules (highest priority)
+  - Phase 2: Expose Documents/Windows collections (medium priority)
+  - Phase 3: Add Form controls support (low priority)
+- Added comprehensive "HWP Object Model: Official vs Current Architecture" section to CLAUDE.md
+- Result: Clear roadmap for better alignment with official API and improved maintainability
 
 **2024 - Auto-Generated attributes_names**
 - Removed manual `self.attributes_names = [...]` from 9+ classes
@@ -720,5 +1277,5 @@ nbdev_preview
 
 *This document is a living guide. Update it as you learn more about the codebase.*
 
-**Last Updated:** 2024 (After attributes_names simplification)
-**Next Review:** After Priority 1 simplification (unify backend modes)
+**Last Updated:** 2025-01-08 (After architecture analysis and restructuring plan)
+**Next Review:** After Phase 1 restructuring (split parametersets.py by domain)
