@@ -6,7 +6,8 @@
       "Bash(python:*)",
       "Bash(nbdev_export)",
       "Bash(jupyter nbconvert:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []

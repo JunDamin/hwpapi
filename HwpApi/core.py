@@ -1552,14 +1552,14 @@ def find_text(
     # 반복 검색 액션 생성
     action = app.actions.RepeatFind
     pset = action.pset
-    # pset.find_charshape.update_from(app.charshape())
+    # pset.FindCharShape.update_from(app.charshape())
 
     if charshape:
-        pset.find_charshape.update_from(charshape)
+        pset.FindCharShape.update_from(charshape)
 
     # 옵션 설정
     if text is not None:
-        pset.find_string = text
+        pset.FindString = text
     if ignore_message is not None:    
         pset.ignore_message = ignore_message
     if match_case is not None:    
@@ -1577,29 +1577,29 @@ def find_text(
     if replace_mode is not None:
         pset.replace_mode = replace_mode
     if ignore_find_string is not None:
-        pset.ignore_find_string = ignore_find_string
+        pset.IgnoreFindString = ignore_find_string
     if ignore_replace_string is not None:
-        pset.ignore_replace_string = ignore_replace_string
+        pset.IgnoreReplaceString = ignore_replace_string
     if find_style is not None:
-        pset.find_style = find_style
+        pset.FindStyle = find_style
     if replace_style is not None:
-        pset.replace_style = replace_style
+        pset.ReplaceStyle = replace_style
     if find_jaso is not None:
-        pset.find_jaso = find_jaso
+        pset.FindJaso = find_jaso
     if find_regexp is not None:
-        pset.find_regexp = find_regexp
+        pset.FindRegexp = find_regexp
     if find_type is not None:
-        pset.find_type = find_type
+        pset.FindType = find_type
     if facename is not None:
-        pset.find_charshape
-        pset.find_charshape.facename = facename
+        pset.FindCharShape
+        pset.FindCharShape.FaceNameHangul = facename
         from hwpapi.constants import korean_fonts, english_fonts
         fonts = set(korean_fonts + english_fonts)
-        pset.find_charshape.fonttype = 1 if facename not in fonts else 2
+        pset.FindCharShape.FontTypeHangul = 1 if facename not in fonts else 2
     if text_color is not None:
-        pset.find_charshape.text_color = text_color
+        pset.FindCharShape.TextColor = text_color
     if bold is not None:
-        pset.find_charshape.bold = bold
+        pset.FindCharShape.Bold = bold
 
     return action.run()
 
@@ -1664,9 +1664,9 @@ def replace_all(
 
     # 옵션 설정
     if old_text is not None:
-        pset.find_string = old_text
+        pset.FindString = old_text
     if new_text is not None:
-        pset.replace_string = new_text
+        pset.ReplaceString = new_text
     if ignore_message is not None:    
         pset.ignore_message = ignore_message
     if match_case is not None:    
@@ -1684,25 +1684,25 @@ def replace_all(
     if replace_mode is not None:
         pset.replace_mode = replace_mode
     if ignore_find_string is not None:
-        pset.ignore_find_string = ignore_find_string
+        pset.IgnoreFindString = ignore_find_string
     if ignore_replace_string is not None:
-        pset.ignore_replace_string = ignore_replace_string
+        pset.IgnoreReplaceString = ignore_replace_string
     if find_style is not None:
-        pset.find_style = find_style
+        pset.FindStyle = find_style
     if replace_style is not None:
-        pset.replace_style = replace_style
+        pset.ReplaceStyle = replace_style
     if find_jaso is not None:
-        pset.find_jaso = find_jaso
+        pset.FindJaso = find_jaso
     if find_regexp is not None:
-        pset.find_regexp = find_regexp
+        pset.FindRegexp = find_regexp
     if find_type is not None:
-        pset.find_type = find_type
+        pset.FindType = find_type
     if auto_spell is not None:
         pset.auto_spell = auto_spell
 
     # 문자 모양 설정
     if old_charshape:
-        pset.find_charshape.update_from(old_charshape)
+        pset.FindCharShape.update_from(old_charshape)
     if new_charshape:
         pset.replace_charshape.update_from(new_charshape)
     return action.run()

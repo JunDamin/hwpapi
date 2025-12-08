@@ -4,6 +4,7 @@
 from __future__ import annotations
 from .functions import from_hwpunit, to_hwpunit, convert_hwp_color_to_hex, convert_to_hwp_color
 import pprint
+import re
 from typing import Any, Dict, List, Optional, Union, Callable, Type, Protocol, Literal, Iterable
 
 
@@ -867,6 +868,34 @@ class ParameterSetMeta(type):
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 23
+def _pascal_to_snake(name: str) -> str:
+    """Convert PascalCase to snake_case.
+
+    Examples:
+        FaceNameHangul -> face_name_hangul
+        Bold -> bold
+        TextColor -> text_color
+    """
+    # Insert underscore before uppercase letters (except at start)
+    snake = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    snake = re.sub('([a-z0-9])([A-Z])', r'\1_\2', snake)
+    return snake.lower()
+
+
+def _snake_to_pascal(name: str) -> str:
+    """Convert snake_case to PascalCase.
+
+    Examples:
+        face_name_hangul -> FaceNameHangul
+        bold -> Bold
+        text_color -> TextColor
+    """
+    parts = name.split('_')
+    return ''.join(word.capitalize() for word in parts)
+
+
+
+
 class ParameterSet(metaclass=ParameterSetMeta):
     """
     Unified ParameterSet supporting both pset and HSet backends.
@@ -1145,6 +1174,100 @@ class ParameterSet(metaclass=ParameterSetMeta):
         self._deleted.clear()
         return self
 
+
+
+    def __getattr__(self, name: str):
+        """
+        Allow attribute access with snake_case in addition to PascalCase.
+
+        If the attribute doesn't exist, try converting from snake_case to PascalCase
+        and look it up in the property registry. Also supports case-insensitive matching
+        for compound words (e.g., find_charshape matches FindCharShape).
+
+        Examples:
+            ps.face_name_hangul  # snake_case
+            ps.FaceNameHangul    # PascalCase
+            ps.find_charshape    # matches FindCharShape (case-insensitive)
+        """
+        # Avoid infinite recursion for private attributes and special attributes
+        if name.startswith('_'):
+            raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+
+        # Try to convert snake_case to PascalCase and look up in registry
+        pascal_name = _snake_to_pascal(name)
+
+        # Check if the PascalCase version exists as a class attribute (descriptor)
+        if hasattr(type(self), pascal_name):
+            descriptor = getattr(type(self), pascal_name)
+            if isinstance(descriptor, PropertyDescriptor):
+                # Call the descriptor's __get__ method
+                return descriptor.__get__(self, type(self))
+
+        # Case-insensitive fallback for compound words
+        # E.g., find_charshape -> FindCharShape (not FindCharshape)
+        name_lower = pascal_name.lower()
+        for attr_name in dir(type(self)):
+            if attr_name.lower() == name_lower:
+                descriptor = getattr(type(self), attr_name)
+                if isinstance(descriptor, PropertyDescriptor):
+                    return descriptor.__get__(self, type(self))
+
+        # If not found, raise AttributeError with helpful message
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{name}'. "
+            f"Available attributes: {', '.join(sorted(self.attributes_names)[:5])}..."
+        )
+
+    def __setattr__(self, name: str, value: Any):
+        """
+        Allow attribute assignment with snake_case in addition to PascalCase.
+
+        If the attribute is in snake_case, try to convert to PascalCase and set
+        via the property descriptor. Also supports case-insensitive matching
+        for compound words (e.g., find_charshape matches FindCharShape).
+
+        Examples:
+            ps.face_name_hangul = "Arial"  # snake_case
+            ps.FaceNameHangul = "Arial"    # PascalCase
+            ps.find_charshape = CharShape()  # matches FindCharShape
+        """
+        # Always allow setting private attributes normally (including _backend, _staged, etc.)
+        if name.startswith('_'):
+            object.__setattr__(self, name, value)
+            return
+
+        # Check if this is a known class-level descriptor (PascalCase)
+        if hasattr(type(self), name):
+            attr = getattr(type(self), name)
+            if isinstance(attr, PropertyDescriptor):
+                # Let the descriptor handle it
+                attr.__set__(self, value)
+                return
+
+        # Try to convert snake_case to PascalCase
+        pascal_name = _snake_to_pascal(name)
+
+        # Check if the PascalCase version exists as a descriptor
+        if hasattr(type(self), pascal_name):
+            descriptor = getattr(type(self), pascal_name)
+            if isinstance(descriptor, PropertyDescriptor):
+                # Set via the descriptor
+                descriptor.__set__(self, value)
+                return
+
+        # Case-insensitive fallback for compound words
+        # E.g., find_charshape -> FindCharShape (not FindCharshape)
+        name_lower = pascal_name.lower()
+        for attr_name in dir(type(self)):
+            if attr_name.lower() == name_lower:
+                descriptor = getattr(type(self), attr_name)
+                if isinstance(descriptor, PropertyDescriptor):
+                    descriptor.__set__(self, value)
+                    return
+
+        # If not a known property, set as a regular attribute
+        # (This maintains backward compatibility with dynamic attributes)
+        object.__setattr__(self, name, value)
 
     def create_itemset(self, key: str, setid: str) -> "ParameterSet":
         """

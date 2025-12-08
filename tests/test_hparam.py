@@ -349,11 +349,17 @@ class TestParameterSetUpdateFrom(unittest.TestCase):
         # Test that attributes_names is auto-generated from property registry
         ps = CharShape()
         self.assertIsInstance(ps.attributes_names, list)
-        self.assertEqual(len(ps.attributes_names), 67)  # CharShape has 67 properties
-        # Should contain known CharShape attributes
-        self.assertIn('bold', ps.attributes_names)
-        self.assertIn('italic', ps.attributes_names)
-        self.assertIn('size_hangul', ps.attributes_names)
+        self.assertEqual(len(ps.attributes_names), 65)  # CharShape has 65 properties
+        # Should contain known CharShape attributes (in PascalCase)
+        self.assertIn('Bold', ps.attributes_names)
+        self.assertIn('Italic', ps.attributes_names)
+        self.assertIn('SizeHangul', ps.attributes_names)
+
+        # Test dual access - both PascalCase and snake_case should work
+        ps.Bold = True
+        self.assertEqual(ps.bold, True)  # snake_case access
+        ps.italic = True
+        self.assertEqual(ps.Italic, True)  # PascalCase access
 
 def run_tests():
     """Run all tests with appropriate skipping."""
