@@ -1555,6 +1555,7 @@ def find_text(
     # pset.FindCharShape.update_from(app.charshape())
 
     if charshape:
+        pset.FindCharShape
         pset.FindCharShape.update_from(charshape)
 
     # 옵션 설정

@@ -19,26 +19,27 @@ __all__ = ['DIRECTION_MAP', 'CAP_FULL_SIZE_MAP', 'ALIGNMENT_MAP', 'VERT_ALIGN_MA
            'ParameterBackend', 'ComBackend', 'AttrBackend', 'PsetBackend', 'HParamBackend', 'make_backend',
            'resolve_action_args', 'apply_staged_to_backend', 'MissingRequiredError', 'PropertyDescriptor',
            'IntProperty', 'BoolProperty', 'StringProperty', 'ColorProperty', 'UnitProperty', 'MappedProperty',
-           'TypedProperty', 'ListProperty', 'ParameterSetMeta', 'ParameterSet', 'update_from', 'BorderFill', 'Caption',
-           'FindReplace', 'DrawFillAttr', 'CharShape', 'ParaShape', 'ShapeObject', 'Table', 'BulletShape', 'Cell',
-           'CtrlData', 'DrawArcType', 'DrawCoordInfo', 'DrawCtrlHyperlink', 'DrawEditDetail', 'DrawImageAttr',
-           'DrawImageScissoring', 'DrawLayout', 'DrawLineAttr', 'DrawRectType', 'DrawResize', 'DrawRotate',
-           'DrawScAction', 'DrawShadow', 'DrawShear', 'DrawTextart', 'InsertText', 'ListProperties', 'NumberingShape',
-           'TabDef', 'ActionCrossRef', 'AutoFill', 'AutoNum', 'BookMark', 'BorderFillExt', 'CaptureEnd',
-           'CellBorderFill', 'ChCompose', 'ChangeRome', 'CodeTable', 'ColDef', 'ConvertCase', 'ConvertFullHalf',
-           'ConvertHiraToGata', 'ConvertJianFan', 'ConvertToHangul', 'DeleteCtrls', 'DocFilters', 'DocFindInfo',
-           'DocumentInfo', 'DropCap', 'Dutmal', 'EngineProperties', 'EqEdit', 'ExchangeFootnoteEndNote', 'FieldCtrl',
-           'FileConvert', 'FileInfo', 'FileOpen', 'FileSaveAs', 'FileSaveBlock', 'FileSendMail', 'FileSetSecurity',
-           'FlashProperties', 'FootnoteShape', 'FtpDownload', 'FtpUpload', 'GotoE', 'GridInfo', 'HeaderFooter',
-           'HyperLink', 'Idiom', 'IndexMark', 'InputDateStyle', 'InsertFieldTemplate', 'InsertFile', 'Internet',
-           'KeyMacro', 'LinkDocument', 'ListParaPos', 'MailMergeGenerate', 'MakeContents', 'MarkpenShape', 'MasterPage',
-           'MemoShape', 'MousePos', 'MovieProperties', 'OleCreation', 'PageBorderFill', 'PageDef', 'PageHiding',
-           'PageNumCtrl', 'PageNumPos', 'Password', 'Preference', 'Presentation', 'Print', 'PrintToImage',
-           'PrintWatermark', 'QCorrect', 'RevisionDef', 'SaveFootnote', 'ScriptMacro', 'SecDef', 'SectionApply',
-           'ShapeCopyPaste', 'ShapeObjectCopyPaste', 'Sort', 'Style', 'StyleDelete', 'StyleTemplate', 'Sum',
-           'SummaryInfo', 'TableCreation', 'TableDeleteLine', 'TableDrawPen', 'TableInsertLine', 'TableSplitCell',
-           'TableStrToTbl', 'TableSwap', 'TableTblToStr', 'TableTemplate', 'TextCtrl', 'TextVertical',
-           'UserQCommandFile', 'VersionInfo', 'ViewProperties', 'ViewStatus']
+           'TypedProperty', 'NestedProperty', 'ArrayProperty', 'HArrayWrapper', 'ListProperty', 'ParameterSetMeta',
+           'ParameterSet', 'update_from', 'BorderFill', 'Caption', 'FindReplace', 'DrawFillAttr', 'CharShape',
+           'ParaShape', 'ShapeObject', 'Table', 'BulletShape', 'Cell', 'CtrlData', 'DrawArcType', 'DrawCoordInfo',
+           'DrawCtrlHyperlink', 'DrawEditDetail', 'DrawImageAttr', 'DrawImageScissoring', 'DrawLayout', 'DrawLineAttr',
+           'DrawRectType', 'DrawResize', 'DrawRotate', 'DrawScAction', 'DrawShadow', 'DrawShear', 'DrawTextart',
+           'InsertText', 'ListProperties', 'NumberingShape', 'TabDef', 'ActionCrossRef', 'AutoFill', 'AutoNum',
+           'BookMark', 'BorderFillExt', 'CaptureEnd', 'CellBorderFill', 'ChCompose', 'ChangeRome', 'CodeTable',
+           'ColDef', 'ConvertCase', 'ConvertFullHalf', 'ConvertHiraToGata', 'ConvertJianFan', 'ConvertToHangul',
+           'DeleteCtrls', 'DocFilters', 'DocFindInfo', 'DocumentInfo', 'DropCap', 'Dutmal', 'EngineProperties',
+           'EqEdit', 'ExchangeFootnoteEndNote', 'FieldCtrl', 'FileConvert', 'FileInfo', 'FileOpen', 'FileSaveAs',
+           'FileSaveBlock', 'FileSendMail', 'FileSetSecurity', 'FlashProperties', 'FootnoteShape', 'FtpDownload',
+           'FtpUpload', 'GotoE', 'GridInfo', 'HeaderFooter', 'HyperLink', 'Idiom', 'IndexMark', 'InputDateStyle',
+           'InsertFieldTemplate', 'InsertFile', 'Internet', 'KeyMacro', 'LinkDocument', 'ListParaPos',
+           'MailMergeGenerate', 'MakeContents', 'MarkpenShape', 'MasterPage', 'MemoShape', 'MousePos',
+           'MovieProperties', 'OleCreation', 'PageBorderFill', 'PageDef', 'PageHiding', 'PageNumCtrl', 'PageNumPos',
+           'Password', 'Preference', 'Presentation', 'Print', 'PrintToImage', 'PrintWatermark', 'QCorrect',
+           'RevisionDef', 'SaveFootnote', 'ScriptMacro', 'SecDef', 'SectionApply', 'ShapeCopyPaste',
+           'ShapeObjectCopyPaste', 'Sort', 'Style', 'StyleDelete', 'StyleTemplate', 'Sum', 'SummaryInfo',
+           'TableCreation', 'TableDeleteLine', 'TableDrawPen', 'TableInsertLine', 'TableSplitCell', 'TableStrToTbl',
+           'TableSwap', 'TableTblToStr', 'TableTemplate', 'TextCtrl', 'TextVertical', 'UserQCommandFile', 'VersionInfo',
+           'ViewProperties', 'ViewStatus']
 
 # %% ../nbs/02_api/02_parameters.ipynb 6
 # Direction mappings
@@ -715,28 +716,61 @@ class ColorProperty(PropertyDescriptor):
 
 # %% ../nbs/02_api/02_parameters.ipynb 17
 class UnitProperty(PropertyDescriptor):
-    """Property descriptor for unit-based values with automatic conversion."""
-    
-    def __init__(self, key: str, unit: str, doc: str):
+    """
+    Property descriptor for unit-based values with automatic conversion.
+
+    Supports automatic conversion between user-friendly units (mm, cm, in, pt)
+    and HWP's internal HWPUNIT format.
+
+    Attributes:
+        key (str): Parameter key in HWP
+        doc (str): Documentation string
+        default_unit (str): Default unit when bare numbers are provided (default: "mm")
+
+    Example:
+        >>> class PageDef(ParameterSet):
+        ...     width = UnitProperty("Width", "Page width", default_unit="mm")
+        >>> page = PageDef(action.CreateSet())
+        >>> page.width = "210mm"   # String with unit
+        >>> page.width = "21cm"    # Auto-converts to HWPUNIT
+        >>> page.width = 210       # Bare number, assumes mm
+        >>> print(page.width)      # Returns value in mm
+        210.0
+    """
+
+    def __init__(self, key: str, doc: str, default_unit: str = "mm"):
         super().__init__(key, doc)
-        self.unit = unit
-    
+        self.default_unit = default_unit
+
     def __get__(self, instance, owner):
+        """Get value in default unit."""
         if instance is None:
             return self
         value = self._get_value(instance)
         if value is None:
             return None
-        return from_hwpunit(value, self.unit)
-    
+        # Convert from HWPUNIT to default unit
+        return from_hwpunit(value, self.default_unit)
+
     def __set__(self, instance, value):
+        """
+        Set value from number or string with unit.
+
+        Args:
+            value: Number or string like "210mm", "21cm", "8.27in", "12pt"
+        """
         if value is None:
             return self._del_value(instance)
-        
-        if not isinstance(value, (int, float)):
-            raise TypeError(f"Value for '{self.key}' must be numeric")
-        
-        hwp_value = to_hwpunit(value, self.unit)
+
+        # Use enhanced to_hwpunit which handles both numbers and strings
+        try:
+            hwp_value = to_hwpunit(value, self.default_unit)
+        except (ValueError, TypeError) as e:
+            raise TypeError(
+                f"Value for '{self.key}' must be numeric or unit string "
+                f"(e.g., '210mm', '21cm', 210). Got: {value}"
+            ) from e
+
         return self._set_value(instance, hwp_value)
 
 
@@ -793,6 +827,329 @@ class TypedProperty(PropertyDescriptor):
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 20
+class NestedProperty(PropertyDescriptor):
+    """
+    Auto-creating nested ParameterSet property.
+
+    Automatically calls backend.create_itemset(key, setid) on first access,
+    wraps the result in the specified ParameterSet class, and caches the instance.
+
+    Attributes:
+        key (str): Parameter key in HWP (e.g., "FindCharShape")
+        setid (str): SetID for CreateItemSet call (e.g., "CharShape")
+        param_class (Type[ParameterSet]): ParameterSet class to wrap
+        doc (str): Documentation string
+        _cache_attr (str): Internal cache attribute name
+
+    Example:
+        >>> class FindReplace(ParameterSet):
+        ...     find_char_shape = NestedProperty("FindCharShape", "CharShape", CharShape)
+        >>> pset = FindReplace(action.CreateSet())
+        >>> pset.find_char_shape.bold = True  # Auto-creates CharShape!
+    """
+
+    def __init__(self, key: str, setid: str, param_class: Type["ParameterSet"], doc: str = ""):
+        super().__init__(key, doc)
+        self.setid = setid
+        self.param_class = param_class
+        self._cache_attr = f"_nested_cache_{key}"
+
+    def __get__(self, instance: "ParameterSet", owner) -> "ParameterSet":
+        """
+        Get nested ParameterSet, creating it if needed.
+
+        Returns cached instance if available, otherwise:
+        1. Calls backend.create_itemset(key, setid) to create COM object
+        2. Wraps in param_class
+        3. Caches for future access
+        4. Returns wrapped instance
+
+        Raises:
+            RuntimeError: If ParameterSet not bound to backend
+        """
+        if instance is None:
+            return self
+
+        # Check cache first (subsequent access)
+        if hasattr(instance, self._cache_attr):
+            return getattr(instance, self._cache_attr)
+
+        # Verify backend is available
+        if instance._backend is None:
+            raise RuntimeError(
+                f"Cannot access nested property '{self.key}': "
+                "ParameterSet not bound. Call .bind() or pass parameterset= to __init__"
+            )
+
+        # Create via CreateItemSet (first access)
+        if hasattr(instance._backend, 'create_itemset'):
+            # PsetBackend - use CreateItemSet
+            nested_pset_com = instance._backend.create_itemset(self.key, self.setid)
+            nested_wrapped = self.param_class(nested_pset_com)
+        else:
+            # Fallback for HParamBackend or other backends
+            try:
+                nested_com = instance._backend.get(self.key)
+                nested_wrapped = self.param_class(nested_com)
+            except (KeyError, AttributeError):
+                # Create unbound instance as last resort
+                nested_wrapped = self.param_class()
+
+        # Cache for subsequent access
+        setattr(instance, self._cache_attr, nested_wrapped)
+        return nested_wrapped
+
+    def __set__(self, instance: "ParameterSet", value: "ParameterSet"):
+        """
+        Allow direct assignment of ParameterSet instance.
+
+        Args:
+            instance: Parent ParameterSet
+            value: ParameterSet instance to assign
+
+        Raises:
+            TypeError: If value is not the correct ParameterSet type
+        """
+        if not isinstance(value, self.param_class):
+            raise TypeError(
+                f"Value for '{self.key}' must be {self.param_class.__name__}, "
+                f"got {type(value).__name__}"
+            )
+
+        # Cache the provided instance
+        setattr(instance, self._cache_attr, value)
+
+        # Stage for apply()
+        instance._staged[self.key] = value
+
+# %% ../nbs/02_api/02_parameters.ipynb 21
+class ArrayProperty(PropertyDescriptor):
+    """
+    Auto-creating array property for HArray COM objects.
+
+    Provides Pythonic list-like interface with automatic type conversion
+    and optional length validation.
+
+    Attributes:
+        key (str): Parameter key in HWP
+        item_type (Type): Type of array elements (int, float, str, tuple)
+        doc (str): Documentation string
+        min_length (Optional[int]): Minimum array length
+        max_length (Optional[int]): Maximum array length
+        _cache_attr (str): Internal cache attribute name
+
+    Example:
+        >>> class TabDef(ParameterSet):
+        ...     tab_stops = ArrayProperty("TabStops", int, "Tab stop positions")
+        >>> tab_def = TabDef(action.CreateSet())
+        >>> tab_def.tab_stops = [1000, 2000, 3000]
+        >>> tab_def.tab_stops.append(4000)
+    """
+
+    def __init__(self, key: str, item_type: Type, doc: str = "",
+                 min_length: Optional[int] = None, max_length: Optional[int] = None):
+        super().__init__(key, doc)
+        self.item_type = item_type
+        self.min_length = min_length
+        self.max_length = max_length
+        self._cache_attr = f"_array_cache_{key}"
+
+    def __get__(self, instance: "ParameterSet", owner) -> "HArrayWrapper":
+        """
+        Get HArrayWrapper, creating it if needed.
+
+        Returns:
+            HArrayWrapper providing list-like interface to HArray
+        """
+        if instance is None:
+            return self
+
+        # Check cache first
+        if hasattr(instance, self._cache_attr):
+            return getattr(instance, self._cache_attr)
+
+        # Try to get existing HArray from backend
+        if instance._backend is not None:
+            try:
+                harray_com = instance._backend.get(self.key)
+                if harray_com is not None:
+                    wrapper = HArrayWrapper(harray_com, self.item_type,
+                                           instance._backend, self.key)
+                    setattr(instance, self._cache_attr, wrapper)
+                    return wrapper
+            except (KeyError, AttributeError):
+                pass
+
+        # Return empty wrapper (will create HArray on modification)
+        wrapper = HArrayWrapper(None, self.item_type, instance._backend, self.key)
+        setattr(instance, self._cache_attr, wrapper)
+        return wrapper
+
+    def __set__(self, instance: "ParameterSet", value: Union[List, Tuple, None]):
+        """
+        Set array from Python list/tuple.
+
+        Args:
+            value: Python list/tuple to set, or None to clear
+
+        Raises:
+            TypeError: If value is not list/tuple
+            ValueError: If length constraints violated
+        """
+        if value is None:
+            # Clear array
+            wrapper = HArrayWrapper(None, self.item_type, instance._backend, self.key)
+            setattr(instance, self._cache_attr, wrapper)
+            instance._staged[self.key] = []
+            return
+
+        # Validate type
+        if not isinstance(value, (list, tuple)):
+            raise TypeError(
+                f"Value for '{self.key}' must be list or tuple, "
+                f"got {type(value).__name__}"
+            )
+
+        value_list = list(value)
+
+        # Validate length
+        if self.min_length is not None and len(value_list) < self.min_length:
+            raise ValueError(
+                f"Array '{self.key}' must have at least {self.min_length} items, "
+                f"got {len(value_list)}"
+            )
+        if self.max_length is not None and len(value_list) > self.max_length:
+            raise ValueError(
+                f"Array '{self.key}' must have at most {self.max_length} items, "
+                f"got {len(value_list)}"
+            )
+
+        # Create wrapper with initial values
+        wrapper = HArrayWrapper(None, self.item_type, instance._backend, self.key,
+                                initial_values=value_list)
+        setattr(instance, self._cache_attr, wrapper)
+        instance._staged[self.key] = value_list
+
+# %% ../nbs/02_api/02_parameters.ipynb 22
+class HArrayWrapper:
+    """
+    Pythonic wrapper around HWP's HArray COM object.
+
+    Provides full list interface: indexing, iteration, append, insert, etc.
+    Automatically syncs changes with underlying COM HArray when available.
+
+    Attributes:
+        _harray: COM HArray object (or None if not created yet)
+        _item_type: Python type for array elements
+        _backend: ParameterSet backend (for array creation)
+        _key: Parameter key
+        _local_cache: Python list holding current values
+    """
+
+    def __init__(self, harray_com: Any, item_type: Type,
+                 backend: Optional[Any] = None, key: Optional[str] = None,
+                 initial_values: Optional[List] = None):
+        self._harray = harray_com
+        self._item_type = item_type
+        _backend = backend
+        self._key = key
+        self._local_cache = list(initial_values) if initial_values else []
+
+        # Sync from COM if available
+        if self._harray is not None:
+            self._sync_from_com()
+
+    def _sync_from_com(self):
+        """Load values from COM HArray into local cache."""
+        if self._harray is None:
+            return
+        try:
+            count = self._harray.Count
+            self._local_cache = [
+                self._convert_from_com(self._harray.Item(i))
+                for i in range(count)
+            ]
+        except Exception:
+            pass  # Keep local cache if COM access fails
+
+    def _sync_to_com(self):
+        """Push local cache to COM HArray."""
+        if self._harray is None:
+            return
+        try:
+            # Clear existing
+            while self._harray.Count > 0:
+                self._harray.RemoveAt(0)
+            # Add all from cache
+            for value in self._local_cache:
+                self._harray.Add(self._convert_to_com(value))
+        except Exception:
+            pass  # Keep local cache if sync fails
+
+    def _convert_to_com(self, value: Any) -> Any:
+        """Convert Python value to COM-compatible type."""
+        if self._item_type == tuple:
+            return value  # Tuples may need special handling
+        return self._item_type(value)
+
+    def _convert_from_com(self, value: Any) -> Any:
+        """Convert COM value to Python type."""
+        if self._item_type == tuple:
+            return value
+        return self._item_type(value)
+
+    # List interface implementation
+    def __len__(self) -> int:
+        return len(self._local_cache)
+
+    def __getitem__(self, index: int) -> Any:
+        return self._local_cache[index]
+
+    def __setitem__(self, index: int, value: Any):
+        self._local_cache[index] = self._convert_to_com(value)
+        self._sync_to_com()
+
+    def __delitem__(self, index: int):
+        del self._local_cache[index]
+        self._sync_to_com()
+
+    def __iter__(self):
+        return iter(self._local_cache)
+
+    def __repr__(self) -> str:
+        return f"HArrayWrapper({self._local_cache})"
+
+    def append(self, value: Any):
+        """Add item to end of array."""
+        self._local_cache.append(self._convert_to_com(value))
+        self._sync_to_com()
+
+    def insert(self, index: int, value: Any):
+        """Insert item at index."""
+        self._local_cache.insert(index, self._convert_to_com(value))
+        self._sync_to_com()
+
+    def remove(self, value: Any):
+        """Remove first occurrence of value."""
+        self._local_cache.remove(value)
+        self._sync_to_com()
+
+    def pop(self, index: int = -1) -> Any:
+        """Remove and return item at index."""
+        value = self._local_cache.pop(index)
+        self._sync_to_com()
+        return value
+
+    def clear(self):
+        """Remove all items."""
+        self._local_cache.clear()
+        self._sync_to_com()
+
+    def to_list(self) -> List:
+        """Convert to plain Python list."""
+        return list(self._local_cache)
+
+# %% ../nbs/02_api/02_parameters.ipynb 23
 class ListProperty(PropertyDescriptor):
     """Property descriptor for list values."""
     
@@ -839,7 +1196,7 @@ class ListProperty(PropertyDescriptor):
         return self._set_value(instance, value)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 22
+# %% ../nbs/02_api/02_parameters.ipynb 25
 class ParameterSetMeta(type):
     """Metaclass for automatic property registration."""
     
@@ -867,7 +1224,7 @@ class ParameterSetMeta(type):
         return new_class
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 23
+# %% ../nbs/02_api/02_parameters.ipynb 26
 def _pascal_to_snake(name: str) -> str:
     """Convert PascalCase to snake_case.
 
@@ -1498,7 +1855,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 24
+# %% ../nbs/02_api/02_parameters.ipynb 27
 # Additional methods for ParameterSet class
 def update_from(self, pset):
     """
@@ -1641,7 +1998,7 @@ ParameterSet._serialize_impl = _serialize_impl
 ParameterSet._str_impl = _str_impl
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 25
+# %% ../nbs/02_api/02_parameters.ipynb 28
 # Static methods for creating properties
 @staticmethod        
 def _typed_prop(key, doc, expected_type):
@@ -1724,7 +2081,7 @@ ParameterSet._tuple_list_prop = _tuple_list_prop
 ParameterSet._gradation_color_prop = _gradation_color_prop
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 27
+# %% ../nbs/02_api/02_parameters.ipynb 30
 class BorderFill(ParameterSet):
     """BorderFill ParameterSet."""
     BorderTypeLeft = PropertyDescriptor("BorderTypeLeft", r"""4방향 테두리 종류 : 왼쪽 \[선 종류]""")
@@ -1755,7 +2112,7 @@ class BorderFill(ParameterSet):
     CrookedSlashFlag1 = PropertyDescriptor("CrookedSlashFlag1", r"""Low Byte CrookedSlashFlag (슬래쉬 대각선의 꺾임 여부)(CrookedSlashFlag를 쓰기 편하도록 CrookedSlashFlag1,2로 나눔)""")
     CrookedSlashFlag2 = PropertyDescriptor("CrookedSlashFlag2", r"""High Byte CrookedSlashFlag (역슬래쉬 대각선의 꺾임 여부)(CrookedSlashFlag를 쓰기 편하도록 CrookedSlashFlag1,2로 나눔)""")
 
-# %% ../nbs/02_api/02_parameters.ipynb 28
+# %% ../nbs/02_api/02_parameters.ipynb 31
 class Caption(ParameterSet):
     """Caption ParameterSet."""
     Side = PropertyDescriptor("Side", r"""방향. 0 \= 왼쪽, 1 \= 오른쪽, 2 \= 위, 3 \= 아래""")
@@ -1763,34 +2120,60 @@ class Caption(ParameterSet):
     Gap = PropertyDescriptor("Gap", r"""캡션과 틀 사이 간격(HWPUNIT)""")
     CapFullSize = PropertyDescriptor("CapFullSize", r"""캡션 폭에 여백을 포함할지 여부 (세로 방향일 때만 사용됨)""")
 
-# %% ../nbs/02_api/02_parameters.ipynb 29
+# %% ../nbs/02_api/02_parameters.ipynb 32
 class FindReplace(ParameterSet):
-    """FindReplace ParameterSet."""
-    FindString = PropertyDescriptor("FindString", r"""찾을 문자열""")
-    ReplaceString = PropertyDescriptor("ReplaceString", r"""바꿀 문자열""")
-    Direction = PropertyDescriptor("Direction", r"""찾을 방향 :0 \= 아래쪽, 1 \= 위쪽, 2 \= 문서 전체""")
-    MatchCase = PropertyDescriptor("MatchCase", r"""대소문자 구별 (on / off)""")
-    AllWordForms = PropertyDescriptor("AllWordForms", r"""문자열 결합 (on / off)""")
-    SeveralWords = PropertyDescriptor("SeveralWords", r"""여러 단어 찾기 (on / off)""")
-    UseWildCards = PropertyDescriptor("UseWildCards", r"""아무개 문자 (on / off)""")
-    WholeWordOnly = PropertyDescriptor("WholeWordOnly", r"""온전한 낱말 (on / off)""")
-    AutoSpell = PropertyDescriptor("AutoSpell", r"""토씨 자동 교정 (on / off)""")
-    ReplaceMode = PropertyDescriptor("ReplaceMode", r"""찾아 바꾸기 모드 (on / off)""")
-    IgnoreFindString = PropertyDescriptor("IgnoreFindString", r"""찾을 문자열 무시 (on / off)""")
-    IgnoreReplaceString = PropertyDescriptor("IgnoreReplaceString", r"""바꿀 문자열 무시 (on / off)""")
-    FindCharShape = PropertyDescriptor("FindCharShape", r"""찾을 글자 모양""")
-    FindParaShape = PropertyDescriptor("FindParaShape", r"""찾을 문단 모양""")
-    ReplaceCharShape = PropertyDescriptor("ReplaceCharShape", r"""바꿀 글자 모양""")
-    ReplaceParaShape = PropertyDescriptor("ReplaceParaShape", r"""바꿀 문단 모양""")
-    FindStyle = PropertyDescriptor("FindStyle", r"""찾을 스타일""")
-    ReplaceStyle = PropertyDescriptor("ReplaceStyle", r"""바꿀 스타일""")
-    IgnoreMessage = PropertyDescriptor("IgnoreMessage", r"""메시지박스 표시 안함. (on / off)""")
-    HanjaFromHangul = PropertyDescriptor("HanjaFromHangul", r"""한글임으로 한자 차기""")
-    FindJaso = PropertyDescriptor("FindJaso", r"""자소로 찾기 (on / off)""")
-    FindRegExp = PropertyDescriptor("FindRegExp", r"""정규식(조건식)으로 찾기 (on / off) (ver:0x06050107\)""")
-    FindType = PropertyDescriptor("FindType", r"""다시 찾기를 할 때 마지막으로 실행한 \[찾기 TRUE]를 할 것인가 \[찾아가기 FALSE]할 것인가의 여부 (ver:0x06050110\)""")
+    """
+    ### FindReplace
 
-# %% ../nbs/02_api/02_parameters.ipynb 30
+    Find and replace text with character and paragraph formatting.
+
+    This ParameterSet supports nested properties for character and paragraph shapes.
+    Use NestedProperty to access shape properties directly with tab completion.
+    """
+    # String properties
+    find_string = StringProperty("FindString", "Text to find")
+    replace_string = StringProperty("ReplaceString", "Text to replace")
+
+    # Boolean properties
+    match_case = BoolProperty("MatchCase", "Case sensitive matching")
+    all_word_forms = BoolProperty("AllWordForms", "Match all word forms")
+    several_words = BoolProperty("SeveralWords", "Find multiple words")
+    use_wild_cards = BoolProperty("UseWildCards", "Use wildcards")
+    whole_word_only = BoolProperty("WholeWordOnly", "Match whole words only")
+    auto_spell = BoolProperty("AutoSpell", "Auto spelling check")
+    replace_mode = BoolProperty("ReplaceMode", "Replace mode enabled")
+    ignore_find_string = BoolProperty("IgnoreFindString", "Ignore find string")
+    ignore_replace_string = BoolProperty("IgnoreReplaceString", "Ignore replace string")
+    ignore_message = BoolProperty("IgnoreMessage", "Suppress message boxes")
+    hanja_from_hangul = BoolProperty("HanjaFromHangul", "Hanja from Hangul conversion")
+    find_jaso = BoolProperty("FindJaso", "Find by Jaso (Korean characters)")
+    find_reg_exp = BoolProperty("FindRegExp", "Use regular expressions")
+
+    # Integer/Mapped properties
+    direction = MappedProperty("Direction", {
+        "down": 0, "up": 1, "all": 2
+    }, "Search direction")
+    find_type = BoolProperty("FindType", "Find type (True=find, False=find and select)")
+
+    # NOTE: Nested shape properties
+    # To use auto-creating NestedProperty, uncomment these and remove the PropertyDescriptor versions:
+    # find_char_shape = NestedProperty("FindCharShape", "CharShape", CharShape, "Find character shape")
+    # find_para_shape = NestedProperty("FindParaShape", "ParaShape", ParaShape, "Find paragraph shape")
+    # replace_char_shape = NestedProperty("ReplaceCharShape", "CharShape", CharShape, "Replace character shape")
+    # replace_para_shape = NestedProperty("ReplaceParaShape", "ParaShape", ParaShape, "Replace paragraph shape")
+
+    # For now, using TypedProperty (requires manual create_itemset call)
+    find_char_shape = TypedProperty("FindCharShape", "Find character shape")
+    find_para_shape = TypedProperty("FindParaShape", "Find paragraph shape")
+    replace_char_shape = TypedProperty("ReplaceCharShape", "Replace character shape")
+    replace_para_shape = TypedProperty("ReplaceParaShape", "Replace paragraph shape")
+
+    # Style properties
+    find_style = StringProperty("FindStyle", "Find style name")
+    replace_style = StringProperty("ReplaceStyle", "Replace style name")
+
+
+# %% ../nbs/02_api/02_parameters.ipynb 33
 # Forward declarations for commonly referenced parameter sets
 # These are minimal implementations - full implementations would be added as needed
 
@@ -1948,7 +2331,7 @@ class Table(ParameterSet):
     TableBorderFill = PropertyDescriptor("TableBorderFill", r"""표에 적용되는 테두리/배경""")
     Cell = PropertyDescriptor("Cell", r"""셀 속성""")
 
-# %% ../nbs/02_api/02_parameters.ipynb 32
+# %% ../nbs/02_api/02_parameters.ipynb 35
 # Direction mappings
 DIRECTION_MAP = {"left": 0, "right": 1, "top": 2, "bottom": 3}
 
@@ -2032,7 +2415,7 @@ LINE_SPACING_TYPE_MAP = {"font": 0, "fixed": 1, "space": 2}
 PIC_EFFECT_MAP = {"none": 0, "bw": 1, "sepia": 2}
 PAGE_BREAK_MAP = {"none": 0, "cell": 1, "text": 2}
 
-# %% ../nbs/02_api/02_parameters.ipynb 36
+# %% ../nbs/02_api/02_parameters.ipynb 39
 class BulletShape(ParameterSet):
     """BulletShape ParameterSet."""
     HasCharShape = PropertyDescriptor("HasCharShape", r"""자체적인 글자 모양을 사용할지 여부 :0 \= 스타일을 따라감, 1 \= 자체 모양을 가짐""")
@@ -2047,7 +2430,7 @@ class BulletShape(ParameterSet):
     HasImage = PropertyDescriptor("HasImage", r"""그림 글머리표 여부 : 0 \= 일반 글머리표, 1 \= 그림 글머리표""")
     BulletImage = PropertyDescriptor("BulletImage", r"""글머리표 이미지""")
 
-# %% ../nbs/02_api/02_parameters.ipynb 38
+# %% ../nbs/02_api/02_parameters.ipynb 41
 class Cell(ParameterSet):
     """Cell ParameterSet."""
     HasMargin = PropertyDescriptor("HasMargin", r"""테이블의 기본 셀 여백 대신 자체 셀 여백을 적용할지 여부. (on / off)""")
@@ -2059,7 +2442,7 @@ class Cell(ParameterSet):
     Dirty = PropertyDescriptor("Dirty", r"""초기화 상태인지 수정된 상태인지 여부 : 0 \= off, 1 \= on(한글2007에 새로 추가)""")
     CellCtrlData = PropertyDescriptor("CellCtrlData", r"""셀 데이터 (한글2007에 새로 추가)""")
 
-# %% ../nbs/02_api/02_parameters.ipynb 41
+# %% ../nbs/02_api/02_parameters.ipynb 44
 class CtrlData(ParameterSet):
     """
     ### CtrlData
@@ -2074,7 +2457,7 @@ class CtrlData(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 43
+# %% ../nbs/02_api/02_parameters.ipynb 46
 class DrawArcType(ParameterSet):
     """
     ### DrawArcType
@@ -2093,7 +2476,7 @@ class DrawArcType(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 45
+# %% ../nbs/02_api/02_parameters.ipynb 48
 class DrawCoordInfo(ParameterSet):
     """
     ### DrawCoordInfo
@@ -2114,7 +2497,7 @@ class DrawCoordInfo(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 47
+# %% ../nbs/02_api/02_parameters.ipynb 50
 class DrawCtrlHyperlink(ParameterSet):
     """
     ### DrawCtrlHyperlink
@@ -2131,7 +2514,7 @@ class DrawCtrlHyperlink(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 49
+# %% ../nbs/02_api/02_parameters.ipynb 52
 class DrawEditDetail(ParameterSet):
     """
     ### DrawEditDetail
@@ -2151,7 +2534,7 @@ class DrawEditDetail(ParameterSet):
     point_y = ParameterSet._int_prop("PointY", "PointY: 교점의 Y 좌표.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 53
+# %% ../nbs/02_api/02_parameters.ipynb 56
 class DrawImageAttr(ParameterSet):
     """DrawImageAttr ParameterSet."""
     FileName = PropertyDescriptor("FileName", r"""ShapeObject의 배경을 그림으로 선택했을 경우 또는 그림개체일 경우의 그림파일 경로""")
@@ -2176,7 +2559,7 @@ class DrawImageAttr(ParameterSet):
     ImageBrush = PropertyDescriptor("ImageBrush", r"""현재 선택된 brush의 type이 그림 브러시인가를 나타냄""")
     ImageCreateOnDrag = PropertyDescriptor("ImageCreateOnDrag", r"""그림 개체 생성 시 마우스로 끌어 생성할지 여부(한글2007에 새로 추가)""")
 
-# %% ../nbs/02_api/02_parameters.ipynb 55
+# %% ../nbs/02_api/02_parameters.ipynb 58
 class DrawImageScissoring(ParameterSet):
     """
     ### DrawImageScissoring
@@ -2196,7 +2579,7 @@ class DrawImageScissoring(ParameterSet):
     handle_index = ParameterSet._int_prop("HandleIndex", "Reserved: 정수 값을 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 57
+# %% ../nbs/02_api/02_parameters.ipynb 60
 class DrawLayout(ParameterSet):
     """
     ### DrawLayout
@@ -2214,7 +2597,7 @@ class DrawLayout(ParameterSet):
     curve_segment_info = ParameterSet._int_list_prop("CurveSegmentInfo", "곡선 세그먼트 정보: 정수 리스트")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 59
+# %% ../nbs/02_api/02_parameters.ipynb 62
 class DrawLineAttr(ParameterSet):
     """
     ### DrawLineAttr
@@ -2250,7 +2633,7 @@ class DrawLineAttr(ParameterSet):
     alpha         = ParameterSet._int_prop("Alpha", "투명도: 정수를 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 61
+# %% ../nbs/02_api/02_parameters.ipynb 64
 class DrawRectType(ParameterSet):
     """
     ### DrawRectType
@@ -2265,7 +2648,7 @@ class DrawRectType(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 63
+# %% ../nbs/02_api/02_parameters.ipynb 66
 class DrawResize(ParameterSet):
     """
     ### DrawResize
@@ -2285,7 +2668,7 @@ class DrawResize(ParameterSet):
     mode = ParameterSet._int_prop("Mode", "Reserved: 정수 값을 입력하세요.")
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 65
+# %% ../nbs/02_api/02_parameters.ipynb 68
 class DrawRotate(ParameterSet):
     """
     ### DrawRotate
@@ -2311,7 +2694,7 @@ class DrawRotate(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 67
+# %% ../nbs/02_api/02_parameters.ipynb 70
 class DrawScAction(ParameterSet):
     """
     ### DrawScAction
@@ -2336,7 +2719,7 @@ class DrawScAction(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 69
+# %% ../nbs/02_api/02_parameters.ipynb 72
 class DrawShadow(ParameterSet):
     """
     ### DrawShadow
@@ -2359,7 +2742,7 @@ class DrawShadow(ParameterSet):
     shadow_alpha   = ParameterSet._int_prop("ShadowAlpha", "그림자 투명도 (0 ~ 255)", 0, 255)
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 71
+# %% ../nbs/02_api/02_parameters.ipynb 74
 class DrawShear(ParameterSet):
     """
     ### DrawShear
@@ -2376,7 +2759,7 @@ class DrawShear(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 73
+# %% ../nbs/02_api/02_parameters.ipynb 76
 class DrawTextart(ParameterSet):
     """
     ### DrawTextart
@@ -2401,7 +2784,7 @@ class DrawTextart(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 76
+# %% ../nbs/02_api/02_parameters.ipynb 79
 class InsertText(ParameterSet):
     """
 
@@ -2414,7 +2797,7 @@ class InsertText(ParameterSet):
 
     text = StringProperty("Text", "삽입할 텍스트")
 
-# %% ../nbs/02_api/02_parameters.ipynb 78
+# %% ../nbs/02_api/02_parameters.ipynb 81
 class ListProperties(ParameterSet):
     """
     ### ListProperties
@@ -2444,33 +2827,45 @@ class ListProperties(ParameterSet):
 
 
 
-# %% ../nbs/02_api/02_parameters.ipynb 80
+# %% ../nbs/02_api/02_parameters.ipynb 83
 class NumberingShape(ParameterSet):
     """NumberingShape ParameterSet."""
     StartNumber = PropertyDescriptor("StartNumber", r"""시작 번호 (0 \= 앞 구역에 이어, n \= 지정한 번호로 시작)\* 0은 구역의 개요 정의에만 사용된다.""")
     NewList = PropertyDescriptor("NewList", r"""새로운 번호 목록을 시작할지 여부\* 문단 모양(ParaShap)의 서브셋으로 포함될 때만 의미 있다.\* get일 때는 이 아이템은 아예 생성되지 않으며, set일 때는 TRUE가 아니면 NumberingShape 서브셋 전체가 지정되지 않은 것처럼 무시된다.""")
 
-# %% ../nbs/02_api/02_parameters.ipynb 84
+# %% ../nbs/02_api/02_parameters.ipynb 87
 class TabDef(ParameterSet):
     """
     ### TabDef
 
-    113) TabDef : 탭 정의
+    113) TabDef : Tab settings
+
+    Tab definition with auto tab settings and tab stop positions.
+    Uses ArrayProperty for Pythonic list interface to tab stops.
 
     | Item ID    | Type      | SubType | Description |
     |------------|-----------|---------|-------------|
-    | AutoTabLeft| PIT_UI1   |         | 문단 왼쪽 끝 탭 (on / off) |
-    | AutoTabRight| PIT_UI1  |         | 문단 오른쪽 끝 탭 (on / off) |
-    | TabItem    | PIT_ARRAY | PIT_I   | 각각의 탭 정의. 하나의 탭 아이템은 세 개의 인수로 표현됨. (n*3+0: 탭 위치, n*3+1: 채울 모양, n*3+2: 탭 종류) |
+    | AutoTabLeft| PIT_UI1   |         | Auto left tab (on / off) |
+    | AutoTabRight| PIT_UI1  |         | Auto right tab (on / off) |
+    | TabItem    | PIT_ARRAY | PIT_I   | Tab stop positions array (n*3+0: position, n*3+1: fill type, n*3+2: tab type) |
+
+    Example:
+        >>> tab_def = TabDef(action.CreateSet())
+        >>> tab_def.auto_tab_left = True
+        >>> tab_def.tab_item = [1000, 0, 0, 2000, 0, 0, 3000, 0, 0]  # Three tab stops
+        >>> tab_def.tab_item.append(4000)  # Add position for fourth tab
+        >>> tab_def.tab_item.append(0)     # Fill type
+        >>> tab_def.tab_item.append(0)     # Tab type
     """
-    auto_tab_left  = ParameterSet._bool_prop("AutoTabLeft", "문단 왼쪽 탭 설정 (on / off)")
-    auto_tab_right = ParameterSet._bool_prop("AutoTabRight", "문단 오른쪽 탭 설정 (on / off)")
-    tab_item       = ParameterSet._int_list_prop("TabItem", "탭 정의 목록 (정수 리스트)")
+    auto_tab_left = BoolProperty("AutoTabLeft", "Auto left tab")
+    auto_tab_right = BoolProperty("AutoTabRight", "Auto right tab")
+
+    # Array property for tab stops (Pythonic list interface)
+    # Each tab stop is represented by 3 integers: position, fill type, tab type
+    tab_item = ArrayProperty("TabItem", int, "Tab stop data (position, fill, type triplets)")
 
 
-
-
-# %% ../nbs/02_api/02_parameters.ipynb 86
+# %% ../nbs/02_api/02_parameters.ipynb 89
 class ActionCrossRef(ParameterSet):
     """ActionCrossRef ParameterSet."""
     Command = PropertyDescriptor("Command", r"""※command string 참조 (한글2007에 새로 추가)""")
