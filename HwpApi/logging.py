@@ -53,8 +53,10 @@ class HwpApiLogger:
         """Initialize the logger with default configuration."""
         self.logger = logging.getLogger('hwpapi')
         
-        # Set default level from environment variable or INFO
-        level = os.environ.get('HWPAPI_LOG_LEVEL', 'INFO').upper()
+        # Set default level from environment variable or WARNING
+                # Default to WARNING for production (only show warnings/errors to users)
+        # Set HWPAPI_LOG_LEVEL=DEBUG or INFO for detailed logging
+        level = os.environ.get('HWPAPI_LOG_LEVEL', 'WARNING').upper()
         log_level = getattr(logging, level, logging.DEBUG)
         self.logger.setLevel(log_level)
         

@@ -1933,7 +1933,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
                 # Add property description as comment if available
                 doc_comment = ""
                 if hasattr(prop_descriptor, 'doc') and prop_descriptor.doc:
-                    doc_comment = f"    # {prop_descriptor.doc}"
+                    doc_comment = f"        # {prop_descriptor.doc}"
                 
                 lines.append(f"{prefix}  {prop_name}={formatted_value}{doc_comment}")
 

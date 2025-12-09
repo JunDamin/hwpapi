@@ -1318,8 +1318,23 @@ echo -e "\n✅ Verification complete!"
 ### Environment Variables
 
 ```bash
-HWPAPI_LOG_LEVEL=DEBUG    # Set logging level
+# Logging Configuration
+HWPAPI_LOG_LEVEL=DEBUG      # Set logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+                            # Default: WARNING (production-friendly, only shows warnings/errors)
+                            # Use DEBUG or INFO for development/troubleshooting
+
+# Examples:
+# Development - show all logs
+export HWPAPI_LOG_LEVEL=DEBUG
+
+# Production - only warnings and errors (default if not set)
+export HWPAPI_LOG_LEVEL=WARNING
+
+# Quiet mode - only errors and critical
+export HWPAPI_LOG_LEVEL=ERROR
 ```
+
+**Important**: The default log level is `WARNING`, which means normal users only see warnings, errors, and critical messages. This is intentional to avoid cluttering output in production. Set `HWPAPI_LOG_LEVEL=DEBUG` or `INFO` when you need detailed logging for development or troubleshooting.
 
 ---
 
@@ -2058,6 +2073,16 @@ When implementing the restructuring:
 ## 🔄 Version History
 
 ### Recent Changes
+
+**2025-12-09 - Logging System Improvements**
+- **Default Log Level Changed**: Changed from `INFO` to `WARNING`
+  - Production-friendly: Normal users only see warnings, errors, and critical messages
+  - Reduces log clutter in release builds
+  - Developers can still enable detailed logging via `HWPAPI_LOG_LEVEL=DEBUG` or `INFO`
+- **Enhanced Documentation**: Added comprehensive logging configuration examples
+- **Environment Variable**: `HWPAPI_LOG_LEVEL` now defaults to `WARNING` instead of `INFO`
+- Files: `nbs/02_api/06_logging.ipynb`, `hwpapi/logging.py`
+- Impact: Cleaner output for end users, opt-in verbose logging for developers
 
 **2025-12-09 - Complete Display Enhancement Suite**
 - **Critical Bug Fix**: Removed duplicate ParameterSet class definition in cell 26
