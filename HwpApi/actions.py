@@ -4,6 +4,8 @@
 __all__ = []
 
 # %% ../nbs/02_api/01_actions.ipynb 4
+from .logging import get_logger
+
 import hwpapi.parametersets as parametersets
 
 
@@ -901,7 +903,9 @@ class _Action:
 
     def __init__(self, app, action_key: str):
         self.app = app
+        self.logger = get_logger("actions.Action")
         self.action_key = action_key
+        self.logger.debug(f"Action {action_key} initialized")
         self.act = app.api.CreateAction(action_key)
         # create pset and description
         pset_key, description = _action_info.get(action_key, (None, None))
@@ -1022,6 +1026,8 @@ class _Actions:
 
     def __init__(self, app):
         self._app = app
+        self.logger = get_logger("actions.Actions")
+        self.logger.debug("Actions registry initialized")
 
     @property    
     def AddHanjaWord(self):

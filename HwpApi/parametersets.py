@@ -495,6 +495,11 @@ class PropertyDescriptor:
     - Writes stage the value; nothing is sent until ParameterSet.apply().
     - Optional automatic wrapping of nested ParameterSets via `wrap=...`.
     """
+
+    @property
+    def logger(self):
+        from hwpapi.logging import get_logger
+        return get_logger("parametersets.PropertyDescriptor")
     def __init__(
         self,
         key: str,
@@ -1297,6 +1302,8 @@ class ParameterSet(metaclass=ParameterSetMeta):
         app_instance: Any = None,  # <-- new: reference to App instance
         **kwargs,
     ):
+        from hwpapi.logging import get_logger
+        self.logger = get_logger("parametersets.ParameterSet")
         if backend_factory is None:
             backend_factory = make_backend
 
