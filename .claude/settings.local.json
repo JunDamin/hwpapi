@@ -10,7 +10,12 @@
       "Bash(git restore:*)",
       "WebFetch(domain:)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(echo:*)",
+      "Bash(git stash:*)",
+      "Bash(timeout 10 python:*)",
+      "Bash(grep:*)",
+      "Bash(git reset:*)"
     ],
     "deny": [],
     "ask": []
