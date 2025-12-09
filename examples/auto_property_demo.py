@@ -44,28 +44,28 @@ print("-" * 70)
 # Create unbound FindReplace (for demo - normally you'd get from action.CreateSet())
 find_replace = FindReplace()
 
-print("\nSetting string properties:")
-find_replace.find_string = "Python"
-find_replace.replace_string = "Python 3.11"
-print(f"  find_string = '{find_replace.find_string}'")
-print(f"  replace_string = '{find_replace.replace_string}'")
+print("\nSetting string properties (PascalCase):")
+find_replace.FindString = "Python"
+find_replace.ReplaceString = "Python 3.11"
+print(f"  FindString = '{find_replace.FindString}'")
+print(f"  ReplaceString = '{find_replace.ReplaceString}'")
 
-print("\nSetting boolean properties:")
-find_replace.match_case = True
-find_replace.whole_word_only = True
-print(f"  match_case = {find_replace.match_case}")
-print(f"  whole_word_only = {find_replace.whole_word_only}")
+print("\nSetting boolean properties (PascalCase):")
+find_replace.MatchCase = True
+find_replace.WholeWordOnly = True
+print(f"  MatchCase = {find_replace.MatchCase}")
+print(f"  WholeWordOnly = {find_replace.WholeWordOnly}")
 
-print("\nSetting mapped property (direction):")
-find_replace.direction = "down"
-print(f"  direction = '{find_replace.direction}' (maps to integer internally)")
+print("\nSetting mapped property (Direction - PascalCase):")
+find_replace.Direction = "down"
+print(f"  Direction = '{find_replace.Direction}' (maps to integer internally)")
 
-print("\nType-safe properties:")
-print("  - find_char_shape: TypedProperty (use create_itemset for nested access)")
-print("  - find_para_shape: TypedProperty (use create_itemset for nested access)")
+print("\nType-safe properties (PascalCase):")
+print("  - FindCharShape: TypedProperty (use create_itemset for nested access)")
+print("  - FindParaShape: TypedProperty (use create_itemset for nested access)")
 print("\n  NOTE: To use auto-creating NestedProperty, define CharShape/ParaShape")
 print("        classes first, then use:")
-print("        find_char_shape = NestedProperty('FindCharShape', 'CharShape', CharShape)")
+print("        FindCharShape = NestedProperty('FindCharShape', 'CharShape', CharShape)")
 
 # ============================================================================
 # 3. TabDef with ArrayProperty
@@ -76,37 +76,37 @@ print("-" * 70)
 # Create unbound TabDef (for demo - normally you'd get from action.CreateSet())
 tab_def = TabDef()
 
-print("\nSetting boolean properties:")
-tab_def.auto_tab_left = True
-tab_def.auto_tab_right = False
-print(f"  auto_tab_left = {tab_def.auto_tab_left}")
-print(f"  auto_tab_right = {tab_def.auto_tab_right}")
+print("\nSetting boolean properties (PascalCase):")
+tab_def.AutoTabLeft = True
+tab_def.AutoTabRight = False
+print(f"  AutoTabLeft = {tab_def.AutoTabLeft}")
+print(f"  AutoTabRight = {tab_def.AutoTabRight}")
 
-print("\nUsing ArrayProperty (Pythonic list interface):")
+print("\nUsing ArrayProperty (PascalCase - Pythonic list interface):")
 print("  Creating tab stops: [1000, 0, 0, 2000, 0, 0, 3000, 0, 0]")
 print("  (Each tab is 3 integers: position, fill type, tab type)")
 
-# tab_item is an HArrayWrapper with list interface
-tab_def.tab_item = [1000, 0, 0, 2000, 0, 0, 3000, 0, 0]
+# TabItem is an HArrayWrapper with list interface
+tab_def.TabItem = [1000, 0, 0, 2000, 0, 0, 3000, 0, 0]
 
-print(f"\n  tab_item = {tab_def.tab_item}")
-print(f"  Length: {len(tab_def.tab_item)} elements")
+print(f"\n  TabItem = {tab_def.TabItem}")
+print(f"  Length: {len(tab_def.TabItem)} elements")
 
 print("\nList operations:")
 print("  Appending fourth tab stop...")
-tab_def.tab_item.append(4000)  # Position
-tab_def.tab_item.append(0)     # Fill type
-tab_def.tab_item.append(0)     # Tab type
-print(f"  New length: {len(tab_def.tab_item)}")
-print(f"  tab_item = {tab_def.tab_item}")
+tab_def.TabItem.append(4000)  # Position
+tab_def.TabItem.append(0)     # Fill type
+tab_def.TabItem.append(0)     # Tab type
+print(f"  New length: {len(tab_def.TabItem)}")
+print(f"  TabItem = {tab_def.TabItem}")
 
 print("\n  Accessing by index:")
-print(f"  tab_item[0] (first tab position) = {tab_def.tab_item[0]}")
-print(f"  tab_item[3] (second tab position) = {tab_def.tab_item[3]}")
+print(f"  TabItem[0] (first tab position) = {tab_def.TabItem[0]}")
+print(f"  TabItem[3] (second tab position) = {tab_def.TabItem[3]}")
 
 print("\n  Converting to plain list:")
-plain_list = tab_def.tab_item.to_list()
-print(f"  tab_item.to_list() = {plain_list}")
+plain_list = tab_def.TabItem.to_list()
+print(f"  TabItem.to_list() = {plain_list}")
 
 # ============================================================================
 # Summary

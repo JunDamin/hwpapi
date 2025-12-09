@@ -20,8 +20,8 @@ __all__ = ['DIRECTION_MAP', 'CAP_FULL_SIZE_MAP', 'ALIGNMENT_MAP', 'VERT_ALIGN_MA
            'resolve_action_args', 'apply_staged_to_backend', 'MissingRequiredError', 'PropertyDescriptor',
            'IntProperty', 'BoolProperty', 'StringProperty', 'ColorProperty', 'UnitProperty', 'MappedProperty',
            'TypedProperty', 'NestedProperty', 'ArrayProperty', 'HArrayWrapper', 'ListProperty', 'ParameterSetMeta',
-           'ParameterSet', 'update_from', 'BorderFill', 'Caption', 'FindReplace', 'DrawFillAttr', 'CharShape',
-           'ParaShape', 'ShapeObject', 'Table', 'BulletShape', 'Cell', 'CtrlData', 'DrawArcType', 'DrawCoordInfo',
+           'ParameterSet', 'update_from', 'BorderFill', 'Caption', 'DrawFillAttr', 'CharShape', 'ParaShape',
+           'ShapeObject', 'Table', 'FindReplace', 'BulletShape', 'Cell', 'CtrlData', 'DrawArcType', 'DrawCoordInfo',
            'DrawCtrlHyperlink', 'DrawEditDetail', 'DrawImageAttr', 'DrawImageScissoring', 'DrawLayout', 'DrawLineAttr',
            'DrawRectType', 'DrawResize', 'DrawRotate', 'DrawScAction', 'DrawShadow', 'DrawShear', 'DrawTextart',
            'InsertText', 'ListProperties', 'NumberingShape', 'TabDef', 'ActionCrossRef', 'AutoFill', 'AutoNum',
@@ -2121,59 +2121,6 @@ class Caption(ParameterSet):
     CapFullSize = PropertyDescriptor("CapFullSize", r"""캡션 폭에 여백을 포함할지 여부 (세로 방향일 때만 사용됨)""")
 
 # %% ../nbs/02_api/02_parameters.ipynb 32
-class FindReplace(ParameterSet):
-    """
-    ### FindReplace
-
-    Find and replace text with character and paragraph formatting.
-
-    This ParameterSet supports nested properties for character and paragraph shapes.
-    Use NestedProperty to access shape properties directly with tab completion.
-    """
-    # String properties
-    find_string = StringProperty("FindString", "Text to find")
-    replace_string = StringProperty("ReplaceString", "Text to replace")
-
-    # Boolean properties
-    match_case = BoolProperty("MatchCase", "Case sensitive matching")
-    all_word_forms = BoolProperty("AllWordForms", "Match all word forms")
-    several_words = BoolProperty("SeveralWords", "Find multiple words")
-    use_wild_cards = BoolProperty("UseWildCards", "Use wildcards")
-    whole_word_only = BoolProperty("WholeWordOnly", "Match whole words only")
-    auto_spell = BoolProperty("AutoSpell", "Auto spelling check")
-    replace_mode = BoolProperty("ReplaceMode", "Replace mode enabled")
-    ignore_find_string = BoolProperty("IgnoreFindString", "Ignore find string")
-    ignore_replace_string = BoolProperty("IgnoreReplaceString", "Ignore replace string")
-    ignore_message = BoolProperty("IgnoreMessage", "Suppress message boxes")
-    hanja_from_hangul = BoolProperty("HanjaFromHangul", "Hanja from Hangul conversion")
-    find_jaso = BoolProperty("FindJaso", "Find by Jaso (Korean characters)")
-    find_reg_exp = BoolProperty("FindRegExp", "Use regular expressions")
-
-    # Integer/Mapped properties
-    direction = MappedProperty("Direction", {
-        "down": 0, "up": 1, "all": 2
-    }, "Search direction")
-    find_type = BoolProperty("FindType", "Find type (True=find, False=find and select)")
-
-    # NOTE: Nested shape properties
-    # To use auto-creating NestedProperty, uncomment these and remove the PropertyDescriptor versions:
-    # find_char_shape = NestedProperty("FindCharShape", "CharShape", CharShape, "Find character shape")
-    # find_para_shape = NestedProperty("FindParaShape", "ParaShape", ParaShape, "Find paragraph shape")
-    # replace_char_shape = NestedProperty("ReplaceCharShape", "CharShape", CharShape, "Replace character shape")
-    # replace_para_shape = NestedProperty("ReplaceParaShape", "ParaShape", ParaShape, "Replace paragraph shape")
-
-    # For now, using TypedProperty (requires manual create_itemset call)
-    find_char_shape = TypedProperty("FindCharShape", "Find character shape")
-    find_para_shape = TypedProperty("FindParaShape", "Find paragraph shape")
-    replace_char_shape = TypedProperty("ReplaceCharShape", "Replace character shape")
-    replace_para_shape = TypedProperty("ReplaceParaShape", "Replace paragraph shape")
-
-    # Style properties
-    find_style = StringProperty("FindStyle", "Find style name")
-    replace_style = StringProperty("ReplaceStyle", "Replace style name")
-
-
-# %% ../nbs/02_api/02_parameters.ipynb 33
 # Forward declarations for commonly referenced parameter sets
 # These are minimal implementations - full implementations would be added as needed
 
@@ -2330,6 +2277,60 @@ class Table(ParameterSet):
     TableCharInfo = PropertyDescriptor("TableCharInfo", r"""표와 연결된 차트 정보 \- 차트 미완성""")
     TableBorderFill = PropertyDescriptor("TableBorderFill", r"""표에 적용되는 테두리/배경""")
     Cell = PropertyDescriptor("Cell", r"""셀 속성""")
+
+# %% ../nbs/02_api/02_parameters.ipynb 33
+class FindReplace(ParameterSet):
+    """
+    ### FindReplace
+
+    Find and replace text with character and paragraph formatting.
+
+    This ParameterSet uses NestedProperty for auto-creating nested parameter sets.
+    Access shape properties directly - they auto-create on first access!
+
+    Example:
+        >>> fr = FindReplace(action.CreateSet())
+        >>> fr.FindString = "Python"
+        >>> fr.MatchCase = True
+        >>> # Auto-creates CharShape on first access - no create_itemset needed!
+        >>> fr.FindCharShape.Bold = True
+        >>> fr.FindCharShape.Size = 1200  # 12pt
+    """
+    # String properties
+    FindString = StringProperty("FindString", "Text to find")
+    ReplaceString = StringProperty("ReplaceString", "Text to replace")
+
+    # Boolean properties
+    MatchCase = BoolProperty("MatchCase", "Case sensitive matching")
+    AllWordForms = BoolProperty("AllWordForms", "Match all word forms")
+    SeveralWords = BoolProperty("SeveralWords", "Find multiple words")
+    UseWildCards = BoolProperty("UseWildCards", "Use wildcards")
+    WholeWordOnly = BoolProperty("WholeWordOnly", "Match whole words only")
+    AutoSpell = BoolProperty("AutoSpell", "Auto spelling check")
+    ReplaceMode = BoolProperty("ReplaceMode", "Replace mode enabled")
+    IgnoreFindString = BoolProperty("IgnoreFindString", "Ignore find string")
+    IgnoreReplaceString = BoolProperty("IgnoreReplaceString", "Ignore replace string")
+    IgnoreMessage = BoolProperty("IgnoreMessage", "Suppress message boxes")
+    HanjaFromHangul = BoolProperty("HanjaFromHangul", "Hanja from Hangul conversion")
+    FindJaso = BoolProperty("FindJaso", "Find by Jaso (Korean characters)")
+    FindRegExp = BoolProperty("FindRegExp", "Use regular expressions")
+
+    # Integer/Mapped properties
+    Direction = MappedProperty("Direction", {
+        "down": 0, "up": 1, "all": 2
+    }, "Search direction")
+    FindType = BoolProperty("FindType", "Find type (True=find, False=find and select)")
+
+    # Auto-creating nested shape properties using NestedProperty!
+    FindCharShape = NestedProperty("FindCharShape", "CharShape", CharShape, "Find character shape")
+    FindParaShape = NestedProperty("FindParaShape", "ParaShape", ParaShape, "Find paragraph shape")
+    ReplaceCharShape = NestedProperty("ReplaceCharShape", "CharShape", CharShape, "Replace character shape")
+    ReplaceParaShape = NestedProperty("ReplaceParaShape", "ParaShape", ParaShape, "Replace paragraph shape")
+
+    # Style properties
+    FindStyle = StringProperty("FindStyle", "Find style name")
+    ReplaceStyle = StringProperty("ReplaceStyle", "Replace style name")
+
 
 # %% ../nbs/02_api/02_parameters.ipynb 35
 # Direction mappings
@@ -2851,18 +2852,18 @@ class TabDef(ParameterSet):
 
     Example:
         >>> tab_def = TabDef(action.CreateSet())
-        >>> tab_def.auto_tab_left = True
-        >>> tab_def.tab_item = [1000, 0, 0, 2000, 0, 0, 3000, 0, 0]  # Three tab stops
-        >>> tab_def.tab_item.append(4000)  # Add position for fourth tab
-        >>> tab_def.tab_item.append(0)     # Fill type
-        >>> tab_def.tab_item.append(0)     # Tab type
+        >>> tab_def.AutoTabLeft = True
+        >>> tab_def.TabItem = [1000, 0, 0, 2000, 0, 0, 3000, 0, 0]  # Three tab stops
+        >>> tab_def.TabItem.append(4000)  # Add position for fourth tab
+        >>> tab_def.TabItem.append(0)     # Fill type
+        >>> tab_def.TabItem.append(0)     # Tab type
     """
-    auto_tab_left = BoolProperty("AutoTabLeft", "Auto left tab")
-    auto_tab_right = BoolProperty("AutoTabRight", "Auto right tab")
+    AutoTabLeft = BoolProperty("AutoTabLeft", "Auto left tab")
+    AutoTabRight = BoolProperty("AutoTabRight", "Auto right tab")
 
     # Array property for tab stops (Pythonic list interface)
     # Each tab stop is represented by 3 integers: position, fill type, tab type
-    tab_item = ArrayProperty("TabItem", int, "Tab stop data (position, fill, type triplets)")
+    TabItem = ArrayProperty("TabItem", int, "Tab stop data (position, fill, type triplets)")
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 89
