@@ -204,6 +204,64 @@ def _del_value(self, name):
 - Add `#| export` directive to export functions
 - Use `from typing import TYPE_CHECKING` for type-only imports
 
+### Issue 5: Duplicate Class/Method Definitions in Notebook
+
+**Symptom:** Method doesn't behave as expected after edits; old logic still runs despite changes
+
+**Cause:** Entire class or methods duplicated in notebook cell (common during copy-paste refactoring)
+
+**How to Detect:**
+```bash
+# Count occurrences of method definition in generated file
+python -c "with open('hwpapi/parametersets.py', encoding='utf-8') as f: print(f.read().count('def _format_int_value'))"
+# Output: 2 (should be 1!)
+
+# Find which cell has duplicates in notebook
+python -c "import json; nb=json.load(open('nbs/02_api/02_parameters.ipynb', encoding='utf-8')); cell=nb['cells'][26]; print(f'Method appears {cell[\"source\"].count(\"def _format_int_value\")} times in cell 26')"
+```
+
+**Solution:**
+```python
+# Identify duplicate boundaries
+python << 'EOF'
+import json
+nb = json.load(open('nbs/02_api/02_parameters.ipynb', encoding='utf-8'))
+cell = nb['cells'][26]
+source = ''.join(cell['source'])
+
+# Find all method definitions
+import re
+methods = [(m.start(), m.group(1)) for m in re.finditer(r'\n    def (\w+)', source)]
+
+# Look for duplicate method names
+from collections import Counter
+method_counts = Counter(name for _, name in methods)
+duplicates = {name: count for name, count in method_counts.items() if count > 1}
+
+if duplicates:
+    print(f"DUPLICATES FOUND: {duplicates}")
+    print("\nRemove duplicate definitions manually from the notebook cell.")
+else:
+    print("No duplicates found.")
+EOF
+
+# After removing duplicates, export and verify
+nbdev_export
+python -c "with open('hwpapi/parametersets.py', encoding='utf-8') as f: print(f'Now has {f.read().count(\"def _format_int_value\")} definition(s)')"
+```
+
+**Real Example:**
+- Entire `ParameterSet` class was duplicated in cell 26 (27,304 characters)
+- Second `_format_int_value` had old logic: `'Size' in prop_name and 'Font' not in prop_name`
+- First `_format_int_value` had correct logic: `'Size' in prop_name or prop_name.endswith('Size')`
+- Second definition overrode first, causing `FontSize` to display as `1200` instead of `12.0pt`
+- Fix: Removed duplicate from character position 29239 to end of cell
+
+**Prevention:**
+- Always check generated `.py` file after major refactoring
+- Use `grep -c "def method_name" hwpapi/parametersets.py` to count definitions
+- Be careful with copy-paste in notebooks
+
 ---
 
 ## 🛠️ Simplification Strategies
@@ -971,6 +1029,9 @@ echo -e "\n✅ Verification complete!"
 | `claude.md` | This file - working guidelines |
 | `PSET_MIGRATION_SUMMARY.md` | Context on pset refactoring |
 | `REFACTORING_SUMMARY.md` | Recent refactoring documentation |
+| `DUPLICATE_FIX_SUMMARY.md` | Duplicate class bug fix and display formatting (2025-12-09) |
+| `AUTO_PROPERTY_DESIGN.md` | NestedProperty & ArrayProperty design |
+| `UNIT_PROPERTY_ENHANCEMENT.md` | Smart unit conversion specification |
 
 ### Key Classes
 
@@ -1045,6 +1106,50 @@ python -m nbformat.validate nbs/02_api/02_parameters.ipynb
 git checkout nbs/02_api/02_parameters.ipynb
 ```
 
+### Issue: Duplicate definitions in notebook
+
+```bash
+# Quick check for duplicate method names in generated file
+grep -c "def _format_int_value" hwpapi/parametersets.py  # Should be 1
+
+# Find all duplicate methods in a file
+python << 'EOF'
+import re
+from collections import Counter
+
+with open('hwpapi/parametersets.py', encoding='utf-8') as f:
+    content = f.read()
+
+# Find all method definitions
+methods = re.findall(r'\n    def (\w+)', content)
+method_counts = Counter(methods)
+
+# Show duplicates
+duplicates = {name: count for name, count in method_counts.items() if count > 1}
+if duplicates:
+    print("DUPLICATES FOUND:")
+    for name, count in duplicates.items():
+        print(f"  {name}: {count} times")
+else:
+    print("No duplicates found.")
+EOF
+
+# Find which notebook cell has the duplicate
+python -c "
+import json
+nb = json.load(open('nbs/02_api/02_parameters.ipynb', encoding='utf-8'))
+for i, cell in enumerate(nb['cells']):
+    source = ''.join(cell.get('source', []))
+    count = source.count('def _format_int_value')
+    if count > 0:
+        print(f'Cell {i}: {count} definition(s)')
+"
+
+# After fixing, verify
+nbdev_export
+grep -c "def _format_int_value" hwpapi/parametersets.py  # Should be 1 now
+```
+
 ---
 
 ## 💡 Lessons Learned
@@ -1076,6 +1181,18 @@ git checkout nbs/02_api/02_parameters.ipynb
    - Update tests to match new patterns
    - Verify with real usage, not just unit tests
 
+6. **Human-readable display is valuable**
+   - Raw HWPUNIT/BBGGRR values are not intuitive
+   - Smart formatting (`_format_int_value`) makes debugging easier
+   - `__repr__` showing properties helps users understand ParameterSet state
+   - Context-aware formatting: colors as hex, sizes as pt, dimensions as mm
+
+7. **Duplicate detection is critical after refactoring**
+   - Always verify generated `.py` after major notebook edits
+   - Count method definitions: `grep -c "def method_name" file.py`
+   - Duplicates can silently override correct implementations
+   - Second definition always wins in Python class definitions
+
 ### Pitfalls Encountered
 
 1. ❌ Editing .py files → Changes lost on next export
@@ -1083,6 +1200,8 @@ git checkout nbs/02_api/02_parameters.ipynb
 3. ❌ Missing `_is_com` definition → NameError
 4. ❌ Not checking for None backend → AttributeError
 5. ❌ Manual attribute lists out of sync → Runtime errors
+6. ❌ Duplicate class/method definitions in notebook → Second definition overrides first, causing bugs
+7. ❌ Copy-paste refactoring without checking for duplicates → Hard-to-debug issues
 
 ---
 
@@ -1677,6 +1796,21 @@ When implementing the restructuring:
 
 ### Recent Changes
 
+**2025-12-09 - Fixed Duplicate Class and Display Formatting**
+- **Critical Bug Fix**: Removed duplicate ParameterSet class definition in cell 26
+  - Entire class (27,304 characters) was duplicated
+  - Second `_format_int_value` overrode first with old logic
+  - Caused `FontSize` to show as `1200` instead of `12.0pt`
+- **Enhanced Display Formatting**: Human-readable `__repr__` for ParameterSet
+  - Colors: `0x0000FF` → `#FF0000` (BBGGRR to hex)
+  - Font sizes: `1200` → `12.0pt` (HWPUNIT to pt)
+  - Dimensions: `59430` → `210.0mm` (HWPUNIT to mm)
+  - Booleans: Display as `True`/`False`
+- **Detection Tools**: Added scripts to detect duplicate method definitions
+- **Documentation**: Updated CLAUDE.md with Issue 5 and debugging tips
+- Result: Better debugging experience, eliminated silent override bug
+- Files: `nbs/02_api/02_parameters.ipynb`, `hwpapi/parametersets.py`
+
 **2025-01-08 - Auto-Creating Properties Design**
 - Designed `NestedProperty` for auto-creating nested ParameterSets
 - Designed `ArrayProperty` for Pythonic HArray interface
@@ -1792,5 +1926,5 @@ nbdev_preview
 
 *This document is a living guide. Update it as you learn more about the codebase.*
 
-**Last Updated:** 2025-01-08 (After architecture analysis and restructuring plan)
+**Last Updated:** 2025-12-09 (After fixing duplicate class and display formatting)
 **Next Review:** After Phase 1 restructuring (split parametersets.py by domain)
