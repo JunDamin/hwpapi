@@ -8,7 +8,9 @@
       "Bash(jupyter nbconvert:*)",
       "Bash(git checkout:*)",
       "Bash(git restore:*)",
-      "WebFetch(domain:)"
+      "WebFetch(domain:)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

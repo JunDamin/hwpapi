@@ -1899,16 +1899,43 @@ class ParameterSet(metaclass=ParameterSetMeta):
                 elif isinstance(value, float):
                     formatted_value = f"{value}"
                 elif isinstance(value, str):
-                    # String - show with quotes, limit length
-                    if len(value) > 50:
-                        formatted_value = f'"{value[:47]}..."'
+                    # String - check if it's from MappedProperty (enum-like)
+                    if type(prop_descriptor).__name__ == 'MappedProperty':
+                        # Show both numeric value and mapped name
+                        # Get raw numeric value from backend or staging
+                        raw_value = None
+                        
+                        # Try backend first (for bound ParameterSets)
+                        if self._backend is not None:
+                            try:
+                                raw_value = self._backend.get(prop_descriptor.key)
+                            except:
+                                pass
+                        
+                        # Try staging dict (for unbound ParameterSets)
+                        if raw_value is None and hasattr(self, '_staged'):
+                            raw_value = self._staged.get(prop_descriptor.key)
+                        
+                        if raw_value is not None:
+                            formatted_value = f"{raw_value} ({value})"
+                        else:
+                            formatted_value = f'"{value}"'
                     else:
-                        formatted_value = f'"{value}"'
+                        # Regular string - show with quotes, limit length
+                        if len(value) > 50:
+                            formatted_value = f'"{value[:47]}..."'
+                        else:
+                            formatted_value = f'"{value}"'
                 else:
                     # Other types
                     formatted_value = repr(value)
 
-                lines.append(f"{prefix}  {prop_name}={formatted_value}")
+                # Add property description as comment if available
+                doc_comment = ""
+                if hasattr(prop_descriptor, 'doc') and prop_descriptor.doc:
+                    doc_comment = f"    # {prop_descriptor.doc}"
+                
+                lines.append(f"{prefix}  {prop_name}={formatted_value}{doc_comment}")
 
             except (AttributeError, RuntimeError) as e:
                 # Property couldn't be accessed (e.g., nested property without backend)
