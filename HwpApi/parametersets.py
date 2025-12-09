@@ -1846,13 +1846,141 @@ class ParameterSet(metaclass=ParameterSetMeta):
         return {rev.get(k, k) for k in self._deleted if k in rev}
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} staged={self.dirty()} deleted={self.deleted()}>"
+        """Return human-readable representation of ParameterSet with all properties."""
+        return self._format_repr()
 
+    def _format_repr(self, indent=0, max_depth=3):
+        """
+        Format ParameterSet for display with human-readable values.
+
+        Args:
+            indent: Current indentation level
+            max_depth: Maximum nesting depth to show
+
+        Returns:
+            Formatted string representation
+        """
+        if indent >= max_depth:
+            return f"<{self.__class__.__name__} ...>"
+
+        prefix = "  " * indent
+        lines = [f"{self.__class__.__name__}("]
+
+        # Get all properties from the registry
+        if hasattr(self, '_property_registry'):
+            props = sorted(self._property_registry.items())
+        else:
+            props = []
+
+        # Show each property with its value
+        for prop_name, prop_descriptor in props:
+            try:
+                value = getattr(self, prop_name)
+
+                # Format value based on type and property descriptor
+                if value is None:
+                    formatted_value = "None"
+                elif isinstance(value, ParameterSet):
+                    # Nested ParameterSet - show recursively
+                    if indent + 1 < max_depth:
+                        nested_repr = value._format_repr(indent + 1, max_depth)
+                        formatted_value = f"\n{prefix}  {nested_repr}"
+                    else:
+                        formatted_value = f"<{value.__class__.__name__} ...>"
+                elif isinstance(value, HArrayWrapper):
+                    # Array - show as list
+                    formatted_value = f"{value.to_list()}"
+                elif isinstance(value, bool):
+                    # Boolean - show as True/False
+                    formatted_value = str(value)
+                elif isinstance(value, int):
+                    # Check if it's a color, size, or dimension based on property name/type
+                    formatted_value = self._format_int_value(prop_name, prop_descriptor, value)
+                elif isinstance(value, float):
+                    formatted_value = f"{value}"
+                elif isinstance(value, str):
+                    # String - show with quotes, limit length
+                    if len(value) > 50:
+                        formatted_value = f'"{value[:47]}..."'
+                    else:
+                        formatted_value = f'"{value}"'
+                else:
+                    # Other types
+                    formatted_value = repr(value)
+
+                lines.append(f"{prefix}  {prop_name}={formatted_value}")
+
+            except (AttributeError, RuntimeError) as e:
+                # Property couldn't be accessed (e.g., nested property without backend)
+                lines.append(f"{prefix}  {prop_name}=<not accessible>")
+
+        # Add status info
+        if hasattr(self, 'dirty') and self.dirty():
+            lines.append(f"{prefix}  [staged changes: {len(self._staged)}]")
+        if hasattr(self, 'deleted') and self.deleted():
+            lines.append(f"{prefix}  [deleted: {len(self._deleted)}]")
+
+        lines.append(f"{prefix})")
+        return "\n".join(lines)
+
+    def _format_int_value(self, prop_name: str, prop_descriptor, value: int) -> str:
+        """
+        Format integer value based on property type.
+
+        Args:
+            prop_name: Name of the property
+            prop_descriptor: Property descriptor instance
+            value: Integer value to format
+
+        Returns:
+            Formatted string
+        """
+        from .functions import from_hwpunit
+
+        # Check property descriptor type
+        prop_type_name = type(prop_descriptor).__name__
+
+        # Color properties - convert BBGGRR to #RRGGBB
+        if prop_type_name == 'ColorProperty' or 'Color' in prop_name or 'Corlo' in prop_name:
+            if value == 0:
+                return "#000000 (black)"
+            # Convert from BBGGRR to RRGGBB
+            bb = (value >> 16) & 0xFF
+            gg = (value >> 8) & 0xFF
+            rr = value & 0xFF
+            return f"#{rr:02X}{gg:02X}{bb:02X}"
+
+        # Font size properties - convert HWPUNIT to pt
+        # Check for Size properties (FontSize, Size, etc.)
+        if 'Size' in prop_name or prop_name.endswith('Size'):
+            # Font sizes are in HWPUNIT (100 HWPUNIT = 1pt)
+            if value > 0 and value < 100000:  # Reasonable font size range
+                pt_value = value / 100
+                return f"{pt_value}pt"
+
+        # Dimension properties - convert HWPUNIT to mm
+        if (prop_type_name == 'UnitProperty' or
+            'Width' in prop_name or 'Height' in prop_name or
+            'Margin' in prop_name or 'Spacing' in prop_name or
+            'Offset' in prop_name or 'Indent' in prop_name):
+            # Convert HWPUNIT to mm (283 HWPUNIT = 1mm)
+            if value != 0:
+                try:
+                    mm_value = from_hwpunit(value, 'mm')
+                    return f"{mm_value}mm"
+                except:
+                    pass
+
+        # Default - just show the number
+        return str(value)
+    
+    def __str__(self):
+        """Return simple string representation."""
+        return f"<{self.__class__.__name__}>"
     @property
     def attributes_names(self):
         """Auto-generated list of attribute names from property registry."""
         return list(self._property_registry.keys())
-
 
 
 # %% ../nbs/02_api/02_parameters.ipynb 27
@@ -1916,8 +2044,8 @@ def _python_to_com_key(self, python_key):
 ParameterSet.update_from = update_from
 ParameterSet._python_to_com_key = _python_to_com_key
 ParameterSet.serialize = lambda self: self._serialize_impl()
-ParameterSet.__str__ = lambda self: self._str_impl()
-ParameterSet.__repr__ = lambda self: self.__str__()
+ParameterSet.__str__ = lambda self: self._format_repr()  # Use same format as __repr__
+# ParameterSet.__repr__ = lambda self: self.__str__()  # Removed - using custom __repr__ from ParameterSet class
 
 def _update_from_impl(self, pset):
     """Update this parameter set with values from another parameter set."""
