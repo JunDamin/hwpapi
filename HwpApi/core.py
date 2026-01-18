@@ -1604,7 +1604,7 @@ def find_text(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 90
+# %% ../nbs/02_api/00_core.ipynb 87
 @patch
 def replace_all(
     app: App,
@@ -1708,7 +1708,7 @@ def replace_all(
         pset.replace_charshape.update_from(new_charshape)
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 94
+# %% ../nbs/02_api/00_core.ipynb 90
 @patch
 def insert_file(
     app: App,
@@ -1767,7 +1767,7 @@ def insert_file(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 95
+# %% ../nbs/02_api/00_core.ipynb 91
 @patch
 def set_cell_border(
     app: App,
@@ -1869,7 +1869,7 @@ def set_cell_border(
 
     return action.run()
 
-# %% ../nbs/02_api/00_core.ipynb 96
+# %% ../nbs/02_api/00_core.ipynb 92
 @patch
 def set_cell_color(
     app: App, bg_color=None, hatch_color="#000000", hatch_style=6, alpha=None
