@@ -53,7 +53,10 @@ setuptools.setup(
     zip_safe = False,
     entry_points = {
         'console_scripts': cfg.get('console_scripts','').split(),
-        'nbdev': [f'{cfg.get("lib_path")}={cfg.get("lib_path")}._modidx:d']
+        'nbdev': [f'{cfg.get("lib_path")}={cfg.get("lib_path")}._modidx:d'],
+        'pyinstaller40': [
+            'hook-dirs = hwpapi._pyinstaller:get_hook_dirs',
+        ],
     },
     **setup_cfg)
 

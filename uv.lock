@@ -55,7 +55,7 @@ wheels = [
 
 [[package]]
 name = "fastcore"
-version = "1.11.2"
+version = "1.12.3"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.10'",
@@ -63,9 +63,9 @@ resolution-markers = [
 dependencies = [
     { name = "packaging", version = "25.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0f/80/cc3034a92d9679eb30674687f7e3810fc38defcdeabf0ab373758a096cab/fastcore-1.11.2.tar.gz", hash = "sha256:164ca6f90dc1bdbe81a7e0c31391bb5ab3c21324bfa8c6c2f1ad7ce37289c54d", size = 86120, upload-time = "2026-01-06T03:06:33.98Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5a/0d/6cc7d775f26cc43ad9c81353f92bce9889b80683284809c9bb9641e1301f/fastcore-1.12.3.tar.gz", hash = "sha256:14981d4294f9ec1d507a49037ba45b9836d10713996f724280907d49ba89f50f", size = 91642, upload-time = "2026-01-20T21:49:54.158Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ed/d9/81f2d90b4f7a95f66bb2f4f9a5cddb15659f405304dbff809eb3253d50aa/fastcore-1.11.2-py3-none-any.whl", hash = "sha256:561194da95e14b30dd8c488cf870604b1de1eec6ef432081f1f07cec36a015c0", size = 88704, upload-time = "2026-01-06T03:06:32.24Z" },
+    { url = "https://files.pythonhosted.org/packages/d1/ac/d9bc711fd8fce9ab61bbf78e656c72f009591c1294af5c4b863ff351e970/fastcore-1.12.3-py3-none-any.whl", hash = "sha256:8a622504da0634fd226ef1706a9d10875a6086a6424e6332f5b97f4df9852072", size = 94351, upload-time = "2026-01-20T21:49:52.193Z" },
 ]
 
 [[package]]
@@ -75,7 +75,7 @@ dependencies = [
     { name = "fastcore", version = "1.5.55", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.8'" },
     { name = "fastcore", version = "1.7.20", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.8.*'" },
     { name = "fastcore", version = "1.8.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.9.*'" },
-    { name = "fastcore", version = "1.11.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "fastcore", version = "1.12.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "pywin32" },
 ]
 
