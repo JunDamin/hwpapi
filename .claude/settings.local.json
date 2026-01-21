@@ -15,7 +15,14 @@
       "Bash(git stash:*)",
       "Bash(timeout 10 python:*)",
       "Bash(grep:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(dir \"C:\\\\Users\\\\freed\\\\Documents\\\\python_projects\\\\007_hwpapi\\\\_nb*\")",
+      "Bash(uv run python:*)",
+      "Bash(uv:*)",
+      "Bash(cmd /c \"uv run python _modify_functions_nb.py 2>&1\")",
+      "Bash(powershell -Command \"uv run python _modify_functions_nb.py\")",
+      "Bash(powershell -Command:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
