@@ -3,7 +3,7 @@
 # %% auto #0
 __all__ = ['HwpApiLogger', 'get_logger', 'configure_logging', 'setup_jupyter_logging']
 
-# %% ../nbs/02_api/06_logging.ipynb #2ace4cd9
+# %% ../nbs/02_api/06_logging.ipynb #6f305d50
 import logging
 import sys
 from pathlib import Path
@@ -11,7 +11,7 @@ from typing import Optional, Union
 import os
 
 
-# %% ../nbs/02_api/06_logging.ipynb #2f68c5e4
+# %% ../nbs/02_api/06_logging.ipynb #f3c110b7
 class HwpApiLogger:
     """
     Centralized logging system for hwpapi package.
@@ -220,7 +220,7 @@ class HwpApiLogger:
             self.add_file_handler(file_path, level)
 
 
-# %% ../nbs/02_api/06_logging.ipynb #f8f96aa8
+# %% ../nbs/02_api/06_logging.ipynb #5f9d360a
 def get_logger(name: Optional[str] = None) -> logging.Logger:
     """
     로거 인스턴스를 가져오는 편의 함수입니다.
@@ -261,7 +261,7 @@ def configure_logging(**kwargs):
     logger_instance.configure(**kwargs)
 
 
-# %% ../nbs/02_api/06_logging.ipynb #40f422d7
+# %% ../nbs/02_api/06_logging.ipynb #fd57a5e5
 def setup_jupyter_logging(level='DEBUG', format_string=None):
     """
     더 나은 가시성을 위해 Jupyter 노트북 전용 로깅을 설정합니다.
