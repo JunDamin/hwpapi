@@ -3,9 +3,47 @@ requires = ["setuptools>=64.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name="hwpapi"
-requires-python=">=3.7"
-dynamic = [ "keywords", "description", "version", "dependencies", "optional-dependencies", "readme", "license", "authors", "classifiers", "entry-points", "scripts", "urls"]
+name = "hwpapi"
+version = "0.0.2.5"
+description = "Python wrapper for HWPFrame.HwpObject using win32com"
+requires-python = ">=3.7"
+license = "MIT"
+authors = [
+    {name = "JunDamin", email = "freedomgod@gmail.com"},
+]
+keywords = ["hwp", "hancom", "python", "win32com"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "pywin32",
+]
+readme = "README.md"
+
+[project.urls]
+Homepage = "https://github.com/JunDamin/hwpapi"
+Repository = "https://github.com/JunDamin/hwpapi"
+
+[project.entry-points.pyinstaller40]
+"hook-dirs" = "hwpapi._pyinstaller:get_hook_dirs"
+
+[tool.setuptools.packages.find]
+include = ["hwpapi*"]
+
+[tool.setuptools.package-data]
+hwpapi = ["*.dll"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.uv]
-cache-keys = [{ file = "pyproject.toml" }, { file = "settings.ini" }, { file = "setup.py" }]
+cache-keys = [{ file = "pyproject.toml" }]
