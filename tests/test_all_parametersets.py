@@ -194,7 +194,7 @@ class TestCrossClassConsistency:
 
     def test_total_class_count(self):
         """Verify we have the expected number of classes (excluding GenericParameterSet)."""
-        assert len(ALL_PS_CLASSES) == 128
+        assert len(ALL_PS_CLASSES) == 142
 
     def test_no_duplicate_class_names(self):
         names = [n for n, _ in ALL_PS_CLASSES]

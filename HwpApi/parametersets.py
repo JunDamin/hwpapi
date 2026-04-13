@@ -3392,6 +3392,11 @@ class HyperLink(ParameterSet):
     ShapeObject = PropertyDescriptor("ShapeObject", r"""그림 및 그리기객체가 Selection되어 있는지 여부""")
     DirectInsert = PropertyDescriptor("DirectInsert", r"""현재 캐럿 위치에 무조건 하이퍼링크 삽입 여부 (블록지정 상태면 블록해제 후 삽입) (한글2007에 새로 추가)""")
 
+class HyperlinkJump(ParameterSet):
+    """HyperlinkJump ParameterSet - 하이퍼링크 이동."""
+    Text = PropertyDescriptor("Text", r"""하이퍼링크가 표시되는 문자열""")
+    Command = PropertyDescriptor("Command", r"""Command String""")
+
 class Idiom(ParameterSet):
     """Idiom ParameterSet."""
     InputText = PropertyDescriptor("InputText", r"""삽입될 스트링/끼워 넣을 파일""")
@@ -3942,3 +3947,46 @@ class ViewStatus(ParameterSet):
     Type = PropertyDescriptor("Type", r"""0 (현재 View의 절대 Pos값만 지원함)""")
     ViewPosX = PropertyDescriptor("ViewPosX", r"""현재 뷰의 X값""")
     ViewPosY = PropertyDescriptor("ViewPosY", r"""현재 뷰의 Y값""")
+
+
+# ── Runtime-discovered ParameterSet classes ──────────────────────────────
+# These SetIDs exist in HWP runtime but are not in official documentation.
+
+class SelectionOpt(ParameterSet):
+    """SelectionOpt ParameterSet - 선택 옵션 (Copy/Cut/Paste/Erase 등)."""
+
+class FileOpenSave(ParameterSet):
+    """FileOpenSave ParameterSet - 파일 열기/저장."""
+
+class AddHanjaWord(ParameterSet):
+    """AddHanjaWord ParameterSet - 한자단어 등록."""
+
+class CCLMark(ParameterSet):
+    """CCLMark ParameterSet - CCL 마크 삽입."""
+
+class ChartObjShape(ParameterSet):
+    """ChartObjShape ParameterSet - 차트 개체."""
+
+class DrawObjTemplateSave(ParameterSet):
+    """DrawObjTemplateSave ParameterSet - 그리기 마당에 등록."""
+
+class FindImagePath(ParameterSet):
+    """FindImagePath ParameterSet - 그림 경로 찾기."""
+
+class InputHanja(ParameterSet):
+    """InputHanja ParameterSet - 한자 변환."""
+
+class InputHanjaBusu(ParameterSet):
+    """InputHanjaBusu ParameterSet - 부수로 입력."""
+
+class InputHanjaMean(ParameterSet):
+    """InputHanjaMean ParameterSet - 새김으로 입력."""
+
+class Label(ParameterSet):
+    """Label ParameterSet - 라벨 문서."""
+
+class ShapeObjSaveAsPicture(ParameterSet):
+    """ShapeObjSaveAsPicture ParameterSet - 그리기 개체를 그림으로 저장."""
+
+class SpellingCheck(ParameterSet):
+    """SpellingCheck ParameterSet - 맞춤법 검사."""
