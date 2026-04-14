@@ -7,6 +7,12 @@ website:
           - tutorials\01_app_basics.ipynb
           - tutorials\02_find_and_replace.ipynb
           - tutorials\03_feature_tour.ipynb
+      - section: 사용 사례
+        contents:
+          - tutorials\04_usecase_meeting_minutes.ipynb
+          - tutorials\05_usecase_bulk_edit.ipynb
+          - tutorials\06_usecase_data_to_table.ipynb
+          - tutorials\07_usecase_report_generation.ipynb
       - section: api
         contents:
           - api\00_core.ipynb

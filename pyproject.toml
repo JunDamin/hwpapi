@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hwpapi"
-version = "0.0.2.5"
+version = "0.0.3"
 description = "Python wrapper for HWPFrame.HwpObject using win32com"
 requires-python = ">=3.7"
 license = "MIT"
@@ -15,7 +15,6 @@ keywords = ["hwp", "hancom", "python", "win32com"]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
