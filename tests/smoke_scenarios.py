@@ -485,7 +485,14 @@ def clear_doc(app):
     except Exception:
         app.api.Run("DeleteBack")
     app.move.top_of_file()
-    # Extra safety: reset CharShape at cursor (affects subsequent inserts)
+    # Extra safety: reset CharShape at cursor (affects subsequent inserts).
+    # IMPORTANT: do NOT touch shade_color or shadow_color here — HWP's
+    # default is "no shade / no shadow", but ColorProperty writes an
+    # actual BBGGRR value which HWP then treats as an applied shade.
+    # Setting shade_color="#FFFFFF" in particular creates a white-shade
+    # that leaks into subsequent inserts (visible as subtle background
+    # tint when the doc is rendered to PDF).  StyleClearCharStyle above
+    # already removed any shade — leave it alone.
     try:
         app.set_charshape(
             bold=False, italic=False,
@@ -493,7 +500,6 @@ def clear_doc(app):
             super_script=0, sub_script=0,
             height=1000,  # 10pt default
             text_color="#000000",
-            shade_color="#FFFFFF",
             spacing_hangul=0, spacing_latin=0,
         )
     except Exception:
