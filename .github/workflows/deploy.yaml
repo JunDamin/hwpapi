@@ -48,7 +48,9 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./_docs
+          # nbdev.yml sets output-dir: _docs (relative to nbs/), so the
+          # rendered site lands at nbs/_docs/, not repo-root /_docs/.
+          path: ./nbs/_docs
 
   deploy:
     needs: build
