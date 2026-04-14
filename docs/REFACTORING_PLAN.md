@@ -2,6 +2,36 @@
 
 현재 코드베이스 분석 결과를 기반으로 한 리팩토링 계획입니다.
 
+## 진행 상황
+
+| Phase | 상태 | 내용 |
+|-------|------|------|
+| **1-1** | ✅ 완료 | actions.py 704개 @property → __getattr__ (-2813줄, 73% 감소) |
+| **1-2** | ✅ 완료 | SyntaxWarning 14개 수정 (raw string, escape sequences) |
+| **2-2** | ✅ 완료 | __getattr__/__setattr__ O(n)→O(1) lookup 테이블 |
+| **2-3** | ⏭️ 보류 | Backend 단순화 (하위 호환성 우선으로 유지) |
+| **3** | ✅ 완료 | 테스트 커버리지 확대: functions(50), constants(67), classes(18) |
+| **2-1** | 📋 연기 | parametersets.py 모듈 분리 (하단 참조) |
+
+전체 테스트: 2171 → **2306 passed** (+135)
+코드베이스: 13,046 → **10,233줄** (-2813, -21.6%)
+
+---
+
+## Phase 2-1 연기 사유
+
+`parametersets.py` (4135줄)를 `hwpapi/parametersets/` 패키지로 분리하는 작업은
+다음 리스크로 인해 별도 작업으로 연기합니다:
+
+1. **Forward references**: 143개 ParameterSet 서브클래스가 복잡하게 상호 참조
+2. **메타클래스 + 자동 등록**: 임포트 순서가 PARAMETERSET_REGISTRY 동작에 민감
+3. **백엔드 싸이클**: `hwpapi/actions.py`가 `import hwpapi.parametersets as parametersets`로 속성 접근
+4. **실질 이득 제한**: 의미적 변화 없이 주로 IDE 탐색성만 개선
+
+대안: 주요 리팩토링 효과는 Phase 1, 2-2, 3에서 이미 달성함.
+
+---
+
 ---
 
 ## 현재 상태
