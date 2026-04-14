@@ -2351,8 +2351,46 @@ class Caption(ParameterSet):
 # These are minimal implementations - full implementations would be added as needed
 
 class DrawFillAttr(ParameterSet):
-    """DrawFillAttr parameter set - placeholder implementation"""
-    pass
+    """
+    DrawFillAttr ParameterSet - 그리기 개체의 채우기 속성.
+    """
+    Type = PropertyDescriptor("Type", r"""배경 유형: 0=채우기 없음, 1=면색/무늬색, 2=그림, 3=그러데이션""")
+    GradationType = PropertyDescriptor("GradationType", r"""그러데이션 형태: 1=줄무늬형, 2=원형, 3=원뿔형, 4=사각형""")
+    GradationAngle = PropertyDescriptor("GradationAngle", r"""그러데이션 기울임(시작각)""")
+    GradationCenterX = PropertyDescriptor("GradationCenterX", r"""그러데이션 가로 중심 X 좌표""")
+    GradationCenterY = PropertyDescriptor("GradationCenterY", r"""그러데이션 세로 중심 Y 좌표""")
+    GradationStep = PropertyDescriptor("GradationStep", r"""그러데이션 번짐 정도 (0~100)""")
+    GradationColorNum = PropertyDescriptor("GradationColorNum", r"""그러데이션 색 수""")
+    GradationColor = PropertyDescriptor("GradationColor", r"""그러데이션 색깔 배열 (PIT_ARRAY)""")
+    GradationIndexPos = PropertyDescriptor("GradationIndexPos", r"""그러데이션 다음 색깔과의 거리 배열 (PIT_ARRAY)""")
+    GradationStepCenter = PropertyDescriptor("GradationStepCenter", r"""그러데이션 번짐 정도의 중심 (0~100)""")
+    GradationAlpha = PropertyDescriptor("GradationAlpha", r"""그러데이션 투명도 (한글2007)""")
+    GradationBrush = PropertyDescriptor("GradationBrush", r"""현재 브러시가 그러데이션 브러시인지 여부""")
+    WinBrushFaceColor = PropertyDescriptor("WinBrushFaceColor", r"""면 색 (RGB 0x00BBGGRR)""")
+    WinBrushHatchColor = PropertyDescriptor("WinBrushHatchColor", r"""무늬 색 (RGB 0x00BBGGRR)""")
+    WinBrushFaceStyle = PropertyDescriptor("WinBrushFaceStyle", r"""무늬 스타일""")
+    WinBrushAlpha = PropertyDescriptor("WinBrushAlpha", r"""면/무늬 색 투명도""")
+    WindowsBrush = PropertyDescriptor("WindowsBrush", r"""현재 브러시가 면/무늬 브러시인지 여부""")
+    FileName = PropertyDescriptor("FileName", r"""그림 파일 경로""")
+    Embedded = PropertyDescriptor("Embedded", r"""그림 삽입 방식: TRUE=문서에 삽입, FALSE=파일로 연결""")
+    PicEffect = PropertyDescriptor("PicEffect", r"""그림 효과: 0=원본, 1=그레이스케일, 2=흑백""")
+    Brightness = PropertyDescriptor("Brightness", r"""명도 (-100~100)""")
+    Contrast = PropertyDescriptor("Contrast", r"""밝기 (-100~100)""")
+    Reverse = PropertyDescriptor("Reverse", r"""반전 유무""")
+    DrawFillImageType = PropertyDescriptor("DrawFillImageType", r"""배경 채우기 방식: 0=바둑판식, 5=크기에 맞추어, 6=가운데 등""")
+    SkipLeft = PropertyDescriptor("SkipLeft", r"""왼쪽 자르기""")
+    SkipRight = PropertyDescriptor("SkipRight", r"""오른쪽 자르기""")
+    SkipTop = PropertyDescriptor("SkipTop", r"""위 자르기""")
+    SkipBottom = PropertyDescriptor("SkipBottom", r"""아래 자르기""")
+    OriginalSizeX = PropertyDescriptor("OriginalSizeX", r"""이미지 원본 크기 X""")
+    OriginalSizeY = PropertyDescriptor("OriginalSizeY", r"""이미지 원본 크기 Y""")
+    InsideMarginLeft = PropertyDescriptor("InsideMarginLeft", r"""이미지 안쪽 여백 왼쪽""")
+    InsideMarginRight = PropertyDescriptor("InsideMarginRight", r"""이미지 안쪽 여백 오른쪽""")
+    InsideMarginTop = PropertyDescriptor("InsideMarginTop", r"""이미지 안쪽 여백 위""")
+    InsideMarginBottom = PropertyDescriptor("InsideMarginBottom", r"""이미지 안쪽 여백 아래""")
+    ImageBrush = PropertyDescriptor("ImageBrush", r"""현재 브러시가 그림 브러시인지 여부""")
+    ImageCreateOnDrag = PropertyDescriptor("ImageCreateOnDrag", r"""그림 개체 생성 시 마우스로 끌어 생성할지 여부 (한글2007)""")
+    ImageAlpha = PropertyDescriptor("ImageAlpha", r"""그림 개체/배경 투명도 (한글2007)""")
 
 class CharShape(ParameterSet):
     """CharShape ParameterSet."""
@@ -2430,7 +2468,7 @@ class ParaShape(ParameterSet):
     PrevSpacing = PropertyDescriptor("PrevSpacing", r"""문단 간격 위 (URC)""")
     NextSpacing = PropertyDescriptor("NextSpacing", r"""문단 간격 아래 (URC)""")
     LineSpacingType = PropertyDescriptor("LineSpacingType", r"""줄 간격 종류 (HWPUNIT)0 \= 글자에 따라1 \= 고정 값2 \= 여백만 지정""")
-    LineSpacing = PropertyDescriptor("LineSpacing", r"""줄 간격 값. 줄 간격 종류(LineSpacingType)에 따라 :\- 글자에 따라일 경우(0 \- 500%)\- “고정 값”일 경우(URC)\- “여백만 지정”일 경우(URC)""")
+    LineSpacing = PropertyDescriptor("LineSpacing", r"""줄 간격 값. 줄 간격 종류(LineSpacingType)에 따라 :\- 글자에 따라일 경우(0 \- 500%)\- "고정 값"일 경우(URC)\- "여백만 지정"일 경우(URC)""")
     AlignType = PropertyDescriptor("AlignType", r"""정렬 방식0 \= 양쪽 정렬1 \= 왼쪽 정렬2 \= 오른쪽 정렬3 \= 가운데 정렬4 \= 배분 정렬5 \= 나눔 정렬 (공백에만 배분)""")
     BreakLatinWord = PropertyDescriptor("BreakLatinWord", r"""줄 나눔 단위 (라틴 문자)0 \= 단어1 \= 하이픈2 \= 글자""")
     BreakNonLatinWord = PropertyDescriptor("BreakNonLatinWord", r"""단위 (비 라틴 문자) TRUE \= 글자, FALSE \= 어절""")
@@ -2489,6 +2527,30 @@ class ShapeObject(ParameterSet):
     AdjustSelection = PropertyDescriptor("AdjustSelection", r"""개체 Selection 상태 TRUE/FASLE (한글2007에 새로 추가)""")
     AdjustTextBox = PropertyDescriptor("AdjustTextBox", r"""글상자로 TRUE/FASLE (한글2007에 새로 추가)""")
     AdjustPrevObjAttr = PropertyDescriptor("AdjustPrevObjAttr", r"""앞개체 속성 따라가기 TRUE/FASLE (한글2007에 새로 추가)""")
+    # 선택적 중첩 ParameterSet 속성 (PIT_SET 타입)
+    ShapeDrawLayOut = PropertyDescriptor("ShapeDrawLayOut", r"""그리기 개체의 Layout (PIT_SET: DrawLayout)""")
+    ShapeDrawLineAttr = PropertyDescriptor("ShapeDrawLineAttr", r"""그리기 개체의 Line 속성 (PIT_SET: DrawLineAttr)""")
+    ShapeDrawFillAttr = PropertyDescriptor("ShapeDrawFillAttr", r"""그리기 개체의 Fill 속성 (PIT_SET: DrawFillAttr)""")
+    ShapeDrawImageAttr = PropertyDescriptor("ShapeDrawImageAttr", r"""그림 개체 속성 (PIT_SET: DrawImageAttr)""")
+    ShapeDrawRectType = PropertyDescriptor("ShapeDrawRectType", r"""사각형 그리기 개체 유형 (PIT_SET: DrawRectType)""")
+    ShapeDrawArcType = PropertyDescriptor("ShapeDrawArcType", r"""호 그리기 개체 유형 (PIT_SET: DrawArcType)""")
+    ShapeDrawResize = PropertyDescriptor("ShapeDrawResize", r"""그리기 개체 리사이징 (PIT_SET: DrawResize)""")
+    ShapeDrawRotate = PropertyDescriptor("ShapeDrawRotate", r"""그리기 개체 회전 (PIT_SET: DrawRotate)""")
+    ShapeDrawEditDetail = PropertyDescriptor("ShapeDrawEditDetail", r"""그리기 개체 EditDetail (PIT_SET: DrawEditDetail)""")
+    ShapeDrawImageScissoring = PropertyDescriptor("ShapeDrawImageScissoring", r"""그림 개체 자르기 (PIT_SET: DrawImageScissoring)""")
+    ShapeDrawScAction = PropertyDescriptor("ShapeDrawScAction", r"""그리기 개체 ScAction (PIT_SET: DrawScAction)""")
+    ShapeDrawCtrlHyperlink = PropertyDescriptor("ShapeDrawCtrlHyperlink", r"""그리기 개체 하이퍼링크 (PIT_SET: DrawCtrlHyperlink)""")
+    ShapeDrawCoordInfo = PropertyDescriptor("ShapeDrawCoordInfo", r"""그리기 개체 좌표정보 (PIT_SET: DrawCoordInfo)""")
+    ShapeDrawShear = PropertyDescriptor("ShapeDrawShear", r"""그리기 개체 기울이기 (PIT_SET: DrawShear)""")
+    ShapeDrawTextart = PropertyDescriptor("ShapeDrawTextart", r"""글맵시 (PIT_SET: DrawTextart)""")
+    ShapeDrawShadow = PropertyDescriptor("ShapeDrawShadow", r"""그림자 (PIT_SET: DrawShadow)""")
+    ShapeTableCell = PropertyDescriptor("ShapeTableCell", r"""셀 정보 (PIT_SET: Cell)""")
+    ShapeListProperties = PropertyDescriptor("ShapeListProperties", r"""서브 list 속성 (PIT_SET: ListProperties)""")
+    ShapeCaption = PropertyDescriptor("ShapeCaption", r"""캡션 (PIT_SET: Caption)""")
+    ShapeType = PropertyDescriptor("ShapeType", r"""TablePropertyDialog 종류""")
+    ShapeCellSize = PropertyDescriptor("ShapeCellSize", r"""셀 크기 적용 여부 (on/off)""")
+    ShapeCreationType = PropertyDescriptor("ShapeCreationType", r"""그리기 개체 형태: 0=직선, 1=사각형, 2=원, 3=호""")
+    ShapeCreationMode = PropertyDescriptor("ShapeCreationMode", r"""마우스로 그리기 여부 (on/off)""")
 
 class Table(ParameterSet):
     """Table ParameterSet."""
@@ -3023,9 +3085,80 @@ class ListProperties(ParameterSet):
 
 
 class NumberingShape(ParameterSet):
-    """NumberingShape ParameterSet."""
-    StartNumber = PropertyDescriptor("StartNumber", r"""시작 번호 (0 \= 앞 구역에 이어, n \= 지정한 번호로 시작)\* 0은 구역의 개요 정의에만 사용된다.""")
-    NewList = PropertyDescriptor("NewList", r"""새로운 번호 목록을 시작할지 여부\* 문단 모양(ParaShap)의 서브셋으로 포함될 때만 의미 있다.\* get일 때는 이 아이템은 아예 생성되지 않으며, set일 때는 TRUE가 아니면 NumberingShape 서브셋 전체가 지정되지 않은 것처럼 무시된다.""")
+    """NumberingShape ParameterSet - 문단 번호 모양 정의. Level0~Level6 (7개 수준)."""
+    StartNumber = PropertyDescriptor("StartNumber", r"""시작 번호 (0=앞 구역에 이어, n=지정한 번호로 시작)""")
+    NewList = PropertyDescriptor("NewList", r"""새로운 번호 목록을 시작할지 여부""")
+    # 7개 수준별 속성 (Level0 ~ Level6)
+    HasCharShapeLevel0 = PropertyDescriptor("HasCharShapeLevel0", r"""수준0: 자체 글자 모양 사용 여부""")
+    HasCharShapeLevel1 = PropertyDescriptor("HasCharShapeLevel1", r"""수준1: 자체 글자 모양 사용 여부""")
+    HasCharShapeLevel2 = PropertyDescriptor("HasCharShapeLevel2", r"""수준2: 자체 글자 모양 사용 여부""")
+    HasCharShapeLevel3 = PropertyDescriptor("HasCharShapeLevel3", r"""수준3: 자체 글자 모양 사용 여부""")
+    HasCharShapeLevel4 = PropertyDescriptor("HasCharShapeLevel4", r"""수준4: 자체 글자 모양 사용 여부""")
+    HasCharShapeLevel5 = PropertyDescriptor("HasCharShapeLevel5", r"""수준5: 자체 글자 모양 사용 여부""")
+    HasCharShapeLevel6 = PropertyDescriptor("HasCharShapeLevel6", r"""수준6: 자체 글자 모양 사용 여부""")
+    CharShapeLevel0 = PropertyDescriptor("CharShapeLevel0", r"""수준0: 글자 모양 정의 (PIT_SET: CharShape)""")
+    CharShapeLevel1 = PropertyDescriptor("CharShapeLevel1", r"""수준1: 글자 모양 정의 (PIT_SET: CharShape)""")
+    CharShapeLevel2 = PropertyDescriptor("CharShapeLevel2", r"""수준2: 글자 모양 정의 (PIT_SET: CharShape)""")
+    CharShapeLevel3 = PropertyDescriptor("CharShapeLevel3", r"""수준3: 글자 모양 정의 (PIT_SET: CharShape)""")
+    CharShapeLevel4 = PropertyDescriptor("CharShapeLevel4", r"""수준4: 글자 모양 정의 (PIT_SET: CharShape)""")
+    CharShapeLevel5 = PropertyDescriptor("CharShapeLevel5", r"""수준5: 글자 모양 정의 (PIT_SET: CharShape)""")
+    CharShapeLevel6 = PropertyDescriptor("CharShapeLevel6", r"""수준6: 글자 모양 정의 (PIT_SET: CharShape)""")
+    WidthAdjustLevel0 = PropertyDescriptor("WidthAdjustLevel0", r"""수준0: 번호 너비 보정값 (HWPUNIT)""")
+    WidthAdjustLevel1 = PropertyDescriptor("WidthAdjustLevel1", r"""수준1: 번호 너비 보정값 (HWPUNIT)""")
+    WidthAdjustLevel2 = PropertyDescriptor("WidthAdjustLevel2", r"""수준2: 번호 너비 보정값 (HWPUNIT)""")
+    WidthAdjustLevel3 = PropertyDescriptor("WidthAdjustLevel3", r"""수준3: 번호 너비 보정값 (HWPUNIT)""")
+    WidthAdjustLevel4 = PropertyDescriptor("WidthAdjustLevel4", r"""수준4: 번호 너비 보정값 (HWPUNIT)""")
+    WidthAdjustLevel5 = PropertyDescriptor("WidthAdjustLevel5", r"""수준5: 번호 너비 보정값 (HWPUNIT)""")
+    WidthAdjustLevel6 = PropertyDescriptor("WidthAdjustLevel6", r"""수준6: 번호 너비 보정값 (HWPUNIT)""")
+    TextOffsetLevel0 = PropertyDescriptor("TextOffsetLevel0", r"""수준0: 본문과의 거리""")
+    TextOffsetLevel1 = PropertyDescriptor("TextOffsetLevel1", r"""수준1: 본문과의 거리""")
+    TextOffsetLevel2 = PropertyDescriptor("TextOffsetLevel2", r"""수준2: 본문과의 거리""")
+    TextOffsetLevel3 = PropertyDescriptor("TextOffsetLevel3", r"""수준3: 본문과의 거리""")
+    TextOffsetLevel4 = PropertyDescriptor("TextOffsetLevel4", r"""수준4: 본문과의 거리""")
+    TextOffsetLevel5 = PropertyDescriptor("TextOffsetLevel5", r"""수준5: 본문과의 거리""")
+    TextOffsetLevel6 = PropertyDescriptor("TextOffsetLevel6", r"""수준6: 본문과의 거리""")
+    AlignmentLevel0 = PropertyDescriptor("AlignmentLevel0", r"""수준0: 번호 정렬 0=왼쪽, 1=가운데, 2=오른쪽""")
+    AlignmentLevel1 = PropertyDescriptor("AlignmentLevel1", r"""수준1: 번호 정렬""")
+    AlignmentLevel2 = PropertyDescriptor("AlignmentLevel2", r"""수준2: 번호 정렬""")
+    AlignmentLevel3 = PropertyDescriptor("AlignmentLevel3", r"""수준3: 번호 정렬""")
+    AlignmentLevel4 = PropertyDescriptor("AlignmentLevel4", r"""수준4: 번호 정렬""")
+    AlignmentLevel5 = PropertyDescriptor("AlignmentLevel5", r"""수준5: 번호 정렬""")
+    AlignmentLevel6 = PropertyDescriptor("AlignmentLevel6", r"""수준6: 번호 정렬""")
+    UseInstWidthLevel0 = PropertyDescriptor("UseInstWidthLevel0", r"""수준0: 번호 너비를 문자열 너비에 따를지 여부""")
+    UseInstWidthLevel1 = PropertyDescriptor("UseInstWidthLevel1", r"""수준1: 번호 너비를 문자열 너비에 따를지 여부""")
+    UseInstWidthLevel2 = PropertyDescriptor("UseInstWidthLevel2", r"""수준2: 번호 너비를 문자열 너비에 따를지 여부""")
+    UseInstWidthLevel3 = PropertyDescriptor("UseInstWidthLevel3", r"""수준3: 번호 너비를 문자열 너비에 따를지 여부""")
+    UseInstWidthLevel4 = PropertyDescriptor("UseInstWidthLevel4", r"""수준4: 번호 너비를 문자열 너비에 따를지 여부""")
+    UseInstWidthLevel5 = PropertyDescriptor("UseInstWidthLevel5", r"""수준5: 번호 너비를 문자열 너비에 따를지 여부""")
+    UseInstWidthLevel6 = PropertyDescriptor("UseInstWidthLevel6", r"""수준6: 번호 너비를 문자열 너비에 따를지 여부""")
+    AutoIndentLevel0 = PropertyDescriptor("AutoIndentLevel0", r"""수준0: 번호 너비 자동 들여쓰기 여부""")
+    AutoIndentLevel1 = PropertyDescriptor("AutoIndentLevel1", r"""수준1: 번호 너비 자동 들여쓰기 여부""")
+    AutoIndentLevel2 = PropertyDescriptor("AutoIndentLevel2", r"""수준2: 번호 너비 자동 들여쓰기 여부""")
+    AutoIndentLevel3 = PropertyDescriptor("AutoIndentLevel3", r"""수준3: 번호 너비 자동 들여쓰기 여부""")
+    AutoIndentLevel4 = PropertyDescriptor("AutoIndentLevel4", r"""수준4: 번호 너비 자동 들여쓰기 여부""")
+    AutoIndentLevel5 = PropertyDescriptor("AutoIndentLevel5", r"""수준5: 번호 너비 자동 들여쓰기 여부""")
+    AutoIndentLevel6 = PropertyDescriptor("AutoIndentLevel6", r"""수준6: 번호 너비 자동 들여쓰기 여부""")
+    TextOffsetTypeLevel0 = PropertyDescriptor("TextOffsetTypeLevel0", r"""수준0: 본문과의 거리 종류 0=퍼센트, 1=HWPUNIT""")
+    TextOffsetTypeLevel1 = PropertyDescriptor("TextOffsetTypeLevel1", r"""수준1: 본문과의 거리 종류""")
+    TextOffsetTypeLevel2 = PropertyDescriptor("TextOffsetTypeLevel2", r"""수준2: 본문과의 거리 종류""")
+    TextOffsetTypeLevel3 = PropertyDescriptor("TextOffsetTypeLevel3", r"""수준3: 본문과의 거리 종류""")
+    TextOffsetTypeLevel4 = PropertyDescriptor("TextOffsetTypeLevel4", r"""수준4: 본문과의 거리 종류""")
+    TextOffsetTypeLevel5 = PropertyDescriptor("TextOffsetTypeLevel5", r"""수준5: 본문과의 거리 종류""")
+    TextOffsetTypeLevel6 = PropertyDescriptor("TextOffsetTypeLevel6", r"""수준6: 본문과의 거리 종류""")
+    StrFormatLevel0 = PropertyDescriptor("StrFormatLevel0", r"""수준0: 포맷 문자열""")
+    StrFormatLevel1 = PropertyDescriptor("StrFormatLevel1", r"""수준1: 포맷 문자열""")
+    StrFormatLevel2 = PropertyDescriptor("StrFormatLevel2", r"""수준2: 포맷 문자열""")
+    StrFormatLevel3 = PropertyDescriptor("StrFormatLevel3", r"""수준3: 포맷 문자열""")
+    StrFormatLevel4 = PropertyDescriptor("StrFormatLevel4", r"""수준4: 포맷 문자열""")
+    StrFormatLevel5 = PropertyDescriptor("StrFormatLevel5", r"""수준5: 포맷 문자열""")
+    StrFormatLevel6 = PropertyDescriptor("StrFormatLevel6", r"""수준6: 포맷 문자열""")
+    NumFormatLevel0 = PropertyDescriptor("NumFormatLevel0", r"""수준0: 번호 모양""")
+    NumFormatLevel1 = PropertyDescriptor("NumFormatLevel1", r"""수준1: 번호 모양""")
+    NumFormatLevel2 = PropertyDescriptor("NumFormatLevel2", r"""수준2: 번호 모양""")
+    NumFormatLevel3 = PropertyDescriptor("NumFormatLevel3", r"""수준3: 번호 모양""")
+    NumFormatLevel4 = PropertyDescriptor("NumFormatLevel4", r"""수준4: 번호 모양""")
+    NumFormatLevel5 = PropertyDescriptor("NumFormatLevel5", r"""수준5: 번호 모양""")
+    NumFormatLevel6 = PropertyDescriptor("NumFormatLevel6", r"""수준6: 번호 모양""")
 
 class TabDef(ParameterSet):
     """
@@ -3338,6 +3471,26 @@ class FootnoteShape(ParameterSet):
     ApplyTo = PropertyDescriptor("ApplyTo", r"""적용범위0 \= 선택된 구역1 \= 선택된 문자열2 \= 현재 구역3 \= 문서전체4 \= 새 구역 : 현재 위치부터 새로""")
     ApplyClass = PropertyDescriptor("ApplyClass", r"""적용범위의 분류 (대화상자를 호출할 경우 사용)0x01 \= 선택된 구역0x02 \= 선택된 문자열0x04 \= 현재 구역0x08 \= 문서전체0x10 \= 새 구역 : 현재 위치부터 새로""")
 
+class EndnoteShape(ParameterSet):
+    """EndnoteShape ParameterSet - 미주 모양 (FootnoteShape와 동일 구조)."""
+    NumberFormat = PropertyDescriptor("NumberFormat", r"""번호모양""")
+    UserChar = PropertyDescriptor("UserChar", r"""사용자 기호 (WCHAR)""")
+    PrefixChar = PropertyDescriptor("PrefixChar", r"""앞 장식 문자 (WCHAR)""")
+    Suffix = PropertyDescriptor("Suffix", r"""뒤 장식 문자 (WCHAR)""")
+    PlaceAt = PropertyDescriptor("PlaceAt", r"""위치: 0=문서의 마지막, 1=구역의 마지막""")
+    Restart = PropertyDescriptor("Restart", r"""번호 매기기: 0=앞 구역에 이어서, 1=현재 구역부터 새로 시작""")
+    NewNumber = PropertyDescriptor("NewNumber", r"""시작 번호 (1..n)""")
+    LineLength = PropertyDescriptor("LineLength", r"""구분선 길이 (HWPUNIT)""")
+    LineType = PropertyDescriptor("LineType", r"""선 종류""")
+    LineWidth = PropertyDescriptor("LineWidth", r"""선 굵기""")
+    SpaceAboveLine = PropertyDescriptor("SpaceAboveLine", r"""구분선 위 여백 (HWPUNIT)""")
+    SpaceBelowLine = PropertyDescriptor("SpaceBelowLine", r"""구분선 아래 여백 (HWPUNIT)""")
+    SpaceBetweenNotes = PropertyDescriptor("SpaceBetweenNotes", r"""주석 사이 여백 (HWPUNIT)""")
+    SuperScript = PropertyDescriptor("SuperScript", r"""번호 코드 위첨자 형식 여부""")
+    BeneathText = PropertyDescriptor("BeneathText", r"""텍스트에 이어 바로 출력할지 여부""")
+    ApplyTo = PropertyDescriptor("ApplyTo", r"""적용범위: 0=선택된 구역, 1=선택된 문자열, 2=현재 구역, 3=문서전체, 4=새 구역""")
+    ApplyClass = PropertyDescriptor("ApplyClass", r"""적용범위 분류 (비트마스크): 0x01=선택된 구역, 0x02=선택된 문자열, 0x04=현재 구역, 0x08=문서전체, 0x10=새 구역""")
+
 class FtpDownload(ParameterSet):
     """FtpDownload ParameterSet."""
     Server = PropertyDescriptor("Server", r"""Ftp 서버 내임""")
@@ -3379,10 +3532,12 @@ class GridInfo(ParameterSet):
 
 class HeaderFooter(ParameterSet):
     """HeaderFooter ParameterSet."""
-    DialogOption = PropertyDescriptor("DialogOption", r"""머리말/꼬리말 대화상자를 실행할 때 “편집”버튼을 보일 것인지 말 것인지 지정한다.1 \= “편집”버튼 보이기그 외 \= “편집”버튼 안보이기""")
-    DialogResult = PropertyDescriptor("DialogResult", r"""머리말/꼬리말 대화상자의 오른쪽에 있는 “만들기”, “취소”, “편집” 중에서 어느 버튼이 클릭되었는지 여부를 이 값을 통해 전달받는다.1 \= 만들기 (삽입)2 \= 편집그 외 \= 취소""")
-    CtrlType = PropertyDescriptor("CtrlType", r"""머리말/꼬리말 여부 : 0 \= 머리말, 1 \= 꼬리말""")
-    Type = PropertyDescriptor("Type", r"""머리말/꼬리말 위치 : 0 \= 양쪽, 1 \= 짝수쪽, 2 \= 홀수쪽""")
+    DialogOption = PropertyDescriptor("DialogOption", r"""머리말/꼬리말 대화상자를 실행할 때 "편집"버튼을 보일 것인지 말 것인지 지정한다. 1=보이기, 그외=안보이기""")
+    DialogResult = PropertyDescriptor("DialogResult", r"""대화상자 버튼 결과. 1=만들기(삽입), 2=편집, 그외=취소""")
+    CtrlType = PropertyDescriptor("CtrlType", r"""머리말/꼬리말 여부 : 0=머리말, 1=꼬리말""")
+    Type = PropertyDescriptor("Type", r"""머리말/꼬리말 위치 : 0=양쪽, 1=짝수쪽, 2=홀수쪽""")
+    HeaderFooterCtrlType = PropertyDescriptor("HeaderFooterCtrlType", r"""머리말/꼬리말 종류 : 0=머리말, 1=꼬리말 (한글2007)""")
+    HeaderFooterStyle = PropertyDescriptor("HeaderFooterStyle", r"""머리말/꼬리말 마당 스타일 (한글2007)""")
 
 class HyperLink(ParameterSet):
     """HyperLink ParameterSet."""
@@ -3480,7 +3635,7 @@ class MakeContents(ParameterSet):
     OutlineNumber = PropertyDescriptor("OutlineNumber", r"""개요 문단 모으기""")
     Styles = PropertyDescriptor("Styles", r"""모을 스타일 목록""")
     StyleName = PropertyDescriptor("StyleName", r"""모을 스타일 이름들""")
-    OutFileName = PropertyDescriptor("OutFileName", r"""만들 파일 이름. “”이면 현재 문서에 생성""")
+    OutFileName = PropertyDescriptor("OutFileName", r"""만들 파일 이름. ""이면 현재 문서에 생성""")
     Position = PropertyDescriptor("Position", r"""만들 위치. 반드시 0이어야 한다. (한글 컨트롤은 탭이 없으므로)(한글2007에 새로 추가)0 \= 현재 문서1 \= 새 탭으로""")
 
 class MarkpenShape(ParameterSet):
@@ -3589,10 +3744,11 @@ class PageNumPos(ParameterSet):
 
 class Password(ParameterSet):
     """Password ParameterSet."""
-    DialogResult = PropertyDescriptor("DialogResult", r"""“문서 암호 변경” 대화상자에서 “암호해제”버튼이 클릭되었는지 알려준다. 전달값이 1이면 암호해제""")
+    DialogResult = PropertyDescriptor("DialogResult", r"""암호해제 버튼 클릭 여부. 1=암호해제""")
     String = PropertyDescriptor("String", r"""암호 문자열""")
-    FullRange = PropertyDescriptor("FullRange", r"""TRUE \= 유니코드/모든 문자를 사용, FALSE \= 영문자만 사용""")
-    Ask = PropertyDescriptor("Ask", r"""0 \= 문서 암호를 확인, 1 \= 문서 암호를 설정""")
+    FullRange = PropertyDescriptor("FullRange", r"""TRUE=유니코드/모든 문자, FALSE=영문자만""")
+    Ask = PropertyDescriptor("Ask", r"""TRUE=문서 암호 확인, FALSE=문서 암호 설정""")
+    Level = PropertyDescriptor("Level", r"""보안 수준: 0=낮음, 1=높음 (한글2007)""")
 
 class Preference(ParameterSet):
     """Preference ParameterSet."""
@@ -3604,7 +3760,7 @@ class Preference(ParameterSet):
 
 class Presentation(ParameterSet):
     """Presentation ParameterSet."""
-    DialogResult = PropertyDescriptor("DialogResult", r"""프리젠테이션 대화상자의 “실행”버튼이 클릭되었는지 여부.한글2007에서는 이 Set Item이 제거되었다.""")
+    DialogResult = PropertyDescriptor("DialogResult", r"""프리젠테이션 대화상자의 "실행"버튼이 클릭되었는지 여부.한글2007에서는 이 Set Item이 제거되었다.""")
     Effect = PropertyDescriptor("Effect", r"""화면 전환 효과""")
     Sound = PropertyDescriptor("Sound", r"""효과음""")
     InvertText = PropertyDescriptor("InvertText", r"""검은색 글자를 흰색으로""")
@@ -3937,9 +4093,9 @@ class ViewProperties(ParameterSet):
     """ViewProperties ParameterSet."""
     OptionFlag = PropertyDescriptor("OptionFlag", r"""뷰 옵션 플랙. 여러 개를 OR연산하여 지정할 수 있음.0x00000001 \= off : 쪽윤곽, on : 기본 보기0x00000002 \= 공백과 폭이 없는 컨트롤을 기호로0x00000004 \= 문단 마크 기호로0x00000008 \= 안내선0x00000010 \= 그리기 격자0x00000020 \= 그림 감춤0x00010000 \= 회색조""")
     ZoomType = PropertyDescriptor("ZoomType", r"""화면 확대 종류. 0 \= 사용자 정의 1 \= 쪽 맞춤 2 \= 폭 맞춤 3 \= 여러 쪽""")
-    ZoomRatio = PropertyDescriptor("ZoomRatio", r"""화면 확대 종류가 “사용자 정의”인 경우 화면 확대 비율. 10% \~ 500%""")
-    ZoomCntX = PropertyDescriptor("ZoomCntX", r"""화면 확대 종류가 “여러 쪽”인 경우 가로 페이지 수. 1 \~ 8""")
-    ZoomCntY = PropertyDescriptor("ZoomCntY", r"""화면 확대 종류가 “여러 쪽”인 경우 세로 페이지 수.1 \~ 8""")
+    ZoomRatio = PropertyDescriptor("ZoomRatio", r"""화면 확대 종류가 "사용자 정의"인 경우 화면 확대 비율. 10% \~ 500%""")
+    ZoomCntX = PropertyDescriptor("ZoomCntX", r"""화면 확대 종류가 "여러 쪽"인 경우 가로 페이지 수. 1 \~ 8""")
+    ZoomCntY = PropertyDescriptor("ZoomCntY", r"""화면 확대 종류가 "여러 쪽"인 경우 세로 페이지 수.1 \~ 8""")
     ZoomMirror = PropertyDescriptor("ZoomMirror", r"""맞쪽 보기. 페이지 수가 2의 배수일 때만 동작(한글2007에 새로 추가)""")
 
 class ViewStatus(ParameterSet):
