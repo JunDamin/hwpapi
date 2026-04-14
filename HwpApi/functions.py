@@ -25,7 +25,7 @@ logger = get_logger("functions")
 def get_font_name(text):
     logger.debug(f"get_font_name called")
     logger.debug(f"Calling get_font_name")
-    m = re.search("(^.+?)\s[A-Z0-9]+\.HFT", text)
+    m = re.search(r"(^.+?)\s[A-Z0-9]+\.HFT", text)
     return m.group(1) if m else None
 
 def dispatch(app_name):

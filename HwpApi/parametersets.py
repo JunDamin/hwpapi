@@ -3050,7 +3050,7 @@ class InsertText(ParameterSet):
     ### InsertText 
 | Item ID | Type | SubType | Description |
 | --- | --- | --- | --- |
-| Text | PIT\_BSTR |  | 삽입할 텍스트 |
+| Text | PIT_BSTR |  | 삽입할 텍스트 |
 
 """
 
@@ -3254,7 +3254,7 @@ class ColDef(ParameterSet):
     Type = PropertyDescriptor("Type", r"""단 종류 : 0 \= 보통 다단, 1 \= 배분 다단, 2 \= 평행 다단""")
     Count = PropertyDescriptor("Count", r"""단 개수. 1\-255까지.""")
     SameSize = PropertyDescriptor("SameSize", r"""단의 너비를 같도록 할지 여부 :0 \= 단 너비 각자 지정, 1 \= 단 너비 동일""")
-    SameGap = PropertyDescriptor("SameGap", r"""단 사이 간격(HWPUNIT) SAME\_SIZE가 1일 때만 사용된다.""")
+    SameGap = PropertyDescriptor("SameGap", r"""단 사이 간격(HWPUNIT) SAME_SIZE가 1일 때만 사용된다.""")
     WidthGap = PropertyDescriptor("WidthGap", r"""각 단의 너비와 간격(HWPUNIT)col\*2 \= 단의 폭, col\*2 \+ 1 \= 단 사이 간격.영역 전체의 폭을 Column ratio base (\=32768\)로 보았을 때의 비율로 환산한다.SameSize가 0일 때만 사용된다.배열의 아이템의 개수는 Count\*2\-1과 같아야 한다.""")
     Layout = PropertyDescriptor("Layout", r"""단 방향 지정 :0 \= 왼쪽부터, 1 \= 오른쪽부터, 2 \= 맞쪽""")
     LineType = PropertyDescriptor("LineType", r"""선 종류.""")
@@ -3690,7 +3690,7 @@ class OleCreation(ParameterSet):
     Path = PropertyDescriptor("Path", r"""파일 경로 (‘파일로 링크된 개체 생성’, ‘파일로부터 개체 생성’일 때 사용)""")
     Aspect = PropertyDescriptor("Aspect", r"""생성된 OLE 개체를 아이콘으로 표시할지 여부 :0 \= 내용으로 표시, 1 \= 아이콘으로 표시""")
     IconMetafile = PropertyDescriptor("IconMetafile", r"""Aspect가 아이콘일 때 적용할 아이콘 데이터""")
-    IconMM = PropertyDescriptor("IconMM", r"""Aspect가 아이콘일 때 아이콘 매핑모드1 \= MM\_TEXT2 \= MM\_LOMETRIC3 \= MM\_HIMETRIC4 \= MM\_LOENGLISH5 \= MM\_HIENGLISH6 \= MM\_TWIPS7 \= MM\_ISOTROPIC8 \= MM\_ANISOTROPIC※ MFC의 매핑모드와 값/의미가 동일하다.""")
+    IconMM = PropertyDescriptor("IconMM", r"""Aspect가 아이콘일 때 아이콘 매핑모드1 \= MM_TEXT2 \= MM_LOMETRIC3 \= MM_HIMETRIC4 \= MM_LOENGLISH5 \= MM_HIENGLISH6 \= MM_TWIPS7 \= MM_ISOTROPIC8 \= MM_ANISOTROPIC※ MFC의 매핑모드와 값/의미가 동일하다.""")
     IconXext = PropertyDescriptor("IconXext", r"""Aspect가 아이콘일 때 X축 매핑단위""")
     IconYext = PropertyDescriptor("IconYext", r"""Aspect가 아이콘일 때 Y축 매핑단위""")
     InnerOCX = PropertyDescriptor("InnerOCX", r"""한글 내부에서 사용되는 OCX인지 여부 (예: 한글의 Chart OLE)""")
@@ -3898,7 +3898,7 @@ class SecDef(ParameterSet):
     FigureNumber = PropertyDescriptor("FigureNumber", r"""그림 시작 번호 0 \= 앞 구역에 이어, n \= 새 번호로 시작""")
     TableNumber = PropertyDescriptor("TableNumber", r"""표 시작 번호 0 \= 앞 구역에 이어, n \= 새 번호로 시작""")
     EquationNumber = PropertyDescriptor("EquationNumber", r"""수식 시작 번호 0 \= 앞 구역에 이어, n \= 새 번호로 시작""")
-    WongojiFormat = PropertyDescriptor("WongojiFormat", r"""원고지 방식의 포맷팅. CHAR\_GRID가 지정되어야 함.""")
+    WongojiFormat = PropertyDescriptor("WongojiFormat", r"""원고지 방식의 포맷팅. CHAR_GRID가 지정되어야 함.""")
     MemoShape = PropertyDescriptor("MemoShape", r"""메모 모양 (한글2007에 새로 추가)""")
     TextVerticalWidthHead = PropertyDescriptor("TextVerticalWidthHead", r"""머리말/꼬리말 세로쓰기 여부 (한글2007에 새로 추가)""")
     ApplyTo = PropertyDescriptor("ApplyTo", r"""적용범위0 \= 선택된 구역1 \= 선택된 문자열2 \= 현재 구역3 \= 문서전체4 \= 새 구역 : 현재 위치부터 새로""")
@@ -3994,8 +3994,8 @@ class TableCreation(ParameterSet):
     """TableCreation ParameterSet."""
     Rows = PropertyDescriptor("Rows", r"""행 수 (생략하면 5\)""")
     Cols = PropertyDescriptor("Cols", r"""칼럼 수 (생략하면 5\)""")
-    RowHeight = PropertyDescriptor("RowHeight", r"""행의 디폴트 높이 (PIT\_I4\)""")
-    ColWidth = PropertyDescriptor("ColWidth", r"""칼럼의 디폴트 폭 (PIT\_I4\)""")
+    RowHeight = PropertyDescriptor("RowHeight", r"""행의 디폴트 높이 (PIT_I4\)""")
+    ColWidth = PropertyDescriptor("ColWidth", r"""칼럼의 디폴트 폭 (PIT_I4\)""")
     CellInfo = PropertyDescriptor("CellInfo", r"""정보가 없는 셀은 디폴트값을 따라가므로 모든 셀에 대해 정보를 줄 필요는 없다.""")
     WidthType = PropertyDescriptor("WidthType", r"""Parameter property""")
     HeightType = PropertyDescriptor("HeightType", r"""Parameter property""")
