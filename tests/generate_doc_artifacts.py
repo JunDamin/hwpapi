@@ -32,43 +32,25 @@ os.makedirs(IMG_DIR, exist_ok=True)
 DEMOS = {}
 
 DEMOS["demo_feature_tour"] = r"""
-# Title (center, big, bold)
-app.insert_text("hwpapi 기능 둘러보기\n")
-app.move.top_of_file(); app.select_text()
-app.set_charshape(bold=True, height=2400)
+# Title — uses charshape_scope so formatting is auto-reset after
+with app.charshape_scope(bold=True, height=2400):
+    app.insert_text("hwpapi 기능 둘러보기")
 app.set_parashape(align_type=3)
-app.move.bottom_of_file()
-# Clear styles so following content starts clean
-app.api.Run("StyleClearCharStyle")
+# Move past title, back to left align
+app.insert_text("\n")
 app.set_parashape(align_type=1)
 
 app.insert_text("\n── 문자 서식 ──\n")
 
-# Each format on its own line so paragraph-level state resets between.
-# For each line: clear, set format, type, break paragraph.
-def demo_line(label, text, **fmt):
-    app.api.Run("StyleClearCharStyle")
-    app.insert_text(label + ": ")
-    if fmt:
-        app.set_charshape(**fmt)
-    app.insert_text(text)
-    app.api.Run("StyleClearCharStyle")
-    app.insert_text("\n")
+# Each demo uses styled_text so formatting is scoped to the marked word.
+# This is the NEW IDIOMATIC way — no manual bold=True/bold=False pairs.
+app.insert_text("굵게:    "); app.styled_text("이 줄은 굵은 글씨입니다", bold=True);           app.insert_text("\n")
+app.insert_text("기울임:  "); app.styled_text("이 줄은 기울임 꼴입니다", italic=True);          app.insert_text("\n")
+app.insert_text("밑줄:    "); app.styled_text("이 줄은 밑줄이 있습니다", underline_type=1);     app.insert_text("\n")
+app.insert_text("취소선:  "); app.styled_text("이 줄은 취소선이 있습니다", strike_out_type=1);  app.insert_text("\n")
+app.insert_text("색:      "); app.styled_text("이 줄은 빨간 글씨입니다", text_color="#FF0000"); app.insert_text("\n")
+app.insert_text("큰 글씨: "); app.styled_text("이 줄은 크게 표시됩니다", height=2000);          app.insert_text("\n")
 
-demo_line("굵게",    "이 줄은 굵은 글씨입니다", bold=True)
-demo_line("기울임",  "이 줄은 기울임 꼴입니다", italic=True)
-demo_line("밑줄",    "이 줄은 밑줄이 있습니다", underline_type=1)
-demo_line("취소선",  "이 줄은 취소선이 있습니다", strike_out_type=1)
-demo_line("색",      "이 줄은 빨간 글씨입니다", text_color="#FF0000")
-demo_line("큰 글씨", "이 줄은 크게 표시됩니다", height=2000)
-# NB: shade_color (형광펜) intentionally omitted from this multi-line
-# demo — once applied at cursor, HWP's current paragraph retains the
-# paragraph-level fill and there's no public action to clear it without
-# affecting the whole document. The highlighter feature IS shown in
-# the report-generation demo where it's applied to a single span with
-# paragraph-break boundaries.
-
-app.api.Run("StyleClearCharStyle")
 app.insert_text("\n── 문단 정렬 ──\n")
 app.set_parashape(align_type=1); app.insert_text("왼쪽 정렬 문단입니다.\n")
 app.set_parashape(align_type=3); app.insert_text("가운데 정렬 문단입니다.\n")
