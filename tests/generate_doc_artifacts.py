@@ -49,6 +49,7 @@ app.insert_text("기울임:  "); app.styled_text("이 줄은 기울임 꼴입니
 app.insert_text("밑줄:    "); app.styled_text("이 줄은 밑줄이 있습니다", underline_type=1);     app.insert_text("\n")
 app.insert_text("취소선:  "); app.styled_text("이 줄은 취소선이 있습니다", strike_out_type=1);  app.insert_text("\n")
 app.insert_text("색:      "); app.styled_text("이 줄은 빨간 글씨입니다", text_color="#FF0000"); app.insert_text("\n")
+app.insert_text("형광펜:  "); app.styled_text("이 줄은 형광펜 표시입니다", shade_color="#FFFF00"); app.insert_text("\n")
 app.insert_text("큰 글씨: "); app.styled_text("이 줄은 크게 표시됩니다", height=2000);          app.insert_text("\n")
 
 app.insert_text("\n── 문단 정렬 ──\n")
