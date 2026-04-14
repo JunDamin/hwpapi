@@ -10,6 +10,12 @@ permissions:
   pages: write
   id-token: write
 
+# Force any transitively-used Node 20 actions (e.g. upload-artifact@v4
+# bundled inside actions/upload-pages-artifact@v3) to run on Node 24,
+# silencing the deprecation warning until upstream updates.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 # Only one concurrent deploy, newer pushes cancel older in-progress runs
 concurrency:
   group: pages
