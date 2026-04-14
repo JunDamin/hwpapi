@@ -2023,6 +2023,69 @@ class ParameterSet(metaclass=ParameterSetMeta):
         """Auto-generated list of attribute names from property registry."""
         return list(self._property_registry.keys())
 
+    # ── Native pset methods (thin wrappers around COM API) ──────────────
+    # Per HWP Automation docs (HwpAutomation_2504.pdf, p.63-65), pset COM
+    # objects expose Clone, IsEquivalent, Merge, ItemExist, RemoveItem.
+
+    def clone(self):
+        """
+        Clone this ParameterSet using the native COM Clone() method.
+
+        Faster and more reliable than manual update_from for simple copies.
+
+        Returns:
+            New ParameterSet wrapping a cloned pset COM object, or None if
+            the underlying object doesn't support Clone.
+        """
+        if self._raw is None or not hasattr(self._raw, 'Clone'):
+            return None
+        try:
+            cloned_raw = self._raw.Clone()
+        except Exception:
+            return None
+        return type(self)(cloned_raw)
+
+    def is_equivalent(self, other) -> bool:
+        """
+        Check value equality with another ParameterSet via native IsEquivalent().
+
+        Returns True if both parameter sets have identical items and values.
+        """
+        if self._raw is None or not hasattr(self._raw, 'IsEquivalent'):
+            return False
+        other_raw = other._raw if isinstance(other, ParameterSet) else other
+        if other_raw is None:
+            return False
+        try:
+            return bool(self._raw.IsEquivalent(other_raw))
+        except Exception:
+            return False
+
+    def merge(self, other):
+        """
+        Merge another ParameterSet's items into this one via native Merge().
+
+        Result: self gets "self's items + items unique to other".
+        """
+        if self._raw is None or not hasattr(self._raw, 'Merge'):
+            return
+        other_raw = other._raw if isinstance(other, ParameterSet) else other
+        if other_raw is None:
+            return
+        try:
+            self._raw.Merge(other_raw)
+        except Exception:
+            pass
+
+    def item_exists(self, item_id: str) -> bool:
+        """Check if an item exists in the underlying pset via native ItemExist()."""
+        if self._raw is None or not hasattr(self._raw, 'ItemExist'):
+            return False
+        try:
+            return bool(self._raw.ItemExist(item_id))
+        except Exception:
+            return False
+
 
 # Additional methods for ParameterSet class
 def update_from(self, pset):

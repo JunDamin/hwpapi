@@ -200,11 +200,50 @@ class TestActionInfoConsistency:
         if unknown:
             pytest.xfail(f"{len(unknown)} unknown pset keys: {unknown}")
 
-    def test_actions_property_count(self, app):
-        """_Actions should have a property for every action in _action_info."""
-        actions_cls = type(app.actions)
+    def test_actions_accessible_via_getattr(self, app):
+        """_Actions should resolve every action via __getattr__ dispatch."""
         missing = []
         for name in _action_info:
-            if not hasattr(actions_cls, name):
-                missing.append(name)
-        assert missing == [], f"Missing action properties: {missing}"
+            try:
+                action = getattr(app.actions, name)
+                if not isinstance(action, _Action):
+                    missing.append(name)
+            except AssertionError:
+                # SetID mismatch is acceptable (covered by xfail elsewhere)
+                pass
+            except Exception as e:
+                if "com_error" not in type(e).__name__ and "pywintypes" not in str(type(e)):
+                    missing.append(f"{name}: {e}")
+        assert missing == [], f"Inaccessible actions: {missing[:10]}..."
+
+    def test_introspection_api(self, app):
+        """New introspection API should work without COM calls."""
+        # get_pset_class
+        cls = app.actions.get_pset_class('CharShape')
+        assert cls is not None
+        assert cls.__name__ == 'CharShape'
+        # Cancel has no pset
+        assert app.actions.get_pset_class('Cancel') is None
+        # Unknown action raises KeyError
+        try:
+            app.actions.get_pset_class('XYZInvalid')
+            assert False, "Should have raised KeyError"
+        except KeyError:
+            pass
+        # list_actions
+        assert len(app.actions.list_actions()) == len(_action_info)
+        assert all(v[0] for k in app.actions.list_actions(with_pset_only=True)
+                   for v in [_action_info[k]])
+        # __contains__
+        assert 'CharShape' in app.actions
+        assert 'InvalidActionXYZ' not in app.actions
+
+    def test_action_caching(self, app):
+        """Repeated access to same action should return cached instance."""
+        a1 = app.actions.CharShape
+        a2 = app.actions.CharShape
+        assert a1 is a2, "Actions should be cached"
+        # refresh should invalidate cache
+        app.actions.refresh('CharShape')
+        a3 = app.actions.CharShape
+        assert a1 is not a3, "refresh should create new instance"

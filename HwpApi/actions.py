@@ -896,21 +896,33 @@ class _Action:
         self.action_key = action_key
         self.logger.debug(f"Action {action_key} initialized")
         self.act = app.api.CreateAction(action_key)
-        # create pset and description
+
+        # Resolve static metadata
         pset_key, description = _action_info.get(action_key, (None, None))
         self.description = description if description else "Description is Not Available"
-        
-        #check pset ID
-        pset = self._create_pset()
-        if pset:
-            if pset_key != pset.SetID:
+
+        # Create pset ONCE and reuse — avoids the previous double CreateSet call.
+        raw_pset = None
+        try:
+            raw_pset = self.act.CreateSet()
+            if raw_pset:
+                self.act.GetDefault(raw_pset)
+        except Exception as e:
+            self.logger.debug(f"CreateSet/GetDefault failed for '{action_key}': {e}")
+            raw_pset = None
+
+        # Verify SetID against _action_info; prefer HWP's actual value
+        if raw_pset:
+            hwp_setid = getattr(raw_pset, 'SetID', None)
+            if pset_key != hwp_setid:
                 self.logger.warning(
                     f"_action_info SetID mismatch for '{action_key}': "
-                    f"info={pset_key}, hwp={pset.SetID}. Using HWP value."
+                    f"info={pset_key}, hwp={hwp_setid}. Using HWP value."
                 )
-            pset_key = pset.SetID
+            pset_key = hwp_setid
+
         self.pset_key = pset_key
-        self.pset = self._create_pset_parameterset()
+        self.pset = self._wrap_pset(raw_pset)
 
     def __str__(self):
         return f"<Action {self.action_key}: {self.description}>"
@@ -956,15 +968,6 @@ class _Action:
             # Unknown type - try direct execution
             return self.act.Execute(pset)
 
-    def _get_hset(self, pset_key=None):
-        if not self.pset_key:
-            return None
-        hset = getattr(self.app.api.HParameterSet, f"H{self.pset_key}")
-        self.app.api.HAction.GetDefault(
-            pset_key if pset_key else self.action_key, hset.HSet
-        )
-        return hset
-
     def _create_pset(self):
         pset = self.act.CreateSet()
         self.act.GetDefault(pset)
@@ -972,40 +975,48 @@ class _Action:
 
     def get_pset(self):
         """
-        Always return a ParameterSet instance bound to the global HParameterSet node for this action.
+        Return ParameterSet bound to global HParameterSet node (HAction pattern).
+
+        This is the 'HAction' style described in HWP Automation docs (p.60):
+            HAction.GetDefault(actname, HParameterSet.HXxx.HSet)
+            HParameterSet.HXxx.<field> = value
+            HAction.Execute(actname, HParameterSet.HXxx.HSet)
+
+        The returned ParameterSet shares state with the global HParameterSet,
+        unlike `.pset` which uses a local pset from CreateSet().
         """
         if not self.pset_key:
             return None
-        hparam_prefix = f"H{self.pset_key}"
-        pset_class = getattr(parametersets, self.pset_key, None)
-        # Bind to the global HParameterSet node
-        hnode = getattr(self.app.api.HParameterSet, hparam_prefix)
+        hnode = getattr(self.app.api.HParameterSet, f"H{self.pset_key}")
         self.act.GetDefault(hnode.HSet)
-
+        pset_class = parametersets.PARAMETERSET_REGISTRY.get(self.pset_key)
         if not pset_class:
             return hnode
         return pset_class(hnode, app_instance=self.app)
 
+    def _wrap_pset(self, raw_pset):
+        """
+        Wrap a raw pset COM object into a typed ParameterSet.
+
+        Uses PARAMETERSET_REGISTRY as the single source of truth for
+        SetID → ParameterSet class mapping.
+        """
+        if raw_pset is None or not self.pset_key:
+            return None
+        pset_class = parametersets.PARAMETERSET_REGISTRY.get(self.pset_key) or parametersets.ParameterSet
+        return pset_class(raw_pset)
+
     def _create_pset_parameterset(self):
         """
-        Create a ParameterSet instance using the pset-based approach.
-        This directly uses action.CreateSet() without HSet synchronization.
+        Legacy API: creates a FRESH pset wrapper via CreateSet().
+
+        Preserved for backward compatibility. Prefer using `.pset` attribute
+        which is already wrapped by __init__.
         """
         if not self.pset_key:
             return None
-        
-        # Create raw pset object
-        pset = self._create_pset()
-        
-        # Get the appropriate ParameterSet class
-        pset_class = getattr(parametersets, self.pset_key, None)
-        
-        if pset_class:
-            # Use specific ParameterSet subclass with pset backend
-            return pset_class(pset)
-        else:
-            # Fallback to generic ParameterSet with pset backend
-            return parametersets.ParameterSet(pset)
+        raw = self._create_pset()
+        return self._wrap_pset(raw)
 
 
     def __call__(self, pset=None):
@@ -1013,33 +1024,100 @@ class _Action:
 
 class _Actions:
     """
-    Dynamically generates and registers actions for the application.
+    Dynamic action dispatcher with instance caching.
 
-    Actions are dispatched dynamically via __getattr__ using _action_info dict.
-    Example: app.actions.CharShape returns _Action(app, "CharShape")
+    Actions are resolved via __getattr__ using the _action_info dict.
+    Resolved _Action instances are cached so repeated access does not
+    trigger repeated COM calls.
+
+    Usage:
+        app.actions.CharShape           # cached _Action
+        app.actions.get_pset_class(...) # introspect without COM
+        app.actions.refresh()           # clear cache
+        'CharShape' in app.actions      # membership test
     """
 
     def __init__(self, app):
         self._app = app
+        self._cache = {}  # action_name → _Action instance
         self.logger = get_logger("actions.Actions")
         self.logger.debug("Actions registry initialized")
 
     def __getattr__(self, name):
         if name.startswith('_'):
             raise AttributeError(name)
-        if name in _action_info:
+        if name not in _action_info:
+            raise AttributeError(f"'{type(self).__name__}' has no action '{name}'")
+        cache = self.__dict__.get('_cache')
+        if cache is None:
+            # During early init, avoid caching
             return _Action(self._app, name)
-        raise AttributeError(f"'{type(self).__name__}' has no action '{name}'")
+        if name not in cache:
+            cache[name] = _Action(self._app, name)
+        return cache[name]
 
     def __dir__(self):
         return sorted(set(list(_action_info.keys()) + list(super().__dir__())))
 
     def __repr__(self):
-        return f"<Actions: {len(_action_info)} actions available>"
+        return f"<Actions: {len(_action_info)} actions, {len(self._cache)} cached>"
 
+    def __contains__(self, name):
+        """Check if an action exists. Usage: 'CharShape' in app.actions"""
+        return name in _action_info
 
-# Legacy: keep AddHanjaWord reference for backward compatibility comment
-# All 704 @property methods replaced by __getattr__ dispatch above.
-# Access any action via: app.actions.ActionName (e.g. app.actions.CharShape)
-_ACTIONS_REMOVED_NOTE = "704 @property methods replaced by __getattr__ in _Actions class"
+    def __len__(self):
+        return len(_action_info)
+
+    def __iter__(self):
+        """Iterate over action names."""
+        return iter(sorted(_action_info.keys()))
+
+    def refresh(self, name=None):
+        """
+        Invalidate cache; next access creates fresh _Action with HWP defaults.
+
+        Args:
+            name: action name to refresh. None clears entire cache.
+        """
+        if name is None:
+            self._cache.clear()
+        else:
+            self._cache.pop(name, None)
+
+    def get_pset_class(self, action_name):
+        """
+        Get the ParameterSet class for an action WITHOUT creating _Action.
+
+        This is a cheap introspection — no COM calls.
+
+        Returns:
+            ParameterSet subclass, or None if the action has no pset.
+
+        Raises:
+            KeyError: if action_name is unknown.
+        """
+        if action_name not in _action_info:
+            raise KeyError(f"Unknown action: {action_name}")
+        pset_key = _action_info[action_name][0]
+        if not pset_key:
+            return None
+        return parametersets.PARAMETERSET_REGISTRY.get(pset_key)
+
+    def get_description(self, action_name):
+        """Get action description without creating _Action."""
+        if action_name not in _action_info:
+            raise KeyError(f"Unknown action: {action_name}")
+        return _action_info[action_name][1] or ""
+
+    def list_actions(self, with_pset_only=False):
+        """
+        List all available action names.
+
+        Args:
+            with_pset_only: if True, return only actions that have a ParameterSet.
+        """
+        if with_pset_only:
+            return sorted(k for k, v in _action_info.items() if v[0])
+        return sorted(_action_info.keys())
 
