@@ -108,12 +108,12 @@ def wrap_parameterset(pset_obj, pset_id=None):
 def resolve_action_args(app: Any, action_name: str, hnode: Any) -> tuple[str, Any]:
     """
     Resolve action arguments for HAction.GetDefault/Execute calls.
-    
+
     Args:
         app: HWP application object
         action_name: Action name like "FindReplace"
         hnode: HParameterSet node like app.api.HParameterSet.HFindReplace
-        
+
     Returns:
         Tuple of (action_name, arg) where arg is hnode.HSet if available, else hnode
     """
@@ -128,7 +128,7 @@ def apply_staged_to_backend(backend: ParameterBackend, staged: dict, prefix: str
     """
     Apply staged changes to any backend type, handling dotted keys recursively.
     Works for both ComBackend (map-style) and HParamBackend (tree-style).
-    
+
     Args:
         backend: Any ParameterBackend implementation
         staged: Dict of staged changes (may contain nested dicts)
@@ -136,7 +136,7 @@ def apply_staged_to_backend(backend: ParameterBackend, staged: dict, prefix: str
     """
     for key, value in staged.items():
         full_key = f"{prefix}.{key}" if prefix else key
-        
+
         if isinstance(value, dict):
             # Recursively handle nested dicts
             apply_staged_to_backend(backend, value, full_key)
@@ -234,7 +234,7 @@ class PropertyDescriptor:
                 else:
                     # Direct class reference
                     wrapped = self.wrap(val) if val != {} else self.wrap()
-   
+
                 instance._wrapper_cache[self.key] = wrapped
                 # Also stage the wrapper so reads stay consistent
                 instance._staged[self.key] = wrapped
@@ -267,7 +267,7 @@ class PropertyDescriptor:
         # Auto-wrap pset objects using registry (Tier 1/2)
         if val is not None and _looks_like_pset(val):
             val = wrap_parameterset(val, self.key)
-        
+
         return self.to_python(val) if (val is not None and self.to_python) else val
 
     def __set__(self, instance: "ParameterSet", value: Any):
@@ -301,90 +301,90 @@ class PropertyDescriptor:
 
 class IntProperty(PropertyDescriptor):
     """Property descriptor for integer values with optional range validation."""
-    
+
     def __init__(self, key: str, doc: str, min_val: Optional[int] = None, max_val: Optional[int] = None):
         super().__init__(key, doc)
         self.min_val = min_val
         self.max_val = max_val
-    
+
     def __get__(self, instance, owner):
         if instance is None:
             return self
         value = self._get_value(instance)
         return int(value) if value is not None else None
-    
+
     def __set__(self, instance, value):
         if value is None:
             return self._del_value(instance)
-        
+
         if not isinstance(value, (int, float)):
             raise TypeError(f"Value for '{self.key}' must be numeric")
-        
+
         value = int(value)
-        
+
         if self.min_val is not None and value < self.min_val:
             raise ValueError(f"Value {value} for '{self.key}' is below minimum {self.min_val}")
         if self.max_val is not None and value > self.max_val:
             raise ValueError(f"Value {value} for '{self.key}' is above maximum {self.max_val}")
-        
+
         return self._set_value(instance, value)
 
 
 class BoolProperty(PropertyDescriptor):
     """Property descriptor for boolean values (0 or 1)."""
-    
+
     def __get__(self, instance, owner):
         if instance is None:
             return self
         value = self._get_value(instance)
         return bool(value) if value is not None else None
-    
+
     def __set__(self, instance, value):
         if value is None:
             return self._del_value(instance)
-        
+
         if isinstance(value, bool):
             numeric_value = 1 if value else 0
         elif isinstance(value, (int, float)):
             numeric_value = 1 if value else 0
         else:
             raise TypeError(f"Value for '{self.key}' must be boolean or numeric")
-        
+
         return self._set_value(instance, numeric_value)
 
 
 class StringProperty(PropertyDescriptor):
     """Property descriptor for string values."""
-    
+
     def __get__(self, instance, owner):
         if instance is None:
             return self
         value = self._get_value(instance)
         return str(value) if value is not None else None
-    
+
     def __set__(self, instance, value):
         if value is None:
             return self._del_value(instance)
-        
+
         if not isinstance(value, str):
             value = str(value)
-        
+
         return self._set_value(instance, value)
 
 
 class ColorProperty(PropertyDescriptor):
     """Property descriptor for color values with hex conversion."""
-    
+
     def __get__(self, instance, owner):
         if instance is None:
             return self
         value = self._get_value(instance)
         return convert_hwp_color_to_hex(value) if value is not None else None
-    
+
     def __set__(self, instance, value):
         if value is None:
             return self._del_value(instance)
-        
+
         numeric_value = convert_to_hwp_color(value)
         return self._set_value(instance, numeric_value)
 
@@ -450,12 +450,12 @@ class UnitProperty(PropertyDescriptor):
 
 class MappedProperty(PropertyDescriptor):
     """Property descriptor for mapped values (string <-> integer)."""
-    
+
     def __init__(self, key: str, mapping: Dict[str, int], doc: str):
         super().__init__(key, doc)
         self.mapping = mapping
         self.reverse_mapping = {v: k for k, v in mapping.items()}
-    
+
     def __get__(self, instance, owner):
         if instance is None:
             return self
@@ -463,11 +463,11 @@ class MappedProperty(PropertyDescriptor):
         if value is None:
             return None
         return self.reverse_mapping.get(value, value)
-    
+
     def __set__(self, instance, value):
         if value is None:
             return self._del_value(instance)
-        
+
         if isinstance(value, str):
             if value not in self.mapping:
                 valid_keys = list(self.mapping.keys())
@@ -480,7 +480,7 @@ class MappedProperty(PropertyDescriptor):
                 raise ValueError(f"Invalid numeric value '{numeric_value}' for '{self.key}'. Valid values: {valid_values}")
         else:
             raise TypeError(f"Value for '{self.key}' must be string or numeric")
-        
+
         return self._set_value(instance, numeric_value)
 
 
@@ -494,7 +494,7 @@ class TypedProperty(PropertyDescriptor):
         """Initialize TypedProperty with support for positional wrap argument."""
         super().__init__(key, doc, wrap=wrap, **kwargs)
 
-    
+
     # Inherits __get__ and __set__ from PropertyDescriptor
 
 
@@ -820,35 +820,35 @@ class HArrayWrapper:
 
 class ListProperty(PropertyDescriptor):
     """Property descriptor for list values."""
-    
-    def __init__(self, key: str, doc: str, item_type: Optional[Type] = None, 
+
+    def __init__(self, key: str, doc: str, item_type: Optional[Type] = None,
                  min_length: Optional[int] = None, max_length: Optional[int] = None):
         super().__init__(key, doc)
         self.item_type = item_type
         self.min_length = min_length
         self.max_length = max_length
-    
+
     def __get__(self, instance, owner):
         if instance is None:
             return self
         value = self._get_value(instance)
         return list(value) if value is not None else None
-    
+
     def __set__(self, instance, value):
         if value is None:
             return self._del_value(instance)
-        
+
         if not isinstance(value, (list, tuple)):
             raise TypeError(f"Value for '{self.key}' must be a list or tuple")
-        
+
         value = list(value)
-        
+
         # Length validation
         if self.min_length is not None and len(value) < self.min_length:
             raise ValueError(f"List for '{self.key}' must have at least {self.min_length} items")
         if self.max_length is not None and len(value) > self.max_length:
             raise ValueError(f"List for '{self.key}' must have at most {self.max_length} items")
-        
+
         # Type validation
         if self.item_type is not None:
             for i, item in enumerate(value):
@@ -860,7 +860,7 @@ class ListProperty(PropertyDescriptor):
                             value[i] = self.item_type(item)
                         except (ValueError, TypeError):
                             raise TypeError(f"Item {i} in list for '{self.key}' must be of type {self.item_type.__name__}")
-        
+
         return self._set_value(instance, value)
 
 
@@ -1272,23 +1272,23 @@ class ParameterSet(metaclass=ParameterSetMeta):
     def create_itemset(self, key: str, setid: str) -> "ParameterSet":
         """
         Create a nested parameter set using CreateItemSet (pset-based) or direct access (HSet-based).
-        
+
         Args:
             key: The parameter key for the nested set
             setid: The SetID for the nested parameter set
-            
+
         Returns:
             ParameterSet instance wrapping the nested parameter set
         """
         if self._backend is None:
             raise RuntimeError("create_itemset(): no parameterset is bound. Call .bind() first.")
-        
+
         # Handle pset-based backend
         if hasattr(self._backend, "create_itemset"):
             # PsetBackend - use CreateItemSet method
             nested_pset = self._backend.create_itemset(key, setid)
             return ParameterSet(nested_pset)
-        
+
         # Handle HSet-based backend (legacy)
         elif isinstance(self._backend, HParamBackend):
             # Try to get nested parameter set from HSet structure
@@ -1298,7 +1298,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
             except KeyError:
                 # Create new nested parameter set if possible
                 raise NotImplementedError(f"Cannot create nested parameter set '{key}' with HSet backend")
-        
+
         # Handle other backends
         else:
             try:
@@ -1367,7 +1367,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
             return None
         if key in self._staged:
             return self._staged[key]
-   
+
         # For pset backends, try to get live value first
         if isinstance(self._backend, PsetBackend):
             try:
@@ -1384,7 +1384,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
     def _ps_set(self, desc: PropertyDescriptor, value: Any):
         key = desc.key
         self._deleted.discard(key)
-       
+
         # For pset backends, apply immediately (no staging)
         if isinstance(self._backend, PsetBackend):
             try:
@@ -1399,7 +1399,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
         else:
             # For other backends (HSet, etc.), use staging
             self._staged[key] = value
- 
+
         # If setting a nested PS directly, keep cache aligned
         if isinstance(value, ParameterSet):
             self._wrapper_cache[key] = value
@@ -1547,18 +1547,18 @@ class ParameterSet(metaclass=ParameterSetMeta):
                         # Show both numeric value and mapped name
                         # Get raw numeric value from backend or staging
                         raw_value = None
-                        
+
                         # Try backend first (for bound ParameterSets)
                         if self._backend is not None:
                             try:
                                 raw_value = self._backend.get(prop_descriptor.key)
                             except:
                                 pass
-                        
+
                         # Try staging dict (for unbound ParameterSets)
                         if raw_value is None and hasattr(self, '_staged'):
                             raw_value = self._staged.get(prop_descriptor.key)
-                        
+
                         if raw_value is not None:
                             formatted_value = f"{raw_value} ({value})"
                         else:
@@ -1577,7 +1577,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
                 doc_comment = ""
                 if hasattr(prop_descriptor, 'doc') and prop_descriptor.doc:
                     doc_comment = f"        # {prop_descriptor.doc}"
-                
+
                 lines.append(f"{prefix}  {prop_name}={formatted_value}{doc_comment}")
 
             except (AttributeError, RuntimeError) as e:
@@ -1643,7 +1643,7 @@ class ParameterSet(metaclass=ParameterSetMeta):
 
         # Default - just show the number
         return str(value)
-    
+
     def __str__(self):
         """Return simple string representation."""
         return f"<{self.__class__.__name__}>"
@@ -1783,7 +1783,7 @@ def _update_from_impl(self, pset):
     """Update this parameter set with values from another parameter set."""
     for key in self.attributes_names:
         value = getattr(pset, key, None)
-        
+
         if isinstance(value, ParameterSet):
             # Recursively update nested parameter sets
             target = getattr(self, key)
@@ -1847,7 +1847,7 @@ def _safe_com_serialize(obj, max_depth=3, _depth=0):
 def _str_impl(self):
     """String representation of the parameter set."""
     data = {
-        "name": self.__class__.__name__, 
+        "name": self.__class__.__name__,
         "values": self.serialize()
     }
     return pprint.pformat(data, indent=4, width=60)
@@ -1859,32 +1859,32 @@ ParameterSet._str_impl = _str_impl
 
 
 # Static methods for creating properties
-@staticmethod        
+@staticmethod
 def _typed_prop(key, doc, expected_type):
     """Create a property for typed parameter sets."""
     return TypedProperty(key, doc, expected_type)
 
-@staticmethod      
+@staticmethod
 def _int_prop(key, doc, min_val=None, max_val=None):
     """Create a property for integer values with optional range validation."""
     return IntProperty(key, doc, min_val, max_val)
 
-@staticmethod 
+@staticmethod
 def _bool_prop(key, doc):
     """Create a property for boolean values (0 or 1)."""
     return BoolProperty(key, doc)
 
-@staticmethod 
+@staticmethod
 def _color_prop(key, doc):
     """Create a property for color values with hex conversion."""
     return ColorProperty(key, doc)
 
-@staticmethod 
+@staticmethod
 def _unit_prop(key, unit, doc):
     """Create a property for unit-based values with automatic conversion."""
     return UnitProperty(key, unit, doc)
 
-@staticmethod 
+@staticmethod
 def _mapped_prop(key, mapping, doc):
     """Create a property for mapped values (string <-> integer)."""
     return MappedProperty(key, mapping, doc)
@@ -1915,16 +1915,16 @@ def _gradation_color_prop(key, doc):
             if value is None:
                 return None
             return [convert_hwp_color_to_hex(color) for color in value]
-        
+
         def __set__(self, instance, value):
             if value is None:
                 return self._del_value(instance)
             if not isinstance(value, (list, tuple)):
                 raise TypeError(f"Value for '{self.key}' must be a list or tuple")
-            
+
             converted_colors = [convert_to_hwp_color(color) for color in value]
             return self._set_value(instance, converted_colors)
-    
+
     return GradationColorProperty(key, doc, item_type=int, min_length=2, max_length=10)
 
 # Attach static methods to ParameterSet class
@@ -1970,1765 +1970,18 @@ class GenericParameterSet(ParameterSet):
         return f"GenericParameterSet({self._pset_id})"
 
 
-class BorderFill(ParameterSet):
-    """BorderFill ParameterSet."""
-    BorderTypeLeft = PropertyDescriptor("BorderTypeLeft", r"""4방향 테두리 종류 : 왼쪽 \[선 종류]""")
-    BorderTypeRight = PropertyDescriptor("BorderTypeRight", r"""4방향 테두리 종류 : 오른쪽""")
-    BorderTypeTop = PropertyDescriptor("BorderTypeTop", r"""4방향 테두리 종류 : 위""")
-    BorderTypeBottom = PropertyDescriptor("BorderTypeBottom", r"""4방향 테두리 종류 : 아래""")
-    BorderWidthLeft = PropertyDescriptor("BorderWidthLeft", r"""4방향 테두리 두께 : 왼쪽 \[선 굵기]""")
-    BorderWidthRight = PropertyDescriptor("BorderWidthRight", r"""4방향 테두리 두께 : 오른쪽""")
-    BorderWidthTop = PropertyDescriptor("BorderWidthTop", r"""4방향 테두리 두께 : 위""")
-    BorderWidthBottom = PropertyDescriptor("BorderWidthBottom", r"""4방향 테두리 두께 : 아래""")
-    BorderCorlorLeft = PropertyDescriptor("BorderCorlorLeft", r"""4방향 테두리 색깔 : 왼쪽RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-    BorderColorRight = PropertyDescriptor("BorderColorRight", r"""4방향 테두리 색깔 : 오른쪽RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-    BorderColorTop = PropertyDescriptor("BorderColorTop", r"""4방향 테두리 색깔 : 위RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-    BorderColorBottom = PropertyDescriptor("BorderColorBottom", r"""4방향 테두리 색깔 :아래RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-    SlashFlag = PropertyDescriptor("SlashFlag", r"""슬래쉬 대각선 플래그 : 비트 플래그의 조합으로 표현되며 각 위치의 비트는 다음을 나타낸다.bit 0 \= 하단 대각선bit 1 \= 중앙 대각선bit 2 \= 상단 대각선더 자세한 내용은 하단의 ※ 대각선의 형태를 참고한다.""")
-    BackSlashFlag = PropertyDescriptor("BackSlashFlag", r"""백슬래쉬 대각선 플래그 : 비트 플래그의 조합으로 표현되며 각 위치의 비트는 다음을 나타낸다.bit 0 \= 하단 대각선bit 1 \= 중앙 대각선bit 2 \= 상단 대각선더 자세한 내용은 하단의 ※ 대각선의 형태를 참고한다.""")
-    DiagonalType = PropertyDescriptor("DiagonalType", r"""선 종류 셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용""")
-    DiagonalWidth = PropertyDescriptor("DiagonalWidth", r"""선 굵기 셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용""")
-    DiagonalColor = PropertyDescriptor("DiagonalColor", r"""선 색상RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용""")
-    BorderFill3D = PropertyDescriptor("BorderFill3D", r"""3차원 효과 : 0 \= off, 1 \= on""")
-    Shadow = PropertyDescriptor("Shadow", r"""그림자 효과 : 0 \= off, 1 \= on""")
-    FillAttr = PropertyDescriptor("FillAttr", r"""배경 채우기 속성""")
-    CrookedSlashFlag = PropertyDescriptor("CrookedSlashFlag", r"""꺾인 대각선 플래그 (bit 0, 1이 각각 slash, back slash의 가운데 대각선이 꺾인 대각선임을 나타낸다.)""")
-    BreakCellSeparateLine = PropertyDescriptor("BreakCellSeparateLine", r"""자동으로 나뉜 표의 경계선 설정 :0 \= 경계선 설정을 기본 값에 따름, 1 \= 사용자가 경계선 설정""")
-    CounterSlashFlag = PropertyDescriptor("CounterSlashFlag", r"""슬래쉬 대각선의 역방향 플래그(우상향 대각선) :0 \= 순방향, 1 \= 역방향""")
-    CounterBackSlashFlag = PropertyDescriptor("CounterBackSlashFlag", r"""역슬래쉬 대각선의 역방향 플래그(좌상향 대각선) :0 \= 순방향, 1 \= 역방향""")
-    CenterLineFlag = PropertyDescriptor("CenterLineFlag", r"""중심선 : ( 0 \= 중심선 없음, 1 \= 중심선 있음)더 자세한 내용은 하단의 ※ 중심선의 형태를 참고한다.""")
-    CrookedSlashFlag1 = PropertyDescriptor("CrookedSlashFlag1", r"""Low Byte CrookedSlashFlag (슬래쉬 대각선의 꺾임 여부)(CrookedSlashFlag를 쓰기 편하도록 CrookedSlashFlag1,2로 나눔)""")
-    CrookedSlashFlag2 = PropertyDescriptor("CrookedSlashFlag2", r"""High Byte CrookedSlashFlag (역슬래쉬 대각선의 꺾임 여부)(CrookedSlashFlag를 쓰기 편하도록 CrookedSlashFlag1,2로 나눔)""")
+# ── ParameterSet subclasses ─────────────────────────────────────────────
+# 143 subclasses organized by HWP functional domain. Each domain module
+# auto-registers its classes to PARAMETERSET_REGISTRY via ParameterSetMeta.
+from .sets import *  # noqa: F401,F403
 
-class Caption(ParameterSet):
-    """Caption ParameterSet."""
-    Side = PropertyDescriptor("Side", r"""방향. 0 \= 왼쪽, 1 \= 오른쪽, 2 \= 위, 3 \= 아래""")
-    Width = PropertyDescriptor("Width", r"""캡션 폭 (가로 방향일 때만 사용됨. 단위 HWPUNIT)""")
-    Gap = PropertyDescriptor("Gap", r"""캡션과 틀 사이 간격(HWPUNIT)""")
-    CapFullSize = PropertyDescriptor("CapFullSize", r"""캡션 폭에 여백을 포함할지 여부 (세로 방향일 때만 사용됨)""")
 
-# Forward declarations for commonly referenced parameter sets
-# These are minimal implementations - full implementations would be added as needed
-
-class DrawFillAttr(ParameterSet):
-    """
-    DrawFillAttr ParameterSet - 그리기 개체의 채우기 속성.
-    """
-    Type = PropertyDescriptor("Type", r"""배경 유형: 0=채우기 없음, 1=면색/무늬색, 2=그림, 3=그러데이션""")
-    GradationType = PropertyDescriptor("GradationType", r"""그러데이션 형태: 1=줄무늬형, 2=원형, 3=원뿔형, 4=사각형""")
-    GradationAngle = PropertyDescriptor("GradationAngle", r"""그러데이션 기울임(시작각)""")
-    GradationCenterX = PropertyDescriptor("GradationCenterX", r"""그러데이션 가로 중심 X 좌표""")
-    GradationCenterY = PropertyDescriptor("GradationCenterY", r"""그러데이션 세로 중심 Y 좌표""")
-    GradationStep = PropertyDescriptor("GradationStep", r"""그러데이션 번짐 정도 (0~100)""")
-    GradationColorNum = PropertyDescriptor("GradationColorNum", r"""그러데이션 색 수""")
-    GradationColor = PropertyDescriptor("GradationColor", r"""그러데이션 색깔 배열 (PIT_ARRAY)""")
-    GradationIndexPos = PropertyDescriptor("GradationIndexPos", r"""그러데이션 다음 색깔과의 거리 배열 (PIT_ARRAY)""")
-    GradationStepCenter = PropertyDescriptor("GradationStepCenter", r"""그러데이션 번짐 정도의 중심 (0~100)""")
-    GradationAlpha = PropertyDescriptor("GradationAlpha", r"""그러데이션 투명도 (한글2007)""")
-    GradationBrush = PropertyDescriptor("GradationBrush", r"""현재 브러시가 그러데이션 브러시인지 여부""")
-    WinBrushFaceColor = PropertyDescriptor("WinBrushFaceColor", r"""면 색 (RGB 0x00BBGGRR)""")
-    WinBrushHatchColor = PropertyDescriptor("WinBrushHatchColor", r"""무늬 색 (RGB 0x00BBGGRR)""")
-    WinBrushFaceStyle = PropertyDescriptor("WinBrushFaceStyle", r"""무늬 스타일""")
-    WinBrushAlpha = PropertyDescriptor("WinBrushAlpha", r"""면/무늬 색 투명도""")
-    WindowsBrush = PropertyDescriptor("WindowsBrush", r"""현재 브러시가 면/무늬 브러시인지 여부""")
-    FileName = PropertyDescriptor("FileName", r"""그림 파일 경로""")
-    Embedded = PropertyDescriptor("Embedded", r"""그림 삽입 방식: TRUE=문서에 삽입, FALSE=파일로 연결""")
-    PicEffect = PropertyDescriptor("PicEffect", r"""그림 효과: 0=원본, 1=그레이스케일, 2=흑백""")
-    Brightness = PropertyDescriptor("Brightness", r"""명도 (-100~100)""")
-    Contrast = PropertyDescriptor("Contrast", r"""밝기 (-100~100)""")
-    Reverse = PropertyDescriptor("Reverse", r"""반전 유무""")
-    DrawFillImageType = PropertyDescriptor("DrawFillImageType", r"""배경 채우기 방식: 0=바둑판식, 5=크기에 맞추어, 6=가운데 등""")
-    SkipLeft = PropertyDescriptor("SkipLeft", r"""왼쪽 자르기""")
-    SkipRight = PropertyDescriptor("SkipRight", r"""오른쪽 자르기""")
-    SkipTop = PropertyDescriptor("SkipTop", r"""위 자르기""")
-    SkipBottom = PropertyDescriptor("SkipBottom", r"""아래 자르기""")
-    OriginalSizeX = PropertyDescriptor("OriginalSizeX", r"""이미지 원본 크기 X""")
-    OriginalSizeY = PropertyDescriptor("OriginalSizeY", r"""이미지 원본 크기 Y""")
-    InsideMarginLeft = PropertyDescriptor("InsideMarginLeft", r"""이미지 안쪽 여백 왼쪽""")
-    InsideMarginRight = PropertyDescriptor("InsideMarginRight", r"""이미지 안쪽 여백 오른쪽""")
-    InsideMarginTop = PropertyDescriptor("InsideMarginTop", r"""이미지 안쪽 여백 위""")
-    InsideMarginBottom = PropertyDescriptor("InsideMarginBottom", r"""이미지 안쪽 여백 아래""")
-    ImageBrush = PropertyDescriptor("ImageBrush", r"""현재 브러시가 그림 브러시인지 여부""")
-    ImageCreateOnDrag = PropertyDescriptor("ImageCreateOnDrag", r"""그림 개체 생성 시 마우스로 끌어 생성할지 여부 (한글2007)""")
-    ImageAlpha = PropertyDescriptor("ImageAlpha", r"""그림 개체/배경 투명도 (한글2007)""")
-
-class CharShape(ParameterSet):
-    """CharShape ParameterSet."""
-    FaceNameHangul = PropertyDescriptor("FaceNameHangul", r"""글꼴 이름 (한글)""")
-    FaceNameLatin = PropertyDescriptor("FaceNameLatin", r"""글꼴 이름 (영문)""")
-    FaceNameHanja = PropertyDescriptor("FaceNameHanja", r"""글꼴 이름 (한자)""")
-    FaceNameJapanese = PropertyDescriptor("FaceNameJapanese", r"""글꼴 이름 (일본어)""")
-    FaceNameOther = PropertyDescriptor("FaceNameOther", r"""글꼴 이름 (기타)""")
-    FaceNameSymbol = PropertyDescriptor("FaceNameSymbol", r"""글꼴 이름 (심벌)""")
-    FaceNameUser = PropertyDescriptor("FaceNameUser", r"""글꼴 이름 (사용자)""")
-    FontTypeHangul = PropertyDescriptor("FontTypeHangul", r"""폰트 종류 (한글) : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
-    FontTypeLatin = PropertyDescriptor("FontTypeLatin", r"""폰트 종류 (영문) : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
-    FontTypeHanja = PropertyDescriptor("FontTypeHanja", r"""폰트 종류 (한자) : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
-    FontTypeJapanese = PropertyDescriptor("FontTypeJapanese", r"""폰트 종류 (일본어) : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
-    FontTypeOther = PropertyDescriptor("FontTypeOther", r"""폰트 종류 (기타) : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
-    FontTypeSymbol = PropertyDescriptor("FontTypeSymbol", r"""폰트 종류 (심벌) : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
-    FontTypeUser = PropertyDescriptor("FontTypeUser", r"""폰트 종류 (사용자) : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
-    SizeHangul = PropertyDescriptor("SizeHangul", r"""각 언어별 크기 비율. (한글) 10% \- 250%""")
-    SizeLatin = PropertyDescriptor("SizeLatin", r"""각 언어별 크기 비율. (영문) 10% \- 250%""")
-    SizeHanja = PropertyDescriptor("SizeHanja", r"""각 언어별 크기 비율. (한자) 10% \- 250%""")
-    SizeJapanese = PropertyDescriptor("SizeJapanese", r"""각 언어별 크기 비율. (일본어) 10% \- 250%""")
-    SizeOther = PropertyDescriptor("SizeOther", r"""각 언어별 크기 비율. (기타) 10% \- 250%""")
-    SizeSymbol = PropertyDescriptor("SizeSymbol", r"""각 언어별 크기 비율. (심벌) 10% \- 250%""")
-    SizeUser = PropertyDescriptor("SizeUser", r"""각 언어별 크기 비율. (사용자) 10% \- 250%""")
-    RatioHangul = PropertyDescriptor("RatioHangul", r"""각 언어별 장평 비율. (한글) 50% \- 200%""")
-    RatioLatin = PropertyDescriptor("RatioLatin", r"""각 언어별 장평 비율. (영문) 50% \- 200%""")
-    RatioHanja = PropertyDescriptor("RatioHanja", r"""각 언어별 장평 비율. (한자) 50% \- 200%""")
-    RatioJapanese = PropertyDescriptor("RatioJapanese", r"""각 언어별 장평 비율. (일본어) 50% \- 200%""")
-    RatioOther = PropertyDescriptor("RatioOther", r"""각 언어별 장평 비율. (기타) 50% \- 200%""")
-    RatioSymbol = PropertyDescriptor("RatioSymbol", r"""각 언어별 장평 비율. (심벌) 50% \- 200%""")
-    RatioUser = PropertyDescriptor("RatioUser", r"""각 언어별 장평 비율. (사용자) 50% \- 200%""")
-    SpacingHangul = PropertyDescriptor("SpacingHangul", r"""각 언어별 자간. (한글) \-50% \- 50%""")
-    SpacingLatin = PropertyDescriptor("SpacingLatin", r"""각 언어별 자간. (영문) \-50% \- 50%""")
-    SpacingHanja = PropertyDescriptor("SpacingHanja", r"""각 언어별 자간. (한자) \-50% \- 50%""")
-    SpacingJapanese = PropertyDescriptor("SpacingJapanese", r"""각 언어별 자간. (일본어) \-50% \- 50%""")
-    SpacingOther = PropertyDescriptor("SpacingOther", r"""각 언어별 자간. (기타) \-50% \- 50%""")
-    SpacingSymbol = PropertyDescriptor("SpacingSymbol", r"""각 언어별 자간. (심벌) \-50% \- 50%""")
-    SpacingUser = PropertyDescriptor("SpacingUser", r"""각 언어별 자간. (사용자) \-50% \- 50%""")
-    OffsetHangul = PropertyDescriptor("OffsetHangul", r"""각 언어별 오프셋. (한글) \-100% \- 100%""")
-    OffsetLatin = PropertyDescriptor("OffsetLatin", r"""각 언어별 오프셋. (영문) \-100% \- 100%""")
-    OffsetHanja = PropertyDescriptor("OffsetHanja", r"""각 언어별 오프셋. (한자) \-100% \- 100%""")
-    OffsetJapanese = PropertyDescriptor("OffsetJapanese", r"""각 언어별 오프셋. (일본어) \-100% \- 100%""")
-    OffsetOther = PropertyDescriptor("OffsetOther", r"""각 언어별 오프셋. (기타) \-100% \- 100%""")
-    OffsetSymbol = PropertyDescriptor("OffsetSymbol", r"""각 언어별 오프셋. (심벌) \-100% \- 100%""")
-    OffsetUser = PropertyDescriptor("OffsetUser", r"""각 언어별 오프셋. (사용자) \-100% \- 100%""")
-    Bold = PropertyDescriptor("Bold", r"""Bold : 0 \= off, 1 \= on""")
-    Italic = PropertyDescriptor("Italic", r"""Italic : 0 \= off, 1 \= on""")
-    SmallCaps = PropertyDescriptor("SmallCaps", r"""Small Caps : 0 \= off, 1 \= on""")
-    Emboss = PropertyDescriptor("Emboss", r"""Emboss : 0 \= off, 1 \= on""")
-    Engrave = PropertyDescriptor("Engrave", r"""Engrave : 0 \= off, 1 \= on""")
-    SuperScript = PropertyDescriptor("SuperScript", r"""Superscript : 0 \= off, 1 \= on""")
-    SubScript = PropertyDescriptor("SubScript", r"""Subscript : 0 \= off, 1 \= on""")
-    UnderlineType = PropertyDescriptor("UnderlineType", r"""밑줄 종류 : 0 \= none, 1 \= bottom, 2 \= center, 3 \= top""")
-    OutlineType = PropertyDescriptor("OutlineType", r"""외곽선 종류 : 0 \= none, 1 \= solid, 2 \= dot, 3 \= thick, 4 \= dash, 5 \= dashdot, 6 \= dashdotdot""")
-    ShadowType = PropertyDescriptor("ShadowType", r"""그림자 종류 : 0 \= none, 1 \= drop, 2 \= continuous""")
-    TextColor = PropertyDescriptor("TextColor", r"""글자색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-    ShadeColor = PropertyDescriptor("ShadeColor", r"""음영색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-    UnderlineShape = PropertyDescriptor("UnderlineShape", r"""밑줄 모양 : 선 종류""")
-    UnderlineColor = PropertyDescriptor("UnderlineColor", r"""밑줄 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-    ShadowOffsetX = PropertyDescriptor("ShadowOffsetX", r"""그림자 간격 (X 방향) \-100% \- 100%""")
-    ShadowOffsetY = PropertyDescriptor("ShadowOffsetY", r"""그림자 간격 (Y 방향) \-100% \- 100%""")
-    ShadowColor = PropertyDescriptor("ShadowColor", r"""그림자 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-    StrikeOutType = PropertyDescriptor("StrikeOutType", r"""취소선 종류 : 0 \= none, 1 \= red single, 2 \= red double, 3 \= text single, 4 \= text double""")
-    DiacSymMark = PropertyDescriptor("DiacSymMark", r"""강조점 종류 : 0 \= none, 1 \= 검정 동그라미, 2 \= 속 빈 동그라미""")
-    UseFontSpace = PropertyDescriptor("UseFontSpace", r"""글꼴에 어울리는 빈칸 : 0 \= off, 1 \= on""")
-    UseKerning = PropertyDescriptor("UseKerning", r"""커닝 : 0 \= off, 1 \= on""")
-    Height = PropertyDescriptor("Height", r"""글자 크기 (HWPUNIT)""")
-    BorderFill = PropertyDescriptor("BorderFill", r"""테두리/배경 (한글2007에 새로 추가)""")
-
-class ParaShape(ParameterSet):
-    """ParaShape ParameterSet."""
-    LeftMargin = PropertyDescriptor("LeftMargin", r"""왼쪽 여백 (URC)""")
-    RightMargin = PropertyDescriptor("RightMargin", r"""오른쪽 여백 (URC)""")
-    Indentation = PropertyDescriptor("Indentation", r"""들여쓰기/내어 쓰기 (URC)""")
-    PrevSpacing = PropertyDescriptor("PrevSpacing", r"""문단 간격 위 (URC)""")
-    NextSpacing = PropertyDescriptor("NextSpacing", r"""문단 간격 아래 (URC)""")
-    LineSpacingType = PropertyDescriptor("LineSpacingType", r"""줄 간격 종류 (HWPUNIT)0 \= 글자에 따라1 \= 고정 값2 \= 여백만 지정""")
-    LineSpacing = PropertyDescriptor("LineSpacing", r"""줄 간격 값. 줄 간격 종류(LineSpacingType)에 따라 :\- 글자에 따라일 경우(0 \- 500%)\- "고정 값"일 경우(URC)\- "여백만 지정"일 경우(URC)""")
-    AlignType = PropertyDescriptor("AlignType", r"""정렬 방식0 \= 양쪽 정렬1 \= 왼쪽 정렬2 \= 오른쪽 정렬3 \= 가운데 정렬4 \= 배분 정렬5 \= 나눔 정렬 (공백에만 배분)""")
-    BreakLatinWord = PropertyDescriptor("BreakLatinWord", r"""줄 나눔 단위 (라틴 문자)0 \= 단어1 \= 하이픈2 \= 글자""")
-    BreakNonLatinWord = PropertyDescriptor("BreakNonLatinWord", r"""단위 (비 라틴 문자) TRUE \= 글자, FALSE \= 어절""")
-    SnapToGrid = PropertyDescriptor("SnapToGrid", r"""편집 용지의 줄 격자 사용 (on / off)""")
-    Condense = PropertyDescriptor("Condense", r"""공백 최소값 (0 \- 75%)""")
-    WidowOrphan = PropertyDescriptor("WidowOrphan", r"""외톨이줄 보호 (on / off)""")
-    KeepWithNext = PropertyDescriptor("KeepWithNext", r"""다음 문단과 함께 (on / off)""")
-    KeepLinesTogether = PropertyDescriptor("KeepLinesTogether", r"""문단 보호 (on / off)""")
-    PagebreakBefore = PropertyDescriptor("PagebreakBefore", r"""문단 앞에서 항상 쪽 나눔 (on / off)""")
-    TextAlignment = PropertyDescriptor("TextAlignment", r"""세로 정렬0 \= 글꼴기준1 \= 위2 \= 가운데3 \= 아래""")
-    FontLineHeight = PropertyDescriptor("FontLineHeight", r"""글꼴에 어울리는 줄 높이 (on / off)""")
-    HeadingType = PropertyDescriptor("HeadingType", r"""문단 머리 모양0 \= 없음1 \= 개요2 \= 번호3 \= 불릿""")
-    Level = PropertyDescriptor("Level", r"""단계 (0 \- 6\)""")
-    BorderConnect = PropertyDescriptor("BorderConnect", r"""문단 테두리/배경 \- 테두리 연결 (on / off)""")
-    BorderText = PropertyDescriptor("BorderText", r"""문단 테두리/배경 \- 여백 무시 (0 \= 단, 1 \= 텍스트)""")
-    BorderOffsetLeft = PropertyDescriptor("BorderOffsetLeft", r"""문단 테두리/배경 \- 4방향 간격 (HWPUNIT) : 왼쪽""")
-    BorderOffsetRight = PropertyDescriptor("BorderOffsetRight", r"""문단 테두리/배경 \- 4방향 간격 (HWPUNIT) : 오른쪽""")
-    BorderOffsetTop = PropertyDescriptor("BorderOffsetTop", r"""문단 테두리/배경 \- 4방향 간격 (HWPUNIT) : 위""")
-    BorderOffsetBottom = PropertyDescriptor("BorderOffsetBottom", r"""문단 테두리/배경 \- 4방향 간격 (HWPUNIT) : 아래""")
-    TailType = PropertyDescriptor("TailType", r"""문단 꼬리 모양 (마지막 꼬리 줄 적용) on/off""")
-    LineWrap = PropertyDescriptor("LineWrap", r"""글꼴에 어울리는 줄 높이 (on/off)""")
-    TabDef = PropertyDescriptor("TabDef", r"""탭 정의""")
-    Numbering = PropertyDescriptor("Numbering", r"""문단 번호문단 머리 모양(HeadingType)이 ‘개요’, ‘번호’ 일 때 사용""")
-    Bullet = PropertyDescriptor("Bullet", r"""불릿 모양문단 머리 모양(HeadingType)이 ‘불릿’(글머리표) 일 때 사용""")
-    BorderFill = PropertyDescriptor("BorderFill", r"""테두리/배경""")
-
-class ShapeObject(ParameterSet):
-    """ShapeObject ParameterSet."""
-    TreatAsChar = PropertyDescriptor("TreatAsChar", r"""글자처럼 취급 on / off""")
-    AffectsLine = PropertyDescriptor("AffectsLine", r"""줄 간격에 영향을 줄지 여부 on / off (TreatAsChar가 TRUE일 경우에만 사용된다)""")
-    VertRelTo = PropertyDescriptor("VertRelTo", r"""세로 위치의 기준.0 \= 종이 영역(Paper)1 \= 쪽 영역(Page)2 \= 문단 영역(Paragraph)(TreatAsChar가 FALSE일 경우에만 사용된다)""")
-    VertAlign = PropertyDescriptor("VertAlign", r"""VertRelTo값에 따른 상대적인 정렬 기준.VertRelTo값이 2(문단영역)일 경우 0 값만 사용할 수 있다.0 \= 위(Top)1 \= 가운데(Center)2 \= 아래(Bottom)""")
-    VertOffset = PropertyDescriptor("VertOffset", r"""VertRelTo와 VertAlign을 기준으로 한 Y축 위치 오프셋 값. HWPUNIT 단위.""")
-    HorzRelTo = PropertyDescriptor("HorzRelTo", r"""가로 위치의 기준.0 \= 종이 영역(Paper)1 \= 쪽 영역(Page)2 \= 다단 영역(Column)3 \= 문단 영역(Paragraph)(TreatAsChar가 FALSE일 경우에만 사용된다)""")
-    HorzAlign = PropertyDescriptor("HorzAlign", r"""HorzRelTo값에 따른 상대적인 정렬 기준.HorzRelTo값이 3(문단영역)일 경우 0\~2 사이의 값만 사용할 수 있다.0 \= 왼쪽(Left)1 \= 가운데(Center)2 \= 오른쪽(Right)3 \= 안쪽(Inside)4 \= 바깥쪽(Outside)""")
-    HorzOffset = PropertyDescriptor("HorzOffset", r"""HorzRelTo와 HorzAlign을 기준으로 한 X축 위치 오프셋 값. HWPUNIT 단위.""")
-    FlowWithText = PropertyDescriptor("FlowWithText", r"""그리기 개체의 세로 위치를 쪽 영역 안쪽으로 제한할지 여부 on / offVertRelTo값이 2(문단영역)일 경우에만 의미가 있다.""")
-    AllowOverlap = PropertyDescriptor("AllowOverlap", r"""다른 개체와 겹치는 것을 허용할지 여부 on / offTreatAsChar가 FALSE일 때만 의미가 있으며, FlowWithText가 TRUE이면 AllowOverlap은 항상 FALSE로 간주한다.""")
-    WidthRelTo = PropertyDescriptor("WidthRelTo", r"""개체 너비 기준.0 \= 종이(Paper)1 \= 쪽(Page)2 \= 다단(Column)3 \= 문단(Paragraph)4 \= 고정 값(Absolute)""")
-    Width = PropertyDescriptor("Width", r"""개체 너비 값.WidthRelTo에 따라 값의 의미 및 단위가 달라진다.""")
-    HeightRelTo = PropertyDescriptor("HeightRelTo", r"""개체 높이 기준.0 \= 종이(Paper)1 \= 쪽(Page)2 \= 고정 값(Absolute)""")
-    Height = PropertyDescriptor("Height", r"""개체 높이 값.HeightRelTo에 다라 값의 의미 및 단위가 달라진다.""")
-    ProtectSize = PropertyDescriptor("ProtectSize", r"""크기 보호 on / off""")
-    TextWrap = PropertyDescriptor("TextWrap", r"""그리기 개체와 본문 사이의 배치 방법.0 \= 어울림(Square)1 \= 자리 차지(Top \& Bottom)2 \= 글 뒤로(Behind Text)3 \= 글 앞으로(In front of Text)4 \= 경계를 명확히 지킴(Tight) \- 현재 사용안함5 \= 경계를 통과함(Through) \- 현재 사용안함(TreatAsChar가 FALSE일 경우에만 사용된다)""")
-    TextFlow = PropertyDescriptor("TextFlow", r"""그리기 개체의 좌/우 어느 쪽에 글을 배치할지 지정하는 옵션. TextWrap의 값이 0일 때만 유효하다.0 \= 양쪽 모두(Both)1 \= 왼쪽만(Left Only)2 \= 오른쪽만(Right Only)3 \= 왼쪽과 오른쪽 중 넓은 쪽(Largest Only)""")
-    OutsideMarginLeft = PropertyDescriptor("OutsideMarginLeft", r"""개체의 바깥 여백. (왼쪽) HWPUNIT 단위""")
-    OutsideMarginRight = PropertyDescriptor("OutsideMarginRight", r"""개체의 바깥 여백. (오른쪽) HWPUNIT 단위""")
-    OutsideMarginTop = PropertyDescriptor("OutsideMarginTop", r"""개체의 바깥 여백. (위) HWPUNIT 단위""")
-    OutsideMarginBottom = PropertyDescriptor("OutsideMarginBottom", r"""개체의 바깥 여백. (아래) HWPUNIT 단위""")
-    NumberingType = PropertyDescriptor("NumberingType", r"""이 개체가 속하는 번호 범주.0 \= 없음, 1 \= 그림, 2 \= 표, 3 \= 수식""")
-    LayoutWidth = PropertyDescriptor("LayoutWidth", r"""개체가 페이지에 배열될 때 계산되는 폭의 값""")
-    LayoutHeight = PropertyDescriptor("LayoutHeight", r"""개체가 페이지에 배열될 때 계산되는 높이 값""")
-    Lock = PropertyDescriptor("Lock", r"""개체 보호하기 on / off""")
-    HoldAnchorObj = PropertyDescriptor("HoldAnchorObj", r"""쪽 나눔 방지 on / off (한글2007에 새로 추가)""")
-    PageNumber = PropertyDescriptor("PageNumber", r"""개체가 존재 하는 페이지 (한글2007에 새로 추가)""")
-    AdjustSelection = PropertyDescriptor("AdjustSelection", r"""개체 Selection 상태 TRUE/FASLE (한글2007에 새로 추가)""")
-    AdjustTextBox = PropertyDescriptor("AdjustTextBox", r"""글상자로 TRUE/FASLE (한글2007에 새로 추가)""")
-    AdjustPrevObjAttr = PropertyDescriptor("AdjustPrevObjAttr", r"""앞개체 속성 따라가기 TRUE/FASLE (한글2007에 새로 추가)""")
-    # 선택적 중첩 ParameterSet 속성 (PIT_SET 타입)
-    ShapeDrawLayOut = PropertyDescriptor("ShapeDrawLayOut", r"""그리기 개체의 Layout (PIT_SET: DrawLayout)""")
-    ShapeDrawLineAttr = PropertyDescriptor("ShapeDrawLineAttr", r"""그리기 개체의 Line 속성 (PIT_SET: DrawLineAttr)""")
-    ShapeDrawFillAttr = PropertyDescriptor("ShapeDrawFillAttr", r"""그리기 개체의 Fill 속성 (PIT_SET: DrawFillAttr)""")
-    ShapeDrawImageAttr = PropertyDescriptor("ShapeDrawImageAttr", r"""그림 개체 속성 (PIT_SET: DrawImageAttr)""")
-    ShapeDrawRectType = PropertyDescriptor("ShapeDrawRectType", r"""사각형 그리기 개체 유형 (PIT_SET: DrawRectType)""")
-    ShapeDrawArcType = PropertyDescriptor("ShapeDrawArcType", r"""호 그리기 개체 유형 (PIT_SET: DrawArcType)""")
-    ShapeDrawResize = PropertyDescriptor("ShapeDrawResize", r"""그리기 개체 리사이징 (PIT_SET: DrawResize)""")
-    ShapeDrawRotate = PropertyDescriptor("ShapeDrawRotate", r"""그리기 개체 회전 (PIT_SET: DrawRotate)""")
-    ShapeDrawEditDetail = PropertyDescriptor("ShapeDrawEditDetail", r"""그리기 개체 EditDetail (PIT_SET: DrawEditDetail)""")
-    ShapeDrawImageScissoring = PropertyDescriptor("ShapeDrawImageScissoring", r"""그림 개체 자르기 (PIT_SET: DrawImageScissoring)""")
-    ShapeDrawScAction = PropertyDescriptor("ShapeDrawScAction", r"""그리기 개체 ScAction (PIT_SET: DrawScAction)""")
-    ShapeDrawCtrlHyperlink = PropertyDescriptor("ShapeDrawCtrlHyperlink", r"""그리기 개체 하이퍼링크 (PIT_SET: DrawCtrlHyperlink)""")
-    ShapeDrawCoordInfo = PropertyDescriptor("ShapeDrawCoordInfo", r"""그리기 개체 좌표정보 (PIT_SET: DrawCoordInfo)""")
-    ShapeDrawShear = PropertyDescriptor("ShapeDrawShear", r"""그리기 개체 기울이기 (PIT_SET: DrawShear)""")
-    ShapeDrawTextart = PropertyDescriptor("ShapeDrawTextart", r"""글맵시 (PIT_SET: DrawTextart)""")
-    ShapeDrawShadow = PropertyDescriptor("ShapeDrawShadow", r"""그림자 (PIT_SET: DrawShadow)""")
-    ShapeTableCell = PropertyDescriptor("ShapeTableCell", r"""셀 정보 (PIT_SET: Cell)""")
-    ShapeListProperties = PropertyDescriptor("ShapeListProperties", r"""서브 list 속성 (PIT_SET: ListProperties)""")
-    ShapeCaption = PropertyDescriptor("ShapeCaption", r"""캡션 (PIT_SET: Caption)""")
-    ShapeType = PropertyDescriptor("ShapeType", r"""TablePropertyDialog 종류""")
-    ShapeCellSize = PropertyDescriptor("ShapeCellSize", r"""셀 크기 적용 여부 (on/off)""")
-    ShapeCreationType = PropertyDescriptor("ShapeCreationType", r"""그리기 개체 형태: 0=직선, 1=사각형, 2=원, 3=호""")
-    ShapeCreationMode = PropertyDescriptor("ShapeCreationMode", r"""마우스로 그리기 여부 (on/off)""")
-
-class Table(ParameterSet):
-    """Table ParameterSet."""
-    PageBreak = PropertyDescriptor("PageBreak", r"""표가 페이지 경계에 걸렸을 때의 처리 방식0 \= 나누지 않는다.1 \= 테이블은 나누지만 셀은 나누지 않는다.2 \= 셀 내의 텍스트도 나눈다.""")
-    RepeatHeader = PropertyDescriptor("RepeatHeader", r"""제목 행을 반복할지 여부. (on / off)""")
-    CellSpacing = PropertyDescriptor("CellSpacing", r"""셀 간격(HTML의 셀 간격과 동일 의미. HWPUNIT)""")
-    CellMarginLeft = PropertyDescriptor("CellMarginLeft", r"""기본 셀 안쪽 여백(왼쪽)""")
-    CellMarginRight = PropertyDescriptor("CellMarginRight", r"""기본 셀 안쪽 여백(오른쪽)""")
-    CellMarginTop = PropertyDescriptor("CellMarginTop", r"""기본 셀 안쪽 여백(위쪽)""")
-    CellMarginBottom = PropertyDescriptor("CellMarginBottom", r"""기본 셀 안쪽 여백(아래쪽)""")
-    BorderFill = PropertyDescriptor("BorderFill", r"""표에 적용되는 테두리/배경""")
-    TableCharInfo = PropertyDescriptor("TableCharInfo", r"""표와 연결된 차트 정보 \- 차트 미완성""")
-    TableBorderFill = PropertyDescriptor("TableBorderFill", r"""표에 적용되는 테두리/배경""")
-    Cell = PropertyDescriptor("Cell", r"""셀 속성""")
-
-class FindReplace(ParameterSet):
-    """
-    ### FindReplace
-
-    Find and replace text with character and paragraph formatting.
-
-    This ParameterSet uses NestedProperty for auto-creating nested parameter sets.
-    Access shape properties directly - they auto-create on first access!
-
-    Example:
-        >>> fr = FindReplace(action.CreateSet())
-        >>> fr.FindString = "Python"
-        >>> fr.MatchCase = True
-        >>> # Auto-creates CharShape on first access - no create_itemset needed!
-        >>> fr.FindCharShape.Bold = True
-        >>> fr.FindCharShape.Size = 1200  # 12pt
-    """
-    # String properties
-    FindString = StringProperty("FindString", "Text to find")
-    ReplaceString = StringProperty("ReplaceString", "Text to replace")
-
-    # Boolean properties
-    MatchCase = BoolProperty("MatchCase", "Case sensitive matching")
-    AllWordForms = BoolProperty("AllWordForms", "Match all word forms")
-    SeveralWords = BoolProperty("SeveralWords", "Find multiple words")
-    UseWildCards = BoolProperty("UseWildCards", "Use wildcards")
-    WholeWordOnly = BoolProperty("WholeWordOnly", "Match whole words only")
-    AutoSpell = BoolProperty("AutoSpell", "Auto spelling check")
-    ReplaceMode = BoolProperty("ReplaceMode", "Replace mode enabled")
-    IgnoreFindString = BoolProperty("IgnoreFindString", "Ignore find string")
-    IgnoreReplaceString = BoolProperty("IgnoreReplaceString", "Ignore replace string")
-    IgnoreMessage = BoolProperty("IgnoreMessage", "Suppress message boxes")
-    HanjaFromHangul = BoolProperty("HanjaFromHangul", "Hanja from Hangul conversion")
-    FindJaso = BoolProperty("FindJaso", "Find by Jaso (Korean characters)")
-    FindRegExp = BoolProperty("FindRegExp", "Use regular expressions")
-
-    # Integer/Mapped properties
-    Direction = MappedProperty("Direction", {
-        "down": 0, "up": 1, "all": 2
-    }, "Search direction")
-    FindType = BoolProperty("FindType", "Find type (True=find, False=find and select)")
-
-    # Auto-creating nested shape properties using NestedProperty!
-    FindCharShape = NestedProperty("FindCharShape", "CharShape", CharShape, "Find character shape")
-    FindParaShape = NestedProperty("FindParaShape", "ParaShape", ParaShape, "Find paragraph shape")
-    ReplaceCharShape = NestedProperty("ReplaceCharShape", "CharShape", CharShape, "Replace character shape")
-    ReplaceParaShape = NestedProperty("ReplaceParaShape", "ParaShape", ParaShape, "Replace paragraph shape")
-
-    # Style properties
-    FindStyle = StringProperty("FindStyle", "Find style name")
-    ReplaceStyle = StringProperty("ReplaceStyle", "Replace style name")
-
-
-class BulletShape(ParameterSet):
-    """BulletShape ParameterSet."""
-    HasCharShape = PropertyDescriptor("HasCharShape", r"""자체적인 글자 모양을 사용할지 여부 :0 \= 스타일을 따라감, 1 \= 자체 모양을 가짐""")
-    CharShape = PropertyDescriptor("CharShape", r"""글자 모양 (HasCharShape가 1일 경우에만 사용)""")
-    WidthAdjust = PropertyDescriptor("WidthAdjust", r"""번호 너비 보정 값 (HWPUNIT)""")
-    TextOffset = PropertyDescriptor("TextOffset", r"""본문과의 거리 (percent or HWPUNIT)""")
-    Alignment = PropertyDescriptor("Alignment", r"""번호 정렬 :0 \= 왼쪽 정렬, 1 \= 가운데 정렬, 2 \= 오른쪽 정렬""")
-    UseInstWidth = PropertyDescriptor("UseInstWidth", r"""번호 너비를 문서 내 문자열의 너비에 따를지 여부 on / off""")
-    AutoIndent = PropertyDescriptor("AutoIndent", r"""번호 너비 자동 들여쓰기 여부 : 0 \= 들여쓰기 안함, 1 \= 들여쓰기""")
-    TextOffsetType = PropertyDescriptor("TextOffsetType", r"""본문과의 거리 종류 : 0 \= percent, 1 \= HWPUNIT""")
-    BulletChar = PropertyDescriptor("BulletChar", r"""불릿 문자 코드""")
-    HasImage = PropertyDescriptor("HasImage", r"""그림 글머리표 여부 : 0 \= 일반 글머리표, 1 \= 그림 글머리표""")
-    BulletImage = PropertyDescriptor("BulletImage", r"""글머리표 이미지""")
-
-class Cell(ParameterSet):
-    """Cell ParameterSet."""
-    HasMargin = PropertyDescriptor("HasMargin", r"""테이블의 기본 셀 여백 대신 자체 셀 여백을 적용할지 여부. (on / off)""")
-    Protected = PropertyDescriptor("Protected", r"""사용자 편집을 막을지 여부 : 0 \= off, 1 \= on""")
-    Header = PropertyDescriptor("Header", r"""제목 셀인지 여부 : 0 \= off, 1 \= on""")
-    Width = PropertyDescriptor("Width", r"""셀의 폭 (HWPUNIT)""")
-    Height = PropertyDescriptor("Height", r"""셀의 높이 (HWPUNIT)""")
-    Editable = PropertyDescriptor("Editable", r"""양식모드에서 편집 가능 여부 : 0 \= off, 1 \= on""")
-    Dirty = PropertyDescriptor("Dirty", r"""초기화 상태인지 수정된 상태인지 여부 : 0 \= off, 1 \= on(한글2007에 새로 추가)""")
-    CellCtrlData = PropertyDescriptor("CellCtrlData", r"""셀 데이터 (한글2007에 새로 추가)""")
-
-class CtrlData(ParameterSet):
-    """
-    ### CtrlData
-
-    22) CtrlData : 제어 데이터
-
-    | Item ID | Type      | SubType | Description          |
-    |---------|-----------|---------|----------------------|
-    | Name    | PIT_BSTR  |         | 제어 데이터의 이름.  |
-    """
-    name = ParameterSet._str_prop("Name", "제어 데이터의 이름.")
-
-
-class DrawArcType(ParameterSet):
-    """
-    ### DrawArcType
-
-    27) DrawArcType: 곡선 그리기의 필수적인 속성을 나타내는 클래스
-
-    | Item ID  | Type       | SubType | Description |
-    |----------|------------|---------|-------------|
-    | Type     | PIT_UI     |         | 곡선 유형: 0 = 선, 1 = 필수곡선, 2 = 화살표 |
-    | Interval | PIT_ARRAY  | PIT_I   | 곡선의 시작점과 끝점을 나타내는 배열 |
-    """
-    _ark_type_map = {"line": 0, "essential": 1, "arrow": 2}
-    type = ParameterSet._mapped_prop("Type", _ark_type_map,
-                                     doc="곡선 유형: 0 = 선, 1 = 필수곡선, 2 = 화살표")
-    interval = ParameterSet._int_list_prop("Interval", "곡선의 시작점과 끝점을 나타내는 배열")
-
-
-class DrawCoordInfo(ParameterSet):
-    """
-    ### DrawCoordInfo
-
-    28) DrawCoordInfo : 그리기 좌표의 상세 정보
-
-    CoordInfo(한글2005)에서 DrawCoordInfo로 이름이 변경되었습니다. 정보를 읽고 쓸 수 있도록 지원합니다.
-
-    | Item ID | Type       | SubType | Description                                 |
-    |---------|------------|---------|---------------------------------------------|
-    | Count   | PIT_UI4    |         | 점의 개수                                  |
-    | Point   | PIT_ARRAY  | PIT_I   | 좌표 Array (X1,Y1), (X2,Y2), ..., (Xn,Yn)   |
-    | Line    | PIT_ARRAY  | PIT_UI1 | 선 정보 Array(점들에서 연결된 형태)          |
-    """
-    count = ParameterSet._int_prop("Count", "점의 개수: 정수 값을 입력하세요.")
-    point = ParameterSet._tuple_list_prop("Point", "좌표 배열 (X1, Y1), (X2, Y2), ..., (Xn, Yn): 리스트 값을 입력하세요.")
-    line  = ParameterSet._int_list_prop("Line", "선 정보 배열: 리스트 값을 입력하세요.")
-
-
-class DrawCtrlHyperlink(ParameterSet):
-    """
-    ### DrawCtrlHyperlink
-
-    29) DrawCtrlHyperlink : 그림 개체의 Hyperlink 정보
-
-    CtrlHyperlink(한글2005)에서 DrawCtrlHyperlink로 이름이 변경되었습니다.
-
-    | Item ID | Type      | SubType | Description                          |
-    |---------|-----------|---------|--------------------------------------|
-    | Command | PIT_BSTR  |         | Command String (명령 문자열)         |
-    """
-    command = ParameterSet._str_prop("Command", "Command String: 명령 문자열을 입력하세요.")
-
-
-class DrawEditDetail(ParameterSet):
-    """
-    ### DrawEditDetail
-
-    30) DrawEditDetail : 그림의 교정과 관련된 상세 설정
-
-    | Item ID | Type   | SubType | Description |
-    |---------|--------|---------|-------------|
-    | Command | PIT_UI |         | Reserved    |
-    | Index   | PIT_UI |         | 교점 정의의 인덱스 |
-    | PointX  | PIT_I  |         | 교점의 X 좌표 |
-    | PointY  | PIT_I  |         | 교점의 Y 좌표 |
-    """
-    command = ParameterSet._int_prop("Command", "Command: Reserved.")
-    index   = ParameterSet._int_prop("Index", "Index: 교점 정의의 인덱스.")
-    point_x = ParameterSet._int_prop("PointX", "PointX: 교점의 X 좌표.")
-    point_y = ParameterSet._int_prop("PointY", "PointY: 교점의 Y 좌표.")
-
-
-class DrawImageAttr(ParameterSet):
-    """DrawImageAttr ParameterSet."""
-    FileName = PropertyDescriptor("FileName", r"""ShapeObject의 배경을 그림으로 선택했을 경우 또는 그림개체일 경우의 그림파일 경로""")
-    Embedded = PropertyDescriptor("Embedded", r"""그림이 문서에 직접 삽입(TRUE) / 파일로 연결(FALSE)""")
-    PicEffect = PropertyDescriptor("PicEffect", r"""그림 효과 0 \= 실제 이미지 그대로1 \= 그레이스케일2 \= 흑백 효과""")
-    Brightness = PropertyDescriptor("Brightness", r"""명도 (\-100 \~ 100\)""")
-    Contrast = PropertyDescriptor("Contrast", r"""밝기 (\-100 \~ 100\)""")
-    Reverse = PropertyDescriptor("Reverse", r"""반전 유무""")
-    DrawFillImageType = PropertyDescriptor("DrawFillImageType", r"""ShapeObject의 배경일 경우에만 의미 있는 아이템, 배경을 채우는 방식을 결정한다. (그림개체에는 해당사항 없음)0 \= 바둑판식으로1 \= 가로/위만 바둑판식으로 배열2 \= 가로/아래만 바둑판식으로 배열3 \= 세로/왼쪽만 바둑판식으로 배열4 \= 세로/오른쪽만 바둑판식으로 배열5 \= 크기에 맞추어6 \= 가운데로7 \= 가운데 위로8 \= 가운데 아래로9 \= 왼쪽 가운데로10 \= 왼쪽 위로11 \= 왼쪽 아래로12 \= 오른쪽 가운데로13 \= 오른쪽 위로14 \= 오른쪽 아래로""")
-    SkipLeft = PropertyDescriptor("SkipLeft", r"""그림 개체일 경우에만 의미 있는 아이템, 왼쪽 자르기""")
-    SkipRight = PropertyDescriptor("SkipRight", r"""그림 개체일 경우에만 의미 있는 아이템, 오른쪽 자르기""")
-    SkipTop = PropertyDescriptor("SkipTop", r"""그림 개체일 경우에만 의미 있는 아이템, 위 자르기""")
-    SkipBottom = PropertyDescriptor("SkipBottom", r"""그림 개체일 경우에만 의미 있는 아이템, 아래 자르기""")
-    OriginalSizeX = PropertyDescriptor("OriginalSizeX", r"""그림 개체일 경우에만 의미 있는 아이템, 이미지 원본 크기 X size""")
-    OriginalSizeY = PropertyDescriptor("OriginalSizeY", r"""그림 개체일 경우에만 의미 있는 아이템, 이미지 원본 크기 Y size""")
-    InsideMarginLeft = PropertyDescriptor("InsideMarginLeft", r"""그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (왼쪽)""")
-    InsideMarginRight = PropertyDescriptor("InsideMarginRight", r"""그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (오른쪽)""")
-    InsideMarginTop = PropertyDescriptor("InsideMarginTop", r"""그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (위)""")
-    InsideMarginBottom = PropertyDescriptor("InsideMarginBottom", r"""그림 개체일 경우에만 의미 있는 아이템, 이미지 안쪽 여백. (아래)""")
-    WindowsBrush = PropertyDescriptor("WindowsBrush", r"""현재 선택된 brush의 type이 면/무늬 브러시인가를 나타냄""")
-    GradationBrush = PropertyDescriptor("GradationBrush", r"""현재 선택된 brush의 type이 그러데이션 브러시인가를 나타냄""")
-    ImageBrush = PropertyDescriptor("ImageBrush", r"""현재 선택된 brush의 type이 그림 브러시인가를 나타냄""")
-    ImageCreateOnDrag = PropertyDescriptor("ImageCreateOnDrag", r"""그림 개체 생성 시 마우스로 끌어 생성할지 여부(한글2007에 새로 추가)""")
-
-class DrawImageScissoring(ParameterSet):
-    """
-    ### DrawImageScissoring
-
-    33) DrawImageScissoring : 그림 자르기의 좌표 정보
-
-    ImageScissoring(한컴오피스 2005)에서 DrawImageScissoring으로 이름이 변경되었습니다.
-
-    | Item ID       | Type    | SubType | Description          |
-    |---------------|---------|---------|----------------------|
-    | Xoffset       | PIT_I   |         | 자를 x좌표 오프셋      |
-    | Yoffset       | PIT_I   |         | 자를 y좌표 오프셋      |
-    | HandleIndex   | PIT_UI  |         | Reserved             |
-    """
-    x_offset = ParameterSet._int_prop("Xoffset", "자를 x좌표 오프셋: 정수 값을 입력하세요.")
-    y_offset = ParameterSet._int_prop("Yoffset", "자를 y좌표 오프셋: 정수 값을 입력하세요.")
-    handle_index = ParameterSet._int_prop("HandleIndex", "Reserved: 정수 값을 입력하세요.")
-
-
-class DrawLayout(ParameterSet):
-    """
-    ### DrawLayout
-
-    34) DrawLayout : 도형 레이아웃의 일반 속성
-
-    | Item ID          | Type      | SubType | Description |
-    |------------------|-----------|---------|-------------|
-    | CreateNumPt      | PIT_UI    |         | 생성할 점의 수 |
-    | CreatePt         | PIT_ARRAY | PIT_I   | 생성할 점의 좌표정보: POINT(x,y) 형식의 배열로, CreateNumPt * 2 개수만큼 구성 |
-    | CurveSegmentInfo | PIT_ARRAY | PIT_UI1 | 곡선 세그먼트 정보 |
-    """
-    create_num_pt = ParameterSet._int_prop("CreateNumPt", "생성할 점의 수: 정수 값을 입력하세요.")
-    create_pt = ParameterSet._tuple_list_prop("CreatePt", "생성할 점의 좌표정보: (x, y) 튜플의 리스트")
-    curve_segment_info = ParameterSet._int_list_prop("CurveSegmentInfo", "곡선 세그먼트 정보: 정수 리스트")
-
-
-class DrawLineAttr(ParameterSet):
-    """
-    ### DrawLineAttr
-
-    35) DrawLineAttr : 도형 선의 속성
-
-    | Item ID        | Type        | SubType | Description                                                 |
-    |----------------|-------------|---------|-------------------------------------------------------------|
-    | Color          | PMT_UINT32  |         | 선 색상, RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)    |
-    | Style          | PMT_INT     |         | 선의 스타일                                                |
-    | Width          | PMT_INT     |         | 선의 두께                                                  |
-    | EndCap         | PMT_INT     |         | 선의 끝단                                                  |
-    | HeadStyle      | PMT_INT     |         | 선의 시작 화살표 형태                                      |
-    | TailStyle      | PMT_INT     |         | 선의 끝 화살표 형태                                        |
-    | HeadSize       | PMT_INT     |         | 선의 시작 화살표 크기                                      |
-    | TailSize       | PMT_INT     |         | 선의 끝 화살표 크기                                        |
-    | HeadFill       | PMT_BOOL    |         | 선의 시작 화살표 채움 여부                                  |
-    | TailFill       | PMT_BOOL    |         | 선의 끝 화살표 채움 여부                                    |
-    | OutLineStyle   | PMT_UINT    |         | 외곽선 (안쪽/바깥쪽/중앙)                                   |
-    | Alpha          | PIT_UI1     |         | 투명도 (한글 2007에 처음 추가됨)                            |
-    """
-    color         = ParameterSet._int_prop("Color", "선 색상 (RGB 0x00BBGGRR): 정수를 입력하세요.")
-    style         = ParameterSet._int_prop("Style", "선의 스타일: 정수를 입력하세요.")
-    width         = ParameterSet._int_prop("Width", "선의 두께: 정수를 입력하세요.")
-    end_cap       = ParameterSet._int_prop("EndCap", "선의 끝단: 정수를 입력하세요.")
-    head_style    = ParameterSet._int_prop("HeadStyle", "선의 시작 화살표 형태: 정수를 입력하세요.")
-    tail_style    = ParameterSet._int_prop("TailStyle", "선의 끝 화살표 형태: 정수를 입력하세요.")
-    head_size     = ParameterSet._int_prop("HeadSize", "선의 시작 화살표 크기: 정수를 입력하세요.")
-    tail_size     = ParameterSet._int_prop("TailSize", "선의 끝 화살표 크기: 정수를 입력하세요.")
-    head_fill     = ParameterSet._bool_prop("HeadFill", "선의 시작 화살표 채움 여부: 0 또는 1을 입력하세요.")
-    tail_fill     = ParameterSet._bool_prop("TailFill", "선의 끝 화살표 채움 여부: 0 또는 1을 입력하세요.")
-    outline_style = ParameterSet._int_prop("OutLineStyle", "외곽선 (안쪽/바깥쪽/중앙): 정수를 입력하세요.")
-    alpha         = ParameterSet._int_prop("Alpha", "투명도: 정수를 입력하세요.")
-
-
-class DrawRectType(ParameterSet):
-    """
-    ### DrawRectType
-
-    36) DrawRectType : 사각형 도형의 속성
-
-    | Item ID | Type    | SubType | Description                           |
-    |---------|---------|---------|---------------------------------------|
-    | Type    | PIT_UI  |         | 도형의 종류 지정 (0 ~ 50까지)          |
-    """
-    type = ParameterSet._int_prop("Type", "도형의 종류: 0 ~ 50 사이의 정수 값을 입력하세요.", 0, 50)
-
-
-class DrawResize(ParameterSet):
-    """
-    ### DrawResize
-
-    37) DrawResize : 도형 크기 조정 Resizing 정보
-
-    | Item ID      | Type    | SubType | Description                   |
-    |--------------|---------|---------|-------------------------------|
-    | Xoffset      | PIT_I   |         | 도형 크기 조정 X좌표 오프셋    |
-    | Yoffset      | PIT_I   |         | 도형 크기 조정 Y좌표 오프셋    |
-    | HandleIndex  | PIT_UI  |         | Reserved                      |
-    | Mode         | PIT_UI  |         | Reserved                      |
-    """
-    x_offset = ParameterSet._int_prop("Xoffset", "도형 크기 조정 X좌표 오프셋: 정수 값을 입력하세요.")
-    y_offset = ParameterSet._int_prop("Yoffset", "도형 크기 조정 Y좌표 오프셋: 정수 값을 입력하세요.")
-    handle_index = ParameterSet._int_prop("HandleIndex", "Reserved: 정수 값을 입력하세요.")
-    mode = ParameterSet._int_prop("Mode", "Reserved: 정수 값을 입력하세요.")
-
-
-class DrawRotate(ParameterSet):
-    """
-    ### DrawRotate
-
-    | Item ID         | Type   | Description                                  |
-    |-----------------|--------|----------------------------------------------|
-    | Command         | PIT_UI | 회전 설정의 기초 설정 (0: 없음, 1: 설정된 회전, 2: 그림 중심 회전, 3: 회전과 중심) |
-    | CenterX         | PIT_I  | 회전 중심의 X 좌표                           |
-    | CenterY         | PIT_I  | 회전 중심의 Y 좌표                           |
-    | ObjectCenterX   | PIT_I  | 그림 중심의 X 좌표                           |
-    | ObjectCenterY   | PIT_I  | 그림 중심의 Y 좌표                           |
-    | Angle           | PIT_I  | 회전 각도                                    |
-    | RotateImage     | PIT_UI1| 그림 회전 여부 (0: 회전 안 함, 1: 회전함)     |
-    """
-    command         = ParameterSet._mapped_prop("Command", ROTATION_SETTING_MAP,
-                                                doc="회전 설정의 기초 설정 (0: 없음, 1: 설정된 회전, 2: 그림 중심 회전, 3: 회전과 중심)")
-    center_x        = ParameterSet._int_prop("CenterX", "회전 중심의 X 좌표.")
-    center_y        = ParameterSet._int_prop("CenterY", "회전 중심의 Y 좌표.")
-    object_center_x = ParameterSet._int_prop("ObjectCenterX", "그림 중심의 X 좌표.")
-    object_center_y = ParameterSet._int_prop("ObjectCenterY", "그림 중심의 Y 좌표.")
-    angle           = ParameterSet._int_prop("Angle", "회전 각도.")
-    rotate_image    = ParameterSet._bool_prop("RotateImage", "그림 회전 여부 (0: 회전 안 함, 1: 회전함).")
-
-
-class DrawScAction(ParameterSet):
-    """
-    ### DrawScAction
-
-    39) DrawScAction : 회전 중심과 90도 회전, 좌우/상하 플립 설정
-
-    ScAction(한글2005)에서 DrawScAction으로 이름이 변경되었습니다.
-
-    | Item ID        | Type    | SubType | Description                 |
-    |----------------|---------|---------|-----------------------------|
-    | RotateCenterX  | PIT_I4  |         | 회전 중심 X 좌표           |
-    | RotateCenterY  | PIT_I4  |         | 회전 중심 Y 좌표           |
-    | RotateAngel    | PIT_I   |         | 회전각                     |
-    | HorzFlip       | PIT_UI  |         | 수평 flip (좌우 대칭 설정) |
-    | VertFlip       | PIT_UI  |         | 수직 flip (상하 대칭 설정) |
-    """
-    rotate_center_x = ParameterSet._int_prop("RotateCenterX", "회전 중심 X 좌표")
-    rotate_center_y = ParameterSet._int_prop("RotateCenterY", "회전 중심 Y 좌표")
-    rotate_angle    = ParameterSet._int_prop("RotateAngel", "회전각")
-    horz_flip       = ParameterSet._bool_prop("HorzFlip", "수평 flip (좌우 대칭 설정)")
-    vert_flip       = ParameterSet._bool_prop("VertFlip", "수직 flip (상하 대칭 설정)")
-
-
-class DrawShadow(ParameterSet):
-    """
-    ### DrawShadow
-
-    40) DrawShadow : 그림자 효과 정보
-
-    | Item ID       | Type     | SubType | Description                                     |
-    |---------------|----------|---------|-------------------------------------------------|
-    | ShadowType    | PIT_I4   |         | 그림자 종류: 0 = none, 1 = drop, 2 = continuous   |
-    | ShadowColor   | PIT_UI4  |         | 그림자 색상 (COLORREF)                           |
-    | ShadowOffsetX | PIT_I4   |         | 그림자 X축 오프셋 (-48% ~ 48%)                   |
-    | ShadowOffsetY | PIT_I4   |         | 그림자 Y축 오프셋 (-48% ~ 48%)                   |
-    | ShadowAlpha   | PIT_UI1  |         | 그림자 투명도 (0 ~ 255)                          |
-    """
-    shadow_type    = ParameterSet._mapped_prop("ShadowType", SHADOW_TYPE_MAP,
-                                              doc="그림자 종류: 0 = none, 1 = drop, 2 = continuous")
-    shadow_color   = ParameterSet._int_prop("ShadowColor", "그림자 색상 (COLORREF): 정수를 입력하세요.")
-    shadow_offset_x = ParameterSet._int_prop("ShadowOffsetX", "그림자 X축 오프셋 (-48% ~ 48%)", -48, 48)
-    shadow_offset_y = ParameterSet._int_prop("ShadowOffsetY", "그림자 Y축 오프셋 (-48% ~ 48%)", -48, 48)
-    shadow_alpha   = ParameterSet._int_prop("ShadowAlpha", "그림자 투명도 (0 ~ 255)", 0, 255)
-
-
-class DrawShear(ParameterSet):
-    """
-    ### DrawShear
-
-    41) DrawShear : Shear transformation parameters
-
-    | Item ID | Type   | SubType | Description        |
-    |---------|--------|---------|--------------------|
-    | XFactor | PIT_I  |         | X shear factor     |
-    | YFactor | PIT_I  |         | Y shear factor     |
-    """
-    x_factor = ParameterSet._int_prop("XFactor", "X shear factor: 정수 값을 입력하세요.")
-    y_factor = ParameterSet._int_prop("YFactor", "Y shear factor: 정수 값을 입력하세요.")
-
-
-class DrawTextart(ParameterSet):
-    """
-    ### DrawTextart
-
-    42) DrawTextart : 텍스트아트 속성
-    """
-    string         = ParameterSet._str_prop("String", "텍스트아트 내용: 문자열 값을 입력하세요.")
-    font_name      = ParameterSet._str_prop("FontName", "폰트 이름.")
-    font_style     = ParameterSet._str_prop("FontStyle", "폰트 스타일 (0 = Regular).")
-    font_type      = ParameterSet._mapped_prop("FontType", FONTTYPE_MAP,
-                                             doc="폰트 타입: 0 = don't care, 1 = TTF, 2 = HFT.")
-    line_spacing   = ParameterSet._int_prop("LineSpacing", "줄 간격 (50 ~ 500).", 50, 500)
-    char_spacing   = ParameterSet._int_prop("CharSpacing", "문자 간격 (50 ~ 500).", 50, 500)
-    align_type     = ParameterSet._int_prop("AlignType", "정렬 유형.")
-    shape          = ParameterSet._int_prop("Shape", "형태 (0 ~ 54).", 0, 54)
-    shadow_type    = ParameterSet._mapped_prop("ShadowType", SHADOW_TYPE_MAP,
-                                              doc="그림자 유형: 0 = none, 1 = drop, 2 = continuous.")
-    shadow_offset_x = ParameterSet._int_prop("ShadowOffsetX", "그림자 X 오프셋 (-48 ~ 48).", -48, 48)
-    shadow_offset_y = ParameterSet._int_prop("ShadowOffsetY", "그림자 Y 오프셋 (-48 ~ 48).", -48, 48)
-    shadow_color   = ParameterSet._int_prop("ShadowColor", "그림자 색상 (RGB 32비트).")
-    number_of_lines = ParameterSet._int_prop("NumberOfLines", "텍스트아트의 줄 수.")
-
-
-class InsertText(ParameterSet):
-    """
-
-    ### InsertText 
-| Item ID | Type | SubType | Description |
-| --- | --- | --- | --- |
-| Text | PIT_BSTR |  | 삽입할 텍스트 |
-
-"""
-
-    text = StringProperty("Text", "삽입할 텍스트")
-
-class ListProperties(ParameterSet):
-    """
-    ### ListProperties
-
-    76) ListProperties : 셀 리스트의 속성
-
-    | Item ID       | Type     | SubType | Description                                      |
-    |---------------|----------|---------|--------------------------------------------------|
-    | TextDirection | PIT_UI1  |         | 글자 방향 (세로 쓰기 여부를 미정)                |
-    | LineWrap      | PIT_UI1  |         | 강제에서 줄 바꿈 0 = 줄바꿈 없는 기본값           |
-    | VertAlign     | PIT_UI1  |         | 세로 정렬 0 = 위 정렬                             |
-    | MarginLeft    | PIT_I4   |         | 왼쪽 여백                                       |
-    | MarginRight   | PIT_I4   |         | 오른쪽 여백                                     |
-    | MarginTop     | PIT_I4   |         | 위쪽 여백                                       |
-    | MarginBottom  | PIT_I4   |         | 아래쪽 여백                                     |
-    """
-    text_direction = ParameterSet._mapped_prop("TextDirection", TEXT_DIRECTION_MAP,
-                                               doc="글자 방향: 0 = 기본값, 1 = 세로 쓰기")
-    line_wrap = ParameterSet._mapped_prop("LineWrap", LINE_WRAP_MAP,
-                                          doc="줄 바꿈 옵션: 0 = 기본값, 1 = 줄 바꿈 없음, 2 = 강제 줄 바꿈")
-    vert_align = ParameterSet._mapped_prop("VertAlign", VERT_ALIGN_MAP,
-                                           doc="세로 정렬: 0 = 위, 1 = 가운데, 2 = 아래")
-    margin_left = ParameterSet._int_prop("MarginLeft", "왼쪽 여백: 정수 값을 입력하세요.")
-    margin_right = ParameterSet._int_prop("MarginRight", "오른쪽 여백: 정수 값을 입력하세요.")
-    margin_top = ParameterSet._int_prop("MarginTop", "위쪽 여백: 정수 값을 입력하세요.")
-    margin_bottom = ParameterSet._int_prop("MarginBottom", "아래쪽 여백: 정수 값을 입력하세요.")
-
-
-class NumberingShape(ParameterSet):
-    """NumberingShape ParameterSet - 문단 번호 모양 정의. Level0~Level6 (7개 수준)."""
-    StartNumber = PropertyDescriptor("StartNumber", r"""시작 번호 (0=앞 구역에 이어, n=지정한 번호로 시작)""")
-    NewList = PropertyDescriptor("NewList", r"""새로운 번호 목록을 시작할지 여부""")
-    # 7개 수준별 속성 (Level0 ~ Level6)
-    HasCharShapeLevel0 = PropertyDescriptor("HasCharShapeLevel0", r"""수준0: 자체 글자 모양 사용 여부""")
-    HasCharShapeLevel1 = PropertyDescriptor("HasCharShapeLevel1", r"""수준1: 자체 글자 모양 사용 여부""")
-    HasCharShapeLevel2 = PropertyDescriptor("HasCharShapeLevel2", r"""수준2: 자체 글자 모양 사용 여부""")
-    HasCharShapeLevel3 = PropertyDescriptor("HasCharShapeLevel3", r"""수준3: 자체 글자 모양 사용 여부""")
-    HasCharShapeLevel4 = PropertyDescriptor("HasCharShapeLevel4", r"""수준4: 자체 글자 모양 사용 여부""")
-    HasCharShapeLevel5 = PropertyDescriptor("HasCharShapeLevel5", r"""수준5: 자체 글자 모양 사용 여부""")
-    HasCharShapeLevel6 = PropertyDescriptor("HasCharShapeLevel6", r"""수준6: 자체 글자 모양 사용 여부""")
-    CharShapeLevel0 = PropertyDescriptor("CharShapeLevel0", r"""수준0: 글자 모양 정의 (PIT_SET: CharShape)""")
-    CharShapeLevel1 = PropertyDescriptor("CharShapeLevel1", r"""수준1: 글자 모양 정의 (PIT_SET: CharShape)""")
-    CharShapeLevel2 = PropertyDescriptor("CharShapeLevel2", r"""수준2: 글자 모양 정의 (PIT_SET: CharShape)""")
-    CharShapeLevel3 = PropertyDescriptor("CharShapeLevel3", r"""수준3: 글자 모양 정의 (PIT_SET: CharShape)""")
-    CharShapeLevel4 = PropertyDescriptor("CharShapeLevel4", r"""수준4: 글자 모양 정의 (PIT_SET: CharShape)""")
-    CharShapeLevel5 = PropertyDescriptor("CharShapeLevel5", r"""수준5: 글자 모양 정의 (PIT_SET: CharShape)""")
-    CharShapeLevel6 = PropertyDescriptor("CharShapeLevel6", r"""수준6: 글자 모양 정의 (PIT_SET: CharShape)""")
-    WidthAdjustLevel0 = PropertyDescriptor("WidthAdjustLevel0", r"""수준0: 번호 너비 보정값 (HWPUNIT)""")
-    WidthAdjustLevel1 = PropertyDescriptor("WidthAdjustLevel1", r"""수준1: 번호 너비 보정값 (HWPUNIT)""")
-    WidthAdjustLevel2 = PropertyDescriptor("WidthAdjustLevel2", r"""수준2: 번호 너비 보정값 (HWPUNIT)""")
-    WidthAdjustLevel3 = PropertyDescriptor("WidthAdjustLevel3", r"""수준3: 번호 너비 보정값 (HWPUNIT)""")
-    WidthAdjustLevel4 = PropertyDescriptor("WidthAdjustLevel4", r"""수준4: 번호 너비 보정값 (HWPUNIT)""")
-    WidthAdjustLevel5 = PropertyDescriptor("WidthAdjustLevel5", r"""수준5: 번호 너비 보정값 (HWPUNIT)""")
-    WidthAdjustLevel6 = PropertyDescriptor("WidthAdjustLevel6", r"""수준6: 번호 너비 보정값 (HWPUNIT)""")
-    TextOffsetLevel0 = PropertyDescriptor("TextOffsetLevel0", r"""수준0: 본문과의 거리""")
-    TextOffsetLevel1 = PropertyDescriptor("TextOffsetLevel1", r"""수준1: 본문과의 거리""")
-    TextOffsetLevel2 = PropertyDescriptor("TextOffsetLevel2", r"""수준2: 본문과의 거리""")
-    TextOffsetLevel3 = PropertyDescriptor("TextOffsetLevel3", r"""수준3: 본문과의 거리""")
-    TextOffsetLevel4 = PropertyDescriptor("TextOffsetLevel4", r"""수준4: 본문과의 거리""")
-    TextOffsetLevel5 = PropertyDescriptor("TextOffsetLevel5", r"""수준5: 본문과의 거리""")
-    TextOffsetLevel6 = PropertyDescriptor("TextOffsetLevel6", r"""수준6: 본문과의 거리""")
-    AlignmentLevel0 = PropertyDescriptor("AlignmentLevel0", r"""수준0: 번호 정렬 0=왼쪽, 1=가운데, 2=오른쪽""")
-    AlignmentLevel1 = PropertyDescriptor("AlignmentLevel1", r"""수준1: 번호 정렬""")
-    AlignmentLevel2 = PropertyDescriptor("AlignmentLevel2", r"""수준2: 번호 정렬""")
-    AlignmentLevel3 = PropertyDescriptor("AlignmentLevel3", r"""수준3: 번호 정렬""")
-    AlignmentLevel4 = PropertyDescriptor("AlignmentLevel4", r"""수준4: 번호 정렬""")
-    AlignmentLevel5 = PropertyDescriptor("AlignmentLevel5", r"""수준5: 번호 정렬""")
-    AlignmentLevel6 = PropertyDescriptor("AlignmentLevel6", r"""수준6: 번호 정렬""")
-    UseInstWidthLevel0 = PropertyDescriptor("UseInstWidthLevel0", r"""수준0: 번호 너비를 문자열 너비에 따를지 여부""")
-    UseInstWidthLevel1 = PropertyDescriptor("UseInstWidthLevel1", r"""수준1: 번호 너비를 문자열 너비에 따를지 여부""")
-    UseInstWidthLevel2 = PropertyDescriptor("UseInstWidthLevel2", r"""수준2: 번호 너비를 문자열 너비에 따를지 여부""")
-    UseInstWidthLevel3 = PropertyDescriptor("UseInstWidthLevel3", r"""수준3: 번호 너비를 문자열 너비에 따를지 여부""")
-    UseInstWidthLevel4 = PropertyDescriptor("UseInstWidthLevel4", r"""수준4: 번호 너비를 문자열 너비에 따를지 여부""")
-    UseInstWidthLevel5 = PropertyDescriptor("UseInstWidthLevel5", r"""수준5: 번호 너비를 문자열 너비에 따를지 여부""")
-    UseInstWidthLevel6 = PropertyDescriptor("UseInstWidthLevel6", r"""수준6: 번호 너비를 문자열 너비에 따를지 여부""")
-    AutoIndentLevel0 = PropertyDescriptor("AutoIndentLevel0", r"""수준0: 번호 너비 자동 들여쓰기 여부""")
-    AutoIndentLevel1 = PropertyDescriptor("AutoIndentLevel1", r"""수준1: 번호 너비 자동 들여쓰기 여부""")
-    AutoIndentLevel2 = PropertyDescriptor("AutoIndentLevel2", r"""수준2: 번호 너비 자동 들여쓰기 여부""")
-    AutoIndentLevel3 = PropertyDescriptor("AutoIndentLevel3", r"""수준3: 번호 너비 자동 들여쓰기 여부""")
-    AutoIndentLevel4 = PropertyDescriptor("AutoIndentLevel4", r"""수준4: 번호 너비 자동 들여쓰기 여부""")
-    AutoIndentLevel5 = PropertyDescriptor("AutoIndentLevel5", r"""수준5: 번호 너비 자동 들여쓰기 여부""")
-    AutoIndentLevel6 = PropertyDescriptor("AutoIndentLevel6", r"""수준6: 번호 너비 자동 들여쓰기 여부""")
-    TextOffsetTypeLevel0 = PropertyDescriptor("TextOffsetTypeLevel0", r"""수준0: 본문과의 거리 종류 0=퍼센트, 1=HWPUNIT""")
-    TextOffsetTypeLevel1 = PropertyDescriptor("TextOffsetTypeLevel1", r"""수준1: 본문과의 거리 종류""")
-    TextOffsetTypeLevel2 = PropertyDescriptor("TextOffsetTypeLevel2", r"""수준2: 본문과의 거리 종류""")
-    TextOffsetTypeLevel3 = PropertyDescriptor("TextOffsetTypeLevel3", r"""수준3: 본문과의 거리 종류""")
-    TextOffsetTypeLevel4 = PropertyDescriptor("TextOffsetTypeLevel4", r"""수준4: 본문과의 거리 종류""")
-    TextOffsetTypeLevel5 = PropertyDescriptor("TextOffsetTypeLevel5", r"""수준5: 본문과의 거리 종류""")
-    TextOffsetTypeLevel6 = PropertyDescriptor("TextOffsetTypeLevel6", r"""수준6: 본문과의 거리 종류""")
-    StrFormatLevel0 = PropertyDescriptor("StrFormatLevel0", r"""수준0: 포맷 문자열""")
-    StrFormatLevel1 = PropertyDescriptor("StrFormatLevel1", r"""수준1: 포맷 문자열""")
-    StrFormatLevel2 = PropertyDescriptor("StrFormatLevel2", r"""수준2: 포맷 문자열""")
-    StrFormatLevel3 = PropertyDescriptor("StrFormatLevel3", r"""수준3: 포맷 문자열""")
-    StrFormatLevel4 = PropertyDescriptor("StrFormatLevel4", r"""수준4: 포맷 문자열""")
-    StrFormatLevel5 = PropertyDescriptor("StrFormatLevel5", r"""수준5: 포맷 문자열""")
-    StrFormatLevel6 = PropertyDescriptor("StrFormatLevel6", r"""수준6: 포맷 문자열""")
-    NumFormatLevel0 = PropertyDescriptor("NumFormatLevel0", r"""수준0: 번호 모양""")
-    NumFormatLevel1 = PropertyDescriptor("NumFormatLevel1", r"""수준1: 번호 모양""")
-    NumFormatLevel2 = PropertyDescriptor("NumFormatLevel2", r"""수준2: 번호 모양""")
-    NumFormatLevel3 = PropertyDescriptor("NumFormatLevel3", r"""수준3: 번호 모양""")
-    NumFormatLevel4 = PropertyDescriptor("NumFormatLevel4", r"""수준4: 번호 모양""")
-    NumFormatLevel5 = PropertyDescriptor("NumFormatLevel5", r"""수준5: 번호 모양""")
-    NumFormatLevel6 = PropertyDescriptor("NumFormatLevel6", r"""수준6: 번호 모양""")
-
-class TabDef(ParameterSet):
-    """
-    ### TabDef
-
-    113) TabDef : Tab settings
-
-    Tab definition with auto tab settings and tab stop positions.
-    Uses ArrayProperty for Pythonic list interface to tab stops.
-
-    | Item ID    | Type      | SubType | Description |
-    |------------|-----------|---------|-------------|
-    | AutoTabLeft| PIT_UI1   |         | Auto left tab (on / off) |
-    | AutoTabRight| PIT_UI1  |         | Auto right tab (on / off) |
-    | TabItem    | PIT_ARRAY | PIT_I   | Tab stop positions array (n*3+0: position, n*3+1: fill type, n*3+2: tab type) |
-
-    Example:
-        >>> tab_def = TabDef(action.CreateSet())
-        >>> tab_def.AutoTabLeft = True
-        >>> tab_def.TabItem = [1000, 0, 0, 2000, 0, 0, 3000, 0, 0]  # Three tab stops
-        >>> tab_def.TabItem.append(4000)  # Add position for fourth tab
-        >>> tab_def.TabItem.append(0)     # Fill type
-        >>> tab_def.TabItem.append(0)     # Tab type
-    """
-    AutoTabLeft = BoolProperty("AutoTabLeft", "Auto left tab")
-    AutoTabRight = BoolProperty("AutoTabRight", "Auto right tab")
-
-    # Array property for tab stops (Pythonic list interface)
-    # Each tab stop is represented by 3 integers: position, fill type, tab type
-    TabItem = ArrayProperty("TabItem", int, "Tab stop data (position, fill, type triplets)")
-
-
-class ActionCrossRef(ParameterSet):
-    """ActionCrossRef ParameterSet."""
-    Command = PropertyDescriptor("Command", r"""※command string 참조 (한글2007에 새로 추가)""")
-
-class AutoFill(ParameterSet):
-    """AutoFill ParameterSet."""
-    AutoFillSection = PropertyDescriptor("AutoFillSection", r"""자동 채우기 섹션 : 0 \= 기본, 1 \= 사용자 정의""")
-    AutoFillItem = PropertyDescriptor("AutoFillItem", r"""섹션의 아이템 인덱스 : 0 \~""")
-
-class AutoNum(ParameterSet):
-    """AutoNum ParameterSet."""
-    NumType = PropertyDescriptor("NumType", r"""번호 종류 : 0 \= 쪽 번호1 \= 각주 번호2 \= 미주 번호3 \= 그림 번호4 \= 표 번호5 \= 수식 번호""")
-    NewNumber = PropertyDescriptor("NewNumber", r"""새 시작 번호 (1 .. n)""")
-
-class BookMark(ParameterSet):
-    """BookMark ParameterSet."""
-    Name = PropertyDescriptor("Name", r"""책갈피 이름""")
-    Type = PropertyDescriptor("Type", r"""책갈피 종류 : 0 \= 일반 책갈피, 1 \= 블록 책갈피""")
-    Command = PropertyDescriptor("Command", r"""책갈피 명령의 종류 :0 \= 책갈피 생성, 1 \= 책갈피로 이동, 2 \= 책갈피 수정""")
-
-class BorderFillExt(ParameterSet):
-    """BorderFillExt ParameterSet."""
-    TypeHorz = PropertyDescriptor("TypeHorz", r"""중앙선 종류 : 가로 \[선 종류]""")
-    TypeVert = PropertyDescriptor("TypeVert", r"""중앙선 종류 : 세로""")
-    WidthHorz = PropertyDescriptor("WidthHorz", r"""중앙선 두께 : 가로 \[선 굵기]""")
-    WidthVert = PropertyDescriptor("WidthVert", r"""중앙선 두께 : 세로""")
-    ColorHorz = PropertyDescriptor("ColorHorz", r"""중앙선 색깔 : 가로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-    ColorVert = PropertyDescriptor("ColorVert", r"""중앙선 색깔 : 세로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-
-class CaptureEnd(ParameterSet):
-    """CaptureEnd ParameterSet."""
-    BeginX = PropertyDescriptor("BeginX", r"""시작점과 X 좌표(페이지 X좌표)""")
-    BeginY = PropertyDescriptor("BeginY", r"""시작점과 Y 좌표(페이지 Y좌표)""")
-    EndX = PropertyDescriptor("EndX", r"""끝점의 X 좌표(페이지 X좌표)""")
-    EndY = PropertyDescriptor("EndY", r"""끝점의 Y 좌표(페이지 Y좌표)""")
-    PageNum = PropertyDescriptor("PageNum", r"""페이지 번호""")
-
-class CellBorderFill(ParameterSet):
-    """CellBorderFill ParameterSet."""
-    ApplyTo = PropertyDescriptor("ApplyTo", r"""적용 대상 : 0 \= 선택된 셀, 1 \= 전체 셀, 2 \= 여러 셀에 걸쳐 적용""")
-    NoNeighborCell = PropertyDescriptor("NoNeighborCell", r"""주변 셀에 선 모양을 적용하지 않을지 여부 (1이면 적용하지 않는다)""")
-    TableBorderFill = PropertyDescriptor("TableBorderFill", r"""표 테두리/배경""")
-    AllCellsBorderFill = PropertyDescriptor("AllCellsBorderFill", r"""전체 셀의 테두리/배경""")
-    SelCellsBorderFill = PropertyDescriptor("SelCellsBorderFill", r"""선택된 셀의 테두리/배경""")
-
-class ChCompose(ParameterSet):
-    """ChCompose ParameterSet."""
-    Chars = PropertyDescriptor("Chars", r"""겹쳐질 글자들""")
-
-class ChangeRome(ParameterSet):
-    """ChangeRome ParameterSet."""
-    Option = PropertyDescriptor("Option", r"""변환옵션 :0 \= 일반1 \= 주소2 \= 사람이름3 \= 한글복원""")
-    HanString = PropertyDescriptor("HanString", r"""변경시킬 또는 변경된 한글문자""")
-
-class CodeTable(ParameterSet):
-    """CodeTable ParameterSet."""
-    Text = PropertyDescriptor("Text", r"""삽입될 스트링""")
-
-class ColDef(ParameterSet):
-    """ColDef ParameterSet."""
-    Type = PropertyDescriptor("Type", r"""단 종류 : 0 \= 보통 다단, 1 \= 배분 다단, 2 \= 평행 다단""")
-    Count = PropertyDescriptor("Count", r"""단 개수. 1\-255까지.""")
-    SameSize = PropertyDescriptor("SameSize", r"""단의 너비를 같도록 할지 여부 :0 \= 단 너비 각자 지정, 1 \= 단 너비 동일""")
-    SameGap = PropertyDescriptor("SameGap", r"""단 사이 간격(HWPUNIT) SAME_SIZE가 1일 때만 사용된다.""")
-    WidthGap = PropertyDescriptor("WidthGap", r"""각 단의 너비와 간격(HWPUNIT)col\*2 \= 단의 폭, col\*2 \+ 1 \= 단 사이 간격.영역 전체의 폭을 Column ratio base (\=32768\)로 보았을 때의 비율로 환산한다.SameSize가 0일 때만 사용된다.배열의 아이템의 개수는 Count\*2\-1과 같아야 한다.""")
-    Layout = PropertyDescriptor("Layout", r"""단 방향 지정 :0 \= 왼쪽부터, 1 \= 오른쪽부터, 2 \= 맞쪽""")
-    LineType = PropertyDescriptor("LineType", r"""선 종류.""")
-    LineWidth = PropertyDescriptor("LineWidth", r"""선 굵기.""")
-    LineColor = PropertyDescriptor("LineColor", r"""선 색깔. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-    ApplyTo = PropertyDescriptor("ApplyTo", r"""적용범위 :0 \= 선택된 다단1 \= 선택된 문자열2 \= 현재 다단3 \= 개체 전체4 \= 선택된 셀5 \= 현재 구역6 \= 문서 전체7 \= 현재 셀8 \= 새 쪽으로9 \= 새 다단으로10 \= 모든 셀""")
-    ApplyClass = PropertyDescriptor("ApplyClass", r"""적용범위의 분류. 아래 값의 조합이다.0x0001 \= 선택된 다단0x0002 \= 선택된 문자열0x0004 \= 현재 다단0x0008 \= 개체 전체0x0010 \= 선택된 셀0x0020 \= 현재 구역0x0040 \= 문서전체0x0080 \= 현재 셀0x0100 \= 새 쪽으로0x0200 \= 새 다단으로0x0400 \= 모든 셀""")
-
-class ConvertCase(ParameterSet):
-    """ConvertCase ParameterSet."""
-    Type = PropertyDescriptor("Type", r"""공통사용.""")
-
-class ConvertFullHalf(ParameterSet):
-    """ConvertFullHalf ParameterSet."""
-    Type = PropertyDescriptor("Type", r"""전각으로 변경할지, 반각으로 변경할지 여부 : 0 \= 반각, 1 \= 전각""")
-    Number = PropertyDescriptor("Number", r"""변경 대상에 숫자를 추가할지 여부 : 0 \= off, 1 \= on""")
-    Alpha = PropertyDescriptor("Alpha", r"""변경 대상에 영문자를 추가할지 여부 : 0 \= off, 1 \= on""")
-    Symbol = PropertyDescriptor("Symbol", r"""변경 대상에 기호를 추가할지 여부 : 0 \= off, 1 \= on""")
-    Gata = PropertyDescriptor("Gata", r"""변경 대상에 가타가나를 추가할지 여부 : 0 \= off, 1 \= on""")
-    HGJamo = PropertyDescriptor("HGJamo", r"""변경 대상에 한글자모를 추가할지 여부 : 0 \= off, 1 \= on""")
-
-class ConvertHiraToGata(ParameterSet):
-    """ConvertHiraToGata ParameterSet."""
-    Type = PropertyDescriptor("Type", r"""히라가나로 변경할지, 가타가나로 변경할지 여부0 \= 가타가나로 변경, 1 \= 히라가나로 변경""")
-
-class ConvertJianFan(ParameterSet):
-    """ConvertJianFan ParameterSet."""
-    Type = PropertyDescriptor("Type", r"""간체로 변경할지, 번체로 변경할지 여부0 \= 번체로 변경, 1 \= 간체로 변경""")
-
-class ConvertToHangul(ParameterSet):
-    """ConvertToHangul ParameterSet."""
-    Type = PropertyDescriptor("Type", r"""변경할 유형. 확장 또는 변환 액션 간 파라메터셋의 호환을 위해 선언됨.""")
-    Hanja = PropertyDescriptor("Hanja", r"""한자를 한글로 변경할지 여부 : 0 \= off, 1 \= on""")
-    Hira = PropertyDescriptor("Hira", r"""히라가나를 한글로 변경할지 여부 : 0 \= off, 1 \= on확장 또는 변환 액션 간 파라메터셋의 호환을 위해 선언됨.""")
-    Gata = PropertyDescriptor("Gata", r"""가타가나를 한글로 변경할지 여부 : 0 \= off, 1 \= on확장 또는 변환 액션 간 파라메터셋의 호환을 위해 선언됨.""")
-    Gu = PropertyDescriptor("Gu", r"""구결을 한글로 변경할지 여부 : 0 \= off, 1 \= on""")
-
-class DeleteCtrls(ParameterSet):
-    """DeleteCtrls ParameterSet."""
-    DeleteCtrlType = PropertyDescriptor("DeleteCtrlType", r"""지울 개체 목록""")
-
-class DocFilters(ParameterSet):
-    """DocFilters ParameterSet."""
-    DocFilters = PropertyDescriptor("DocFilters", r"""Parameter property""")
-    Format = PropertyDescriptor("Format", r"""필터 리스트를 string array형태로 가져옴 (Export시에만)""")
-    Type = PropertyDescriptor("Type", r"""Import 리스트를 가져올 것인지 Export 리스트를 가져올 것인지의 관한 타입.Import \= 1Export \= 0 (on input)""")
-
-class DocFindInfo(ParameterSet):
-    """DocFindInfo ParameterSet."""
-    ListID = PropertyDescriptor("ListID", r"""현재 위치한 리스트""")
-    ParaID = PropertyDescriptor("ParaID", r"""현재 위치한 문단""")
-    Pos = PropertyDescriptor("Pos", r"""현재 위치한 글자""")
-
-class DocumentInfo(ParameterSet):
-    """DocumentInfo ParameterSet."""
-    CurPara = PropertyDescriptor("CurPara", r"""현재 위치한 문단""")
-    CurPos = PropertyDescriptor("CurPos", r"""현재 위치한 오프셋""")
-    CurParaLen = PropertyDescriptor("CurParaLen", r"""현재 위치한 문단의 길이""")
-    CurCtrl = PropertyDescriptor("CurCtrl", r"""현재 리스트의 종류0 \= 일반 텍스트1 \= 글상자기타 \= 컨트롤 ID""")
-    CurParaCount = PropertyDescriptor("CurParaCount", r"""현재 리스트의 문단 수""")
-    RootPara = PropertyDescriptor("RootPara", r"""루트 리스트의 현재 문단""")
-    RootPos = PropertyDescriptor("RootPos", r"""루트 리스트의 현재 오프셋""")
-    RootParaCout = PropertyDescriptor("RootParaCout", r"""루트 리스트의 문단 수""")
-    DetailInfo = PropertyDescriptor("DetailInfo", r"""자세한 정보를 구할지 여부Detail\~ 로 시작하는 아이템의 정보를 얻기 위해서는 이 값을 1로 넣어준 후에 액션을 실행해준다.""")
-    DetailCharCount = PropertyDescriptor("DetailCharCount", r"""문서에 포함된 글자 수""")
-    DetailWordCount = PropertyDescriptor("DetailWordCount", r"""문서에 포함된 어절 수""")
-    DetailLineCount = PropertyDescriptor("DetailLineCount", r"""문서에 포함된 줄 수""")
-    DetailPageCount = PropertyDescriptor("DetailPageCount", r"""문서에 포함된 쪽 수""")
-    DetailCurPage = PropertyDescriptor("DetailCurPage", r"""현재 쪽 번호""")
-    DetailCurPrtPage = PropertyDescriptor("DetailCurPrtPage", r"""현재 쪽 번호 (인쇄 번호)""")
-    SectionInfo = PropertyDescriptor("SectionInfo", r"""구역의 속성까지 구할지 여부SecDef 아이템은 이 값을 1로 넣어준 후 액션을 실행한 후에 얻을 수 있다.""")
-    SecDef = PropertyDescriptor("SecDef", r"""구역의 속성 (한글2007에 새로 추가)""")
-
-class DropCap(ParameterSet):
-    """DropCap ParameterSet."""
-    Style = PropertyDescriptor("Style", r"""글자 장식 모양0\=없음1\=2줄차지2\=3줄차지4\=여백""")
-    FaceName = PropertyDescriptor("FaceName", r"""Parameter property""")
-    LineStyle = PropertyDescriptor("LineStyle", r"""선 스타일""")
-    LineWeight = PropertyDescriptor("LineWeight", r"""선 굵기""")
-    LineColor = PropertyDescriptor("LineColor", r"""선 색RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-    FaceColor = PropertyDescriptor("FaceColor", r"""글꼴 색RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-    Spacing = PropertyDescriptor("Spacing", r"""본문과의 간격""")
-
-class Dutmal(ParameterSet):
-    """Dutmal ParameterSet."""
-    ResultText = PropertyDescriptor("ResultText", r"""Parameter property""")
-    SubText = PropertyDescriptor("SubText", r"""Parameter property""")
-    PosType = PropertyDescriptor("PosType", r"""덧말 위치. 0 \= 위, 1 \= 아래.""")
-    FsizeRatio = PropertyDescriptor("FsizeRatio", r"""덧말 크기 Percent. 0\=이면 기본 50%.""")
-    Option = PropertyDescriptor("Option", r"""Parameter property""")
-    StyleNo = PropertyDescriptor("StyleNo", r"""스타일번호 (옵션이 켜있을 때)""")
-    Align = PropertyDescriptor("Align", r"""덧말의 좌우 Align. 0 \= 양쪽 정렬1 \= 왼쪽 정렬2 \= 오른쪽 정렬3 \= 가운데 정렬4 \= 배분 정렬5 \= 나눔 정렬기본은 가운데 정렬이며 옵션이 켜있을 때만 유효""")
-    Delete = PropertyDescriptor("Delete", r"""덧말 지움 (한글2007에 새로 추가)""")
-    Modify = PropertyDescriptor("Modify", r"""덧말 편집 모드 여부 (한글2007에 새로 추가)""")
-
-class EngineProperties(ParameterSet):
-    """EngineProperties ParameterSet."""
-    DoAnyCursorEdit = PropertyDescriptor("DoAnyCursorEdit", r"""마우스로 두 번 누르기 한곳에 입력가능""")
-    DoOutLineStyle = PropertyDescriptor("DoOutLineStyle", r"""개요 번호 삽입 문단에 개요 스타일 자동 적용""")
-    InsertLock = PropertyDescriptor("InsertLock", r"""삽입 잠금""")
-    TabMoveCell = PropertyDescriptor("TabMoveCell", r"""표 안에서 \<Tab\>으로 셀 이동""")
-    FaxDriver = PropertyDescriptor("FaxDriver", r"""팩스 드라이버""")
-    PDFDriver = PropertyDescriptor("PDFDriver", r"""PDF 드라이버""")
-    EnableAutoSpell = PropertyDescriptor("EnableAutoSpell", r"""맞춤법 도우미 작동""")
-
-class EqEdit(ParameterSet):
-    """EqEdit ParameterSet."""
-    String = PropertyDescriptor("String", r"""수식 스크립트.""")
-    BaseUnit = PropertyDescriptor("BaseUnit", r"""수식이 삽입되는 앞의 글자와 같은 높이 (기본 값은 POINT 10 )""")
-    Color = PropertyDescriptor("Color", r"""수식이 삽입되는 글자 색과 같은 색 (기본 값은 WINDOWTEXT 색)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-    LineMode = PropertyDescriptor("LineMode", r"""줄 단위를 사용할지의 여부 (한글2007에 새로 추가)""")
-    Version = PropertyDescriptor("Version", r"""수식 스크립트 버전 정보 (한글2007에 새로 추가)""")
-    ApplyTo = PropertyDescriptor("ApplyTo", r"""수식 속성 적용 범위 (한글2007에 새로 추가)0 : 선택된 수식 개체1 : 문서 전체""")
-
-class ExchangeFootnoteEndNote(ParameterSet):
-    """ExchangeFootnoteEndNote ParameterSet."""
-    Flag = PropertyDescriptor("Flag", r"""옵션 0 : 모든 각주를 미주로 바꾸기1 : 모든 미주를 각주로 바꾸기2 : 각주와 미주를 서로 바꾸기""")
-
-class FieldCtrl(ParameterSet):
-    """FieldCtrl ParameterSet."""
-    Command = PropertyDescriptor("Command", r"""필드의 명령문""")
-    Editable = PropertyDescriptor("Editable", r"""일부분 readonly mode에서 편집 가능한 필드인지 여부""")
-    FieldDirty = PropertyDescriptor("FieldDirty", r"""필드가 초기화 상태인지 수정되어 있는 상태인지 여부(한글2007에 새로 추가)""")
-    CtrlData = PropertyDescriptor("CtrlData", r"""필드 이름 저장을 위한 영역""")
-
-class FileConvert(ParameterSet):
-    """FileConvert ParameterSet."""
-    Format = PropertyDescriptor("Format", r"""변환 포맷""")
-    SrcFileList = PropertyDescriptor("SrcFileList", r"""Source 파일 리스트""")
-    DestFileList = PropertyDescriptor("DestFileList", r"""Destination 파일 리스트""")
-
-class FileInfo(ParameterSet):
-    """FileInfo ParameterSet."""
-    Format = PropertyDescriptor("Format", r"""파일의 형식.HWP : 한글 파일UNKNOWN : 알 수 없음.""")
-    VersionStr = PropertyDescriptor("VersionStr", r"""파일의 버전 문자열ex)5\.0\.0\.3""")
-    VersionNum = PropertyDescriptor("VersionNum", r"""파일의 버전ex) 0x05000003""")
-    Encrypted = PropertyDescriptor("Encrypted", r"""암호 여부 (현재는 파일 버전 3\.0\.0\.0 이후 문서\-한글97, 한글 워디안, 한글 2002\-에 대해서만 판단한다.)\-1 : 판단 할 수 없음0 : 암호가 걸려 있지 않음양수: 암호가 걸려 있음.""")
-
-class FileOpen(ParameterSet):
-    """FileOpen ParameterSet."""
-    OpenFileName = PropertyDescriptor("OpenFileName", r"""파일 이름. (OpenFileName과 SaveFileName은 같은 아이템을 공유한다. 즉 OpenFileName과 SaveFileName은 이름만 다를 뿐 동일한 아이템이다)""")
-    OpenFormat = PropertyDescriptor("OpenFormat", r"""파일 형식. (OpenFileName과 마찬가지로 동일 아이템 지칭)""")
-    OpenReadOnly = PropertyDescriptor("OpenReadOnly", r"""읽기 전용""")
-    OpenFlag = PropertyDescriptor("OpenFlag", r"""옵션 0x00 \= 새 창으로 열기0x01 \= 현재 창의 새 탭에 열기0x02 \= 현재 창의 현재 탭에 열기0x03 \= 위 세 값의 mask0x04 \=이미 열려진 문서일 때 다시 load할지 뭍을 것인지0x08 \= 초기 모드를 최근 작업 문서 상태로0x10 \= 문서 마당""")
-    SaveOverWrite = PropertyDescriptor("SaveOverWrite", r"""덮어 쓰기""")
-    ModifiedFlag = PropertyDescriptor("ModifiedFlag", r"""Modify 플래그""")
-    Argument = PropertyDescriptor("Argument", r"""Argument""")
-    SaveCMFDoc30 = PropertyDescriptor("SaveCMFDoc30", r"""97 호환 저장 (한글2007에 새로 추가)""")
-    SaveHwp97 = PropertyDescriptor("SaveHwp97", r"""97 문서로 저장 (한글2007에 새로 추가)""")
-    SaveDistribute = PropertyDescriptor("SaveDistribute", r"""배포용 문서로 저장 (한글2007에 새로 추가)""")
-    SaveDRMDoc = PropertyDescriptor("SaveDRMDoc", r"""보안 문서로 저장 (한글2007에 새로 추가)""")
-
-class FileSaveAs(ParameterSet):
-    """FileSaveAs ParameterSet."""
-    OpenFileName = PropertyDescriptor("OpenFileName", r"""파일 이름. (OpenFileName과 SaveFileName은 같은 아이템을 공유한다. 즉 OpenFileName과 SaveFileName은 이름만 다를 뿐 동일한 아이템이다)""")
-    OpenFormat = PropertyDescriptor("OpenFormat", r"""파일 형식. (OpenFileName과 마찬가지로 동일 아이템 지칭)""")
-    OpenReadOnly = PropertyDescriptor("OpenReadOnly", r"""읽기 전용""")
-    OpenFlag = PropertyDescriptor("OpenFlag", r"""옵션 0x00 \= 새 창으로 열기0x01 \= 현재 창의 새 탭에 열기0x02 \= 현재 창의 현재 탭에 열기0x03 \= 위 세 값의 mask0x04 \=이미 열려진 문서일 때 다시 load할지 뭍을 것인지0x08 \= 초기 모드를 최근 작업 문서 상태로0x10 \= 문서 마당""")
-    SaveOverWrite = PropertyDescriptor("SaveOverWrite", r"""덮어 쓰기""")
-    ModifiedFlag = PropertyDescriptor("ModifiedFlag", r"""Modify 플래그""")
-    Argument = PropertyDescriptor("Argument", r"""Argument""")
-    SaveCMFDoc30 = PropertyDescriptor("SaveCMFDoc30", r"""97 호환 저장""")
-    SaveHwp97 = PropertyDescriptor("SaveHwp97", r"""97 문서로 저장""")
-    SaveDistribute = PropertyDescriptor("SaveDistribute", r"""배포용 문서로 저장""")
-    SaveDRMDoc = PropertyDescriptor("SaveDRMDoc", r"""보안 문서로 저장""")
-
-class FileSaveBlock(ParameterSet):
-    """FileSaveBlock ParameterSet."""
-    FileName = PropertyDescriptor("FileName", r"""파일 이름""")
-    Format = PropertyDescriptor("Format", r"""파일 포맷""")
-    Argument = PropertyDescriptor("Argument", r"""argument""")
-
-class FileSendMail(ParameterSet):
-    """FileSendMail ParameterSet."""
-    To = PropertyDescriptor("To", r"""받는 사람""")
-    Type = PropertyDescriptor("Type", r"""메일 보내기 유형: 0 \= 본문, 1 \= 첨부파일""")
-    Subject = PropertyDescriptor("Subject", r"""Parameter property""")
-    Filepath = PropertyDescriptor("Filepath", r"""사용자가 직접 입력한 파일 (이 아이템은 Type 아이템이 1(첨부파일)로 설정되어 있을 때만 유효하다) (한글2007에 새로 추가)""")
-
-class FileSetSecurity(ParameterSet):
-    """FileSetSecurity ParameterSet."""
-    Password = PropertyDescriptor("Password", r"""배포용 문서 암호(7자리 이상 가능)""")
-    NoPrint = PropertyDescriptor("NoPrint", r"""프린트 가능한 배포용 문서를 만들지의 여부0 : 프린트 가능1 : 프린트 가능하지 않음""")
-    NoCopy = PropertyDescriptor("NoCopy", r"""문서 내용 복사가 가능한 배포용 문서를 만들지의 여부0 : 복사 가능1 : 복사 가능하지 않음""")
-
-class FlashProperties(ParameterSet):
-    """FlashProperties ParameterSet."""
-    Base = PropertyDescriptor("Base", r"""경로의 Base""")
-    Qulaity = PropertyDescriptor("Qulaity", r"""재생 품질""")
-    Scale = PropertyDescriptor("Scale", r"""스케일""")
-    WMode = PropertyDescriptor("WMode", r"""윈도우 모드""")
-    AutoPlay = PropertyDescriptor("AutoPlay", r"""자동 재생 여부 : 0 \= off, 1 \= on""")
-    LoopPlay = PropertyDescriptor("LoopPlay", r"""반복 재생 여부 : 0 \= off, 1 \= on""")
-    ShowMenu = PropertyDescriptor("ShowMenu", r"""메뉴 보이기 : 0 \= Hide, 1 \= Show""")
-    BgColor = PropertyDescriptor("BgColor", r"""배경색 (COLORREF)""")
-
-class FootnoteShape(ParameterSet):
-    """FootnoteShape ParameterSet."""
-    NumberFormat = PropertyDescriptor("NumberFormat", r"""번호모양""")
-    UserChar = PropertyDescriptor("UserChar", r"""사용자 기호 (WCHAR)""")
-    PrefixChar = PropertyDescriptor("PrefixChar", r"""앞 장식 문자 (WCHAR)""")
-    Suffix = PropertyDescriptor("Suffix", r"""뒤 장식 문자 (WCHAR)""")
-    PlaceAt = PropertyDescriptor("PlaceAt", r"""위치\- 각주용 옵션 (한 페이지 내에서 각주를 다단에 어떻게 위치시킬지)0 \= 각 단마다 따로 배열1 \= 통단으로 배열2 \= 가장 오른쪽 단에 배열 \- 미주용 옵션 (문서 내에서 미주를 어디에 위치시킬지)0 \= 문서의 마지막1 \= 구역의 마지막""")
-    Restart = PropertyDescriptor("Restart", r"""번호 매기기0 \= 앞 구역에 이어서1 \= 현재 구역부터 새로 시작2 \= 쪽마다 새로 시작 (각주 전용)""")
-    NewNumber = PropertyDescriptor("NewNumber", r"""시작 번호 (1 .. n)번호 매기기 값이 ‘쪽마다 새로 시작’ 일 때만 사용된다.""")
-    LineLength = PropertyDescriptor("LineLength", r"""구분선 길이 (HWPUNIT)""")
-    LineType = PropertyDescriptor("LineType", r"""선 종류""")
-    LineWidth = PropertyDescriptor("LineWidth", r"""선 굵기""")
-    SpaceAboveLine = PropertyDescriptor("SpaceAboveLine", r"""구분선 위 여백 (HWPUNIT)""")
-    SpaceBelowLine = PropertyDescriptor("SpaceBelowLine", r"""구분선 아래 여백 (HWPUNIT)""")
-    SpaceBetweenNotes = PropertyDescriptor("SpaceBetweenNotes", r"""주석 사이 여백 (HWPUNIT)""")
-    SuperScript = PropertyDescriptor("SuperScript", r"""각주 내용 중 번호 코드의 모양을 위첨자 형식으로 할지""")
-    BeneathText = PropertyDescriptor("BeneathText", r"""텍스트에 이어 바로 출력할지 여부 (on / off)""")
-    ApplyTo = PropertyDescriptor("ApplyTo", r"""적용범위0 \= 선택된 구역1 \= 선택된 문자열2 \= 현재 구역3 \= 문서전체4 \= 새 구역 : 현재 위치부터 새로""")
-    ApplyClass = PropertyDescriptor("ApplyClass", r"""적용범위의 분류 (대화상자를 호출할 경우 사용)0x01 \= 선택된 구역0x02 \= 선택된 문자열0x04 \= 현재 구역0x08 \= 문서전체0x10 \= 새 구역 : 현재 위치부터 새로""")
-
-class EndnoteShape(ParameterSet):
-    """EndnoteShape ParameterSet - 미주 모양 (FootnoteShape와 동일 구조)."""
-    NumberFormat = PropertyDescriptor("NumberFormat", r"""번호모양""")
-    UserChar = PropertyDescriptor("UserChar", r"""사용자 기호 (WCHAR)""")
-    PrefixChar = PropertyDescriptor("PrefixChar", r"""앞 장식 문자 (WCHAR)""")
-    Suffix = PropertyDescriptor("Suffix", r"""뒤 장식 문자 (WCHAR)""")
-    PlaceAt = PropertyDescriptor("PlaceAt", r"""위치: 0=문서의 마지막, 1=구역의 마지막""")
-    Restart = PropertyDescriptor("Restart", r"""번호 매기기: 0=앞 구역에 이어서, 1=현재 구역부터 새로 시작""")
-    NewNumber = PropertyDescriptor("NewNumber", r"""시작 번호 (1..n)""")
-    LineLength = PropertyDescriptor("LineLength", r"""구분선 길이 (HWPUNIT)""")
-    LineType = PropertyDescriptor("LineType", r"""선 종류""")
-    LineWidth = PropertyDescriptor("LineWidth", r"""선 굵기""")
-    SpaceAboveLine = PropertyDescriptor("SpaceAboveLine", r"""구분선 위 여백 (HWPUNIT)""")
-    SpaceBelowLine = PropertyDescriptor("SpaceBelowLine", r"""구분선 아래 여백 (HWPUNIT)""")
-    SpaceBetweenNotes = PropertyDescriptor("SpaceBetweenNotes", r"""주석 사이 여백 (HWPUNIT)""")
-    SuperScript = PropertyDescriptor("SuperScript", r"""번호 코드 위첨자 형식 여부""")
-    BeneathText = PropertyDescriptor("BeneathText", r"""텍스트에 이어 바로 출력할지 여부""")
-    ApplyTo = PropertyDescriptor("ApplyTo", r"""적용범위: 0=선택된 구역, 1=선택된 문자열, 2=현재 구역, 3=문서전체, 4=새 구역""")
-    ApplyClass = PropertyDescriptor("ApplyClass", r"""적용범위 분류 (비트마스크): 0x01=선택된 구역, 0x02=선택된 문자열, 0x04=현재 구역, 0x08=문서전체, 0x10=새 구역""")
-
-class FtpDownload(ParameterSet):
-    """FtpDownload ParameterSet."""
-    Server = PropertyDescriptor("Server", r"""Ftp 서버 내임""")
-    UserName = PropertyDescriptor("UserName", r"""사용자 이름""")
-    Password = PropertyDescriptor("Password", r"""사용자 패스워드""")
-    Directory = PropertyDescriptor("Directory", r"""디렉터리""")
-    FileName = PropertyDescriptor("FileName", r"""파일 명""")
-    SaveType = PropertyDescriptor("SaveType", r"""저장할 포맷. 0 \= HTML 1 \= HWP 2: OOXML""")
-
-class FtpUpload(ParameterSet):
-    """FtpUpload ParameterSet."""
-    Server = PropertyDescriptor("Server", r"""Ftp 서버 내임""")
-    UserName = PropertyDescriptor("UserName", r"""사용자 이름""")
-    Password = PropertyDescriptor("Password", r"""사용자 패스워드""")
-    Directory = PropertyDescriptor("Directory", r"""디렉터리""")
-    FileName = PropertyDescriptor("FileName", r"""파일 명""")
-    SiteName = PropertyDescriptor("SiteName", r"""사이트 이름""")
-    SaveType = PropertyDescriptor("SaveType", r"""저장할 포맷. 0 \= HTML 1 \= HWP""")
-
-class GotoE(ParameterSet):
-    """GotoE ParameterSet."""
-    SetSelectionIndex = PropertyDescriptor("SetSelectionIndex", r"""현재 선택되어 있는 라디오 값 (한글2007에 새로 추가)""")
-    DialogResult = PropertyDescriptor("DialogResult", r"""대화상자의 반환값 (한글2007에 새로 추가)""")
-
-class GridInfo(ParameterSet):
-    """GridInfo ParameterSet."""
-    Method = PropertyDescriptor("Method", r"""격자 방식0 \= 격자와 상관없이1 \= 격자 자석효과2 \= 격자에만 붙음""")
-    Align = PropertyDescriptor("Align", r"""격자 기준(쪽 \= 0 / 종이 \= 1\)""")
-    HorzAlign = PropertyDescriptor("HorzAlign", r"""격자 기준 가로 offset (단위 HWPUNIT)""")
-    VertAlign = PropertyDescriptor("VertAlign", r"""격자 기준 세로 offset (단위 HWPUNIT)""")
-    Type = PropertyDescriptor("Type", r"""격자 모양0 \= 점 격자1 \= 선 격자""")
-    HorzSpan = PropertyDescriptor("HorzSpan", r"""가로 간격 (단위 HWPUNIT)""")
-    VertSpan = PropertyDescriptor("VertSpan", r"""세로 간격 (단위 HWPUNIT)""")
-    HorzRange = PropertyDescriptor("HorzRange", r"""가로 자석 범위 (단위 HWPUNIT)""")
-    VertRange = PropertyDescriptor("VertRange", r"""세로 자석 범위 (단위 HWPUNIT)""")
-    Show = PropertyDescriptor("Show", r"""격자 보이기 ( on / off )""")
-    ZOrder = PropertyDescriptor("ZOrder", r"""격자 위치(글 위/글 아래) (ZOrder)0 \= 글 아래, 1 \= 글 위""")
-    ViewLine = PropertyDescriptor("ViewLine", r"""선격자 보이기 종류 (한글2007에 새로 추가)0 \= 모두1 \= 수평격자만2 \= 수직격자만""")
-
-class HeaderFooter(ParameterSet):
-    """HeaderFooter ParameterSet."""
-    DialogOption = PropertyDescriptor("DialogOption", r"""머리말/꼬리말 대화상자를 실행할 때 "편집"버튼을 보일 것인지 말 것인지 지정한다. 1=보이기, 그외=안보이기""")
-    DialogResult = PropertyDescriptor("DialogResult", r"""대화상자 버튼 결과. 1=만들기(삽입), 2=편집, 그외=취소""")
-    CtrlType = PropertyDescriptor("CtrlType", r"""머리말/꼬리말 여부 : 0=머리말, 1=꼬리말""")
-    Type = PropertyDescriptor("Type", r"""머리말/꼬리말 위치 : 0=양쪽, 1=짝수쪽, 2=홀수쪽""")
-    HeaderFooterCtrlType = PropertyDescriptor("HeaderFooterCtrlType", r"""머리말/꼬리말 종류 : 0=머리말, 1=꼬리말 (한글2007)""")
-    HeaderFooterStyle = PropertyDescriptor("HeaderFooterStyle", r"""머리말/꼬리말 마당 스타일 (한글2007)""")
-
-class HyperLink(ParameterSet):
-    """HyperLink ParameterSet."""
-    Text = PropertyDescriptor("Text", r"""하이퍼링크가 표시되는 문자열""")
-    Command = PropertyDescriptor("Command", r"""Command String 참조""")
-    NoLInk = PropertyDescriptor("NoLInk", r"""연결 안함 여부""")
-    ShapeObject = PropertyDescriptor("ShapeObject", r"""그림 및 그리기객체가 Selection되어 있는지 여부""")
-    DirectInsert = PropertyDescriptor("DirectInsert", r"""현재 캐럿 위치에 무조건 하이퍼링크 삽입 여부 (블록지정 상태면 블록해제 후 삽입) (한글2007에 새로 추가)""")
-
-class HyperlinkJump(ParameterSet):
-    """HyperlinkJump ParameterSet - 하이퍼링크 이동."""
-    Text = PropertyDescriptor("Text", r"""하이퍼링크가 표시되는 문자열""")
-    Command = PropertyDescriptor("Command", r"""Command String""")
-
-class Idiom(ParameterSet):
-    """Idiom ParameterSet."""
-    InputText = PropertyDescriptor("InputText", r"""삽입될 스트링/끼워 넣을 파일""")
-    InputType = PropertyDescriptor("InputType", r"""입력기 상용구/한글 상용구""")
-
-class IndexMark(ParameterSet):
-    """IndexMark ParameterSet."""
-    First = PropertyDescriptor("First", r"""첫 번째 키""")
-    Second = PropertyDescriptor("Second", r"""두 번째 키""")
-
-class InputDateStyle(ParameterSet):
-    """InputDateStyle ParameterSet."""
-    DateStyleType = PropertyDescriptor("DateStyleType", r"""문자열로 넣기/코드로 넣기""")
-    DateStyleDataForm = PropertyDescriptor("DateStyleDataForm", r"""필드 컨트롤의 안내문/지시문""")
-
-class InsertFieldTemplate(ParameterSet):
-    """InsertFieldTemplate ParameterSet."""
-    ShowSingle = PropertyDescriptor("ShowSingle", r"""문서마당 정보 대화상자에서 페이지(탭) 보이기 옵션 :\-1 \= 모든 페이지 보이기0 \= 누름틀 페이지만 보이기1 \= 개인 정보 페이지만 보이기2 \= 문서 요약 페이지만 보이기3 \= 만든 날짜 페이지만 보이기4 \= 파일 경로 페이지만 보이기""")
-    TemplateDirection = PropertyDescriptor("TemplateDirection", r"""필드 컨트롤의 안내문/지시문""")
-    TemplateHelp = PropertyDescriptor("TemplateHelp", r"""필드 컨트롤의 도움말""")
-    TemplateName = PropertyDescriptor("TemplateName", r"""필드 이름 (name)""")
-    TemplateType = PropertyDescriptor("TemplateType", r"""필드의 종류.TemplateDirection/Help/Name의 값이 실제로 적용되는 위치 :0 \= 누름틀, 1 \= 개인 정보, 2 \= 문서 요약, 3 \= 만든 날짜, 4 \= 파일 경로""")
-    Editable = PropertyDescriptor("Editable", r"""필드의 양식모드에서 편집여부 (한글2007에 새로 추가)0 \= 편집 불가능1 \= 편집 가능""")
-
-class InsertFile(ParameterSet):
-    """InsertFile ParameterSet."""
-    FileName = PropertyDescriptor("FileName", r"""삽입할 파일의 이름""")
-    FileFormat = PropertyDescriptor("FileFormat", r"""삽입할 파일의 확장자""")
-    FileArg = PropertyDescriptor("FileArg", r"""삽입할 파일의 Argument""")
-    KeepSection = PropertyDescriptor("KeepSection", r"""끼워 넣을 문서를 구역으로 나누어 쪽 모양을 유지할지 여부 on / off (ver:0x0605010E)""")
-    KeepCharshape = PropertyDescriptor("KeepCharshape", r"""끼워 넣을 문서의 글자 모양을 유지할지 여부 on / off(한글2007에 새로 추가)""")
-    KeepParashape = PropertyDescriptor("KeepParashape", r"""끼워 넣을 문서의 문단 모양을 유지할지 여부 on / off(한글2007에 새로 추가)""")
-    KeepStyle = PropertyDescriptor("KeepStyle", r"""끼워 넣을 문서의 스타일을 유지할지 여부 on / off(한글2010에 새로 추가)""")
-
-class Internet(ParameterSet):
-    """Internet ParameterSet."""
-    OpenUrlWhere = PropertyDescriptor("OpenUrlWhere", r"""웹브라우저로 불러오거나 한글 문서로 불러오기""")
-    OpenUrlString = PropertyDescriptor("OpenUrlString", r"""불러올 문서가 존재하는 URL""")
-
-class KeyMacro(ParameterSet):
-    """KeyMacro ParameterSet."""
-    Index = PropertyDescriptor("Index", r"""정의(or 실행)할 매크로의 인덱스.""")
-    RepeatCount = PropertyDescriptor("RepeatCount", r"""실행 반복 횟수""")
-    Name = PropertyDescriptor("Name", r"""매크로 이름""")
-
-class LinkDocument(ParameterSet):
-    """LinkDocument ParameterSet."""
-    Name = PropertyDescriptor("Name", r"""연결 문서 FILE NAME""")
-    PageInherit = PropertyDescriptor("PageInherit", r"""TRUE \= 쪽 번호 잇기, FALSE \= 쪽 번호 잇지 않기.""")
-    FootnoteInherit = PropertyDescriptor("FootnoteInherit", r"""TRUE \= 각주 번호 잇기, FALSE \= 각주 번호 잇지 않기.""")
-
-class ListParaPos(ParameterSet):
-    """ListParaPos ParameterSet."""
-    List = PropertyDescriptor("List", r"""현재 위치한 리스트""")
-    Para = PropertyDescriptor("Para", r"""현재 위치한 문단""")
-    Pos = PropertyDescriptor("Pos", r"""현재 위치한 글자""")
-
-class MailMergeGenerate(ParameterSet):
-    """MailMergeGenerate ParameterSet."""
-    Input = PropertyDescriptor("Input", r"""자료 종류 0 \= WAB1 \= OAB2 \= HWP3 \= DBF""")
-    HwpPath = PropertyDescriptor("HwpPath", r"""Hwp 문서 경로.""")
-    HwpId = PropertyDescriptor("HwpId", r"""Hwp 문서 ID""")
-    DbfPath = PropertyDescriptor("DbfPath", r"""dbf file path""")
-    DbfCode = PropertyDescriptor("DbfCode", r"""dbf file codepage0 \= KS1 \= KSSM2 \= GB3 \= BIG54 \= SJIS""")
-    Output = PropertyDescriptor("Output", r"""출력 방향0 \= PRINTER1 \= PREVIEW2 \= FILE3 \= MAIL""")
-    FileName = PropertyDescriptor("FileName", r"""파일 이름""")
-    Continue = PropertyDescriptor("Continue", r"""쪽번호 잇기""")
-    PrintSet = PropertyDescriptor("PrintSet", r"""인쇄 선택 사항""")
-    Subject = PropertyDescriptor("Subject", r"""메일 제목""")
-    Type = PropertyDescriptor("Type", r"""메일 종류0 \= 본문1 \= 첨부파일""")
-    Field = PropertyDescriptor("Field", r"""메일 주소 필드""")
-    FieldUpdate = PropertyDescriptor("FieldUpdate", r"""필드 단위 업데이트 (한글2007에 새로 추가)""")
-    NxlPath = PropertyDescriptor("NxlPath", r"""넥셀 파일 경로 (한글2007에 새로 추가)""")
-
-class MakeContents(ParameterSet):
-    """MakeContents ParameterSet."""
-    Make = PropertyDescriptor("Make", r"""생성할 차례의 종류, 다음의 값들의 조합이다0x01: 제목 차례0x02: 표 차례0x04: 그림 차례0x08: 수식 차례제목 차례를 지정한 경우에는 다음의 값을 추가로 지정할 수 있다.0x10: 개요 문단으로 모으기0x20: 스타일로 모으기0x40: 차례코드로 모으기""")
-    Level = PropertyDescriptor("Level", r"""개요 수준""")
-    AutoTabRight = PropertyDescriptor("AutoTabRight", r"""문단 오른쪽 끝 자동 탭 여부 : 0 \= 자동 탭 사용안함, 1 \= 자동 탭 사용""")
-    Leader = PropertyDescriptor("Leader", r"""오른쪽 끝 탭 채울 모양(선 종류)""")
-    OutlineNumber = PropertyDescriptor("OutlineNumber", r"""개요 문단 모으기""")
-    Styles = PropertyDescriptor("Styles", r"""모을 스타일 목록""")
-    StyleName = PropertyDescriptor("StyleName", r"""모을 스타일 이름들""")
-    OutFileName = PropertyDescriptor("OutFileName", r"""만들 파일 이름. ""이면 현재 문서에 생성""")
-    Position = PropertyDescriptor("Position", r"""만들 위치. 반드시 0이어야 한다. (한글 컨트롤은 탭이 없으므로)(한글2007에 새로 추가)0 \= 현재 문서1 \= 새 탭으로""")
-
-class MarkpenShape(ParameterSet):
-    """MarkpenShape ParameterSet."""
-    Color = PropertyDescriptor("Color", r"""형광펜색 (COLORREF)""")
-
-class MasterPage(ParameterSet):
-    """MasterPage ParameterSet."""
-    Type = PropertyDescriptor("Type", r"""바탕쪽 종류0 \= 양쪽1 \= 짝수쪽2 \= 홀수쪽""")
-    Duplicate = PropertyDescriptor("Duplicate", r"""기존 바탕쪽과 겹침 (On/Off) (한글2007에 새로 추가)""")
-    Front = PropertyDescriptor("Front", r"""바탕쪽과 앞으로 보내기 (On/Off) (한글2007에 새로 추가)""")
-    ApplyTo = PropertyDescriptor("ApplyTo", r"""적용대상 (한글2007에 새로 추가)0 \= 현재구역1 \= 문서 전체""")
-
-class MemoShape(ParameterSet):
-    """MemoShape ParameterSet."""
-    Width = PropertyDescriptor("Width", r"""너비 (HWPUNIT)""")
-    LineType = PropertyDescriptor("LineType", r"""선 종류""")
-    LineWidth = PropertyDescriptor("LineWidth", r"""선 굵기""")
-    LineColor = PropertyDescriptor("LineColor", r"""선 색깔 (COLORREF)""")
-    FillColor = PropertyDescriptor("FillColor", r"""채우기 색깔 (COLORREF)""")
-    ActiveFillColor = PropertyDescriptor("ActiveFillColor", r"""활성화된 채우기 색깔 (COLORREF)""")
-    MemoType = PropertyDescriptor("MemoType", r"""메모 종류 \- 현재 사용안 함1 \= 메모 넣기, 2 \= 메모 지우기, 3 \= 메모 고치기""")
-
-class MousePos(ParameterSet):
-    """MousePos ParameterSet."""
-    XRelTo = PropertyDescriptor("XRelTo", r"""가로 상대적 기준0 : 종이1 : 쪽""")
-    YRelTo = PropertyDescriptor("YRelTo", r"""세로 상대적 기준0 : 종이1 : 쪽""")
-    Page = PropertyDescriptor("Page", r"""페이지 번호 ( 0 based)""")
-    X = PropertyDescriptor("X", r"""가로 클릭한 위치 (HWPUNIT)""")
-    Y = PropertyDescriptor("Y", r"""세로 클릭한 위치 (HWPUNIT)""")
-
-class MovieProperties(ParameterSet):
-    """MovieProperties ParameterSet."""
-    Base = PropertyDescriptor("Base", r"""동영상 파일의 경로""")
-    Caption = PropertyDescriptor("Caption", r"""자막 파일의 경로""")
-    AutoPlay = PropertyDescriptor("AutoPlay", r"""자동 재생 여부 : 0 \= off, 1 \= on""")
-    AutoRewind = PropertyDescriptor("AutoRewind", r"""되감기 여부 : 0 \= off, 1 \= on""")
-    ShowMenu = PropertyDescriptor("ShowMenu", r"""메뉴 보이기 : 0 \= Hide, 1 \= Show""")
-    ShowCtrlPanel = PropertyDescriptor("ShowCtrlPanel", r"""컨트롤 패널 보이기 : 0 \= Hide, 1 \= Show""")
-    ShowPosCtrl = PropertyDescriptor("ShowPosCtrl", r"""위치 컨트롤 보이기 : 0 \= Hide, 1 \= Show""")
-    EnablePos = PropertyDescriptor("EnablePos", r"""위치 컨트롤 조절 여부 : 0 \= Disable, 1 \= Enable""")
-    ShowTrackBar = PropertyDescriptor("ShowTrackBar", r"""음량 조절막대(Track Bar) 보이기 : 0 \= Hide, 1 \= Show""")
-    EnableTrack = PropertyDescriptor("EnableTrack", r"""음량 조절 여부 : 0 \= Disable, 1 \= Enable""")
-    ShowChaption = PropertyDescriptor("ShowChaption", r"""자막 보이기 : 0 \= Hide, 1 \= Show""")
-    ShowAudio = PropertyDescriptor("ShowAudio", r"""오디오 설정 보이기 : 0 \= Hide, 1 \= Show""")
-    ShowStatus = PropertyDescriptor("ShowStatus", r"""상태바 보기 (진행시간 등을 표시) : 0 \= Hide, 1 \= Show""")
-
-class OleCreation(ParameterSet):
-    """OleCreation ParameterSet."""
-    Type = PropertyDescriptor("Type", r"""생성 방식0 \= 새로 개체 생성1 \= 파일로부터 개체 생성2 \= 파일로 링크된 개체 생성""")
-    Clsid = PropertyDescriptor("Clsid", r"""클래스 ID (새로 개체 생성‘일 때 사용)""")
-    Path = PropertyDescriptor("Path", r"""파일 경로 (‘파일로 링크된 개체 생성’, ‘파일로부터 개체 생성’일 때 사용)""")
-    Aspect = PropertyDescriptor("Aspect", r"""생성된 OLE 개체를 아이콘으로 표시할지 여부 :0 \= 내용으로 표시, 1 \= 아이콘으로 표시""")
-    IconMetafile = PropertyDescriptor("IconMetafile", r"""Aspect가 아이콘일 때 적용할 아이콘 데이터""")
-    IconMM = PropertyDescriptor("IconMM", r"""Aspect가 아이콘일 때 아이콘 매핑모드1 \= MM_TEXT2 \= MM_LOMETRIC3 \= MM_HIMETRIC4 \= MM_LOENGLISH5 \= MM_HIENGLISH6 \= MM_TWIPS7 \= MM_ISOTROPIC8 \= MM_ANISOTROPIC※ MFC의 매핑모드와 값/의미가 동일하다.""")
-    IconXext = PropertyDescriptor("IconXext", r"""Aspect가 아이콘일 때 X축 매핑단위""")
-    IconYext = PropertyDescriptor("IconYext", r"""Aspect가 아이콘일 때 Y축 매핑단위""")
-    InnerOCX = PropertyDescriptor("InnerOCX", r"""한글 내부에서 사용되는 OCX인지 여부 (예: 한글의 Chart OLE)""")
-    SoProperties = PropertyDescriptor("SoProperties", r"""초기 shape object 속성""")
-    FlashProperties = PropertyDescriptor("FlashProperties", r"""플래시 파일 삽입 시 필요한 옵션 셋 (한글2007에 새로 추가)""")
-    MovieProperties = PropertyDescriptor("MovieProperties", r"""동영상 파일 삽입 시 필요한 옵션 셋 (한글2007에 새로 추가)""")
-
-class PageBorderFill(ParameterSet):
-    """PageBorderFill ParameterSet."""
-    TextBorder = PropertyDescriptor("TextBorder", r"""TRUE \= 본문 기준, FALSE \= 종이 기준""")
-    HeaderInside = PropertyDescriptor("HeaderInside", r"""머리말 포함 (on / off)""")
-    FooterInside = PropertyDescriptor("FooterInside", r"""꼬리말 포함 (on / off)""")
-    FillArea = PropertyDescriptor("FillArea", r"""채울 영역0 \= 종이1 \= 쪽2 \= 테두리""")
-    OffsetLeft = PropertyDescriptor("OffsetLeft", r"""4방향 간격 (HWPUNIT) : 왼쪽""")
-    OffsetRight = PropertyDescriptor("OffsetRight", r"""4방향 간격 (HWPUNIT) : 오른쪽""")
-    OffsetTop = PropertyDescriptor("OffsetTop", r"""4방향 간격 (HWPUNIT) : 위""")
-    OffsetBottom = PropertyDescriptor("OffsetBottom", r"""4방향 간격 (HWPUNIT) : 아래""")
-
-class PageDef(ParameterSet):
-    """PageDef ParameterSet."""
-    PaperWidth = PropertyDescriptor("PaperWidth", r"""용지 가로 크기 (HWPUNIT)""")
-    PaperHeight = PropertyDescriptor("PaperHeight", r"""용지 세로 크기 (HWPUNIT)""")
-    Landscape = PropertyDescriptor("Landscape", r"""용지 방향. 0 \= 좁게, 1 \= 넓게""")
-    LeftMargin = PropertyDescriptor("LeftMargin", r"""왼쪽 여백 (HWPUNIT)""")
-    RightMargin = PropertyDescriptor("RightMargin", r"""오른쪽 여백 (HWPUNIT)""")
-    TopMargin = PropertyDescriptor("TopMargin", r"""위 여백 (HWPUNIT)""")
-    BottomMargin = PropertyDescriptor("BottomMargin", r"""아래 여백 (HWPUNIT)""")
-    HeaderLen = PropertyDescriptor("HeaderLen", r"""머리말 길이 (HWPUNIT)""")
-    FooterLen = PropertyDescriptor("FooterLen", r"""꼬리말 길이 (HWPUNIT)""")
-    GutterLen = PropertyDescriptor("GutterLen", r"""제본 여백 (HWPUNIT)""")
-    GutterType = PropertyDescriptor("GutterType", r"""편집 방법. 0 \= 한쪽 편집, 1 \= 맞쪽 편집, 2 \= 위로 넘기기""")
-    ApplyTo = PropertyDescriptor("ApplyTo", r"""적용범위0 \= 선택된 구역1 \= 선택된 문자열2 \= 현재 구역3 \= 문서전체4 \= 새 구역 : 현재 위치부터 새로""")
-    ApplyClass = PropertyDescriptor("ApplyClass", r"""적용범위의 분류 (대화상자를 호출할 경우 사용)0x01 \= 선택된 구역0x02 \= 선택된 문자열0x04 \= 현재 구역0x08 \= 문서전체0x10 \= 새 구역 : 현재 위치부터 새로""")
-
-class PageHiding(ParameterSet):
-    """PageHiding ParameterSet."""
-    Fields = PropertyDescriptor("Fields", r"""감출 대상 비트 필드.0x01 \= 머리말0x02 \= 꼬리말0x04 \= 바탕쪽0x08 \= 테두리0x10 \= 배경0x20 \= 쪽번호 위치""")
-
-class PageNumCtrl(ParameterSet):
-    """PageNumCtrl ParameterSet."""
-    PageStartsOn = PropertyDescriptor("PageStartsOn", r"""페이지 번호 적용 옵션. 0 \= 양쪽1 \= 짝수쪽2 \= 홀수쪽""")
-
-class PageNumPos(ParameterSet):
-    """PageNumPos ParameterSet."""
-    NumberFormat = PropertyDescriptor("NumberFormat", r"""번호 모양 :0 \= 1, 2, 31 \= ①, ②, ③2 \= Ⅰ, Ⅱ, Ⅲ3 \= ⅰ, ⅱ, ⅲ4 \= A, B, C8 \= 가, 나, 다13 \= 一, 二, 三15 \= 갑, 을, 병16 \= 甲, 乙, 丙※ 중간에 빈 번호에도 문자포맷이 존재하나 이곳에서 사용하지 않아 생략함""")
-    UserChar = PropertyDescriptor("UserChar", r"""사용자 기호(WCHAR). 한글2007에선 더 이상 사용하지 않는다.""")
-    PrefixChar = PropertyDescriptor("PrefixChar", r"""앞 장식 문자(WCHAR). 한글2007에선 더 이상 사용하지 않는다.""")
-    SuffixChar = PropertyDescriptor("SuffixChar", r"""뒤 장식 문자(WCHAR). 한글2007에선 더 이상 사용하지 않는다.""")
-    SideChar = PropertyDescriptor("SideChar", r"""양쪽 옆 장식 문자(WCHAR). L\-만 사용할 수 있다.""")
-    DrawPos = PropertyDescriptor("DrawPos", r"""번호 위치0 \= 쪽 번호 없음1 \= 왼쪽 위,2 \= 가운데 위,3 \= 오른쪽 위,4 \= 왼쪽 아래,5 \= 가운데 아래,6 \= 오른쪽 아래,7 \= 바깥쪽 위,8 \= 바깥쪽 아래,9 \= 안쪽 위,10 \= 안쪽 아래""")
-
-class Password(ParameterSet):
-    """Password ParameterSet."""
-    DialogResult = PropertyDescriptor("DialogResult", r"""암호해제 버튼 클릭 여부. 1=암호해제""")
-    String = PropertyDescriptor("String", r"""암호 문자열""")
-    FullRange = PropertyDescriptor("FullRange", r"""TRUE=유니코드/모든 문자, FALSE=영문자만""")
-    Ask = PropertyDescriptor("Ask", r"""TRUE=문서 암호 확인, FALSE=문서 암호 설정""")
-    Level = PropertyDescriptor("Level", r"""보안 수준: 0=낮음, 1=높음 (한글2007)""")
-
-class Preference(ParameterSet):
-    """Preference ParameterSet."""
-    ShowSinglePage = PropertyDescriptor("ShowSinglePage", r"""환경 설정 PropertySheet에 표시할 PropertyPage 번호(하나만 선택)""")
-    ApplyLinkAttr = PropertyDescriptor("ApplyLinkAttr", r"""하이퍼링크 글자 속성 문서 전체에 적용하기 여부 (on/off)(한글2007에 새로 추가)""")
-    ApplyForbidden = PropertyDescriptor("ApplyForbidden", r"""(금칙 처리) 새 문서에 기본 값으로 설정 (on/off)(한글2007에 새로 추가)""")
-    StartForbiddenStr = PropertyDescriptor("StartForbiddenStr", r"""(금칙 처리) 새 문서에 적용할 줄 앞 금칙 문자열(한글2007에 새로 추가)""")
-    EndForbiddenStr = PropertyDescriptor("EndForbiddenStr", r"""(금칙 처리) 새 문서에 적용할 줄 뒤 금칙 문자열(한글2007에 새로 추가)""")
-
-class Presentation(ParameterSet):
-    """Presentation ParameterSet."""
-    DialogResult = PropertyDescriptor("DialogResult", r"""프리젠테이션 대화상자의 "실행"버튼이 클릭되었는지 여부.한글2007에서는 이 Set Item이 제거되었다.""")
-    Effect = PropertyDescriptor("Effect", r"""화면 전환 효과""")
-    Sound = PropertyDescriptor("Sound", r"""효과음""")
-    InvertText = PropertyDescriptor("InvertText", r"""검은색 글자를 흰색으로""")
-    ShowMode = PropertyDescriptor("ShowMode", r"""자동 전환 모드 (한글2007에 새로 추가)""")
-    ShowPage = PropertyDescriptor("ShowPage", r"""현재 쪽""")
-    ShowTime = PropertyDescriptor("ShowTime", r"""전환 시간 (초)""")
-
-class Print(ParameterSet):
-    """Print ParameterSet."""
-    DialogOption = PropertyDescriptor("DialogOption", r"""미리보기 버튼을 보일지 말지를 지정.한글2007에서는 이 Set Item이 제거되었다.""")
-    DialogResult = PropertyDescriptor("DialogResult", r"""인쇄 대화상자에서 어떤 버튼이 눌러졌는지 알려준다.한글2007에서는 이 Set Item이 제거되었다.1 \= 인쇄, 2 \= (미리보기), 3 \= 팩스로 인쇄, 그 외 \= 취소""")
-    Range = PropertyDescriptor("Range", r"""인쇄 범위0 \= 문서전체 (연결된 문서 포함)1 \= 현재 쪽2 \= 현재부터3 \= 현재까지4 \= 일부분5 \= 선택한 쪽만6 \= 현재 문서 (연결된 문서 미포함)7 \= 현재 구역""")
-    RangeCustom = PropertyDescriptor("RangeCustom", r"""사용자가 직접 입력한 인쇄 범위""")
-    RangeIncludeLinkedDoc = PropertyDescriptor("RangeIncludeLinkedDoc", r"""연결된 문서 포함""")
-    NumCopy = PropertyDescriptor("NumCopy", r"""인쇄 매수""")
-    Collate = PropertyDescriptor("Collate", r"""한 부씩 찍기""")
-    PrintMethod = PropertyDescriptor("PrintMethod", r"""인쇄 방법0 \= 자동 인쇄1 \= 공급 용지에 맞추어2 \= 나눠 찍기3 \= 자동으로 모아 찍기4 \= 2쪽씩 모아 찍기5 \= 3쪽씩 모아 찍기6 \= 4쪽씩 모아 찍기7 \= 6쪽씩 모아 찍기8 \= 8쪽씩 모아 찍기9 \= 9쪽씩 모아 찍기10 \= 16쪽씩 모아 찍기""")
-    PrinterPaperSize = PropertyDescriptor("PrinterPaperSize", r"""공급용지 종류(DEVMODE.dmPaperSize)""")
-    PrinterPaperWidth = PropertyDescriptor("PrinterPaperWidth", r"""공급용지 종류(DEVMODE.dmPaperWidth)""")
-    PrinterPaperLength = PropertyDescriptor("PrinterPaperLength", r"""공급용지 종류(DEVMODE.dmPaperLength)""")
-    PrintAutoHeadNote = PropertyDescriptor("PrintAutoHeadNote", r"""머리말 자동 인쇄""")
-    PrintAutoFootNote = PropertyDescriptor("PrintAutoFootNote", r"""꼬리말 자동 인쇄""")
-    PrintAutoHeadnoteLtext = PropertyDescriptor("PrintAutoHeadnoteLtext", r"""자동 머리말의 왼쪽 String""")
-    PrintAutoHeadnoteCtext = PropertyDescriptor("PrintAutoHeadnoteCtext", r"""자동 머리말의 가운데 String""")
-    PrintAutoHeadnoteRtext = PropertyDescriptor("PrintAutoHeadnoteRtext", r"""자동 머리말의 오른쪽 String""")
-    PrintAutoFootnoteLtext = PropertyDescriptor("PrintAutoFootnoteLtext", r"""자동 꼬리말의 왼쪽 String""")
-    PrintAutoFootnoteCtext = PropertyDescriptor("PrintAutoFootnoteCtext", r"""자동 꼬리말의 가운데 String""")
-    PrintAutoFootnoteRtext = PropertyDescriptor("PrintAutoFootnoteRtext", r"""자동 꼬리말의 오른쪽 String""")
-    PrinterName = PropertyDescriptor("PrinterName", r"""프린터""")
-    PrintToFile = PropertyDescriptor("PrintToFile", r"""인쇄 결과를 파일로 저장""")
-    FileName = PropertyDescriptor("FileName", r"""인쇄 결과를 저장할 파일 이름""")
-    ReverseOrder = PropertyDescriptor("ReverseOrder", r"""역순 인쇄""")
-    Pause = PropertyDescriptor("Pause", r"""끊어 찍기 매수""")
-    PrintImage = PropertyDescriptor("PrintImage", r"""그림 개체""")
-    PrintDrawObj = PropertyDescriptor("PrintDrawObj", r"""그리기 개체""")
-    PrintClickHere = PropertyDescriptor("PrintClickHere", r"""누름틀""")
-    PrintCropMark = PropertyDescriptor("PrintCropMark", r"""편집 용지 표시""")
-    IdcPrintWallPaper = PropertyDescriptor("IdcPrintWallPaper", r"""배경 그림""")
-    LastBlankPage = PropertyDescriptor("LastBlankPage", r"""빈 마지막 쪽""")
-    BinderHoleType = PropertyDescriptor("BinderHoleType", r"""바인더 구멍""")
-    EvenOddPageType = PropertyDescriptor("EvenOddPageType", r"""홀짝 인쇄""")
-    ZoomX = PropertyDescriptor("ZoomX", r"""가로 확대""")
-    ZoomY = PropertyDescriptor("ZoomY", r"""세로 확대""")
-    StartPageNum = PropertyDescriptor("StartPageNum", r"""시작 번호/쪽 번호""")
-    StartFootNoteNum = PropertyDescriptor("StartFootNoteNum", r"""시작 번호/각주 번호""")
-    Flags = PropertyDescriptor("Flags", r"""문제 해결을 위한 고급 선택 사항""")
-    Device = PropertyDescriptor("Device", r"""인쇄 방향(장치)0 : 프린터1: 팩스2: 그림으로 저장3: PDF 파일로 저장4: 미리보기""")
-    PrintFormObj = PropertyDescriptor("PrintFormObj", r"""양식 개체 출력여부 (한글2007에 새로 추가)""")
-    PrintMarkPen = PropertyDescriptor("PrintMarkPen", r"""형광펜 출력여부 (한글2007에 새로 추가)""")
-    PrintMemo = PropertyDescriptor("PrintMemo", r"""메모 출력여부 (한글2007에 새로 추가)""")
-    PrintMemoContents = PropertyDescriptor("PrintMemoContents", r"""메모 내용 출력여부 (한글2007에 새로 추가)""")
-    PrintRevision = PropertyDescriptor("PrintRevision", r"""교정부호 출력여부 (한글2007에 새로 추가)""")
-    PrintWatermark = PropertyDescriptor("PrintWatermark", r"""인쇄워터마크 (한글2007에 새로 추가)""")
-
-class PrintToImage(ParameterSet):
-    """PrintToImage ParameterSet."""
-    Format = PropertyDescriptor("Format", r"""그림 형식0 : none1 : BMP2 : GIF3 : PNG4 : JPG5 : WMF""")
-    FileName = PropertyDescriptor("FileName", r"""그림 경로""")
-    ColorDepth = PropertyDescriptor("ColorDepth", r"""색상수 (bits: 8, 16\...)""")
-    Resolution = PropertyDescriptor("Resolution", r"""해상도""")
-
-class PrintWatermark(ParameterSet):
-    """PrintWatermark ParameterSet."""
-    WatermarkType = PropertyDescriptor("WatermarkType", r"""현재 선택된 워터마크의 유형을 나타냄.0 \= 워터마크 없음1 \= 그림 워터마크2 \= 글자 워터마크""")
-    PosPage = PropertyDescriptor("PosPage", r"""워터마크의 위치 기준 : 0 \= 종이 기준, 1 \= 쪽 기준""")
-    TextWrap = PropertyDescriptor("TextWrap", r"""워터마크의 배치 : 0 \= 글 뒤로, 1 \= 글 앞으로""")
-    AlphaText = PropertyDescriptor("AlphaText", r"""글자 투명도 (0 \~ 255\)""")
-    AlphaImage = PropertyDescriptor("AlphaImage", r"""그림 투명도 (0 \~ 255\)""")
-    FileName = PropertyDescriptor("FileName", r"""그림 파일의 경로 or 그림파일 삽입일 경우에는 binary data""")
-    PicEffect = PropertyDescriptor("PicEffect", r"""그림 효과 :0 \= 실제 이미지 그대로, 1 \= 그레이스케일, 2 \= 흑백효과""")
-    Brightness = PropertyDescriptor("Brightness", r"""명도 (\-100 \~ 100\)""")
-    Contrast = PropertyDescriptor("Contrast", r"""밝기 (\-100 \~ 100\)""")
-    DrawFillImageType = PropertyDescriptor("DrawFillImageType", r"""채우기 유형0 \= 바둑판식으로 \- 모두1 \= 바둑판식으로 \- 가로/위2 \= 바둑판식으로 \- 가로/아래3 \= 바둑판식으로 \- 세로/왼쪽4 \= 바둑판식으로 \- 세로/오른쪽5 \= 크기에 맞추어6 \= 가운데로7 \= 가운데 위로 8 \= 가운데 아래로9 \= 왼쪽 가운데로10 \= 왼쪽 위로11 \= 왼쪽 아래로12 \= 오른쪽 가운데로13 \= 오른쪽 위로14 \= 오른쪽 아래로15 \= 원래크기에 비례하여""")
-    String = PropertyDescriptor("String", r"""글맵시에 넣을 문자열 내용 : 내용""")
-    FontName = PropertyDescriptor("FontName", r"""Parameter property""")
-    FontType = PropertyDescriptor("FontType", r"""글꼴 속성 : 0 \= dont care, 1 \= TTF, 2 \= HFT""")
-    FontSize = PropertyDescriptor("FontSize", r"""글꼴 크기 (HWPUNIT : 2500(25pt) \~ 25400(254pt)""")
-    ShadowType = PropertyDescriptor("ShadowType", r"""그림자 종류 : 0 \= none, 1 \= drop, 2 \= continuous""")
-    ShadowOffsetX = PropertyDescriptor("ShadowOffsetX", r"""X축 그림자 간격 (\-48% \~ 48% )""")
-    ShadowOffsetY = PropertyDescriptor("ShadowOffsetY", r"""Y축 그림자 간격 (\-48% \~ 48% )""")
-    ShadowColor = PropertyDescriptor("ShadowColor", r"""그림자 색 (COLORREF)""")
-    FontColor = PropertyDescriptor("FontColor", r"""글자색 (COLORREF)""")
-    RotateAngle = PropertyDescriptor("RotateAngle", r"""회전각도 (\-360 \~ 360\)""")
-    WaterMarkEff = PropertyDescriptor("WaterMarkEff", r"""워터마크 효과 : 0 \= off, 1 \= on""")
-
-class QCorrect(ParameterSet):
-    """QCorrect ParameterSet."""
-    LauncherKey = PropertyDescriptor("LauncherKey", r"""빠른 교정을 실행한 키 정보 (한글2007에 새로 추가)""")
-    HyperLinkRunKey = PropertyDescriptor("HyperLinkRunKey", r"""URL 또는 email 하이퍼링크 작성 키 정보 (한글2007에 새로 추가)""")
-
-class RevisionDef(ParameterSet):
-    """RevisionDef ParameterSet."""
-    SignType = PropertyDescriptor("SignType", r"""교정부호 종류 :0 \= 교정부호 없음1 \= 띄움표2 \= 줄 바꿈표3 \= 줄 비움표4 \= 메모형 고침표5 \= 지움표6 \= 붙임표7 \= 뺌표8 \= 줄 이음표9 \= 줄 붙임표10 \= 톱니표11 \= 생각표12 \= 칭찬표 13 \= 줄표14 \= 부호 넣음표15 \= 넣음표16 \= 고침표17 \= 자리 바꿈표18 \= 오른자리 옮김표19 \= 자료연결20 \= 왼자리 옮김표21 \= 부분자리 옮김표22 \= 줄 서로 바꿈표23 \= 자리바꿈 나눔표(내부용)24 \= 줄 서로 바꿈 나눔표(내부용)""")
-    SubText = PropertyDescriptor("SubText", r"""교정 문자열교정 문자열을 가질 수 있는 교정부호만 적용. 나머지는 무시""")
-    Margin = PropertyDescriptor("Margin", r"""여백(HWPUNIT). 오른자리 옮김표와 왼자리 옮김표일 경우에만 적용.""")
-    BeginPos = PropertyDescriptor("BeginPos", r"""시작위치(HWPUNIT). 오른자리 옮김표와 왼자리 옮김표일 경우에만 적용.""")
-
-class SaveFootnote(ParameterSet):
-    """SaveFootnote ParameterSet."""
-    FileName = PropertyDescriptor("FileName", r"""파일 이름""")
-    Flag = PropertyDescriptor("Flag", r"""옵션1 : 각주 저장2 : 미주 저장3 : 각주/미주 저장""")
-
-class ScriptMacro(ParameterSet):
-    """ScriptMacro ParameterSet."""
-    Index = PropertyDescriptor("Index", r"""정의(or 실행)할 매크로의 인덱스""")
-    RepeatCount = PropertyDescriptor("RepeatCount", r"""실행 반복 횟수""")
-    Name = PropertyDescriptor("Name", r"""매크로 이름""")
-    Detail = PropertyDescriptor("Detail", r"""매크로 설명""")
-
-class SecDef(ParameterSet):
-    """SecDef ParameterSet."""
-    TextDirection = PropertyDescriptor("TextDirection", r"""글자 방향""")
-    StartsOn = PropertyDescriptor("StartsOn", r"""구역 나눔으로 새 페이지가 생길 때의 페이지 번호 적용 옵션 0 \= 이어서, 1 \= 홀수, 2 \= 짝수, 3 \= 임의 값""")
-    LineGrid = PropertyDescriptor("LineGrid", r"""세로로 줄맞춤을 할지 여부. 0 \= off, 1 \- n \= 간격을 HWPUNIT 단위로 지정""")
-    CharGrid = PropertyDescriptor("CharGrid", r"""가로로 줄맞춤을 할지 여부. 0 \= off, 1 \- n \= 간격을 HWPUNIT 단위로 지정""")
-    PageDef = PropertyDescriptor("PageDef", r"""용지 설정 정보""")
-    HideEmptyLine = PropertyDescriptor("HideEmptyLine", r"""빈 줄 감춤 on / off""")
-    SpaceBetweenColumns = PropertyDescriptor("SpaceBetweenColumns", r"""동일한 페이지에서 서로 다른 단 사이의 간격""")
-    TabStop = PropertyDescriptor("TabStop", r"""기본 탭 간격""")
-    FootnoteShape = PropertyDescriptor("FootnoteShape", r"""각주 모양""")
-    EndnoteShape = PropertyDescriptor("EndnoteShape", r"""미주 모양""")
-    HideHeader = PropertyDescriptor("HideHeader", r"""구역의 첫 쪽에만 머리말 감추기 옵션 on / off""")
-    HideFooter = PropertyDescriptor("HideFooter", r"""구역의 첫 쪽에만 꼬리말 감추기 옵션 on / off""")
-    HideMasterPage = PropertyDescriptor("HideMasterPage", r"""구역의 첫 쪽에만 바탕쪽 감추기 옵션 on / off""")
-    HideBorder = PropertyDescriptor("HideBorder", r"""구역의 첫 쪽에만 테두리 감추기 옵션 on / off""")
-    HideFill = PropertyDescriptor("HideFill", r"""구역의 첫 쪽에만 배경 감추기 옵션 on / off""")
-    HidePageNumPos = PropertyDescriptor("HidePageNumPos", r"""구역의 첫 쪽에만 쪽번호 감추기 옵션 on / off""")
-    FirstBorder = PropertyDescriptor("FirstBorder", r"""구역의 첫 쪽에만 테두리 표시 옵션 on / off""")
-    FirstFill = PropertyDescriptor("FirstFill", r"""구역의 첫 쪽에만 배경 표시 옵션 on / off""")
-    OutlineShape = PropertyDescriptor("OutlineShape", r"""개요 번호""")
-    PageBorderFillBoth = PropertyDescriptor("PageBorderFillBoth", r"""쪽 테두리/배경 (양쪽)""")
-    PageBorderFillEven = PropertyDescriptor("PageBorderFillEven", r"""쪽 테두리/배경 (짝수)""")
-    PageBorderFillOdd = PropertyDescriptor("PageBorderFillOdd", r"""쪽 테두리/배경 (홀수)""")
-    PageNumber = PropertyDescriptor("PageNumber", r"""쪽 시작 번호 0 \= 앞 구역에 이어, n \= 새 번호로 시작""")
-    FigureNumber = PropertyDescriptor("FigureNumber", r"""그림 시작 번호 0 \= 앞 구역에 이어, n \= 새 번호로 시작""")
-    TableNumber = PropertyDescriptor("TableNumber", r"""표 시작 번호 0 \= 앞 구역에 이어, n \= 새 번호로 시작""")
-    EquationNumber = PropertyDescriptor("EquationNumber", r"""수식 시작 번호 0 \= 앞 구역에 이어, n \= 새 번호로 시작""")
-    WongojiFormat = PropertyDescriptor("WongojiFormat", r"""원고지 방식의 포맷팅. CHAR_GRID가 지정되어야 함.""")
-    MemoShape = PropertyDescriptor("MemoShape", r"""메모 모양 (한글2007에 새로 추가)""")
-    TextVerticalWidthHead = PropertyDescriptor("TextVerticalWidthHead", r"""머리말/꼬리말 세로쓰기 여부 (한글2007에 새로 추가)""")
-    ApplyTo = PropertyDescriptor("ApplyTo", r"""적용범위0 \= 선택된 구역1 \= 선택된 문자열2 \= 현재 구역3 \= 문서전체4 \= 새 구역 : 현재 위치부터 새로""")
-    ApplyClass = PropertyDescriptor("ApplyClass", r"""적용범위의 분류 (대화상자를 호출할 경우 사용)0x01 \= 선택된 구역0x02 \= 선택된 문자열0x04 \= 현재 구역0x08 \= 문서전체0x10 \= 새 구역 : 현재 위치부터 새로""")
-    ApplyToPageBorderFill = PropertyDescriptor("ApplyToPageBorderFill", r"""채울 영역 분류 (PageBorder 액션에서 사용)0 \= 종이, 1 \= 쪽, 2 \= 테두리 (한글2007에 새로 추가)""")
-
-class SectionApply(ParameterSet):
-    """SectionApply ParameterSet."""
-    ApplyTo = PropertyDescriptor("ApplyTo", r"""적용범위 분류(ApplyClass)에서 하나의 값""")
-    String = PropertyDescriptor("String", r"""ApplyTo를 문자열로 변환한 값의 배열""")
-    Index = PropertyDescriptor("Index", r"""ApplyTo를 변환한 ComboBox의 Index""")
-    ConvAplly2Index = PropertyDescriptor("ConvAplly2Index", r"""ApplyTo값을 ComboBox의 Index로 변환할지 여부FALSE이면 IndexToApply로 변환이 이루어진다. (반대변환)""")
-    Category = PropertyDescriptor("Category", r"""적용범위 분류(ApplyClass)를 사용자가 직접 설정할 때 사용.아이템이 없으면 한글이 현재 상태에 맞춰 적용범위 분류(ApplyClass)를 설정한다. (일반적으로 설정하지 않고 사용)""")
-
-class ShapeCopyPaste(ParameterSet):
-    """ShapeCopyPaste ParameterSet."""
-    Type = PropertyDescriptor("Type", r"""모양 복사 종류0 \= 글자 모양 복사1 \= 문단 모양 복사2 \= 글자와 문단 모양 두개 복사3 \= 글자 스타일 복사4 \= 문단 스타일 복사""")
-    CellAttr = PropertyDescriptor("CellAttr", r"""셀 모양 복사""")
-    CellBorder = PropertyDescriptor("CellBorder", r"""선 모양 복사""")
-    CellFill = PropertyDescriptor("CellFill", r"""셀 배경 복사""")
-    TypeBodyAndCellOnly = PropertyDescriptor("TypeBodyAndCellOnly", r"""본문과 셀 모양 둘 다 복사 or 셀 모양만 복사(한글2007에 새로 추가)""")
-
-class ShapeObjectCopyPaste(ParameterSet):
-    """ShapeObjectCopyPaste ParameterSet."""
-    Type = PropertyDescriptor("Type", r"""그리기 모양 복사/붙여 넣기 종류 (예약.. 현재 사용하지 않음)""")
-    ShapeObjectLine = PropertyDescriptor("ShapeObjectLine", r"""그리기 선 모양 복사""")
-    ShapeObjectFill = PropertyDescriptor("ShapeObjectFill", r"""그리기 채우기 복사""")
-    ShapeObjectSize = PropertyDescriptor("ShapeObjectSize", r"""그리기 개체 크기 복사""")
-    ShapeObjectShadow = PropertyDescriptor("ShapeObjectShadow", r"""그리기 개체 그림자 복사""")
-    ShapeObjectPicEffect = PropertyDescriptor("ShapeObjectPicEffect", r"""그림 효과 복사""")
-
-class Sort(ParameterSet):
-    """Sort ParameterSet."""
-    KeyOption = PropertyDescriptor("KeyOption", r"""키 콤보에서 선택된 키를 저장함.""")
-    CheckJasoReverse = PropertyDescriptor("CheckJasoReverse", r"""자소 단위 비교 Flag \- 종, 중, 초""")
-    DelimiterType = PropertyDescriptor("DelimiterType", r"""필드 구분 기호 형식 : 0 \= 탭(Tab), 1 \= 콤마(,), 2 \= 빈칸(Space), 3 \= 사용자 정의""")
-    DelimiterChars = PropertyDescriptor("DelimiterChars", r"""필드 구분 기호들. DelimiterType이 3(사용자 정의)일 경우에만 유효""")
-    IgnoreMultiDelimiter = PropertyDescriptor("IgnoreMultiDelimiter", r"""연속되는 구분기호 무시 Flag""")
-    CheckFromRear = PropertyDescriptor("CheckFromRear", r"""단어 뒤에서 부터 비교 Flag""")
-    CheckExtendYear = PropertyDescriptor("CheckExtendYear", r"""두 자리 년도 확장 check Flag""")
-    YearBase = PropertyDescriptor("YearBase", r"""두 자리 년도 시작 년도""")
-    LangOrderType = PropertyDescriptor("LangOrderType", r"""사전언어순서 값""")
-    CheckJaso = PropertyDescriptor("CheckJaso", r"""자소 단위 비교 Flag \- 초, 중, 종""")
-
-class Style(ParameterSet):
-    """Style ParameterSet."""
-    Apply = PropertyDescriptor("Apply", r"""적용할 스타일 인덱스""")
-
-class StyleDelete(ParameterSet):
-    """StyleDelete ParameterSet."""
-    Target = PropertyDescriptor("Target", r"""지워야할 스타일 인덱스""")
-    Alternation = PropertyDescriptor("Alternation", r"""대체할 스타일 인덱스""")
-
-class StyleTemplate(ParameterSet):
-    """StyleTemplate ParameterSet."""
-    FileName = PropertyDescriptor("FileName", r"""파일 이름""")
-
-class Sum(ParameterSet):
-    """Sum ParameterSet."""
-    Sum = PropertyDescriptor("Sum", r"""Parameter property""")
-    Average = PropertyDescriptor("Average", r"""Parameter property""")
-    LineCount = PropertyDescriptor("LineCount", r"""줄 수""")
-    Comma = PropertyDescriptor("Comma", r"""세 자리마다 쉼표로 자리 구분 (on / off)""")
-    Option = PropertyDescriptor("Option", r"""형식 옵션""")
-
-class SummaryInfo(ParameterSet):
-    """SummaryInfo ParameterSet."""
-    Title = PropertyDescriptor("Title", r"""Parameter property""")
-    Subject = PropertyDescriptor("Subject", r"""Parameter property""")
-    Author = PropertyDescriptor("Author", r"""지은이""")
-    Date = PropertyDescriptor("Date", r"""Parameter property""")
-    KeyWords = PropertyDescriptor("KeyWords", r"""키워드""")
-    Comments = PropertyDescriptor("Comments", r"""Parameter property""")
-    CreationTimeLow = PropertyDescriptor("CreationTimeLow", r"""작성한 날짜 (low)""")
-    CreationTimeHigh = PropertyDescriptor("CreationTimeHigh", r"""작성한 날짜 (high)""")
-    ModifiedTimeLow = PropertyDescriptor("ModifiedTimeLow", r"""마지막 수정한 날짜 (low)""")
-    ModifiedTimeHigh = PropertyDescriptor("ModifiedTimeHigh", r"""마지막 수정한 날짜 (high)""")
-    PrintedTimeLow = PropertyDescriptor("PrintedTimeLow", r"""마지막 인쇄한 날짜 (low)""")
-    PrintedTimeHigh = PropertyDescriptor("PrintedTimeHigh", r"""마지막 인쇄한 날짜 (high)""")
-    LastSavedBy = PropertyDescriptor("LastSavedBy", r"""마지막 저장한 사람""")
-    Characters = PropertyDescriptor("Characters", r"""문서분량 (글자)""")
-    Words = PropertyDescriptor("Words", r"""문서분량 (낱말)""")
-    Lines = PropertyDescriptor("Lines", r"""문서분량 (줄)""")
-    Paragraphs = PropertyDescriptor("Paragraphs", r"""문서분량 (문단)""")
-    Pages = PropertyDescriptor("Pages", r"""문서분량 (쪽)""")
-    CopyPapers = PropertyDescriptor("CopyPapers", r"""문서분량 (원고지)""")
-    Etcetera = PropertyDescriptor("Etcetera", r"""문서분량 (표, 그림 등)""")
-    DocVersion = PropertyDescriptor("DocVersion", r"""문서 파일 버전 (한글2007에 새로 추가)""")
-    HwpVersion = PropertyDescriptor("HwpVersion", r"""문서를 생성한 한글 워드프로그램의 버전 (한글2007에 새로 추가)""")
-    HanjaChar = PropertyDescriptor("HanjaChar", r"""문서분량 (한자 수) (한글2007에 새로 추가)""")
-
-class TableCreation(ParameterSet):
-    """TableCreation ParameterSet."""
-    Rows = PropertyDescriptor("Rows", r"""행 수 (생략하면 5\)""")
-    Cols = PropertyDescriptor("Cols", r"""칼럼 수 (생략하면 5\)""")
-    RowHeight = PropertyDescriptor("RowHeight", r"""행의 디폴트 높이 (PIT_I4\)""")
-    ColWidth = PropertyDescriptor("ColWidth", r"""칼럼의 디폴트 폭 (PIT_I4\)""")
-    CellInfo = PropertyDescriptor("CellInfo", r"""정보가 없는 셀은 디폴트값을 따라가므로 모든 셀에 대해 정보를 줄 필요는 없다.""")
-    WidthType = PropertyDescriptor("WidthType", r"""Parameter property""")
-    HeightType = PropertyDescriptor("HeightType", r"""Parameter property""")
-    WidthValue = PropertyDescriptor("WidthValue", r"""너비 값""")
-    HeightValue = PropertyDescriptor("HeightValue", r"""높이 값""")
-    TableTemplateValue = PropertyDescriptor("TableTemplateValue", r"""표 마당 적용 여부 (한글2007에 새로 추가)""")
-    TableProperties = PropertyDescriptor("TableProperties", r"""초기 표 속성""")
-    TableTemplate = PropertyDescriptor("TableTemplate", r"""표마당 적용 속성 (한글2007에 새로 추가)""")
-    TableDrawProperties = PropertyDescriptor("TableDrawProperties", r"""마우스로 선을 그릴 때 속성 (한글2007에 새로 추가)""")
-
-class TableDeleteLine(ParameterSet):
-    """TableDeleteLine ParameterSet."""
-    Type = PropertyDescriptor("Type", r"""0 \= 줄, 1 \= 칸""")
-
-class TableDrawPen(ParameterSet):
-    """TableDrawPen ParameterSet."""
-    Style = PropertyDescriptor("Style", r"""Table을 그리는 연필(펜)의 선 모양""")
-    Width = PropertyDescriptor("Width", r"""Table을 그리는 연필(펜)의 선 굵기""")
-    Color = PropertyDescriptor("Color", r"""Table을 그리는 연필(펜)의 선 색깔RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-
-class TableInsertLine(ParameterSet):
-    """TableInsertLine ParameterSet."""
-    Side = PropertyDescriptor("Side", r"""Parameter property""")
-    Count = PropertyDescriptor("Count", r"""Parameter property""")
-
-class TableSplitCell(ParameterSet):
-    """TableSplitCell ParameterSet."""
-    Cols = PropertyDescriptor("Cols", r"""칸 수""")
-    Rows = PropertyDescriptor("Rows", r"""줄 수""")
-    DistributeHeight = PropertyDescriptor("DistributeHeight", r"""줄 높이를 같게""")
-    Merge = PropertyDescriptor("Merge", r"""나누기 전에 합치기""")
-    Mode2 = PropertyDescriptor("Mode2", r"""셀 나누기 모드 2, 셀 나누기를 할 때, adjust를 생략하고 셀이 어긋나는 것을 방지한다. (한글2007에 새로 추가)""")
-
-class TableStrToTbl(ParameterSet):
-    """TableStrToTbl ParameterSet."""
-    DelimiterType = PropertyDescriptor("DelimiterType", r"""분리 문자(탭, 쉼표, 공백)""")
-    UserDefine = PropertyDescriptor("UserDefine", r"""사용자 정의 필드 구분 기호""")
-    AutoOrDefine = PropertyDescriptor("AutoOrDefine", r"""자동으로 할 것인지 분리 문자를 지정 할 것인지를 결정""")
-    KeepSeperator = PropertyDescriptor("KeepSeperator", r"""선택 사항 (구분자 유지)""")
-    DelimiterEtc = PropertyDescriptor("DelimiterEtc", r"""기타 문자 필드 구분 기호""")
-
-class TableSwap(ParameterSet):
-    """TableSwap ParameterSet."""
-    Type = PropertyDescriptor("Type", r"""표 뒤집기 형식0 \= 상하 뒤집기1 \= 좌우 뒤집기2 \= X와 Y를 바꿈3 \= 반시계 방향으로 90도 회전4 \= 180도 회전5 \= 시계 방향으로 90도 회전""")
-    SwapMargin = PropertyDescriptor("SwapMargin", r"""여백 뒤집기 지원여부""")
-
-class TableTblToStr(ParameterSet):
-    """TableTblToStr ParameterSet."""
-    DelimiterType = PropertyDescriptor("DelimiterType", r"""분리 문자(탭, 쉼표, 공백)""")
-    UserDefine = PropertyDescriptor("UserDefine", r"""사용자 정의 필드 구분 기호""")
-
-class TableTemplate(ParameterSet):
-    """TableTemplate ParameterSet."""
-    Format = PropertyDescriptor("Format", r"""적용할 서식. 다음 값의 조합으로 구성된다.0x0001 \= 테두리0x0002 \= 글자 모양과 문단 모양0x0004 \= 셀 배경0x0008 \= 그레이 스케일""")
-    ApplyTarger = PropertyDescriptor("ApplyTarger", r"""적용 대상. 다음 값의 조합으로 구성된다.0x0001 \= 제목 줄0x0002 \= 마지막 줄0x0004 \= 첫째 칸0x0008 \= 마지막 칸""")
-    FileName = PropertyDescriptor("FileName", r"""표 마당 파일 이름 ？ C:\\Program Files\\Hnc\\Shared80\\HwpTemplate\\Table\\Kor에 있는 파일명임""")
-    CreateMode = PropertyDescriptor("CreateMode", r"""표 만들기 모드 (표 만들기에서 제목줄에 제목 속성 넣기 위해)""")
-
-class TextCtrl(ParameterSet):
-    """TextCtrl ParameterSet."""
-    CtrlData = PropertyDescriptor("CtrlData", r"""컨트롤 이름 저장을 위한 영역""")
-
-class TextVertical(ParameterSet):
-    """TextVertical ParameterSet."""
-    Landscope = PropertyDescriptor("Landscope", r"""용지 방향. 0 \= 좁게, 1 \= 넓게""")
-    TextDirection = PropertyDescriptor("TextDirection", r"""글자 방향.0 \= 보통 (왼쪽에서 오른쪽)1 \= 세로쓰기 (라틴 문자 회전)2 \= 세로쓰기 (라틴 문자 포함)""")
-    TextVerticalWidthHead = PropertyDescriptor("TextVerticalWidthHead", r"""머리말/꼬리말 세로쓰기 여부""")
-    ApplyTo = PropertyDescriptor("ApplyTo", r"""적용 대상0 \= 선택된 구역1 \= 선택된 문자열2 \= 현재 구역3 \= 문서전체4 \= 새 구역 : 현재 위치부터 새로5 \= no items (적용대상 없음)""")
-    ApplyClass = PropertyDescriptor("ApplyClass", r"""적용 대상 분류.적용 대상 분류는 현재 캐럿의 상태에 따라 ApplyTo에 적용 가능한 대상을 한정짓는 역할을 한다. 내부적으로 값이 계산되므로, 값을 참조하는 용도로만 사용하도록 한다. 다음의 값의 조합으로 구성된다.0x0001 \= 선택된 구역0x0002 \= 선택된 문자열0x0004 \= 현재 구역0x0008 \= 문서 전체0x0010 \= 새 구역 : 현재 위치부터 새로""")
-
-class UserQCommandFile(ParameterSet):
-    """UserQCommandFile ParameterSet."""
-    Save = PropertyDescriptor("Save", r"""저장 (TRUE \= Save, FALSE \= Open)""")
-    FileName = PropertyDescriptor("FileName", r"""파일명""")
-    LoadType = PropertyDescriptor("LoadType", r"""로드 방법 (TRUE \= Overwrite, FALSE \= Merge)""")
-
-class VersionInfo(ParameterSet):
-    """VersionInfo ParameterSet."""
-    SourcePath = PropertyDescriptor("SourcePath", r"""버전 비교용 소스 패스""")
-    TargetPath = PropertyDescriptor("TargetPath", r"""버전 비교용 타겟 패스""")
-    ItemStartIndex = PropertyDescriptor("ItemStartIndex", r"""버전 비교를 보여줄 시작 히스토리 인덱스""")
-    ItemEndIndex = PropertyDescriptor("ItemEndIndex", r"""버전 비교를 보여줄 마지막 히스토리 인덱스""")
-    ItemOverWrite = PropertyDescriptor("ItemOverWrite", r"""히스토리 정보를 저장할 때 마지막 버전으로 덮어쓰는 플랙 (on/off)""")
-    ItemSaveDescription = PropertyDescriptor("ItemSaveDescription", r"""히스토리 정보를 저장할 때 설명을 입력하는 대화상자를 띄우는 플랙 (on/off)""")
-    TempFilePath = PropertyDescriptor("TempFilePath", r"""버전 비교용 임시파일 경로""")
-    ItemInfoIndex = PropertyDescriptor("ItemInfoIndex", r"""버전 정보 얻어오기 및 삭제 시 사용될 인덱스""")
-    SaveFilePath = PropertyDescriptor("SaveFilePath", r"""버전 저장 파일 경로(OCX 컨트롤용)""")
-    ItemInfoWriter = PropertyDescriptor("ItemInfoWriter", r"""작성자 정보""")
-    ItemInfoDescription = PropertyDescriptor("ItemInfoDescription", r"""해당 버전에 대한 설명""")
-    ItemInfoTimeHi = PropertyDescriptor("ItemInfoTimeHi", r"""날짜 정보, FILETIME의 HIWORD""")
-    ItemInfoTimeLo = PropertyDescriptor("ItemInfoTimeLo", r"""날짜 정보, FILETIME의 LOWORD""")
-    ItemInfoLock = PropertyDescriptor("ItemInfoLock", r"""히스토리 정보 수정 플랙""")
-
-class ViewProperties(ParameterSet):
-    """ViewProperties ParameterSet."""
-    OptionFlag = PropertyDescriptor("OptionFlag", r"""뷰 옵션 플랙. 여러 개를 OR연산하여 지정할 수 있음.0x00000001 \= off : 쪽윤곽, on : 기본 보기0x00000002 \= 공백과 폭이 없는 컨트롤을 기호로0x00000004 \= 문단 마크 기호로0x00000008 \= 안내선0x00000010 \= 그리기 격자0x00000020 \= 그림 감춤0x00010000 \= 회색조""")
-    ZoomType = PropertyDescriptor("ZoomType", r"""화면 확대 종류. 0 \= 사용자 정의 1 \= 쪽 맞춤 2 \= 폭 맞춤 3 \= 여러 쪽""")
-    ZoomRatio = PropertyDescriptor("ZoomRatio", r"""화면 확대 종류가 "사용자 정의"인 경우 화면 확대 비율. 10% \~ 500%""")
-    ZoomCntX = PropertyDescriptor("ZoomCntX", r"""화면 확대 종류가 "여러 쪽"인 경우 가로 페이지 수. 1 \~ 8""")
-    ZoomCntY = PropertyDescriptor("ZoomCntY", r"""화면 확대 종류가 "여러 쪽"인 경우 세로 페이지 수.1 \~ 8""")
-    ZoomMirror = PropertyDescriptor("ZoomMirror", r"""맞쪽 보기. 페이지 수가 2의 배수일 때만 동작(한글2007에 새로 추가)""")
-
-class ViewStatus(ParameterSet):
-    """ViewStatus ParameterSet."""
-    Type = PropertyDescriptor("Type", r"""0 (현재 View의 절대 Pos값만 지원함)""")
-    ViewPosX = PropertyDescriptor("ViewPosX", r"""현재 뷰의 X값""")
-    ViewPosY = PropertyDescriptor("ViewPosY", r"""현재 뷰의 Y값""")
-
-
-# ── Runtime-discovered ParameterSet classes ──────────────────────────────
-# These SetIDs exist in HWP runtime but are not in official documentation.
-
-class SelectionOpt(ParameterSet):
-    """SelectionOpt ParameterSet - 선택 옵션 (Copy/Cut/Paste/Erase 등)."""
-
-class FileOpenSave(ParameterSet):
-    """FileOpenSave ParameterSet - 파일 열기/저장."""
-
-class AddHanjaWord(ParameterSet):
-    """AddHanjaWord ParameterSet - 한자단어 등록."""
-
-class CCLMark(ParameterSet):
-    """CCLMark ParameterSet - CCL 마크 삽입."""
-
-class ChartObjShape(ParameterSet):
-    """ChartObjShape ParameterSet - 차트 개체."""
-
-class DrawObjTemplateSave(ParameterSet):
-    """DrawObjTemplateSave ParameterSet - 그리기 마당에 등록."""
-
-class FindImagePath(ParameterSet):
-    """FindImagePath ParameterSet - 그림 경로 찾기."""
-
-class InputHanja(ParameterSet):
-    """InputHanja ParameterSet - 한자 변환."""
-
-class InputHanjaBusu(ParameterSet):
-    """InputHanjaBusu ParameterSet - 부수로 입력."""
-
-class InputHanjaMean(ParameterSet):
-    """InputHanjaMean ParameterSet - 새김으로 입력."""
-
-class Label(ParameterSet):
-    """Label ParameterSet - 라벨 문서."""
-
-class ShapeObjSaveAsPicture(ParameterSet):
-    """ShapeObjSaveAsPicture ParameterSet - 그리기 개체를 그림으로 저장."""
-
-class SpellingCheck(ParameterSet):
-    """SpellingCheck ParameterSet - 맞춤법 검사."""
-
-
-# ── Finalize attribute lookup tables ──────────────────────────────────────
-# Populate snake_case entries in each class's _attr_lookup.
-# This runs once at module import after all classes are defined.
 def _finalize_attr_lookups():
+    """Populate snake_case/lowercase entries in each class's _attr_lookup.
+
+    Must be called AFTER all ParameterSet subclasses are defined so that
+    PARAMETERSET_REGISTRY contains the full list.
+    """
     for cls in list(PARAMETERSET_REGISTRY.values()):
         if not hasattr(cls, '_all_properties'):
             continue
@@ -3741,4 +1994,3 @@ def _finalize_attr_lookups():
             lookup.setdefault(snake.lower(), key)
 
 _finalize_attr_lookups()
-

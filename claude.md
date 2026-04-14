@@ -4,21 +4,36 @@ This document captures critical knowledge, patterns, and best practices for work
 
 ---
 
-## 🚨 Project Structure - Standard Python
+## 🚨 Project Structure - Standard Python Package
 
 ### Source Files
 
 Python files in `hwpapi/` are the **direct source code**. Edit them directly.
 
-| File | Purpose |
-|------|---------|
+| File / Directory | Purpose |
+|------------------|---------|
 | `hwpapi/core.py` | App, Engine classes - main API |
-| `hwpapi/actions.py` | HWP action wrappers |
-| `hwpapi/parametersets.py` | ParameterSet classes and property descriptors |
+| `hwpapi/actions.py` | HWP action wrappers (704 actions via __getattr__) |
+| `hwpapi/parametersets/` | ParameterSet package (split from single file) |
+| `hwpapi/parametersets/__init__.py` | ParameterSet base class, Meta, PropertyDescriptors, GenericParameterSet |
+| `hwpapi/parametersets/mappings.py` | 35 string↔int MAPs (DIRECTION_MAP, ALIGN_MAP, etc.) |
+| `hwpapi/parametersets/backends.py` | 4 backends (PsetBackend, HParamBackend, ComBackend, AttrBackend) |
+| `hwpapi/parametersets/sets/primitives.py` | 8 base classes (CharShape, ParaShape, BorderFill, Cell, Caption, CtrlData, Password, Style) |
+| `hwpapi/parametersets/sets/drawing.py` | 25 classes: ShapeObject, Draw* |
+| `hwpapi/parametersets/sets/text.py` | 20 classes: character ops |
+| `hwpapi/parametersets/sets/paragraph.py` | 4 classes: TabDef, NumberingShape, etc. |
+| `hwpapi/parametersets/sets/table.py` | 12 classes: Table, CellBorderFill, etc. |
+| `hwpapi/parametersets/sets/document.py` | 17 classes: DocumentInfo, PageDef, SecDef, etc. |
+| `hwpapi/parametersets/sets/formatting.py` | 3 classes: BorderFillExt, StyleDelete, StyleTemplate |
+| `hwpapi/parametersets/sets/file_ops.py` | 14 classes: FileOpen, Print, etc. |
+| `hwpapi/parametersets/sets/find_edit.py` | 13 classes: FindReplace, BookMark, etc. |
+| `hwpapi/parametersets/sets/media_misc.py` | 27 classes: OleCreation, HyperLink, Ftp*, etc. |
 | `hwpapi/functions.py` | Utility functions |
 | `hwpapi/classes.py` | Accessor classes (Move, Cell, Table, Page) |
 | `hwpapi/constants.py` | Constants and enums |
 | `hwpapi/logging.py` | Logging configuration |
+
+See `docs/API_GUIDE.md` for the full API reference with recipes.
 
 ### Workflow for Code Changes
 
