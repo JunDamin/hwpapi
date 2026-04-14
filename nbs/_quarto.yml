@@ -1,5 +1,12 @@
 project:
   type: website
+  # Legacy nbdev API notebooks with `#| export` directives break raw
+  # Quarto rendering. Keep them around (they're referenced by sidebar.yml
+  # for historical context) but don't let Quarto try to process them
+  # directly.
+  render:
+    - "index.ipynb"
+    - "01_tutorials/*.ipynb"
 
 format:
   html:

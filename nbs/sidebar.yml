@@ -13,12 +13,13 @@ website:
           - tutorials\05_usecase_bulk_edit.ipynb
           - tutorials\06_usecase_data_to_table.ipynb
           - tutorials\07_usecase_report_generation.ipynb
-      - section: api
+      - section: API 레퍼런스
         contents:
-          - api\00_core.ipynb
-          - api\01_actions.ipynb
-          - api\02_functions.ipynb
-          - api\02_parameters.ipynb
-          - api\03_classes.ipynb
-          - api\04_constants.ipynb
-          - api\05_markdown_parser.ipynb
+          - text: GitHub 소스
+            href: https://github.com/JunDamin/hwpapi/tree/main/hwpapi
+          - text: Core (App, Engine)
+            href: https://github.com/JunDamin/hwpapi/tree/main/hwpapi/core
+          - text: ParameterSets
+            href: https://github.com/JunDamin/hwpapi/tree/main/hwpapi/parametersets
+          - text: Actions
+            href: https://github.com/JunDamin/hwpapi/blob/main/hwpapi/actions.py
