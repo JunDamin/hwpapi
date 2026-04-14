@@ -468,13 +468,41 @@ def read_parashape(app):
 
 
 def clear_doc(app):
-    """Clear current document content."""
+    """Clear document content AND reset char/para formatting to defaults.
+
+    Without format reset, formatting state (bold, underline, strikeout,
+    highlight, super/subscript, spacing, ...) persists between scenarios
+    and affects subsequently-inserted text, making the document look weird.
+    """
     app.api.Run("SelectAll")
+    # Reset character styling on selection before delete
+    try:
+        app.api.Run("StyleClearCharStyle")
+    except Exception:
+        pass
     try:
         app.api.Run("Delete")
     except Exception:
         app.api.Run("DeleteBack")
     app.move.top_of_file()
+    # Extra safety: reset CharShape at cursor (affects subsequent inserts)
+    try:
+        app.set_charshape(
+            bold=False, italic=False,
+            underline_type=0, strike_out_type=0,
+            super_script=0, sub_script=0,
+            height=1000,  # 10pt default
+            text_color="#000000",
+            shade_color="#FFFFFF",
+            spacing_hangul=0, spacing_latin=0,
+        )
+    except Exception:
+        pass
+    # Reset paragraph alignment to left
+    try:
+        app.set_parashape(align_type=0, line_spacing=160, indentation=0)
+    except Exception:
+        pass
 
 
 # ── Scenarios ───────────────────────────────────────────────────────────
