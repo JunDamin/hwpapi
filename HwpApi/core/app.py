@@ -38,6 +38,7 @@ from hwpapi.actions import _Action, _Actions
 from hwpapi.parametersets import ParaShape
 import hwpapi.parametersets as parametersets
 from hwpapi.classes import MoveAccessor, CellAccessor, TableAccessor, PageAccessor
+from .engine import Engine, Engines, Apps
 from hwpapi.functions import (
     check_dll,
     get_hwp_objects,
@@ -129,7 +130,7 @@ class App:
 
         # Get DLL path (uses stable appdata location)
         if dll_path is None:
-            from .functions import get_hwp_dll_path
+            from hwpapi.functions import get_hwp_dll_path
             dll_path = get_hwp_dll_path()
 
         # Register DLL if found

@@ -149,6 +149,7 @@ class PropertyDescriptor:
 
         # Auto-wrap pset objects using registry (Tier 1/2)
         if val is not None and _looks_like_pset(val):
+            from hwpapi.parametersets import wrap_parameterset  # lazy import
             val = wrap_parameterset(val, self.key)
 
         return self.to_python(val) if (val is not None and self.to_python) else val

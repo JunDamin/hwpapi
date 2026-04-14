@@ -25,7 +25,7 @@ def main():
     app.set_charshape(bold=True, height=1800)  # 18pt bold
 
     # ── 3. Navigate and insert more ────────────────────────────────────
-    app.move.bottom()
+    app.move.bottom_of_file()
     app.insert_text("\n")
 
     for i in range(3):
