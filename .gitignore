@@ -141,3 +141,5 @@ test.txt
 test*.png
 hwp_docs
 parameterset_docs
+# Visual smoke test artifacts
+tests/artifacts/
