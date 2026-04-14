@@ -1,0 +1,196 @@
+---
+pagetitle: "hwpapi — HWP 자동화를 Pythonic하게"
+page-layout: full
+section-divs: false
+toc: false
+css: styles.css
+title-block-style: none
+---
+
+::: {.hero}
+
+::: {.hero-content}
+# hwpapi
+
+### 한컴 오피스(HWP) 자동화를 **Pythonic**하게
+
+xlwings가 Excel을 감싸듯, win32com의 장황한 COM API를 간결한 Python 한 줄로.
+
+```bash
+pip install hwpapi
+```
+
+[시작하기 →](01_tutorials/01_app_basics.html){.btn .btn-primary .btn-lg}
+[GitHub ↗](https://github.com/JunDamin/hwpapi){.btn .btn-outline-light .btn-lg}
+
+:::
+:::
+
+## 한 눈에 보기
+
+::: {.grid}
+
+::: {.g-col-12 .g-col-md-6 .g-col-lg-3 .feature-card}
+### ✏️ 텍스트 한 줄
+```python
+app.insert_text("안녕")
+```
+기존 win32com의 4~5줄을 1줄로. `find_text`, `replace_all`, `get_text` 모두 직관적 메소드.
+:::
+
+::: {.g-col-12 .g-col-md-6 .g-col-lg-3 .feature-card}
+### 🎨 서식도 한 줄
+```python
+app.set_charshape(
+  bold=True,
+  text_color="#FF0000",
+  height=2400,  # 24pt
+)
+```
+65개 문자 서식 속성을 키워드 인자로.
+:::
+
+::: {.g-col-12 .g-col-md-6 .g-col-lg-3 .feature-card}
+### 📏 익숙한 단위
+```python
+page.width = "210mm"
+page.width = "21cm"
+page.width = "8.27in"
+```
+HWPUNIT 몰라도 OK. mm/cm/in/pt 자동 변환.
+:::
+
+::: {.g-col-12 .g-col-md-6 .g-col-lg-3 .feature-card}
+### 🔓 탈출구 내장
+```python
+app.api.Run("BreakPara")
+app.api.HParameterSet...
+```
+부족하면 언제든 `app.api`로 win32com 그대로 호출.
+:::
+
+:::
+
+## 왜 hwpapi인가?
+
+같은 작업을 이렇게 줄일 수 있습니다.
+
+:::: {.grid}
+
+::: {.g-col-12 .g-col-md-6 .before-card}
+**⚠️ 기존 win32com**
+
+```python
+import win32com.client as win32
+hwp = win32.gencache.EnsureDispatch(
+    "HWPFrame.HwpObject")
+hwp.XHwpWindows.Item(0).Visible = True
+
+act = hwp.CreateAction("InsertText")
+pset = act.CreateSet()
+pset.SetItem("Text", "Hello!")
+act.Execute(pset)
+
+Act = hwp.CreateAction("CharShape")
+Set = Act.CreateSet()
+Act.GetDefault(Set)
+Set.SetItem("Italic", 1)
+Act.Execute(Set)
+```
+:::
+
+::: {.g-col-12 .g-col-md-6 .after-card}
+**✨ hwpapi**
+
+```python
+from hwpapi.core import App
+
+app = App()
+app.insert_text("Hello!")
+app.set_charshape(italic=True)
+```
+
+3줄이면 끝. 나머지는 다 숨김.
+:::
+
+::::
+
+## 주요 기능
+
+| 영역 | 제공 기능 |
+|:-----|:---------|
+| **텍스트** | `insert_text` · `find_text` · `replace_all` · `get_text` · `select_text` |
+| **서식** | `set_charshape` / `get_charshape` · `set_parashape` / `get_parashape` |
+| **탐색** | `app.move.top_of_file()` · `bottom_of_file()` · `current_list()` |
+| **파일** | `save` · `open` · `close` (확장자로 HWP/PDF/DOCX 자동 감지) |
+| **액션** | 704개 HWP 액션 전부 — `app.actions.<ActionName>(...)` |
+| **ParameterSet** | 286개 클래스, 자동 등록 property descriptor |
+| **단위 변환** | `"210mm"` · `"21cm"` · `"8.27in"` · `"12pt"` ↔ HWPUNIT |
+| **COM 직접 접근** | `app.api` — win32com의 모든 기능 그대로 |
+
+## 학습 경로
+
+::: {.grid}
+
+::: {.g-col-12 .g-col-md-6 .learn-card}
+### 📘 기초 튜토리얼
+처음 시작한다면 — App 객체 · 텍스트 입력 · 커서 이동 · 서식 적용 · 찾기/바꾸기.
+
+- [App 기초](01_tutorials/01_app_basics.html)
+- [찾기와 바꾸기](01_tutorials/02_find_and_replace.html)
+- [기능 둘러보기](01_tutorials/03_feature_tour.html)
+:::
+
+::: {.g-col-12 .g-col-md-6 .learn-card}
+### 📗 실전 사용 사례
+실제 업무에서 바로 쓸 수 있는 패턴들. 전체 코드 제공.
+
+- [회의록 자동 생성](01_tutorials/04_usecase_meeting_minutes.html)
+- [폴더 내 HWP 파일 일괄 편집](01_tutorials/05_usecase_bulk_edit.html)
+- [CSV/DataFrame → HWP 표](01_tutorials/06_usecase_data_to_table.html)
+- [실무형 보고서 생성](01_tutorials/07_usecase_report_generation.html)
+:::
+
+:::
+
+## 설치
+
+::: {.callout-important title="실행 환경"}
+한글 오피스의 COM 인터페이스를 호출하므로 **한컴 오피스가 설치된 Windows** 에서만 작동합니다. Linux, macOS 에서는 작동하지 않습니다.
+:::
+
+```bash
+pip install hwpapi
+```
+
+그리고 한번 실행해서 동작 확인:
+
+```python
+from hwpapi.core import App
+
+app = App(is_visible=True)
+app.insert_text("hwpapi 설치 완료!\n")
+```
+
+## 검증된 품질
+
+- ✅ **2,306개 단위 테스트** 통과 (HWP 없이 실행 가능)
+- ✅ **31개 End-to-End 시나리오** — 실제 HWP에서 동작 확인 ([smoke_scenarios.py](https://github.com/JunDamin/hwpapi/blob/main/tests/smoke_scenarios.py) + [smoke_features.py](https://github.com/JunDamin/hwpapi/blob/main/tests/smoke_features.py))
+- ✅ 각 시나리오는 `GetDefault`로 HWP 상태를 **읽어서 검증** — "그냥 실행됨"이 아니라 "결과가 맞음"
+
+## 철학
+
+hwpapi는 **xlwings의 설계 철학**을 따릅니다.
+
+1. **자주 쓰는 건 쉽게** — `app.insert_text(...)` 한 줄
+2. **드문 건 열어두기** — `app.api.Run(...)` 로 win32com 그대로 접근
+3. **타입 안전성** — property descriptor로 자동 변환·검증
+4. **Pythonic 단위** — HWPUNIT 대신 `"210mm"`, BBGGRR 대신 `"#FF0000"`
+
+복잡한 걸 만드는 게 아니라, **이미 있는 기능을 쓰기 쉽게 만드는 것** 에 집중합니다.
+
+## 라이선스 · 기여
+
+MIT License. 이슈와 PR 은 언제나 환영합니다.
+
+[github.com/JunDamin/hwpapi](https://github.com/JunDamin/hwpapi)

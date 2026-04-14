@@ -1,27 +1,111 @@
 project:
   type: website
-  # Legacy nbdev API notebooks with `#| export` directives break raw
-  # Quarto rendering. Keep them around (they're referenced by sidebar.yml
-  # for historical context) but don't let Quarto try to process them
-  # directly.
+  # Only render the homepage + tutorials. Legacy API notebooks under
+  # 02_api/ use nbdev `#| export` directives that break raw Quarto.
   render:
-    - "index.ipynb"
+    - "index.qmd"
     - "01_tutorials/*.ipynb"
 
 format:
   html:
-    theme: darkly
+    theme: cosmo
     css: styles.css
+    mainfont: "'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    monofont: "'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace"
     toc: true
+    toc-depth: 3
+    toc-location: right
+    code-copy: true
+    code-overflow: wrap
+    code-block-bg: true
+    code-block-border-left: "#2780E3"
+    highlight-style: github
+    fig-align: center
+    anchor-sections: true
+    smooth-scroll: true
+    link-external-icon: true
+    link-external-newwindow: true
 
 website:
+  title: "hwpapi"
+  description: "한컴 오피스(HWP) 자동화를 Pythonic하게 — win32com 래퍼 파이썬 라이브러리"
+  site-url: "https://JunDamin.github.io/hwpapi"
+  favicon: favicon.svg
   twitter-card: true
   open-graph: true
-  repo-actions: [issue]
+
+  repo-url: "https://github.com/JunDamin/hwpapi"
+  repo-branch: main
+  repo-actions: [issue, source]
+
   navbar:
     background: primary
     search: true
+    left:
+      - text: "홈"
+        file: index.qmd
+      - text: "기초"
+        menu:
+          - text: "App 기초"
+            file: 01_tutorials/01_app_basics.ipynb
+          - text: "찾기와 바꾸기"
+            file: 01_tutorials/02_find_and_replace.ipynb
+          - text: "기능 둘러보기"
+            file: 01_tutorials/03_feature_tour.ipynb
+      - text: "사용 사례"
+        menu:
+          - text: "회의록 자동 생성"
+            file: 01_tutorials/04_usecase_meeting_minutes.ipynb
+          - text: "폴더 내 일괄 편집"
+            file: 01_tutorials/05_usecase_bulk_edit.ipynb
+          - text: "데이터를 HWP 표로"
+            file: 01_tutorials/06_usecase_data_to_table.ipynb
+          - text: "실무형 보고서 생성"
+            file: 01_tutorials/07_usecase_report_generation.ipynb
+    right:
+      - icon: github
+        href: "https://github.com/JunDamin/hwpapi"
+        aria-label: GitHub
+      - icon: box-seam
+        href: "https://pypi.org/project/hwpapi/"
+        aria-label: PyPI
+
   sidebar:
     style: floating
+    contents:
+      - text: "홈"
+        file: index.qmd
+      - section: "📘 기초 튜토리얼"
+        contents:
+          - text: "App 기초"
+            file: 01_tutorials/01_app_basics.ipynb
+          - text: "찾기와 바꾸기"
+            file: 01_tutorials/02_find_and_replace.ipynb
+          - text: "기능 둘러보기"
+            file: 01_tutorials/03_feature_tour.ipynb
+      - section: "📗 사용 사례"
+        contents:
+          - text: "회의록 자동 생성"
+            file: 01_tutorials/04_usecase_meeting_minutes.ipynb
+          - text: "폴더 내 일괄 편집"
+            file: 01_tutorials/05_usecase_bulk_edit.ipynb
+          - text: "데이터 → HWP 표"
+            file: 01_tutorials/06_usecase_data_to_table.ipynb
+          - text: "실무형 보고서"
+            file: 01_tutorials/07_usecase_report_generation.ipynb
+      - section: "🔗 외부 링크"
+        contents:
+          - text: "GitHub 저장소"
+            href: "https://github.com/JunDamin/hwpapi"
+          - text: "PyPI 페이지"
+            href: "https://pypi.org/project/hwpapi/"
+          - text: "이슈 제보"
+            href: "https://github.com/JunDamin/hwpapi/issues"
 
-metadata-files: [nbdev.yml, sidebar.yml]
+  page-footer:
+    background: light
+    left: "© 2024–2026 JunDamin · MIT License"
+    center: "한컴 오피스(HWP) 자동화를 Pythonic하게"
+    right: "[GitHub](https://github.com/JunDamin/hwpapi) · [PyPI](https://pypi.org/project/hwpapi/)"
+
+metadata-files: [nbdev.yml]

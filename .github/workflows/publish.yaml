@@ -1,0 +1,73 @@
+name: Publish to PyPI
+
+# Publishes hwpapi to PyPI via Trusted Publishing (OIDC — no API token
+# stored anywhere). Runs on GitHub Release publication.
+#
+# One-time PyPI setup (done on https://pypi.org/manage/project/hwpapi/settings/publishing/):
+#   Publisher:          GitHub
+#   Owner:              JunDamin
+#   Repository name:    hwpapi
+#   Workflow name:      publish.yaml
+#   Environment name:   pypi
+#
+# To release:
+#   1. Bump version in pyproject.toml
+#   2. Commit, tag, push:
+#        git tag v0.0.3 && git push origin v0.0.3
+#   3. Create a GitHub Release from that tag
+#   4. This workflow runs and publishes
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install build
+        run: pip install build
+
+      - name: Build wheel + sdist
+        run: python -m build
+
+      - name: Upload distributions
+        uses: actions/upload-artifact@v5
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: pypi
+      url: https://pypi.org/project/hwpapi/
+    permissions:
+      id-token: write  # Required for trusted publishing
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v5
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish to PyPI (Trusted Publisher)
+        uses: pypa/gh-action-pypi-publish@release/v1
