@@ -6,6 +6,7 @@ website:
         contents:
           - tutorials\01_app_basics.ipynb
           - tutorials\02_find_and_replace.ipynb
+          - tutorials\03_feature_tour.ipynb
       - section: api
         contents:
           - api\00_core.ipynb
