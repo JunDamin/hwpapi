@@ -1,129 +1,116 @@
-#!/usr/bin/env python3
 """
-Example: Find and Replace using HParameterSet
+Example: Find and Replace with hwpapi.
 
-This example demonstrates how to use the new HParameterSet support to:
-1. Set HFindReplace parameters using dotted keys
-2. Execute the FindReplace action using resolve_action_args
-3. Use temp_edit_hparam for non-destructive parameter changes
+Demonstrates the modern hwpapi API for find/replace operations:
 
-Requirements:
-- HWP application running
-- hwpapi package with HParameterSet support
+1. Simple find_text() / replace_all() via App convenience methods
+2. Detailed FindReplace ParameterSet access (regex, case, wildcards)
+3. Nested formatting constraints (find only bold text, etc.)
+4. Snapshot + clone pattern for temporary parameter changes
+
+Requires a running HWP instance (or accessible COM).
 """
+from hwpapi.core import App
 
-import sys
-import os
 
-# Add hwpapi to path if running as standalone script
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+def example_1_simple(app):
+    """Simple find_text / replace_all via App methods."""
+    print("\n--- Example 1: Simple find/replace ---")
 
-try:
-    from hwpapi.core import App
-    from hwpapi.parametersets import (
-        make_backend, resolve_action_args, temp_edit_hparam,
-        snapshot_hparam, apply_dict_hparam
-    )
-except ImportError as e:
-    print(f"Error importing hwpapi: {e}")
-    print("Make sure hwpapi is installed and HWP is running")
-    sys.exit(1)
+    # Insert some sample text
+    app.insert_text("Hello world. Hello universe. Hello python.\n")
+    app.move.top_of_file()
+
+    # Find and jump to first match
+    found = app.find_text("Hello")
+    print(f"  find_text('Hello') → {found}")
+
+    # Replace all occurrences
+    count = app.replace_all("Hello", "Hi")
+    print(f"  replace_all('Hello' → 'Hi'): {count} replacements")
+
+
+def example_2_detailed_pset(app):
+    """Detailed FindReplace ParameterSet manipulation."""
+    print("\n--- Example 2: Detailed ParameterSet ---")
+
+    app.insert_text("Old text. Some other text. Old text again.\n")
+    app.move.top_of_file()
+
+    action = app.actions.AllReplace
+    ps = action.pset  # FindReplace ParameterSet
+
+    ps.FindString = "Old"
+    ps.ReplaceString = "NEW"
+    ps.IgnoreCase = 0            # case-sensitive
+    ps.WholeWordOnly = 0
+    ps.UseWildCards = 0
+
+    action.run()
+    print(f"  Replaced 'Old' → 'NEW' (case-sensitive)")
+
+
+def example_3_nested_formatting(app):
+    """Find only text with specific formatting (bold)."""
+    print("\n--- Example 3: Nested formatting constraint ---")
+
+    action = app.actions.FindReplace
+    ps = action.pset
+
+    ps.FindString = "important"
+
+    # Auto-creating nested ParameterSet — access creates on first touch
+    ps.find_char_shape.Bold = True  # only find BOLD occurrences
+    print(f"  FindCharShape.Bold set: {ps.find_char_shape.Bold}")
+
+    # Note: action.run() would actually find the text in HWP; skipped here
+    print("  (Would find only bold 'important' if actually run)")
+
+
+def example_4_snapshot_and_restore(app):
+    """Save current FindReplace state, modify, restore via clone."""
+    print("\n--- Example 4: Snapshot / restore pattern ---")
+
+    action = app.actions.FindReplace
+    ps = action.pset
+
+    # Snapshot via native pset.Clone()
+    original = ps.clone()
+    print(f"  Snapshot: FindString='{original.FindString}'")
+
+    # Temporary change
+    ps.FindString = "temporary"
+    ps.IgnoreCase = 1
+    print(f"  Changed: FindString='{ps.FindString}', IgnoreCase={ps.IgnoreCase}")
+
+    # Check they differ
+    print(f"  is_equivalent(original): {ps.is_equivalent(original)}")
+
+    # Restore
+    ps.update_from(original)
+    print(f"  Restored: FindString='{ps.FindString}'")
+
+
+def example_5_introspection(app):
+    """Introspect find/replace action without creating it."""
+    print("\n--- Example 5: Introspection ---")
+
+    for name in ['FindReplace', 'AllReplace', 'ForwardFind', 'BackwardFind']:
+        if name in app.actions:
+            cls = app.actions.get_pset_class(name)
+            desc = app.actions.get_description(name)
+            print(f"  {name} → {cls.__name__ if cls else 'None'}: {desc}")
 
 
 def main():
-    """Main example function."""
-    try:
-        # Initialize HWP application
-        print("Connecting to HWP...")
-        app = App()
-        
-        # Get HParameterSet - this should auto-detect as HParamBackend
-        hparam_root = app.api.HParameterSet
-        backend = make_backend(hparam_root)
-        print(f"Backend type: {type(backend).__name__}")
-        
-        # Example 1: Direct backend usage with dotted keys
-        print("\n=== Example 1: Direct Backend Usage ===")
-        
-        # Set find/replace parameters using dotted keys
-        backend.set("HFindReplace.FindString", "example")
-        backend.set("HFindReplace.ReplaceString", "sample")
-        backend.set("HFindReplace.IgnoreCase", True)
-        backend.set("HFindReplace.WholeWordOnly", False)
-        
-        # Read back the values
-        find_str = backend.get("HFindReplace.FindString")
-        replace_str = backend.get("HFindReplace.ReplaceString")
-        ignore_case = backend.get("HFindReplace.IgnoreCase")
-        
-        print(f"Find: '{find_str}' -> Replace: '{replace_str}'")
-        print(f"Ignore case: {ignore_case}")
-        
-        # Example 2: Using resolve_action_args for HAction calls
-        print("\n=== Example 2: Action Execution ===")
-        
-        # Resolve action arguments (tries .HSet first, falls back to node)
-        action_name, arg = resolve_action_args(
-            app, "FindReplace", hparam_root.HFindReplace
-        )
-        print(f"Action: {action_name}, Arg type: {type(arg).__name__}")
-        
-        # Get default parameters (optional)
-        try:
-            app.HAction.GetDefault(action_name, arg)
-            print("GetDefault succeeded")
-        except Exception as e:
-            print(f"GetDefault failed: {e}")
-        
-        # Execute the action (would actually perform find/replace)
-        # Commented out to avoid modifying documents during example
-        # try:
-        #     result = app.HAction.Execute(action_name, arg)
-        #     print(f"Execute result: {result}")
-        # except Exception as e:
-        #     print(f"Execute failed: {e}")
-        
-        # Example 3: Non-destructive editing with temp_edit_hparam
-        print("\n=== Example 3: Non-destructive Editing ===")
-        
-        # Take a snapshot of current state
-        original_snapshot = snapshot_hparam(hparam_root, "HFindReplace")
-        print(f"Original state: {original_snapshot}")
-        
-        # Use context manager for temporary changes
-        temp_changes = {
-            "FindString": "temporary",
-            "ReplaceString": "changed",
-            "IgnoreCase": False
-        }
-        
-        with temp_edit_hparam(hparam_root, "HFindReplace", temp_changes):
-            # Inside context: values are temporarily changed
-            current_find = backend.get("HFindReplace.FindString")
-            print(f"Inside context - Find: '{current_find}'")
-            
-            # Here you could execute actions with the temporary parameters
-            # action_name, arg = resolve_action_args(app, "FindReplace", hparam_root.HFindReplace)
-            # app.HAction.Execute(action_name, arg)
-        
-        # Outside context: values are restored
-        restored_find = backend.get("HFindReplace.FindString")
-        print(f"After context - Find: '{restored_find}' (should be restored)")
-        
-        # Verify restoration
-        final_snapshot = snapshot_hparam(hparam_root, "HFindReplace")
-        print(f"Final state matches original: {original_snapshot == final_snapshot}")
-        
-        print("\n=== Example Complete ===")
-        
-    except Exception as e:
-        print(f"Error in example: {e}")
-        import traceback
-        traceback.print_exc()
-        return 1
-    
-    return 0
+    app = App(is_visible=True)
+    example_1_simple(app)
+    example_2_detailed_pset(app)
+    example_3_nested_formatting(app)
+    example_4_snapshot_and_restore(app)
+    example_5_introspection(app)
+    print("\n✅ All examples completed!")
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
