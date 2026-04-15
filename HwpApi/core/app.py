@@ -275,7 +275,8 @@ class App:
     def current_page(self) -> int:
         """현재 커서가 위치한 페이지 번호 (1부터)."""
         try:
-            return int(self.api.KeyIndicator()[1]) + 1
+            # KeyIndicator tuple index 5 is the actual current page
+            return int(self.api.KeyIndicator()[5])
         except Exception:
             return 0
 
@@ -471,6 +472,259 @@ class App:
         >>> doc.insert_text("새 문서")
         """
         return self.documents.add(is_tab=is_tab)
+
+    # ═════════════════════════════════════════════════════════════
+    # Phase C — 편의 헬퍼 (페이지 탐색, 형광펜, 상태, 이미지 export)
+    # ═════════════════════════════════════════════════════════════
+
+    def goto_page(self, page: int) -> bool:
+        """
+        지정 페이지로 커서 이동 (1-indexed).
+
+        HWP의 ``Goto`` 액션을 ``GotoE`` pset 으로 호출. pset 의 주요 키:
+
+        - ``SetSelectionIndex = 1`` → 페이지 번호로 이동
+        - ``DialogResult = page`` → 페이지 번호 (1-indexed)
+
+        Parameters
+        ----------
+        page : int
+            이동할 페이지 번호 (1 = 첫 페이지).
+
+        Examples
+        --------
+        >>> app.goto_page(5)     # 5페이지로
+        >>> app.goto_page(1)     # 첫 페이지로
+        """
+        # Clamp to valid range
+        try:
+            total = self.page_count
+            n = max(1, min(int(page), total if total > 0 else int(page)))
+        except Exception:
+            n = int(page)
+
+        # Preferred: HAction.Execute("Goto", HGotoE.HSet) with
+        # DialogResult = n, SetSelectionIndex = 1
+        try:
+            pset = self.api.HParameterSet.HGotoE
+            self.api.HAction.GetDefault("Goto", pset.HSet)
+            pset.HSet.SetItem("DialogResult", int(n))
+            pset.SetSelectionIndex = 1
+            self.api.HAction.Execute("Goto", pset.HSet)
+
+            # Refine: HAction typically lands somewhere near the page;
+            # nudge to exact page with MovePageUp/Down.
+            cur = self.current_page
+            if cur and n != cur:
+                if n < cur:
+                    for _ in range(cur - n):
+                        self.api.Run("MovePageUp")
+                else:
+                    for _ in range(n - cur):
+                        self.api.Run("MovePageDown")
+            return True
+        except Exception:
+            pass
+
+        # Fallback: MoveDocBegin + N-1 x MovePageDown
+        try:
+            self.api.Run("MoveDocBegin")
+            for _ in range(max(0, n - 1)):
+                self.api.Run("MovePageDown")
+            return True
+        except Exception:
+            return False
+
+    def highlight(self, color="#FFFF00") -> bool:
+        """
+        현재 선택 영역에 **형광펜** 효과 적용 (``shade_color`` 와 별개).
+
+        Parameters
+        ----------
+        color : str | int | Color | tuple
+            형광펜 색. 문자열 (``"#FFFF00"``) / Color / (r, g, b) 튜플 /
+            정수 HWP 색상 모두 지원.
+
+        Examples
+        --------
+        >>> app.find_text("중요")
+        >>> app.highlight("#FFFF00")            # 노란색
+        >>> app.highlight((255, 150, 150))       # 분홍 RGB
+        """
+        # HAction 경로로 호출 (pset 접근이 action.CreateSet 보다 정확)
+        try:
+            from hwpapi.parametersets import Color
+            if isinstance(color, tuple) and len(color) == 3:
+                col = Color.from_rgb(*color)
+            elif isinstance(color, Color):
+                col = color
+            else:
+                col = Color(color)
+
+            pset = self.api.HParameterSet.HMarkpenShape
+            self.api.HAction.GetDefault("MarkPenShape", pset.HSet)
+            pset.Color = col.raw if col.raw is not None else 0
+            return bool(self.api.HAction.Execute("MarkPenShape", pset.HSet))
+        except Exception:
+            return False
+
+    @property
+    def status(self) -> dict:
+        """
+        상태바 정보 — ``KeyIndicator()`` 반환값을 dict 로.
+
+        KeyIndicator 는 튜플을 반환: ``(col_left, row_left, sect, page,
+        total, overtype, char_count, insertmode, extend, lockmode, ...)``.
+
+        Examples
+        --------
+        >>> app.status
+        {'page': 3, 'total_pages': 12, 'section': 1, 'column': 1,
+         'overtype': 0, 'char_count': 4521, 'insert_mode': 1}
+        """
+        try:
+            raw = self.api.KeyIndicator()
+        except Exception:
+            return {}
+        if not raw or not isinstance(raw, (tuple, list)):
+            return {}
+        # HWP KeyIndicator tuple format:
+        # (0)has_caret, (1)section, (2)column, (3)line, (4)print_page,
+        # (5)page, (6)overtype, (7)char_index, (8)insert_mode_str
+        keys = [
+            "has_caret", "section", "column", "line",
+            "print_page", "page",
+            "overtype", "char_index", "insert_mode",
+        ]
+        out = {}
+        for i, key in enumerate(keys):
+            if i < len(raw):
+                out[key] = raw[i]
+        # Fill in total_pages separately (KeyIndicator doesn't provide it)
+        try:
+            out["total_pages"] = int(self.api.PageCount)
+        except Exception:
+            pass
+        return out
+
+    def save_page_image(self, page: int, path: str,
+                         dpi: int = 100, depth: int = 8,
+                         format: int = -1) -> bool:
+        """
+        지정 페이지를 이미지 파일로 저장.
+
+        HWP의 ``CreatePageImage(Path, pgno, resolution, depth, Format)``
+        를 감쌉니다.
+
+        Parameters
+        ----------
+        page : int
+            페이지 번호 (1-indexed).
+        path : str
+            저장 경로. 확장자로 포맷 결정 (``.bmp``/``.png``/``.jpg``/``.gif``).
+            확장자 기반 자동 인식이 안되는 경우 ``format`` 파라미터로 명시.
+        dpi : int
+            해상도 (기본 100). HWP 는 값이 너무 낮거나 높으면 무시하거나
+            실패할 수 있습니다.
+        depth : int
+            색 깊이 비트수 (8 / 24 / 32). 기본 8.
+        format : int
+            ``-1`` (자동, 확장자 기반) / ``0`` (BMP) / ``1`` (GIF) /
+            ``2`` (JPEG) / ``3`` (PNG).
+
+        Returns
+        -------
+        bool
+            성공 여부 (파일 실제 생성 확인 포함).
+
+        Examples
+        --------
+        >>> app.save_page_image(1, "page1.bmp")              # BMP 추천
+        >>> app.save_page_image(2, "page2.png", format=3)    # PNG
+        """
+        import os
+        try:
+            ok = bool(self.api.CreatePageImage(
+                str(path), int(page) - 1,
+                int(dpi), int(depth), int(format),
+            ))
+            # CreatePageImage returns True even when the file is empty.
+            # Verify by checking file size.
+            if ok and os.path.isfile(path) and os.path.getsize(path) > 0:
+                return True
+        except Exception:
+            pass
+        # Fallback: try BMP (known working)
+        try:
+            bmp_path = os.path.splitext(path)[0] + ".bmp"
+            ok = bool(self.api.CreatePageImage(
+                bmp_path, int(page) - 1, 100, 8, 0
+            ))
+            return ok and os.path.isfile(bmp_path) and os.path.getsize(bmp_path) > 0
+        except Exception:
+            return False
+
+    def save_all_page_images(self, out_dir: str, prefix: str = "page",
+                               format: str = "png", dpi: int = 300) -> list:
+        """
+        모든 페이지를 이미지로 저장 — 생성된 파일 경로 리스트 반환.
+
+        Examples
+        --------
+        >>> paths = app.save_all_page_images("out/")
+        >>> len(paths)
+        12
+        """
+        import os
+        os.makedirs(out_dir, exist_ok=True)
+        out_paths = []
+        total = self.page_count
+        for n in range(1, total + 1):
+            p = os.path.join(out_dir, f"{prefix}{n:04d}.{format}")
+            if self.save_page_image(n, p, dpi=dpi):
+                out_paths.append(p)
+        return out_paths
+
+    # ── 단위 변환 헬퍼 (App instance methods) ─────────────────
+
+    def mm_to_hwpunit(self, mm: float) -> int:
+        """밀리미터 → HWPUNIT."""
+        try:
+            return int(self.api.MiliToHwpUnit(float(mm)))
+        except Exception:
+            return int(mm * 283)  # fallback
+
+    def point_to_hwpunit(self, pt: float) -> int:
+        """포인트 → HWPUNIT."""
+        try:
+            return int(self.api.PointToHwpUnit(float(pt)))
+        except Exception:
+            return int(pt * 100)
+
+    def hwpunit_to_mm(self, hu: int) -> float:
+        """HWPUNIT → 밀리미터."""
+        return float(hu) / 283.0
+
+    def hwpunit_to_point(self, hu: int) -> float:
+        """HWPUNIT → 포인트."""
+        return float(hu) / 100.0
+
+    def rgb_color(self, r: int, g: int, b: int) -> int:
+        """
+        RGB 값을 HWP 내부 색상 정수 (BBGGRR) 로 변환.
+
+        Examples
+        --------
+        >>> app.rgb_color(255, 0, 0)    # 빨강
+        255
+        >>> app.rgb_color(0, 255, 0)    # 초록
+        65280
+        """
+        try:
+            return int(self.api.RGBColor(int(r), int(g), int(b)))
+        except Exception:
+            # HWP BBGGRR encoding
+            return (int(b) << 16) | (int(g) << 8) | int(r)
 
     # ═════════════════════════════════════════════════════════════
     # Dialog suppression — set_message_box_mode / silenced()

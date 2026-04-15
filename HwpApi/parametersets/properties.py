@@ -308,6 +308,34 @@ class Color:
         else:
             object.__setattr__(self, "_hwp_value", convert_to_hwp_color(value))
 
+    @classmethod
+    def from_rgb(cls, r: int, g: int, b: int) -> "Color":
+        """
+        RGB 값 (0~255) 으로 :class:`Color` 생성.
+
+        Examples
+        --------
+        >>> Color.from_rgb(255, 0, 0)
+        Color('#ff0000')
+        """
+        # HWP internal representation is BBGGRR packed integer
+        hwp = (int(b) << 16) | (int(g) << 8) | int(r)
+        c = cls(None)
+        object.__setattr__(c, "_hwp_value", hwp)
+        return c
+
+    @classmethod
+    def from_hex(cls, hex_str: str) -> "Color":
+        """
+        ``"#RRGGBB"`` 또는 ``"#RGB"`` 형태의 hex 문자열로 :class:`Color` 생성.
+
+        Examples
+        --------
+        >>> Color.from_hex("#FF0000")
+        Color('#ff0000')
+        """
+        return cls(hex_str)
+
     @property
     def hex(self):
         """``"#rrggbb"`` 문자열 또는 ``None``."""
