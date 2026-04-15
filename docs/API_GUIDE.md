@@ -4,6 +4,80 @@
 
 This guide provides complete API coverage with concrete examples and a navigation map for finding any feature quickly.
 
+> **Tip**: 언제든 ``app.help()`` 호출 → 사용 가능한 accessor 와 context manager 를 6개 카테고리로 출력. Python REPL 에서 discovery 시 최우선.
+
+---
+
+## 0. Accessor Matrix (v0.0.20 기준)
+
+App 에는 **18개 accessor** 가 도메인별로 그룹핑돼 있습니다.
+
+| 카테고리 | Accessor | 주요 메소드 |
+|:---|:---|:---|
+| **Navigation & Selection** | `app.move` | `.doc.top()`, `.line.end()`, `.word.next()`, `.para.start()`, `.page.next()`, `.cell.right()` |
+| | `app.sel` | `.current_word/line/paragraph/sentence()`, `.to_*_end/begin()`, `.expand_char(n)`, `.compress(step)`, `.expand(step)` |
+| **Collections** | `app.documents` | 열린 문서 컬렉션 — iter, `.add(is_tab)`, `.open(path)` |
+| | `app.fields` | 누름틀 — `["name"] = "v"`, `.add()`, `.remove()`, `.update(dict)`, `.from_brackets()`, `.to_dict()` |
+| | `app.bookmarks` | `.add(name)`, `.remove(name)`, `.goto(name)`, `"x" in app.bookmarks` |
+| | `app.hyperlinks` | `.add(text, url)` |
+| | `app.images` | 이미지 control 순회 — `.resize_all(width="100mm")`, `.grayscale_all()` |
+| | `app.styles` | 문단 스타일 — `.apply(name)`, iter |
+| | `app.controls` | HeadCtrl→Next linked list 순회 |
+| **Structure** | `app.cell` | 표 셀 content/formatting/merge |
+| | `app.table` | 표 구조 + 배치 서식 — `.header_row()`, `.footer_row()`, `.current_row()`, `.align(horz, vert, scope)`, `.clean_excel_paste()` |
+| | `app.page` | 페이지 설정 |
+| **Transform & View** | `app.convert` | `.number_to_korean()`, `.wrap_by_word()`, `.wrap_by_char()`, `.replace_font(old, new)` |
+| | `app.view` | `.zoom(%)`, `.zoom_fit_page/width`, `.zoom_actual()`, `.full_screen()`, `.page_mode()`, `.draft_mode()`, `.scroll_to_cursor()` |
+| **Quality & Templates** | `app.lint` | **callable** — `report = app.lint()` → LintReport with `.long_sentences`, `.empty_paragraphs`, etc. |
+| | `app.template` | `.save(path)`, `.apply(path)` |
+| | `app.config` | `.default_font`, `.default_size`, `.palette`, `.save()`, `.load()` |
+| **Presets & Debug** | `app.preset` | `.striped_rows()`, `.title_box()`, `.subtitle_bar()`, `.table_header(color="sky")`, `.table_footer()`, `.toc()`, `.page_numbers()`, `.page_border()`, `.highlight_yellow()`, `.summary_box()` |
+| | `app.debug` | `.state()`, `.print()`, `.timing(fn)`, `.trace()` (ctx mgr) |
+
+### Context Managers
+
+```python
+with app.silenced("yes"): ...           # 다이얼로그 자동 응답
+with app.suppress_errors(): ...          # 에러 dialog + Python 예외 swallow
+with app.batch_mode(hide=True): ...      # 창 숨김 + dialog 억제 (5~10배 가속)
+with app.undo_group("설명"): ...          # 단일 undo 경계
+with app.charshape_scope(bold=True): ... # 블록 내 문자 모양 임시
+with app.parashape_scope(align=1): ...   # 블록 내 문단 모양 임시
+with app.use_document(doc): ...          # 활성 문서 일시 전환
+with app.debug.trace(): ...              # COM Run() 호출 로그
+```
+
+### Properties (state access)
+
+```python
+app.text                # 전체 텍스트 (get/set)
+app.visible             # bool (get/set)
+app.version             # str (read-only)
+app.page_count          # int
+app.current_page        # int
+app.selection           # str — 선택 텍스트
+app.charshape           # CharShape snapshot (get/set)
+app.parashape           # ParaShape snapshot (get/set)
+app.status              # 종합 상태 dict
+```
+
+### Deprecated methods (v1.0 에서 제거)
+
+v0.0.20 부터 DeprecationWarning 발생. 동작은 유지.
+
+| 레거시 | 신규 권장 |
+|:---|:---|
+| `app.create_field(name)` | `app.fields.add(name)` |
+| `app.set_field(n, v)` | `app.fields[n] = v` |
+| `app.get_field(n)` | `app.fields[n].value` |
+| `app.field_exists(n)` | `n in app.fields` |
+| `app.move_to_field(n)` | `app.fields[n].goto()` |
+| `app.delete_field(n)` | `app.fields.remove(n)` |
+| `app.delete_all_fields()` | `app.fields.remove_all()` |
+| `app.rename_field(o, n)` | `app.fields.rename(o, n)` |
+| `app.field_names` | `list(app.fields)` |
+| `app.fields_dict` | `app.fields.to_dict()` |
+
 ---
 
 ## 1. Quick Start

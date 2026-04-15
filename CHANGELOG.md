@@ -8,6 +8,48 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.20] — 2026-04-15 — 레거시 API DeprecationWarning + API_GUIDE.md 재작성
+
+**Phase B 중복 제거.** 17개 레거시 method 에 DeprecationWarning 부착 (호환
+유지). ``hwpapi.*`` 패키지 내부에서 호출되면 경고 무시 — accessor 가
+레거시 method 를 내부적으로 delegate 해도 사용자에겐 spam 없음.
+
+### Added
+
+- **`hwpapi.core.app._warn_legacy(old, new)`** — 스마트 deprecation 헬퍼.
+  caller frame 의 모듈이 ``hwpapi.`` 로 시작하면 조용히 통과, 사용자
+  코드에서 호출되면 DeprecationWarning 발생.
+
+### Changed
+
+- 10개 레거시 field 관련 method 에 DeprecationWarning 부착:
+  - ``app.create_field`` → ``app.fields.add``
+  - ``app.set_field`` → ``app.fields[n] = v``
+  - ``app.get_field`` → ``app.fields[n].value``
+  - ``app.field_exists`` → ``n in app.fields``
+  - ``app.move_to_field`` → ``app.fields[n].goto()``
+  - ``app.delete_field`` → ``app.fields.remove(n)``
+  - ``app.delete_all_fields`` → ``app.fields.remove_all()``
+  - ``app.rename_field`` → ``app.fields.rename(o, n)``
+  - ``app.field_names`` (property) → ``list(app.fields)``
+  - ``app.fields_dict`` (property) → ``app.fields.to_dict()``
+- ``app.insert_bookmark`` / ``app.insert_hyperlink`` / ``app.replace_brackets_with_fields``:
+  soft deprecation note in docstring (Fields/Bookmarks/Hyperlinks
+  accessor 가 현재 이들을 호출하므로 warning 은 생략).
+- **`docs/API_GUIDE.md` 재작성** — 18개 accessor 매트릭스 표, context
+  manager 목록, property 목록, legacy→신규 마이그레이션 표 추가.
+- **`App.field_names_internal()`** — warning 없는 내부용 field list (accessor 와 fields_dict 가 사용).
+
+### Tests
+
+12 개 신규 단위 테스트 ([`tests/test_v020_deprecations.py`](tests/test_v020_deprecations.py)):
+- `_warn_legacy` 기본 동작
+- ``hwpapi.*`` 모듈에서 호출 시 silent 확인
+- 각 레거시 method 가 warning 발생시키는지
+- Fields accessor 가 레거시 호출해도 사용자 코드에 warning 안 가는지
+
+전체 1362/1362 통과.
+
 ## [0.0.19] — 2026-04-15 — Discovery · app.help() + 상태 요약 __repr__
 
 **Phase A 사용자 경험 개선** (18개 accessor 가 97개 method 속에 숨어있던 문제 해결).

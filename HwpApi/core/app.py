@@ -32,8 +32,33 @@ from pathlib import Path
 import numbers
 import hwpapi.constants as const
 import sys
+import sys
 import warnings
 from hwpapi.logging import get_logger
+
+
+def _warn_legacy(old: str, new: str, stacklevel: int = 2) -> None:
+    """
+    레거시 API 호출 시 DeprecationWarning. **단, 호출이 ``hwpapi.`` 패키지
+    내부에서 일어난 경우에는 조용히 무시** — 신 API 가 레거시 method 를
+    내부에서 사용할 수 있기 때문. 사용자 코드에서 호출될 때만 경고.
+
+    v0.0.20+ 부터 적용. 해당 method 들은 v1.0 에서 제거 예정.
+    """
+    try:
+        # Caller 의 모듈명 확인
+        caller_frame = sys._getframe(stacklevel)
+        caller_module = caller_frame.f_globals.get("__name__", "")
+        if caller_module.startswith("hwpapi.") or caller_module == "hwpapi":
+            return  # 내부 호출 — 조용히 통과
+    except Exception:
+        pass  # 프레임 접근 실패 → 그냥 경고 발생
+    warnings.warn(
+        f"{old}() is deprecated (v0.0.20+); use {new} instead. "
+        f"Will be removed in v1.0.",
+        DeprecationWarning,
+        stacklevel=stacklevel + 1,
+    )
 
 from hwpapi.actions import _Action, _Actions
 from hwpapi.parametersets import ParaShape
@@ -621,11 +646,11 @@ class App:
 
     def insert_hyperlink(self, text: str, url: str):
         """
-        하이퍼링크 삽입.
+        하이퍼링크 삽입. Fluent — chain 가능.
 
-        Examples
-        --------
-        >>> app.insert_hyperlink("GitHub", "https://github.com/JunDamin/hwpapi")
+        .. note::
+
+           신규 코드는 ``app.hyperlinks.add(text, url)`` 권장.
         """
         act = self.api.CreateAction("InsertHyperlink")
         pset = act.CreateSet()
@@ -637,11 +662,11 @@ class App:
 
     def insert_bookmark(self, name: str):
         """
-        현재 커서 위치에 책갈피 삽입.
+        책갈피 삽입. Fluent — chain 가능.
 
-        Examples
-        --------
-        >>> app.insert_bookmark("ch1")
+        .. note::
+
+           신규 코드는 ``app.bookmarks.add(name)`` 권장.
         """
         act = self.api.CreateAction("Bookmark")
         pset = act.CreateSet()
@@ -1304,53 +1329,41 @@ class App:
 
     def create_field(self, name: str, memo: str = "", direction: str = ""):
         """
-        현재 커서 위치에 **누름틀(필드)** 을 생성.
+        [**Deprecated v0.0.20**] 현재 커서 위치에 **누름틀(필드)** 을 생성.
 
-        Parameters
-        ----------
-        name : str
-            필드 이름 (나중에 ``set_field(name, value)`` 로 값 주입).
-        memo : str
-            필드 설명 메모.
-        direction : str
-            필드에 표시될 안내 문구 (예: ``"이름 입력"``).
+        신규 패턴: ``app.fields.add(name, memo=…, direction=…)``.
 
-        Examples
-        --------
-        >>> app.create_field("customer_name", direction="고객명")
-        >>> app.set_field("customer_name", "홍길동")
+        v1.0 에서 제거 예정.
         """
+        _warn_legacy("create_field", "app.fields.add(name, memo=..., direction=...)")
         return self.api.CreateField(direction, memo, name)
 
     def set_field(self, name: str, value) -> bool:
         """
-        이름으로 지정한 필드에 값 주입.
+        [**Deprecated v0.0.20**] 필드 값 주입.
 
-        Parameters
-        ----------
-        name : str
-            필드 이름. 동일 이름의 필드가 여러 개면 전부에 같은 값 주입.
-        value : Any
-            ``str()`` 로 변환되어 삽입.
+        신규 패턴: ``app.fields[name] = value``.
         """
+        _warn_legacy("set_field", "app.fields[name] = value")
         return bool(self.api.PutFieldText(name, str(value)))
 
     def get_field(self, name: str) -> str:
-        """이름으로 지정한 필드의 현재 값 반환."""
+        """
+        [**Deprecated v0.0.20**] 필드 값 읽기.
+
+        신규 패턴: ``app.fields[name].value``.
+        """
+        _warn_legacy("get_field", "app.fields[name].value")
         return self.api.GetFieldText(name) or ""
 
     @property
     def field_names(self) -> list:
         """
-        현재 문서의 모든 필드 이름 리스트 (legacy).
+        [**Deprecated v0.0.20**] 필드 이름 리스트.
 
-        v0.0.12+ 권장: ``list(app.fields)`` 또는 ``for n in app.fields:``
-
-        Examples
-        --------
-        >>> app.field_names
-        ['customer_name', 'order_date', 'total']
+        신규 패턴: ``list(app.fields)`` 또는 ``for n in app.fields:``
         """
+        _warn_legacy("field_names", "list(app.fields)")
         raw = self.api.GetFieldList(0, 0) or ""
         # HWP separates field names by control char \x02 (STX)
         # Some versions use \t or \n
@@ -1403,63 +1416,93 @@ class App:
     @property
     def fields_dict(self) -> dict:
         """
-        ``{필드이름: 값}`` 딕셔너리.
+        [**Deprecated v0.0.20**] ``{필드이름: 값}`` 딕셔너리.
 
-        Examples
-        --------
-        >>> app.fields_dict
-        {'customer_name': '홍길동', 'order_date': '2026-04-15', 'total': '1,200,000원'}
+        신규 패턴: ``app.fields.to_dict()``.
         """
-        return {name: self.get_field(name) for name in self.fields}
+        _warn_legacy("fields_dict", "app.fields.to_dict()")
+        return {name: self.api.GetFieldText(name) or "" for name in self.field_names_internal()}
+
+    def field_names_internal(self) -> list:
+        """Internal name list — 경고 없이 사용 (fields_dict, fields accessor 등 내부용)."""
+        raw = self.api.GetFieldList(0, 0) or ""
+        for sep in ("\x02", "\t", "\n"):
+            if sep in raw:
+                names = raw.split(sep)
+                break
+        else:
+            names = [raw] if raw else []
+        seen, out = set(), []
+        for n in names:
+            n = n.strip()
+            if n and n not in seen:
+                seen.add(n)
+                out.append(n)
+        return out
 
     def field_exists(self, name: str) -> bool:
-        """해당 이름의 필드가 존재하는지."""
+        """
+        [**Deprecated v0.0.20**] 필드 존재 확인.
+
+        신규 패턴: ``name in app.fields``.
+        """
+        _warn_legacy("field_exists", "name in app.fields")
         try:
             return bool(self.api.FieldExist(name))
         except Exception:
-            return name in self.fields
+            return name in self.field_names_internal()
 
     def move_to_field(self, name: str,
                       text: bool = True, front: bool = True,
                       select: bool = False) -> bool:
         """
-        지정 필드로 커서 이동.
+        [**Deprecated v0.0.20**] 지정 필드로 커서 이동.
 
-        Parameters
-        ----------
-        name : str
-            필드 이름.
-        text : bool
-            필드 안의 텍스트 위치로 이동할지 (기본 True).
-        front : bool
-            필드 앞쪽으로 이동할지 (False 면 뒤쪽).
-        select : bool
-            필드 범위를 선택할지.
+        신규 패턴: ``app.fields[name].goto()``.
         """
+        _warn_legacy("move_to_field", "app.fields[name].goto()")
         try:
             return bool(self.api.MoveToField(name, text, front, select))
         except Exception:
             return False
 
     def delete_field(self, name: str) -> bool:
-        """이름으로 지정한 필드 삭제."""
-        if not self.move_to_field(name, select=True):
-            return False
+        """
+        [**Deprecated v0.0.20**] 필드 삭제.
+
+        신규 패턴: ``app.fields.remove(name)`` 또는 ``del app.fields[name]``.
+        """
+        _warn_legacy("delete_field", "app.fields.remove(name)")
         try:
-            return bool(self.api.Run("DeleteField"))
+            if not bool(self.api.MoveToField(name, True, True, True)):
+                return False
+            try:
+                return bool(self.api.Run("DeleteField"))
+            except Exception:
+                return bool(self.api.Run("Delete"))
         except Exception:
-            return bool(self.api.Run("Delete"))
+            return False
 
     def delete_all_fields(self) -> int:
-        """모든 필드 삭제. 삭제한 개수 반환."""
+        """
+        [**Deprecated v0.0.20**] 모든 필드 삭제.
+
+        신규 패턴: ``app.fields.remove_all()``.
+        """
+        _warn_legacy("delete_all_fields", "app.fields.remove_all()")
         count = 0
-        for name in self.fields:
+        for name in self.field_names_internal():
             if self.delete_field(name):
                 count += 1
         return count
 
     def rename_field(self, old: str, new: str) -> bool:
-        """필드 이름 변경."""
+        """
+        [**Deprecated v0.0.20**] 필드 이름 변경.
+
+        신규 패턴: ``app.fields.rename(old, new)``.
+        """
+        _warn_legacy("rename_field", "app.fields.rename(old, new)")
         try:
             return bool(self.api.RenameField(old, new))
         except Exception:
@@ -1471,31 +1514,13 @@ class App:
         memo: str = "",
     ) -> list:
         """
-        ``{{name}}`` 형태의 브래킷 표기를 모두 HWP 필드로 변환.
+        ``{{name}}`` 브래킷을 모두 HWP 필드로 변환.
 
-        템플릿 문서를 mail merge 대상으로 준비하는 가장 간편한 방법.
+        .. note::
 
-        Parameters
-        ----------
-        pattern : str
-            브래킷 감지 정규식. ``(\\w+)`` 캡처 그룹이 필드명이 됨.
-        memo : str
-            각 필드에 붙을 메모.
-
-        Returns
-        -------
-        list[str]
-            변환된 고유 필드 이름 목록.
-
-        Examples
-        --------
-        문서에 ``안녕하세요 {{name}}님, 오늘은 {{date}} 입니다.`` 가 있으면:
-
-        >>> names = app.replace_brackets_with_fields()
-        >>> names
-        ['name', 'date']
-        >>> app.set_field("name", "홍길동")
-        >>> app.set_field("date", "2026-04-15")
+           이 method 는 여전히 동작하지만 신규 코드는
+           ``app.fields.from_brackets(pattern=..., memo=...)`` 를 권장.
+           v1.0 에서 이 이름은 deprecated 로 표시되고, 추후 제거될 수 있음.
         """
         import re
         pat = re.compile(pattern)
