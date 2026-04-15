@@ -245,7 +245,19 @@ class App:
 
     @property
     def visible(self) -> bool:
-        """HWP 메인 창의 가시성 (``window_i=0``). 읽기/쓰기."""
+        """
+        HWP 메인 창의 가시성 (property form of :meth:`set_visible`).
+
+        - Read: ``XHwpWindows.Item(0).Visible`` 조회.
+        - Write: ``self.set_visible(bool(value))`` 위임.
+
+        단일 창 제어에는 이 property 를 권장합니다. 여러 창 중 특정
+        ``window_i`` 를 지정하려면 :meth:`set_visible` 메소드를 사용.
+
+        See Also
+        --------
+        set_visible : 다중 창 지원 메소드 버전.
+        """
         try:
             return bool(self.api.XHwpWindows.Item(0).Visible)
         except Exception:
@@ -282,7 +294,16 @@ class App:
 
     @property
     def selection(self) -> str:
-        """현재 선택된 텍스트 — ``get_selected_text()`` alias."""
+        """
+        현재 선택된 텍스트 (property alias for :meth:`get_selected_text`).
+
+        두 API 는 동일 결과를 반환합니다. 짧은 property 형태는 Pythonic
+        값 접근에 적합 (``app.selection`` vs ``app.get_selected_text()``).
+
+        See Also
+        --------
+        get_selected_text : 동등한 메소드 형태.
+        """
         return self.get_selected_text() or ""
 
     # ═════════════════════════════════════════════════════════════
@@ -464,12 +485,18 @@ class App:
 
     def new_document(self, is_tab: bool = True) -> "Document":
         """
-        새 빈 문서 추가. ``app.documents.add()`` 의 alias.
+        새 빈 문서 추가 — :meth:`Documents.add` 의 편의 alias.
+
+        같은 결과: ``app.documents.add(is_tab=True)``.
 
         Examples
         --------
         >>> doc = app.new_document()
         >>> doc.insert_text("새 문서")
+
+        See Also
+        --------
+        Documents.add : 정식 경로 (``app.documents.add()``).
         """
         return self.documents.add(is_tab=is_tab)
 
@@ -687,38 +714,57 @@ class App:
 
     # ── 단위 변환 헬퍼 (App instance methods) ─────────────────
 
+    # ── 단위 변환 ────────────────────────────────────────────
+    # App instance 메소드는 HWP COM (MiliToHwpUnit / PointToHwpUnit)
+    # 을 호출. HWP 실행 없이 순수 파이썬으로 변환만 하고 싶으면:
+    #   ``from hwpapi.functions import to_hwpunit, from_hwpunit``
+    # 를 사용 (unit string 파싱 + 단위 전환 모두 지원).
+
     def mm_to_hwpunit(self, mm: float) -> int:
-        """밀리미터 → HWPUNIT."""
+        """밀리미터 → HWPUNIT. HWP 엔진의 ``MiliToHwpUnit`` 호출."""
         try:
             return int(self.api.MiliToHwpUnit(float(mm)))
         except Exception:
-            return int(mm * 283)  # fallback
+            return int(mm * 283)
 
     def point_to_hwpunit(self, pt: float) -> int:
-        """포인트 → HWPUNIT."""
+        """포인트 → HWPUNIT. HWP 엔진의 ``PointToHwpUnit`` 호출."""
         try:
             return int(self.api.PointToHwpUnit(float(pt)))
         except Exception:
             return int(pt * 100)
 
     def hwpunit_to_mm(self, hu: int) -> float:
-        """HWPUNIT → 밀리미터."""
+        """HWPUNIT → 밀리미터. (1 mm ≈ 283 HWPUNIT)"""
         return float(hu) / 283.0
 
     def hwpunit_to_point(self, hu: int) -> float:
-        """HWPUNIT → 포인트."""
+        """HWPUNIT → 포인트. (1 pt = 100 HWPUNIT)"""
         return float(hu) / 100.0
 
     def rgb_color(self, r: int, g: int, b: int) -> int:
         """
         RGB 값을 HWP 내부 색상 정수 (BBGGRR) 로 변환.
 
+        **반환**: 정수 (HWP COM API 에 직접 전달할 때 유용).
+
+        타입 안전성 있는 ``Color`` 객체가 필요하면
+        :meth:`~hwpapi.parametersets.Color.from_rgb` 를 사용하세요.
+
         Examples
         --------
-        >>> app.rgb_color(255, 0, 0)    # 빨강
+        >>> app.rgb_color(255, 0, 0)    # 빨강 → int 255
         255
-        >>> app.rgb_color(0, 255, 0)    # 초록
+        >>> app.rgb_color(0, 255, 0)    # 초록 → int 65280
         65280
+
+        >>> # Or type-safe Color wrapper
+        >>> from hwpapi.parametersets import Color
+        >>> Color.from_rgb(255, 0, 0)   # Color('#ff0000')
+
+        See Also
+        --------
+        hwpapi.parametersets.Color.from_rgb : Color 객체 생성자.
         """
         try:
             return int(self.api.RGBColor(int(r), int(g), int(b)))
@@ -1423,8 +1469,35 @@ class App:
         use_kerning=None,
         height=None,
         border_fill=None):
-        """return null charshape
         """
+        .. deprecated:: 0.0.7
+           Use :meth:`set_charshape` directly — it accepts all the same
+           keyword arguments and applies the result immediately. For
+           scoped formatting that auto-reverts on exit, use
+           :meth:`styled_text` or :meth:`charshape_scope`.
+
+           This method returns an **unbound** ``CharShape`` pset that
+           the caller must pass back to ``set_charshape`` — an extra
+           indirection that adds no value.
+
+        Examples
+        --------
+        >>> # ❌ Old (deprecated)
+        >>> cs = app.charshape(bold=True, italic=True)
+        >>> app.set_charshape(cs)
+
+        >>> # ✅ New
+        >>> app.set_charshape(bold=True, italic=True)
+        """
+        import warnings
+        warnings.warn(
+            "App.charshape() is deprecated and will be removed in v0.1.0. "
+            "Use App.set_charshape(**kwargs) directly — same arguments, "
+            "applied immediately. For scoped formatting, use styled_text() "
+            "or charshape_scope().",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
         logger = get_logger('core')
         logger.debug(f"Calling charshape")
