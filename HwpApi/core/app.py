@@ -872,6 +872,12 @@ class App:
     SILENCE_OKCANCEL_OK   = 0x00000010  # 확인/취소 → OK
     SILENCE_OKCANCEL_NO   = 0x00000020  # 확인/취소 → Cancel
 
+    # hwp-mcp 호환 alias (jkf87/hwp-mcp 의 set_message_box_mode 도큐먼테이션)
+    #   - 0x00010000 → "확인 버튼 자동 클릭" (= SILENCE_SAVE_YES)
+    #   - 0x00020000 → "취소 버튼 자동 클릭" (= SILENCE_SAVE_NO)
+    #   - 0x00100000 → "저장 안함 선택"
+    SILENCE_NO_SAVE       = 0x00100000  # 저장 안함 선택 (hwp-mcp)
+
     def set_message_box_mode(self, mode: int) -> int:
         """
         HWP 다이얼로그 처리 모드 지정 — 이전 모드값을 반환.
@@ -910,10 +916,13 @@ class App:
     @contextmanager
     def silenced(self, mode=SILENCE_ALL_YES):
         """
-        다이얼로그 자동응답 context manager.
+        다이얼로그 자동응답 **context manager** (scoped MessageBox mode).
 
-        블록 내부의 모든 HWP 확인/경고 dialog 를 자동으로 처리하고,
-        블록 종료 시 **원래 모드로 복원**.
+        ``with app.silenced(...):`` 블록 내부의 모든 HWP 확인/경고 dialog
+        를 자동으로 처리하고, 블록 **종료 시 이전 mode 로 복원**됩니다.
+
+        영구 적용이 필요하면 :meth:`set_message_box_mode` 를 직접 호출하세요.
+        한 번만 적용 후 자동 복원하려면 항상 :meth:`silenced` 를 쓰세요.
 
         Parameters
         ----------
@@ -960,14 +969,25 @@ class App:
         if isinstance(mode, str):
             preset = mode.lower()
             mode_int = {
+                # 전 카테고리
                 "yes": self.SILENCE_ALL_YES,
                 "no": self.SILENCE_ALL_NO,
                 "reset": self.SILENCE_RESET,
+                # hwp-mcp 호환 (단일 카테고리)
+                "ok": self.SILENCE_OK_AUTO,             # 0x00000001
+                "save": self.SILENCE_SAVE_YES,           # 0x00010000
+                "save_yes": self.SILENCE_SAVE_YES,       # 0x00010000
+                "save_no": self.SILENCE_SAVE_NO,         # 0x00020000
+                "no_save": self.SILENCE_NO_SAVE,         # 0x00100000
+                "okcancel_ok": self.SILENCE_OKCANCEL_OK,  # 0x00000010
+                "okcancel_no": self.SILENCE_OKCANCEL_NO,  # 0x00000020
             }.get(preset)
             if mode_int is None:
                 raise ValueError(
                     f"Unknown silenced preset {mode!r}. "
-                    f"Valid: 'yes', 'no', 'reset', or an int bitfield."
+                    f"Valid: 'yes', 'no', 'reset', 'ok', 'save', 'save_yes', "
+                    f"'save_no', 'no_save', 'okcancel_ok', 'okcancel_no', "
+                    f"or an int bitfield."
                 )
             mode = mode_int
 

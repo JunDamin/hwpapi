@@ -409,12 +409,13 @@ def main():
     app = App(is_visible=True)
     print(f"✅ Connected to HWP\n")
 
+    # ─── 2차 방어선: background dismisser (fallback)
     stop_evt = threading.Event()
     dismisser_thread = threading.Thread(
         target=_background_dismisser, args=(stop_evt,), daemon=True
     )
     dismisser_thread.start()
-    print(f"🛡  Background dialog dismisser started\n")
+    print(f"🛡  Background dialog dismisser (fallback)\n")
 
     scenarios = [
         lambda: feature_01_underline(app),
@@ -439,13 +440,16 @@ def main():
 
     passed = 0
     failed = 0
-    for fn in scenarios:
-        try:
-            fn()
-            passed += 1
-        except Exception as e:
-            failed += 1
-            print(f"\n⚠️ Scenario crashed: {e}")
+    # ─── 1차 방어선: silenced() context manager — 자동 진입/복원
+    print(f"🤫 silenced('yes') context manager 진입\n")
+    with app.silenced("yes"):
+        for fn in scenarios:
+            try:
+                fn()
+                passed += 1
+            except Exception as e:
+                failed += 1
+                print(f"\n⚠️ Scenario crashed: {e}")
 
     stop_evt.set()
     dismisser_thread.join(timeout=2)

@@ -1004,14 +1004,14 @@ def main():
     app = App(is_visible=True)
     print(f"✅ Connected to HWP\n")
 
-    # Start background dialog dismisser
+    # ─── 2차 방어선 (fallback): background dismisser 로 새는 dialog 처리
     import threading
     stop_evt = threading.Event()
     dismisser_thread = threading.Thread(
         target=_background_dismisser, args=(stop_evt,), daemon=True
     )
     dismisser_thread.start()
-    print(f"🛡  Background dialog dismisser started\n")
+    print(f"🛡  Background dialog dismisser (fallback) started\n")
 
     tmpdir = tempfile.mkdtemp(prefix='hwpapi_scenarios_')
     print(f"📁 Temp: {tmpdir}\n")
@@ -1034,13 +1034,16 @@ def main():
 
     passed = 0
     failed = 0
-    for fn in scenarios:
-        try:
-            fn()
-            passed += 1
-        except Exception as e:
-            failed += 1
-            print(f"\n⚠️ Scenario crashed: {e}")
+    # ─── 1차 방어선: silenced() context manager — 진입 시 ALL_YES, 종료 시 자동 복원
+    print(f"🤫 silenced('yes') context manager 진입 — 종료 후 이전 mode 자동 복원\n")
+    with app.silenced("yes"):
+        for fn in scenarios:
+            try:
+                fn()
+                passed += 1
+            except Exception as e:
+                failed += 1
+                print(f"\n⚠️ Scenario crashed: {e}")
 
     # Stop background dismisser
     stop_evt.set()

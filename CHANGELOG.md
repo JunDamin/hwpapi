@@ -8,6 +8,38 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.11] — 2026-04-15 — silenced() context manager · v1.0 청사진
+
+### Added
+
+- **`SILENCE_NO_SAVE = 0x00100000`** — hwp-mcp 호환 alias ("저장 안함" 자동 선택).
+- **`silenced()` 의 풍부한 string preset** — `"ok"`, `"save"`, `"save_yes"`,
+  `"save_no"`, `"no_save"`, `"okcancel_ok"`, `"okcancel_no"` (단일 카테고리
+  세밀 제어). 기존 `"yes"` / `"no"` / `"reset"` 와 공존.
+- **`docs/V1_CONSISTENCY_PLAN.md`** — 하위 호환을 포기한 v1.0 일관성
+  로드맵. 6대 원칙(Pythonic state vs action, domain accessor, Fluent
+  return, 동사 어휘 통일, context manager 명명, 명시적 에러 정책),
+  전체 API 청사진, 10주 마이그레이션 일정 포함.
+
+### Changed
+
+- **`silenced()` docstring 명확화** — context manager 임을 강조. 영구
+  적용은 `set_message_box_mode()`, scoped 적용은 `silenced()` 로 분리.
+- **smoke 테스트 (smoke_scenarios.py / smoke_features.py)** — 영구
+  `set_message_box_mode()` 호출 대신 `with app.silenced("yes"):` context
+  manager 로 감싸 자동 복원. 백그라운드 dismisser 는 fallback 으로 유지.
+
+## [0.0.10] — 2026-04-15 — silenced() 6 dialog categories
+
+### Added
+
+- **`silenced()` 6-카테고리 비트필드 지원** — 0xF/0xF0/0xF00/0xF000/0xF0000/0xF00000
+  6개 dialog 카테고리 모두 한 번에 자동응답. `SILENCE_ALL_YES = 0x111111`,
+  `SILENCE_ALL_NO = 0x222222`, `SILENCE_RESET = 0` 등 상수 추가.
+- **`suppress_errors()` context manager** — 에러 dialog 자동 ABORT + Python
+  예외 swallowing. 대량 자동화에서 일부 실패에도 루프 계속 진행.
+- **`register_security_module()`** — 보안 dialog 차단을 위한 외부 모듈 등록.
+
 ## [0.0.9] — 2026-04-15 — Styles parser · MoveAccessor sub-groups
 
 ### Added
