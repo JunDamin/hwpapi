@@ -8,6 +8,44 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.12] — 2026-04-15 — V1 Phase 1 · Fields/Bookmarks/Hyperlinks accessors + charshape/parashape properties
+
+### Added
+
+- **`app.fields` 컬렉션 accessor** ([`Fields`](hwpapi/classes/fields.py)) —
+  v1.0 청사진 Phase 1. **하위 호환**: iteration / ``in`` / ``len()`` 은
+  여전히 필드 이름 (str) 으로 동작. 추가로 dict-style + collection 메소드:
+  - ``app.fields["name"]`` → ``Field`` 객체 (값 객체 — `.value`, `.goto()`, `.remove()`)
+  - ``app.fields["name"] = "값"`` → 자동 생성 + 값 주입
+  - ``app.fields.add(name, memo, direction)``
+  - ``app.fields.remove(name)`` / ``remove_all()``
+  - ``app.fields.find(name)`` → Optional[Field]
+  - ``app.fields.rename(old, new)``
+  - ``app.fields.update({...})`` / ``update(**kw)`` — 일괄 주입
+  - ``app.fields.to_dict()``
+  - ``app.fields.from_brackets(pattern)`` — `{{tag}}` → 필드 변환
+- **`app.bookmarks`** ([`Bookmarks`](hwpapi/classes/fields.py)) —
+  ``add(name)``, ``remove(name)``, ``goto(name)``, ``"name" in app.bookmarks``.
+- **`app.hyperlinks`** ([`Hyperlinks`](hwpapi/classes/fields.py)) —
+  ``add(text, url)`` → ``Hyperlink`` 값 객체.
+- **`app.charshape` / `app.parashape` properties** — read 는 현재 커서의
+  스냅샷 반환, write 는 전체 교체 (또는 dict 로 partial). 기존
+  :meth:`get_charshape` / :meth:`set_charshape` 는 그대로 유지.
+- 28개의 신규 단위 테스트 ([`tests/test_fields_accessor.py`](tests/test_fields_accessor.py)).
+
+### Changed
+
+- **`app.fields`** 가 단순 list 가 아닌 ``Fields`` 컬렉션 반환. 단,
+  ``for n in app.fields:`` / ``"x" in app.fields`` / ``len(app.fields)``
+  같은 기존 사용 패턴은 그대로 작동 (deprecation warning 없음).
+- **`app.field_names`** — 기존 list 반환 property 의 새 이름. 명시적 list
+  가 필요한 경우 권장 (``app.fields`` 도 ``list(app.fields)`` 로 동일).
+
+### Deprecated
+
+- ``app.fields[0]`` (정수 인덱싱) → ``DeprecationWarning``. 대신
+  ``list(app.fields)[0]`` 또는 ``app.fields["name"]`` 사용.
+
 ## [0.0.11] — 2026-04-15 — silenced() context manager · v1.0 청사진
 
 ### Added

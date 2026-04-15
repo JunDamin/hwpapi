@@ -15,10 +15,12 @@ from .accessors import MoveAccessor, CellAccessor, TableAccessor, PageAccessor
 from .shapes import Character, CharShape, Paragraph, ParaShape, PageShape
 from .styles import StylesAccessor, Style
 from .controls import ControlsAccessor, Control
+from .fields import Fields, Field, Bookmarks, Hyperlinks, Hyperlink
 
 __all__ = [
     'MoveAccessor', 'CellAccessor', 'TableAccessor', 'PageAccessor',
     'Character', 'CharShape', 'Paragraph', 'ParaShape', 'PageShape',
     'StylesAccessor', 'Style',
     'ControlsAccessor', 'Control',
+    'Fields', 'Field', 'Bookmarks', 'Hyperlinks', 'Hyperlink',
 ]

@@ -42,6 +42,7 @@ from hwpapi.classes import (
     MoveAccessor, CellAccessor, TableAccessor, PageAccessor,
     StylesAccessor, ControlsAccessor,
 )
+from hwpapi.classes.fields import Fields, Bookmarks, Hyperlinks
 from .engine import Engine, Engines, Apps
 from hwpapi.functions import (
     check_dll,
@@ -122,6 +123,9 @@ class App:
         self.documents = Documents(self)
         self.styles = StylesAccessor(self)
         self.controls = ControlsAccessor(self)
+        # v0.0.12+ collection accessors (v1.0 일관성 청사진 Phase 1)
+        self.bookmarks = Bookmarks(self)
+        self.hyperlinks = Hyperlinks(self)
         self.logger.info("App initialized successfully with all accessors")
 
     def _load(self, new_app=False, engine=None, dll_path=None):
@@ -1075,13 +1079,15 @@ class App:
         return self.api.GetFieldText(name) or ""
 
     @property
-    def fields(self) -> list:
+    def field_names(self) -> list:
         """
-        현재 문서의 모든 필드 이름 리스트.
+        현재 문서의 모든 필드 이름 리스트 (legacy).
+
+        v0.0.12+ 권장: ``list(app.fields)`` 또는 ``for n in app.fields:``
 
         Examples
         --------
-        >>> app.fields
+        >>> app.field_names
         ['customer_name', 'order_date', 'total']
         """
         raw = self.api.GetFieldList(0, 0) or ""
@@ -1102,6 +1108,36 @@ class App:
                 seen.add(n)
                 out.append(n)
         return out
+
+    @property
+    def fields(self) -> "Fields":
+        """
+        누름틀(필드) 컬렉션 — list-like + dict-like collection accessor.
+
+        v0.0.12+ : ``app.fields`` 가 ``Fields`` 컬렉션을 반환. iteration /
+        ``in`` / ``len()`` 은 기존과 동일하게 필드 이름으로 동작
+        (하위 호환). 추가로 dict-style + collection 메소드 지원.
+
+        Examples
+        --------
+        Legacy 사용 (그대로 작동):
+
+        >>> for name in app.fields:        # 필드 이름 iteration
+        ...     print(name)
+        >>> "customer" in app.fields       # 존재 확인
+        >>> len(app.fields)                 # 개수
+        >>> list(app.fields)                # ['customer', 'order_date', ...]
+
+        v1.0 패턴 (dict-style):
+
+        >>> app.fields["customer"] = "홍길동"        # 값 주입 (필요시 자동 생성)
+        >>> app.fields["customer"].value             # 현재 값
+        >>> app.fields.add("date", direction="날짜") # 명시적 생성
+        >>> app.fields.update({"a": "1", "b": "2"})  # 일괄 주입
+        >>> app.fields.remove("old")                 # 삭제
+        >>> app.fields.from_brackets()                # {{tag}} → 필드 변환
+        """
+        return Fields(self)
 
     @property
     def fields_dict(self) -> dict:
@@ -1718,6 +1754,69 @@ class App:
             setattr(charshape_pset, key, value)
 
         return charshape_pset
+
+    @property
+    def charshape(self):
+        """
+        현재 커서 위치의 문자 모양 (CharShape) — read/write property.
+
+        v0.0.12+ 권장 패턴 (v1.0 청사진). 기존 :meth:`get_charshape` /
+        :meth:`set_charshape` 와 공존.
+
+        Examples
+        --------
+        Read (snapshot):
+
+        >>> cs = app.charshape
+        >>> cs.bold, cs.fontsize
+        (True, 1100)
+
+        Write (전체 교체):
+
+        >>> new_cs = parametersets.CharShape()
+        >>> new_cs.bold = True
+        >>> new_cs.fontsize = 1500
+        >>> app.charshape = new_cs
+
+        Partial update (kwargs) — :meth:`set_charshape` 가 더 간결:
+
+        >>> app.set_charshape(bold=True, fontsize=1500)
+        """
+        return self.get_charshape()
+
+    @charshape.setter
+    def charshape(self, value) -> None:
+        if value is None:
+            return
+        if isinstance(value, dict):
+            self.set_charshape(**value)
+        else:
+            self.set_charshape(charshape=value)
+
+    @property
+    def parashape(self):
+        """
+        현재 커서 위치의 문단 모양 (ParaShape) — read/write property.
+
+        v0.0.12+ 권장 패턴 (v1.0 청사진). 기존 :meth:`get_parashape` /
+        :meth:`set_parashape` 와 공존.
+
+        Examples
+        --------
+        >>> ps = app.parashape          # 현재 스냅샷
+        >>> app.parashape = new_ps      # 전체 교체
+        >>> app.set_parashape(align='Left', indent=10)  # partial
+        """
+        return self.get_parashape()
+
+    @parashape.setter
+    def parashape(self, value) -> None:
+        if value is None:
+            return
+        if isinstance(value, dict):
+            self.set_parashape(**value)
+        else:
+            self.set_parashape(parashape=value)
 
     def get_charshape(self):
         """
