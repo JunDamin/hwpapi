@@ -94,59 +94,107 @@ class StylesAccessor:
         return [s.name for s in self._iter_styles()]
 
     def _iter_styles(self):
-        """HWPML 내보내기 + XML 파싱 — pyhwpx 패턴."""
-        # HStyle pset 의 Apply 필드 값들을 iterate 하는 직접 방법이 없으므로
-        # HWPML 로 블록 내보내기 → XML 에서 <STYLE> 태그 파싱.
+        """
+        HWPML 내보내기 + XML 파싱.
+
+        HWP 의 COM API 가 style 목록을 직접 노출하지 않으므로 문서 블록을
+        HWPML2X (XML) 포맷으로 저장해서 `<STYLE Name="...">` 태그를
+        파싱합니다.
+
+        견고성 전략:
+          1. 현재 위치 기억
+          2. 1 char 선택 시도 (MoveSelRight)
+          3. 실패 시 SelectAll 로 전체 선택
+          4. SaveBlockAction 우선 → SaveBlockAs fallback
+          5. 종료 시 선택 해제 + 위치 복원
+          6. 한 경로도 실패하면 빈 이터레이터 반환
+        """
         import tempfile, os, re
+        xml_path = None
+        prev_pos = None
         try:
             with tempfile.NamedTemporaryFile(
                 suffix=".xml", delete=False
             ) as tmp:
                 xml_path = tmp.name
-
-            # Ensure selection is minimal (1 char or nothing)
             try:
                 prev_pos = self._app.api.GetPos()
             except Exception:
                 prev_pos = None
 
             saved = False
+            # Attempt 1: 1-char selection from current position
             try:
-                # HWP needs a SELECTION to use SaveBlockAs; select 1 char.
+                self._app.api.Run("MoveSelRight")
+                saved = self._try_save_block(xml_path)
+            except Exception:
+                pass
+            try:
+                self._app.api.Run("Cancel")
+            except Exception:
+                pass
+
+            # Attempt 2: SelectAll (covers empty docs / edge positions)
+            if not saved:
                 try:
-                    self._app.api.Run("MoveSelRight")
-                    saved = self._app.api.SaveBlockAction(
-                        xml_path, "HWPML2X"
-                    ) if hasattr(self._app.api, "SaveBlockAction") else False
-                    if not saved:
-                        saved = self._app.api.SaveBlockAs(
-                            xml_path, "HWPML2X"
-                        )
+                    self._app.api.Run("SelectAll")
+                    saved = self._try_save_block(xml_path)
                 except Exception:
                     pass
-            finally:
                 try:
                     self._app.api.Run("Cancel")
-                    if prev_pos is not None:
-                        self._app.api.SetPos(*prev_pos)
                 except Exception:
                     pass
 
-            if not (saved and os.path.isfile(xml_path)):
+            # Restore original position
+            if prev_pos is not None:
+                try:
+                    self._app.api.SetPos(*prev_pos)
+                except Exception:
+                    pass
+
+            if not (saved and os.path.isfile(xml_path)
+                    and os.path.getsize(xml_path) > 0):
                 return
-            with open(xml_path, encoding="utf-8") as f:
+
+            with open(xml_path, encoding="utf-8", errors="replace") as f:
                 xml = f.read()
-            # <STYLE ... Name="..." ...>
+            # STYLE entries appear inside <STYLE-LIST> section of HWPML
             for i, m in enumerate(
-                re.finditer(r'<STYLE[^>]+Name="([^"]+)"', xml)
+                re.finditer(r'<STYLE[^/>]+Name="([^"]+)"', xml)
             ):
                 yield Style(i, m.group(1), app=self._app)
-            try:
-                os.remove(xml_path)
-            except Exception:
-                pass
         except Exception:
             return
+        finally:
+            if xml_path:
+                try:
+                    os.remove(xml_path)
+                except Exception:
+                    pass
+
+    def _try_save_block(self, path: str) -> bool:
+        """
+        현재 선택된 블록을 ``path`` 에 HWPML2X 로 저장. pyhwpx 의
+        ``FileSaveBlock_S`` action + ``HFileOpenSave`` pset 패턴 사용.
+        """
+        import os
+        try:
+            if self._app.api.SelectionMode == 0:
+                return False  # No selection
+        except Exception:
+            pass
+        abspath = os.path.abspath(path)
+        try:
+            pset = self._app.api.HParameterSet.HFileOpenSave
+            self._app.api.HAction.GetDefault("FileSaveBlock_S", pset.HSet)
+            pset.filename = abspath
+            pset.Format = "HWPML2X"
+            pset.Attributes = 1
+            self._app.api.HAction.Execute("FileSaveBlock_S", pset.HSet)
+            return os.path.isfile(abspath) and os.path.getsize(abspath) > 0
+        except Exception:
+            return False
 
     def __iter__(self):
         return iter(list(self._iter_styles()))

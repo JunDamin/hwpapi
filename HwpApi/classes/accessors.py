@@ -47,13 +47,150 @@ from hwpapi.logging import get_logger
 
 
 
+# ── MoveAccessor sub-group classes ───────────────────────────────
+#
+# 38개의 flat 메소드 (top_of_file, end_of_line, next_word 등) 를 의미
+# 단위로 묶은 sub-accessor. 기존 flat API 는 호환 유지 (v0.1.0 에서
+# deprecation 여부 판단) 하면서 `app.move.line.end()` 같은 직관적
+# navigation 이 가능합니다.
+
+
+class _DocMove:
+    """``app.move.doc`` — 문서 전체 단위 이동."""
+    def __init__(self, app):
+        self._app = app
+    def top(self):
+        """문서 맨 처음으로."""
+        return self._app.api.Run("MoveDocBegin")
+    def bottom(self):
+        """문서 맨 끝으로."""
+        return self._app.api.Run("MoveDocEnd")
+
+
+class _LineMove:
+    """``app.move.line`` — 줄 단위 이동."""
+    def __init__(self, app):
+        self._app = app
+    def start(self):
+        return self._app.api.Run("MoveLineBegin")
+    def end(self):
+        return self._app.api.Run("MoveLineEnd")
+    def next(self):
+        return self._app.api.Run("MoveLineDown")
+    def prev(self):
+        return self._app.api.Run("MoveLineUp")
+
+
+class _WordMove:
+    """``app.move.word`` — 단어 단위 이동."""
+    def __init__(self, app):
+        self._app = app
+    def start(self):
+        return self._app.api.Run("MoveWordBegin")
+    def end(self):
+        return self._app.api.Run("MoveWordEnd")
+    def next(self):
+        return self._app.api.Run("MoveRightWord")
+    def prev(self):
+        return self._app.api.Run("MoveLeftWord")
+
+
+class _ParaMove:
+    """``app.move.para`` — 문단 단위 이동."""
+    def __init__(self, app):
+        self._app = app
+    def start(self):
+        return self._app.api.Run("MoveParaBegin")
+    def end(self):
+        return self._app.api.Run("MoveParaEnd")
+    def next(self):
+        return self._app.api.Run("MoveNextParaBegin")
+    def prev(self):
+        return self._app.api.Run("MovePrevParaBegin")
+
+
+class _CharMove:
+    """``app.move.char`` — 글자 단위 이동."""
+    def __init__(self, app):
+        self._app = app
+    def next(self):
+        return self._app.api.Run("MoveRight")
+    def prev(self):
+        return self._app.api.Run("MoveLeft")
+
+
+class _PageMove:
+    """``app.move.page`` — 페이지 단위 이동."""
+    def __init__(self, app):
+        self._app = app
+    def next(self):
+        return self._app.api.Run("MovePageDown")
+    def prev(self):
+        return self._app.api.Run("MovePageUp")
+    def top(self):
+        """현재 페이지 맨 위로."""
+        return self._app.api.Run("MovePageBegin")
+    def bottom(self):
+        """현재 페이지 맨 아래로."""
+        return self._app.api.Run("MovePageEnd")
+
+
+class _CellMove:
+    """``app.move.cell`` — 표 셀 단위 이동."""
+    def __init__(self, app):
+        self._app = app
+    def left(self):
+        return self._app.api.Run("TableLeftCell")
+    def right(self):
+        return self._app.api.Run("TableRightCell")
+    def up(self):
+        return self._app.api.Run("TableUpperCell")
+    def down(self):
+        return self._app.api.Run("TableLowerCell")
+    def start(self):
+        """표의 A1 셀로."""
+        return self._app.api.Run("TableColBegin")
+    def end(self):
+        """표의 마지막 셀로."""
+        return self._app.api.Run("TableColEnd")
+    def top(self):
+        """현재 열의 첫 셀로."""
+        return self._app.api.Run("TableColPageUp")
+    def bottom(self):
+        """현재 열의 마지막 셀로."""
+        return self._app.api.Run("TableColPageDown")
+
+
 class MoveAccessor:
     """
-    Wrap MovePos for easier use.
+    ``app.move`` — 커서/캐럿 이동.
+
+    **두 가지 접근 방식**:
+
+    1. **Sub-accessor (권장, v0.0.9+)** — 의미 단위로 묶여 명확:
+       ``app.move.doc.top()``, ``app.move.line.end()``,
+       ``app.move.word.next()``, ``app.move.page.next()``,
+       ``app.move.cell.right()`` 등.
+
+    2. **Flat 메소드 (v0.0.x 호환 유지)** — 기존 이름 그대로:
+       ``app.move.top_of_file()``, ``app.move.end_of_line()`` 등.
+
+    See Also
+    --------
+    ``app.move.doc``, ``.line``, ``.word``, ``.para``, ``.char``,
+    ``.page``, ``.cell``
     """
     def __init__(self, app):
         self._app = app
         self.logger = get_logger('classes.MoveAccessor')
+        # Sub-accessors
+        self.doc = _DocMove(app)
+        self.line = _LineMove(app)
+        self.word = _WordMove(app)
+        self.para = _ParaMove(app)
+        self.char = _CharMove(app)
+        self.page = _PageMove(app)
+        self.cell = _CellMove(app)
 
     def __call__(self, key=const.MoveId.ScanPos.value, para=None, pos=None):
         """
