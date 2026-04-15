@@ -8,6 +8,41 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.19] — 2026-04-15 — Discovery · app.help() + 상태 요약 __repr__
+
+**Phase A 사용자 경험 개선** (18개 accessor 가 97개 method 속에 숨어있던 문제 해결).
+
+### Added
+
+- **`app.help()`** — App 에서 사용 가능한 accessor·context manager·주요
+  property 를 **6개 카테고리로 그룹핑**해서 출력. 사용자가 `app.` 찍고
+  혼란스러워하지 않도록 최초 학습 곡선을 대폭 축소.
+  - Navigation & Selection (move, sel)
+  - Collections (documents, fields, bookmarks, hyperlinks, images, styles, controls)
+  - Structure (cell, table, page)
+  - Transform & View (convert, view)
+  - Quality & Templates (lint, template, config)
+  - Presets & Debug (preset, debug)
+  - Context managers (8개)
+- **`App.__repr__`** — 상태 요약을 한 줄로:
+  ``App(visible=True, version='13.0.0', docs=2, page=5/20)``.
+  예외 완전 안전 (초기화 안 된 인스턴스에도 작동).
+- **`App._ACCESSOR_MAP`** — 문서화/help 용도의 공개 가능한 카테고리 매핑.
+- **`App._CONTEXT_MANAGERS`** — 동일 패턴으로 context manager 목록.
+
+### Changed
+
+- **`__init__` accessor 할당부 재구성** — 도메인별로 그룹핑 + 한 줄 주석.
+  시대순 ("v0.0.12 추가", "v0.0.14 추가") 에서 용도 기반으로 전환.
+- **`__str__` / `__repr__` 분리** — 기존에는 ``__repr__ = __str__`` 으로
+  파일 경로만 표시됐으나, 이제 ``__str__`` 는 파일 경로, ``__repr__`` 은
+  상태 요약. 초기화 안 된 인스턴스에서도 안전하게 작동.
+
+### Tests
+
+9 개 신규 단위 테스트 ([`tests/test_v019_discovery.py`](tests/test_v019_discovery.py)).
+전체 1350/1350 통과.
+
 ## [0.0.18] — 2026-04-15 — Linter · Template · Config
 
 ### Added

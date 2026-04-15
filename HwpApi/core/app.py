@@ -123,32 +123,159 @@ class App:
         self.set_visible(is_visible)
         self.logger.info(f"App window visibility set to: {is_visible}")
 
-        self.move = MoveAccessor(self)
+        # ═══════════════════════════════════════════════════════════
+        # Accessor setup (도메인별 그룹핑)
+        # ═══════════════════════════════════════════════════════════
+
+        # ─── Navigation & Selection — 커서/선택 이동
+        self.move = MoveAccessor(self)      # app.move.doc.top(), app.move.line.end() ...
+        self.sel = Selection(self)          # app.sel.current_paragraph(), .compress() ...
+
+        # ─── Collections — 문서 내 요소들의 list/dict-like 접근
+        self.documents = Documents(self)    # 열린 문서들
+        self.bookmarks = Bookmarks(self)    # 책갈피
+        self.hyperlinks = Hyperlinks(self)  # 하이퍼링크
+        self.images = Images(self)          # 이미지 (그림 control)
+        self.styles = StylesAccessor(self)  # 문단 스타일
+        self.controls = ControlsAccessor(self)  # 전체 control 순회
+        # NOTE: app.fields 는 @property (Fields(self) 매 호출 새 인스턴스)
+
+        # ─── Structure — 문서 구조 조작 (표·셀·페이지)
         self.cell = CellAccessor(self)
         self.table = TableAccessor(self)
         self.page = PageAccessor(self)
-        self.documents = Documents(self)
-        self.styles = StylesAccessor(self)
-        self.controls = ControlsAccessor(self)
-        # v0.0.12+ collection accessors (v1.0 일관성 청사진 Phase 1)
-        self.bookmarks = Bookmarks(self)
-        self.hyperlinks = Hyperlinks(self)
-        # v0.0.14+ preset / images / selection accessor
-        # NOTE: `app.selection` 은 str property (선택된 텍스트) 유지.
-        # 선택 동작 accessor 는 `app.sel` — `app.move` 와 대칭.
-        self.images = Images(self)
-        self.sel = Selection(self)
-        self.preset = Presets(self)
-        # v0.0.16+ debug accessor
-        self.debug = Debug(self)
-        # v0.0.17+ convert / view accessors
-        self.convert = Convert(self)
-        self.view = View(self)
-        # v0.0.18+ lint / template / config accessors
-        self.lint = Linter(self)
-        self.template = Template(self)
-        self.config = Config(self)
+
+        # ─── Transform & View — 변환/뷰포트
+        self.convert = Convert(self)        # 숫자→한글, 폰트 교체 등
+        self.view = View(self)              # zoom, 전체화면, 모드 전환
+
+        # ─── Quality & Templates — 품질/템플릿/설정
+        self.lint = Linter(self)            # 문서 품질 체크 (callable)
+        self.template = Template(self)      # 템플릿 save/apply
+        self.config = Config(self)          # App 선호도 설정
+
+        # ─── Presets & Debug — 꾸미기 프리셋 / 디버그
+        self.preset = Presets(self)         # striped_rows, title_box, table_header ...
+        self.debug = Debug(self)            # .state(), .trace(), .timing()
+
         self.logger.info("App initialized successfully with all accessors")
+
+    # ═════════════════════════════════════════════════════════════
+    # Discovery helpers (v0.0.19)
+    # ═════════════════════════════════════════════════════════════
+
+    #: 사용자에게 공개할 accessor 들의 카테고리별 표 — help() 및 문서화에 사용.
+    _ACCESSOR_MAP = {
+        "Navigation & Selection": [
+            ("move", "커서 이동 (.doc.top(), .line.end() ...)"),
+            ("sel", "현재 선택 제어 (.current_paragraph(), .compress())"),
+        ],
+        "Collections": [
+            ("documents", "열린 문서 컬렉션"),
+            ("fields", "누름틀(필드) — dict/list-like"),
+            ("bookmarks", "책갈피 — .add(), .goto(), in"),
+            ("hyperlinks", "하이퍼링크 — .add(text, url)"),
+            ("images", "이미지 컬렉션 — .resize_all(), .grayscale_all()"),
+            ("styles", "문단 스타일 — .apply(name)"),
+            ("controls", "문서 내 모든 control 순회"),
+        ],
+        "Structure": [
+            ("cell", "표 셀 조작"),
+            ("table", "표 구조 + 일괄 서식 — .header_row(), .align()"),
+            ("page", "페이지 속성"),
+        ],
+        "Transform & View": [
+            ("convert", "숫자→한글, 폰트 교체, 줄 나눔"),
+            ("view", "zoom, 전체화면, 페이지 모드"),
+        ],
+        "Quality & Templates": [
+            ("lint", "문서 품질 체크 (callable → LintReport)"),
+            ("template", "템플릿 .save() / .apply()"),
+            ("config", "App 기본 선호도"),
+        ],
+        "Presets & Debug": [
+            ("preset", "꾸미기 프리셋 (title_box, striped_rows, toc …)"),
+            ("debug", ".state(), .trace(), .timing()"),
+        ],
+    }
+
+    _CONTEXT_MANAGERS = [
+        ("silenced(mode='yes')", "다이얼로그 자동 응답 (종료 시 복원)"),
+        ("suppress_errors()", "에러 dialog ABORT + Python 예외 swallow"),
+        ("batch_mode(hide=True)", "창 숨김 + dialog 억제 — 대량 처리 5~10배 가속"),
+        ("undo_group(description)", "블록 내 편집을 단일 undo 경계로"),
+        ("charshape_scope(**fmt)", "블록 내 문자 모양 임시 변경"),
+        ("parashape_scope(**fmt)", "블록 내 문단 모양 임시 변경"),
+        ("use_document(doc)", "블록 내 활성 문서 일시 전환"),
+        ("debug.trace(verbose=True)", "블록 내 COM Run() 호출 로그"),
+    ]
+
+    def help(self) -> None:
+        """
+        이 App 인스턴스에서 쓸 수 있는 **accessor 와 context manager** 를
+        카테고리별로 출력.
+
+        Examples
+        --------
+        >>> app.help()
+        ═══ hwpapi · App 사용 가능 API ═══
+        · Navigation & Selection
+            app.move                 — 커서 이동 (.doc.top(), .line.end() ...)
+            app.sel                  — 현재 선택 제어 (.current_paragraph(), .compress())
+        ...
+        """
+        print("═" * 68)
+        print(" hwpapi · App 사용 가능 API")
+        print("═" * 68)
+        for category, items in self._ACCESSOR_MAP.items():
+            print(f"\n· {category}")
+            for name, desc in items:
+                print(f"    app.{name:17s} — {desc}")
+        print("\n· Context managers (with 구문으로 사용)")
+        for sig, desc in self._CONTEXT_MANAGERS:
+            print(f"    with app.{sig:30s} — {desc}")
+        print("\n· 주요 property")
+        for p in ("text", "visible", "version", "page_count", "current_page",
+                  "selection", "charshape", "parashape", "status"):
+            print(f"    app.{p}")
+        print("\n' app.help()' 로 언제든 다시 확인할 수 있습니다.")
+        print("═" * 68)
+
+    def __repr__(self) -> str:
+        """
+        App 인스턴스의 상태 요약을 한 줄로. v0.0.19+.
+
+        Examples
+        --------
+        >>> app
+        App(visible=True, version='13.0.0', docs=2, page=5/20)
+        """
+        def _safe(fn, default=None):
+            try:
+                return fn()
+            except Exception:
+                return default
+
+        parts = []
+        vis = _safe(lambda: bool(self.api.XHwpWindows.Active_XHwpWindow.Visible))
+        if vis is not None:
+            parts.append(f"visible={vis}")
+
+        v = _safe(lambda: self.version)
+        if v:
+            parts.append(f"version={v!r}")
+
+        n = _safe(lambda: len(self.documents))
+        if n:
+            parts.append(f"docs={n}")
+
+        cur = _safe(lambda: self.current_page)
+        total = _safe(lambda: self.page_count)
+        if cur and total:
+            parts.append(f"page={cur}/{total}")
+
+        body = ", ".join(parts) if parts else "<uninitialized>"
+        return f"App({body})"
 
     def _load(self, new_app=False, engine=None, dll_path=None):
         self.logger.debug(f"Loading App with new_app={new_app}, engine={engine}, dll_path={dll_path}")
@@ -197,16 +324,17 @@ class App:
 
     def __str__(self):
         """
-        `App` 인스턴스의 문자열 표현을 반환합니다.
+        `App` 인스턴스의 문자열 표현 — 파일 경로 포함.
 
-        Returns
-        -------
-        str
-            `App` 인스턴스를 설명하는 문자열.
+        __repr__ 는 별도로 정의 (v0.0.19+) 되어 상태 요약을 반환합니다.
         """
-        return f"<Hwp App: {self.get_filepath()}>"
+        try:
+            return f"<Hwp App: {self.get_filepath()}>"
+        except Exception:
+            return self.__repr__()
 
-    __repr__ = __str__
+    # NOTE: v0.0.19 전에는 `__repr__ = __str__` 이어서 file path 만 보였음.
+    # 이제 __repr__ 은 App 클래스 상단에 별도 정의 — 상태 요약 (visible/version/docs/page).
 
     def set_visible(self, is_visible=True, window_i=0):
         """
