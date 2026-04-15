@@ -15,7 +15,7 @@ toc-location: right
 - [ParameterSets](#parametersets-전체-286개) — 286개 ParameterSet 과 속성 전부
 
 ::: {.callout-tip}
-상세한 사용 예는 [튜토리얼](01_tutorials/tutorial.html) · [사용 사례](01_tutorials/usecase_meeting_minutes.html) 참고.
+자세한 사용 예는 [튜토리얼](01_tutorials/tutorial.html) · [사용 사례](01_tutorials/usecase_meeting_minutes.html) · [다중 문서](01_tutorials/multi_document.html) 참고.
 :::
 
 ## 핵심 클래스
@@ -27,6 +27,12 @@ toc-location: right
 **속성 (Properties)**
 
 - **`api`** — 현재 사용 중인 엔진의 구현체를 반환합니다.
+- **`current_page`** — 현재 커서가 위치한 페이지 번호 (1부터).
+- **`page_count`** — 현재 문서의 페이지 수.
+- **`selection`** — 현재 선택된 텍스트 — ``get_selected_text()`` alias.
+- **`text`** — 현재 활성 문서의 **전체 텍스트** (읽기/쓰기).
+- **`version`** — HWP 어플리케이션 버전 문자열 (예: ``"12, 0, 1, 3335"``).
+- **`visible`** — HWP 메인 창의 가시성 (``window_i=0``). 읽기/쓰기.
 
 **메소드 (Methods)**
 
@@ -38,7 +44,7 @@ return null charshape
 
 블록 내부에서 입력된 텍스트에 CharShape 서식을 **스코프** 로 적용.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 진입 시 현재 ParameterSet 을 snapshot 으로 저장하고, 블록 내용을
@@ -58,11 +64,15 @@ Examples
 
 </details>
 
+#### `clear(self)`
+
+현재 활성 문서의 모든 내용을 삭제.
+
 #### `close(self)`
 
 Closes the currently open document in the Hancom Office Hwp program.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 This function triggers the 'FileClose' command within the Hancom Office Hwp program to close the current document.
@@ -77,11 +87,15 @@ Examples
 
 </details>
 
+#### `copy(self)`
+
+선택 영역을 클립보드로 복사.
+
 #### `create_action(self, action_key: str)`
 
 `_Action` 클래스의 인스턴스를 생성하고 반환합니다.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 이 함수는 주어진 `action_key`와 연결된 새로운 `_Action` 인스턴스를 생성합니다.
@@ -110,11 +124,19 @@ _Action
 
 *(no docstring)*
 
+#### `cut(self)`
+
+선택 영역을 잘라내기 (클립보드로 이동).
+
+#### `delete(self)`
+
+선택 영역 또는 커서 위치 글자 삭제.
+
 #### `find_text(self, text='', ignore_message=True, direction=0, match_case=None, all_word_forms=None, several_words=None, use_wild_cards=None, whole_word_only=No...`
 
 문서에서 다양한 옵션을 사용해 특정 텍스트를 검색합니다.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 매개변수
@@ -141,7 +163,7 @@ bool
 
 Retrieves the character shape settings from the current application.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 This method accesses the character shape settings in the Hancom Office Hwp program linked to the `App` instance.
@@ -165,7 +187,7 @@ Examples
 
 현재 열려있는 한컴오피스 Hwp 문서의 파일 경로를 검색합니다.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 이 함수는 `App` 인스턴스와 연결된 한컴오피스 Hwp 프로그램의 활성 문서에 접근하여
@@ -189,7 +211,7 @@ str
 
 Retrieves the list of fonts that used in the documnents from the current application.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 This method accesses the font list in the Hancom Office Hwp program linked to the `App` instance.
@@ -213,7 +235,7 @@ Examples
 
 Retrieves the window handle (HWND) of the active window in the Hancom Office Hwp program.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 This function accesses the active window in the Hancom Office Hwp program linked to the `App` instance
@@ -238,7 +260,7 @@ Examples
 
 Retrieves the paragraph shape settings from the current application.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 This method accesses the paragraph shape settings in the Hancom Office Hwp program linked to the `App` instance.
@@ -262,7 +284,7 @@ Examples
 
 Hancom Office Hwp 문서에서 현재 선택된 영역의 텍스트를 가져옵니다.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 이 함수는 문서에서 선택된 텍스트를 스캔하여 문자열로 반환합니다.
@@ -286,7 +308,7 @@ str
 
 지정된 시작 및 끝 위치에 따라 문서에서 텍스트를 가져옵니다.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 매개변수
@@ -310,11 +332,25 @@ str
 
 </details>
 
+#### `insert_bookmark(self, name: str)`
+
+현재 커서 위치에 책갈피 삽입.
+
+<details><summary>상세 docstring</summary>
+
+```
+Examples
+--------
+>>> app.insert_bookmark("ch1")
+```
+
+</details>
+
 #### `insert_file(self, fpath, keep_charshape=False, keep_parashape=False, keep_section=False, keep_style=False)`
 
 Inserts the contents of a specified file into the current document.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 This function inserts the contents of another file into the current document at the cursor's position.
@@ -347,11 +383,59 @@ Examples
 
 </details>
 
+#### `insert_heading(self, text: str, level: int = 1)`
+
+제목(heading) 삽입 — 굵게 + 큰 글씨로 포맷 후 줄바꿈.
+
+<details><summary>상세 docstring</summary>
+
+```
+Parameters
+----------
+text : str
+    제목 텍스트.
+level : int
+    제목 레벨 (1-4). 크기: 1=20pt, 2=16pt, 3=14pt, 4=12pt.
+
+Examples
+--------
+>>> app.insert_heading("1장 도입", level=1)
+>>> app.insert_heading("1.1 배경", level=2)
+```
+
+</details>
+
+#### `insert_hyperlink(self, text: str, url: str)`
+
+하이퍼링크 삽입.
+
+<details><summary>상세 docstring</summary>
+
+```
+Examples
+--------
+>>> app.insert_hyperlink("GitHub", "https://github.com/JunDamin/hwpapi")
+```
+
+</details>
+
+#### `insert_line_break(self)`
+
+줄 나누기 삽입 (문단 유지, 강제 줄바꿈).
+
+#### `insert_page_break(self)`
+
+페이지 나누기 삽입.
+
+#### `insert_paragraph_break(self)`
+
+문단 나누기 삽입.
+
 #### `insert_picture(self, fpath, width=None, height=None, size_option=<SizeOption.RealSize>, reverse=False, watermark=False, effect=<Effect.RealPicture>)`
 
 지정된 크기와 효과 옵션으로 문서에 이미지를 삽입합니다.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 매개변수
@@ -385,11 +469,42 @@ bool
 
 </details>
 
+#### `insert_tab(self)`
+
+탭 문자 삽입.
+
+#### `insert_table(self, rows: int = None, cols: int = None, data=None, headers=None)`
+
+표 생성 — 빈 표 또는 데이터로 채워진 표.
+
+<details><summary>상세 docstring</summary>
+
+```
+Parameters
+----------
+rows, cols : int
+    행/열 수 (``data`` 없을 때).
+data : list[list] | None
+    2차원 리스트. 지정 시 rows/cols 자동 계산.
+headers : list | None
+    있으면 첫 행에 삽입되고 굵게 표시.
+
+Examples
+--------
+>>> app.insert_table(rows=3, cols=4)         # 3x4 빈 표
+>>> app.insert_table(
+...     data=[[1, 2, 3], [4, 5, 6]],
+...     headers=["A", "B", "C"],
+... )                                        # 3x3 표 자동 채움
+```
+
+</details>
+
 #### `insert_text(self, text: str, charshape: CharShape = None, **kwargs)`
 
 Inserts text into the Hancom Office Hwp document with specified character shape settings.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 This function inserts the given text into the document associated with the `App` instance.
@@ -413,11 +528,26 @@ Examples
 
 </details>
 
+#### `new_document(self, is_tab: bool = True) -> 'Document'`
+
+새 빈 문서 추가. ``app.documents.add()`` 의 alias.
+
+<details><summary>상세 docstring</summary>
+
+```
+Examples
+--------
+>>> doc = app.new_document()
+>>> doc.insert_text("새 문서")
+```
+
+</details>
+
 #### `open(self, path: str)`
 
 제공된 파일 경로를 사용하여 한컴오피스 Hwp 프로그램에서 파일을 엽니다.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 이 함수는 먼저 제공된 파일 경로를 `get_absolute_path` 함수를 사용하여 절대 경로로 변환합니다.
@@ -446,7 +576,7 @@ str
 
 블록 내부 문단에 ParaShape 서식을 **스코프** 로 적용.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 정렬, 줄간격, 들여쓰기 등 문단 레벨 서식을 블록 내에서만 적용하고
@@ -461,11 +591,15 @@ Examples
 
 </details>
 
+#### `paste(self)`
+
+클립보드 내용을 커서 위치에 붙여넣기.
+
 #### `quit(self)`
 
 Terminates the Hancom Office Hwp program instance associated with the `App`.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 This function invokes the 'FileQuit' command within the Hancom Office Hwp program to close the application.
@@ -480,11 +614,15 @@ Examples
 
 </details>
 
+#### `redo(self)`
+
+되돌린 작업 다시 실행. ``Redo`` 액션 alias.
+
 #### `reload(self, new_app=False, dll_path=None)`
 
 새로운 HWPFrame.HwpObject로 `App` 인스턴스를 다시 로드하고 가시성과 DLL 경로를 재설정합니다.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 이 함수는 `app` 객체의 API를 새로운 HWPFrame.HwpObject 인스턴스로 다시 초기화하도록 설계되었습니다.
@@ -512,7 +650,7 @@ dll_path : str, optional
 
 문서에서 특정 텍스트를 새 텍스트로 모두 교체합니다.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 매개변수
@@ -541,7 +679,7 @@ bool
 
 Saves the current document in the Hancom Office Hwp program.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 If a path is provided, the document is saved to that location in the appropriate format based on the file extension.
@@ -571,7 +709,7 @@ Examples
 
 Saves a block of content in the Hancom Office Hwp program and returns the file path.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 This function saves a specified block from the Hancom Office Hwp program to a file in a given format.
@@ -601,11 +739,15 @@ Examples
 
 *(no docstring)*
 
+#### `select_all(self)`
+
+문서 전체 선택. ``SelectAll`` 액션 alias.
+
 #### `select_text(self, option=<SelectionOption.Line>)`
 
 지정된 옵션에 따라 문서에서 텍스트를 선택합니다.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 매개변수
@@ -630,7 +772,7 @@ tuple
 
 Sets the border properties for cells in a table within a Hancom Office Hwp document.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 This function customizes the border types, widths, and colors for different sides of the cells.
@@ -667,7 +809,7 @@ The function relies on the `self.actions.CellFill` action to set the border prop
 
 Sets the background color and hatch style for cells in a Hancom Office Hwp document.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 This function allows customization of the cell background, including color and hatching pattern,
@@ -707,7 +849,7 @@ Colors are specified in hexadecimal format. The alpha parameter controls the tra
 
 Sets the character shape in the current paragraph of the Hancom Office Hwp application using the provided `CharShape`.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 If `charshape` is None, a default instance of `CharShape` is created. The function can also accept additional keyword
@@ -740,7 +882,7 @@ Examples
 
 Sets the paragraph shape in the Hancom Office Hwp application using the provided `ParaShape`.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 If `parashape` is None, a default instance of `ParaShape` is created. The function can also accept additional keyword
@@ -772,7 +914,7 @@ Examples
 
 한컴오피스 Hwp 프로그램 창의 가시성을 설정합니다.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 이 함수는 `is_visible` 매개변수에 따라 한컴오피스 Hwp 프로그램의 창을 표시하거나 숨기는 데 사용됩니다.
@@ -799,7 +941,7 @@ window_i : int, optional
 
 Hancom Office Hwp 문서의 페이지 레이아웃을 설정합니다.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 이 함수는 페이지 여백, 머리글, 바닥글, 제본 여백의 크기를 설정합니다.
@@ -839,7 +981,7 @@ bool
 
 포맷팅이 **그 텍스트에만** 적용되도록 삽입합니다.
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
 동작 방식 — **snapshot + restore**:
@@ -875,13 +1017,19 @@ Examples
 
 </details>
 
+#### `undo(self)`
+
+마지막 작업 되돌리기. ``Undo`` 액션 alias.
+
 #### `use_document(self, doc_or_index)`
 
-지정한 문서를 **임시로 활성창** 으로 만들고, 블록 종료 시 원래 활성 문서로 복원하는 context manager.
+지정한 문서를 **임시로 활성창** 으로 만들고, 블록 종료 시 원래 활성
 
-<details><summary>상세 docstring 보기</summary>
+<details><summary>상세 docstring</summary>
 
 ```
+문서로 복원하는 context manager.
+
 다중 문서 작업에서 각 문서로 잠깐씩 전환하며 작업할 때 유용합니다.
 
 Parameters
@@ -920,11 +1068,11 @@ App 이 내부적으로 사용. 보통 직접 다룰 일은 없습니다.
 
 ## 다중 문서 (Multi-Document)
 
-한 HWP 세션에서 여러 문서를 동시에 다루기 위한 API. 자세한 예제는 [다중 문서 다루기](01_tutorials/multi_document.html) 튜토리얼 참고.
+한 HWP 세션에서 여러 문서를 동시에 다루기 위한 API. [다중 문서 튜토리얼](01_tutorials/multi_document.html) 참고.
 
 ### `app.documents` — 문서 컬렉션
 
-열린 모든 문서를 리스트처럼 다루는 컬렉션. ``len(app.documents)``, ``app.documents[i]``, ``for doc in app.documents`` 모두 가능.
+열린 모든 문서를 리스트처럼 다루는 컬렉션.
 
 **속성 (Properties)**
 
@@ -952,9 +1100,9 @@ App 이 내부적으로 사용. 보통 직접 다룰 일은 없습니다.
 
 모든 문서를 저장하고 성공 개수를 반환.
 
-### `Document` — 단일 문서 핸들
+### `Document` — 단일 문서 핸들 (xlwings 스타일)
 
-``app.documents[i]`` 또는 ``app.documents.active`` 에서 얻는 문서 객체. 파일 저장, 닫기, 활성화 등을 문서 단위로 수행.
+App 의 모든 메소드/속성을 자동 위임받아 `doc.insert_text(...)`, `doc.text`, `doc.set_charshape(...)` 등을 바로 사용할 수 있습니다.
 
 **속성 (Properties)**
 
@@ -963,13 +1111,26 @@ App 이 내부적으로 사용. 보통 직접 다룰 일은 없습니다.
 - **`format`** — 문서 포맷 문자열 (HWP, HWPX, PDF, ...).
 - **`full_name`** — 전체 경로 포함 파일 이름. 저장 안된 문서는 빈 문자열.
 - **`modified`** — 마지막 저장 이후 수정 여부.
+- **`name`** — 파일명 (경로 제외). 저장 안된 문서는 빈 문자열.
 - **`path`** — 문서 폴더 경로.
+- **`saved`** — ``modified`` 의 반대 — 저장된 상태인지 여부.
 
 **메소드 (Methods)**
 
 #### `activate(self) -> 'Document'`
 
-이 문서를 활성창으로 전환한 뒤 self 반환.
+이 문서를 활성창으로 전환하고 self 반환.
+
+<details><summary>상세 docstring</summary>
+
+```
+HWP 는 ``SetActive_XHwpDocument`` 호출 직후에도 내부 편집 컨텍스트가
+완전히 전환되기까지 짧은 지연이 필요합니다. 호출 직후 insert 나
+action 을 실행하면 이전 문서에 반영되는 현상을 피하기 위해 소폭의
+대기와 이벤트 처리 기회를 제공합니다.
+```
+
+</details>
 
 #### `clear(self) -> bool`
 
@@ -1001,8 +1162,6 @@ App 이 내부적으로 사용. 보통 직접 다룰 일은 없습니다.
 `app.move`, `app.cell`, `app.table`, `app.page` 로 도메인별 헬퍼에 접근.
 
 ### `app.move` — 커서/캐럿 이동
-
-문서 내 커서 이동 헬퍼 모음.
 
 **메소드 (Methods)**
 
@@ -1160,16 +1319,12 @@ screen 좌표로 위치를 설정
 
 ### `app.cell` — 표 셀 조작
 
-현재 표 셀의 속성을 읽거나 조작.
-
 **속성 (Properties)**
 
 - **`height`** — 셀의 높이를 가져옵니다.
 - **`width`** — 셀의 너비를 가져옵니다.
 
 ### `app.table` — 표 조작
-
-표 구조 (행/열 추가/삭제, 병합, 크기 조정 등).
 
 **속성 (Properties)**
 
@@ -1206,8 +1361,6 @@ screen 좌표로 위치를 설정
 
 ### `app.page` — 페이지
 
-페이지 설정, 페이지 단위 탐색.
-
 **속성 (Properties)**
 
 - **`bottom_margin`** — (no docstring)
@@ -1225,14 +1378,7 @@ screen 좌표로 위치를 설정
 
 ## Actions — 전체 704개
 
-hwpapi 는 HWP 의 모든 액션을 자동 등록합니다. 아래는 **전체 액션 목록** 을 ParameterSet 기준으로 그룹화한 것입니다.
-
-```python
-# 호출 패턴
-app.actions.Undo.run()                         # pset 없음
-app.actions.InsertText.pset.Text = '...'        # pset 설정
-app.actions.InsertText.run()                   # 실행
-```
+hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### ParameterSet 별 액션
 
@@ -2034,8 +2180,6 @@ app.actions.InsertText.run()                   # 실행
 
 ### 파라미터셋 없는 액션 — 393개
 
-`app.actions.<Name>.run()` 만 호출하면 되는 액션들.
-
 | 액션 이름 | 설명 |
 |:---|:---|
 | `AutoChangeHangul` | 낱자모 우선 |
@@ -2433,17 +2577,6 @@ app.actions.InsertText.run()                   # 실행
 | `VoiceCommand` | 음성 명령 동작 |
 
 ## ParameterSets — 전체 286개
-
-액션의 파라미터를 구성하는 클래스 목록. 각 ParameterSet 이 가진 모든 속성(property) 과 그 타입을 표로 제공합니다.
-
-```python
-from hwpapi.parametersets import CharShape
-cs = CharShape()
-cs.bold = True
-cs.height = 2400
-app.actions.CharShape.pset.bold = True
-app.actions.CharShape.run()
-```
 
 ### `ActionCrossRef` — 1개 속성
 
@@ -3511,7 +3644,7 @@ app.actions.CharShape.run()
 
 ### `InsertText` — 1개 속성
 
-*### InsertText | Item ID | Type | SubType | Description | | --- | --- | --- | --- | | Text | PIT_BSTR |  | 삽입할 텍스트 |*
+*### InsertText*
 
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
@@ -5553,7 +5686,7 @@ app.actions.CharShape.run()
 
 ### `inserttext` — 1개 속성
 
-*### InsertText | Item ID | Type | SubType | Description | | --- | --- | --- | --- | | Text | PIT_BSTR |  | 삽입할 텍스트 |*
+*### InsertText*
 
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
@@ -6540,30 +6673,17 @@ app.actions.CharShape.run()
 | `ScanDirection` | 검색 방향 | `Forward`, `Backward`, `All` |
 | `MaskOption` | `scan()` 마스크 | `All`, `Normal`, `Control` 등 |
 | `SelectionOption` | `select_text` 범위 | `Line`, `Word`, `Para`, `Sentence` |
-| `MoveId` | `move_to` 위치 키 | `Current`, `Begin`, `End` 등 |
-| `SizeOption` | `insert_picture` 크기 | `Image`, `Specific` |
 
 ## `app.api` — 탈출구
-
-hwpapi 가 래핑하지 않은 기능은 `app.api` 로 `win32com` 의 `HwpObject` 에 직접 접근.
 
 ```python
 app.api.Run("BreakPara")
 app.api.HAction.GetDefault("CharShape", app.api.HParameterSet.HCharShape.HSet)
 app.api.HParameterSet.HCharShape.Bold = 1
 app.api.HAction.Execute("CharShape", app.api.HParameterSet.HCharShape.HSet)
-
-app.api.XHwpDocuments.Count
-app.api.XHwpWindows.Item(0).Visible = True
-
-app.api.PointToHwpUnit(12)
-app.api.HwpUnitToPoint(1200)
 ```
-
-공식 문서 (PDF): [한컴 오피스 자동화 매뉴얼](https://developer.hancom.com/hwpctrl/docs)
 
 ## 레퍼런스 링크
 
 - [GitHub 저장소](https://github.com/JunDamin/hwpapi)
 - [PyPI 페이지](https://pypi.org/project/hwpapi/)
-- [Issue 제보](https://github.com/JunDamin/hwpapi/issues)

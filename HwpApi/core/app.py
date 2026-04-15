@@ -98,6 +98,26 @@ class Document:
         object.__setattr__(self, "_app",
                            documents._app if documents else None)
 
+    def __setattr__(self, name, value):
+        """
+        If ``name`` is a property setter on App, activate this doc and
+        call the setter so e.g. ``doc.text = "..."`` writes to THIS doc.
+        Otherwise fall through to normal attribute assignment.
+        """
+        # Underscore / own attributes — set directly
+        if name.startswith("_") or name == "raw":
+            object.__setattr__(self, name, value)
+            return
+        app = getattr(self, "_app", None)
+        if app is not None:
+            import inspect as _inspect
+            cls_attr = _inspect.getattr_static(type(app), name, None)
+            if isinstance(cls_attr, property) and cls_attr.fset is not None:
+                self.activate()
+                cls_attr.fset(app, value)
+                return
+        object.__setattr__(self, name, value)
+
     def __getattr__(self, name):
         """
         Proxy to ``self._app`` for any name not defined on Document itself.
@@ -117,6 +137,18 @@ class Document:
                 f"{type(self).__name__!r} object has no attribute {name!r} "
                 f"and no bound App to proxy through"
             )
+
+        # If it's a PROPERTY on App, activate this doc FIRST, then
+        # evaluate the getter — so ``doc.text`` returns THIS doc's text,
+        # not the previously-active doc's.
+        import inspect as _inspect
+        cls_attr = _inspect.getattr_static(type(app), name, None)
+        if isinstance(cls_attr, property):
+            self.activate()
+            if cls_attr.fget is None:
+                raise AttributeError(f"property {name!r} has no getter")
+            return cls_attr.fget(app)
+
         if not hasattr(app, name):
             raise AttributeError(
                 f"{type(self).__name__!r} has no attribute {name!r}; "
@@ -182,6 +214,18 @@ class Document:
             return bool(self.raw.Modified)
         except Exception:
             return False
+
+    @property
+    def saved(self) -> bool:
+        """``modified`` 의 반대 — 저장된 상태인지 여부."""
+        return not self.modified
+
+    @property
+    def name(self) -> str:
+        """파일명 (경로 제외). 저장 안된 문서는 빈 문자열."""
+        import os
+        fn = self.full_name
+        return os.path.basename(fn) if fn else ""
 
     @property
     def document_id(self):
@@ -554,6 +598,254 @@ class App:
         logger = get_logger('core')
         logger.debug(f"Calling create_parameterset")
         return getattr(self.api.HParameterSet, f"H{key}")
+
+    # ═════════════════════════════════════════════════════════════
+    # Standard properties — xlwings-style convenience
+    # ═════════════════════════════════════════════════════════════
+
+    @property
+    def text(self) -> str:
+        """
+        현재 활성 문서의 **전체 텍스트** (읽기/쓰기).
+
+        ``doc.text`` 로도 접근 가능 — 해당 문서가 자동 활성화된 뒤 값을 반환.
+
+        Setting 하면 기존 내용을 전부 지우고 새 텍스트로 교체합니다.
+
+        Examples
+        --------
+        >>> text = app.text                      # 전체 문서 읽기
+        >>> app.text = "완전히 새 내용\\n두 번째 줄"  # 전체 교체
+        """
+        txt = self.get_text(
+            spos=const.ScanStartPosition.Document,
+            epos=const.ScanEndPosition.Document,
+        )
+        if isinstance(txt, tuple):
+            return str(txt[0]) if txt else ""
+        return str(txt) if txt else ""
+
+    @text.setter
+    def text(self, value: str):
+        self.select_all()
+        try:
+            self.api.Run("Delete")
+        except Exception:
+            self.api.Run("DeleteBack")
+        if value:
+            self.insert_text(value)
+
+    @property
+    def visible(self) -> bool:
+        """HWP 메인 창의 가시성 (``window_i=0``). 읽기/쓰기."""
+        try:
+            return bool(self.api.XHwpWindows.Item(0).Visible)
+        except Exception:
+            return False
+
+    @visible.setter
+    def visible(self, value: bool):
+        self.set_visible(bool(value))
+
+    @property
+    def version(self) -> str:
+        """HWP 어플리케이션 버전 문자열 (예: ``"12, 0, 1, 3335"``)."""
+        try:
+            return str(self.api.Version)
+        except Exception:
+            return ""
+
+    @property
+    def page_count(self) -> int:
+        """현재 문서의 페이지 수."""
+        try:
+            return int(self.api.PageCount)
+        except Exception:
+            return 0
+
+    @property
+    def current_page(self) -> int:
+        """현재 커서가 위치한 페이지 번호 (1부터)."""
+        try:
+            return int(self.api.KeyIndicator()[1]) + 1
+        except Exception:
+            return 0
+
+    @property
+    def selection(self) -> str:
+        """현재 선택된 텍스트 — ``get_selected_text()`` alias."""
+        return self.get_selected_text() or ""
+
+    # ═════════════════════════════════════════════════════════════
+    # Standard action shortcuts
+    # ═════════════════════════════════════════════════════════════
+
+    def select_all(self):
+        """문서 전체 선택. ``SelectAll`` 액션 alias."""
+        return self.api.Run("SelectAll")
+
+    def clear(self):
+        """현재 활성 문서의 모든 내용을 삭제."""
+        self.select_all()
+        try:
+            return self.api.Run("Delete")
+        except Exception:
+            return self.api.Run("DeleteBack")
+
+    def undo(self):
+        """마지막 작업 되돌리기. ``Undo`` 액션 alias."""
+        return self.api.Run("Undo")
+
+    def redo(self):
+        """되돌린 작업 다시 실행. ``Redo`` 액션 alias."""
+        return self.api.Run("Redo")
+
+    def copy(self):
+        """선택 영역을 클립보드로 복사."""
+        return self.api.Run("Copy")
+
+    def paste(self):
+        """클립보드 내용을 커서 위치에 붙여넣기."""
+        return self.api.Run("Paste")
+
+    def cut(self):
+        """선택 영역을 잘라내기 (클립보드로 이동)."""
+        return self.api.Run("Cut")
+
+    def delete(self):
+        """선택 영역 또는 커서 위치 글자 삭제."""
+        try:
+            return self.api.Run("Delete")
+        except Exception:
+            return self.api.Run("DeleteBack")
+
+    def insert_page_break(self):
+        """페이지 나누기 삽입."""
+        return self.api.Run("BreakPage")
+
+    def insert_line_break(self):
+        """줄 나누기 삽입 (문단 유지, 강제 줄바꿈)."""
+        return self.api.Run("BreakLine")
+
+    def insert_paragraph_break(self):
+        """문단 나누기 삽입."""
+        return self.api.Run("BreakPara")
+
+    def insert_tab(self):
+        """탭 문자 삽입."""
+        return self.api.Run("InsertTab")
+
+    # ═════════════════════════════════════════════════════════════
+    # High-level insertion helpers
+    # ═════════════════════════════════════════════════════════════
+
+    def insert_heading(self, text: str, level: int = 1):
+        """
+        제목(heading) 삽입 — 굵게 + 큰 글씨로 포맷 후 줄바꿈.
+
+        Parameters
+        ----------
+        text : str
+            제목 텍스트.
+        level : int
+            제목 레벨 (1-4). 크기: 1=20pt, 2=16pt, 3=14pt, 4=12pt.
+
+        Examples
+        --------
+        >>> app.insert_heading("1장 도입", level=1)
+        >>> app.insert_heading("1.1 배경", level=2)
+        """
+        sizes = {1: 2000, 2: 1600, 3: 1400, 4: 1200}
+        self.styled_text(text, bold=True, height=sizes.get(level, 1000))
+        self.insert_paragraph_break()
+
+    def insert_table(self, rows: int = None, cols: int = None,
+                     data=None, headers=None):
+        """
+        표 생성 — 빈 표 또는 데이터로 채워진 표.
+
+        Parameters
+        ----------
+        rows, cols : int
+            행/열 수 (``data`` 없을 때).
+        data : list[list] | None
+            2차원 리스트. 지정 시 rows/cols 자동 계산.
+        headers : list | None
+            있으면 첫 행에 삽입되고 굵게 표시.
+
+        Examples
+        --------
+        >>> app.insert_table(rows=3, cols=4)         # 3x4 빈 표
+        >>> app.insert_table(
+        ...     data=[[1, 2, 3], [4, 5, 6]],
+        ...     headers=["A", "B", "C"],
+        ... )                                        # 3x3 표 자동 채움
+        """
+        if data is not None:
+            all_rows = ([list(headers)] if headers else []) + list(data)
+            rows = len(all_rows)
+            cols = max(len(r) for r in all_rows)
+        else:
+            if not rows or not cols:
+                raise ValueError("rows+cols 또는 data 중 하나는 필요합니다")
+            all_rows = None
+
+        act = self.api.CreateAction("TableCreate")
+        pset = act.CreateSet()
+        act.GetDefault(pset)
+        pset.SetItem("Rows", rows)
+        pset.SetItem("Cols", cols)
+        act.Execute(pset)
+
+        if all_rows:
+            for ri, row in enumerate(all_rows):
+                for ci in range(cols):
+                    cell = row[ci] if ci < len(row) else ""
+                    if ri == 0 and headers is not None:
+                        self.styled_text(str(cell), bold=True)
+                    else:
+                        self.insert_text(str(cell))
+                    self.api.Run("TableRightCell")
+
+    def insert_hyperlink(self, text: str, url: str):
+        """
+        하이퍼링크 삽입.
+
+        Examples
+        --------
+        >>> app.insert_hyperlink("GitHub", "https://github.com/JunDamin/hwpapi")
+        """
+        act = self.api.CreateAction("InsertHyperlink")
+        pset = act.CreateSet()
+        act.GetDefault(pset)
+        pset.SetItem("Text", text)
+        pset.SetItem("Command", url)
+        act.Execute(pset)
+
+    def insert_bookmark(self, name: str):
+        """
+        현재 커서 위치에 책갈피 삽입.
+
+        Examples
+        --------
+        >>> app.insert_bookmark("ch1")
+        """
+        act = self.api.CreateAction("Bookmark")
+        pset = act.CreateSet()
+        act.GetDefault(pset)
+        pset.SetItem("Name", name)
+        act.Execute(pset)
+
+    def new_document(self, is_tab: bool = True) -> "Document":
+        """
+        새 빈 문서 추가. ``app.documents.add()`` 의 alias.
+
+        Examples
+        --------
+        >>> doc = app.new_document()
+        >>> doc.insert_text("새 문서")
+        """
+        return self.documents.add(is_tab=is_tab)
 
     def reload(self, new_app=False, dll_path=None):
         """
