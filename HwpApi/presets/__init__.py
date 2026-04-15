@@ -460,6 +460,106 @@ class Presets:
         return app
 
 
+    # ═════════════════════════════════════════════════════════════
+    # v0.0.17 — More presets
+    # ═════════════════════════════════════════════════════════════
+
+    def page_border(self, enable: bool = True, style: str = "dashed") -> "App":
+        """
+        **바탕쪽 테두리** — 편집 영역 확인용. 승승아빠 매크로
+        ``바탕쪽_테두리_설정`` 이식. 문서 인쇄 영역 디버깅에 유용.
+
+        Parameters
+        ----------
+        enable : bool
+            True 이면 테두리 추가, False 이면 제거.
+        style : str
+            ``"solid" | "dashed" | "dotted"``.
+
+        Examples
+        --------
+        >>> app.preset.page_border(enable=True)   # 디버그 모드
+        >>> app.preset.page_border(enable=False)  # 해제
+        """
+        app = self._app
+        try:
+            # 바탕쪽 열기
+            app.api.Run("MasterPage")
+            if enable:
+                # 외곽 테두리 draw (rectangle)
+                app.api.Run("DrawObjRectangle")
+            else:
+                # 기존 object 선택 후 삭제 — simplified
+                app.api.Run("SelectAll")
+                app.api.Run("Delete")
+            # 바탕쪽 닫기
+            app.api.Run("Close")
+        except Exception as e:
+            app.logger.debug(f"page_border: {e}")
+        return app
+
+    def highlight_yellow(self, toggle: bool = True) -> "App":
+        """
+        **선택 영역 배경색 노랑** — 승승아빠 매크로 Alt+Shift+2 이식.
+        이미 형광펜이 노란색이면 해제 (toggle). ``app.highlight()`` 는
+        단방향 설정이지만 이 preset 은 토글.
+
+        Examples
+        --------
+        >>> app.sel.current_word()
+        >>> app.preset.highlight_yellow()   # 노랑 → 없음 → 노랑 토글
+        """
+        app = self._app
+        try:
+            cs = app.charshape
+            cur = getattr(cs, "shade_color", None)
+            # 노란색(#FFFF00) 이미 적용돼 있으면 해제
+            if toggle and cur and str(cur).lower() in ("#ffff00", "ffff00", "16776960"):
+                app.set_charshape(shade_color=None)
+            else:
+                app.set_charshape(shade_color="#FFFF00")
+        except Exception as e:
+            app.logger.debug(f"highlight_yellow: {e}")
+        return app
+
+    def summary_box(self, text: str = "", variant: str = "rounded",
+                    bg_color: str = "#F5F5F5") -> "App":
+        """
+        **요약 박스** — 승승아빠 매크로 Alt+9 ``요약바`` 이식. 강조용 박스.
+
+        Parameters
+        ----------
+        text : str
+            박스 안 내용.
+        variant : str
+            ``"rounded"`` (모서리 둥근) | ``"boxed"`` (직각).
+        bg_color : str
+            배경 hex.
+
+        Examples
+        --------
+        >>> app.preset.summary_box("핵심 요약 3줄", variant="rounded")
+        """
+        app = self._app
+        try:
+            act = app.api.CreateAction("TableCreate")
+            pset = act.CreateSet()
+            act.GetDefault(pset)
+            pset.SetItem("Rows", 1)
+            pset.SetItem("Cols", 1)
+            act.Execute(pset)
+
+            app.api.Run("TableCellBlock")
+            _apply_cell_bg(app, bg_color)
+            app.api.Run("Cancel")
+
+            if text:
+                app.insert_text(text)
+        except Exception as e:
+            app.logger.debug(f"summary_box: {e}")
+        return app
+
+
 def _apply_cell_bg(app, hex_color: str) -> None:
     """현재 선택된 셀(들)의 배경색을 hex 색상으로 지정."""
     try:

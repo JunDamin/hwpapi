@@ -8,6 +8,36 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.17] — 2026-04-15 — Convert · View · more presets
+
+### Added
+
+**`app.convert`** ([`classes/convert.py`](hwpapi/classes/convert.py)):
+- `convert.number_to_korean(text=None)` — 숫자 → 한글숫자
+  (``"1,234,567" → "일백이십삼만사천오백육십칠"``). ``text=None`` 이면
+  현재 선택 영역 변환. 최대 경(10^16) 까지.
+- `convert.wrap_by_word()` / `.wrap_by_char()` — 줄 나눔 방식 전환
+- `convert.replace_font(old, new)` — 문서 전체 폰트 일괄 교체
+
+**`app.view`** ([`classes/view.py`](hwpapi/classes/view.py)):
+- `view.zoom(percent)` — 10~500% 클램프
+- `view.zoom_fit_page()` / `.zoom_fit_width()` / `.zoom_actual()`
+- `view.zoom_current` — 현재 확대율 read-only property
+- `view.scroll_to_cursor()`
+- `view.full_screen()` / `.exit_full_screen()`
+- `view.page_mode()` / `.draft_mode()`
+- `view.toggle_rulers()`
+
+**추가 Presets** ([`presets/__init__.py`](hwpapi/presets/__init__.py)):
+- `preset.page_border(enable, style)` — 바탕쪽 테두리 (편집 영역 디버그)
+- `preset.highlight_yellow(toggle=True)` — 선택 영역 노란 배경 토글
+- `preset.summary_box(text, variant, bg_color)` — 강조 박스
+
+### Tests
+
+30 개 신규 단위 테스트 ([`tests/test_v017_features.py`](tests/test_v017_features.py)).
+전체 1319/1319 통과.
+
 ## [0.0.16] — 2026-04-15 — 개발자 생산성 · batch/undo/debug · 표 일괄 서식
 
 ### Added

@@ -46,6 +46,8 @@ from hwpapi.classes.fields import Fields, Bookmarks, Hyperlinks
 from hwpapi.classes.images import Images
 from hwpapi.classes.selection import Selection
 from hwpapi.classes.debug import Debug
+from hwpapi.classes.convert import Convert
+from hwpapi.classes.view import View
 from hwpapi.presets import Presets
 from .engine import Engine, Engines, Apps
 from hwpapi.functions import (
@@ -138,6 +140,9 @@ class App:
         self.preset = Presets(self)
         # v0.0.16+ debug accessor
         self.debug = Debug(self)
+        # v0.0.17+ convert / view accessors
+        self.convert = Convert(self)
+        self.view = View(self)
         self.logger.info("App initialized successfully with all accessors")
 
     def _load(self, new_app=False, engine=None, dll_path=None):

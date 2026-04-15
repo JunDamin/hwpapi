@@ -19,6 +19,8 @@ from .fields import Fields, Field, Bookmarks, Hyperlinks, Hyperlink
 from .images import Images, Image
 from .selection import Selection
 from .debug import Debug
+from .convert import Convert
+from .view import View
 
 __all__ = [
     'MoveAccessor', 'CellAccessor', 'TableAccessor', 'PageAccessor',
@@ -29,4 +31,6 @@ __all__ = [
     'Images', 'Image',
     'Selection',
     'Debug',
+    'Convert',
+    'View',
 ]
