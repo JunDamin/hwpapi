@@ -913,12 +913,15 @@ class TableAccessor:
         try:
             # Go to table top-left
             app.api.Run("TableColBegin")
-            while app.api.Run("TableUpperCell"):
-                pass
+            for _ in range(500):
+                if not app.api.Run("TableUpperCell"):
+                    break
 
-            # Visit every cell and strip blanks
+            # Visit every cell and strip blanks (safety bound: 10000 cells max)
             done = False
-            while not done:
+            for _ in range(10000):
+                if done:
+                    break
                 # Select current cell content
                 app.api.Run("TableCellBlock")
                 app.api.Run("Cancel")
@@ -947,10 +950,12 @@ class TableAccessor:
         try:
             for _ in range(5):
                 # 마지막 셀로 이동
-                while app.api.Run("TableRightCell"):
-                    pass
-                while app.api.Run("TableLowerCell"):
-                    pass
+                for _ in range(500):
+                    if not app.api.Run("TableRightCell"):
+                        break
+                for _ in range(500):
+                    if not app.api.Run("TableLowerCell"):
+                        break
                 # 현재 행 선택
                 app.api.Run("TableCellBlock")
                 app.api.Run("TableCellBlockRow")
@@ -968,8 +973,9 @@ class TableAccessor:
         try:
             for _ in range(5):
                 # 맨 오른쪽 셀로
-                while app.api.Run("TableRightCell"):
-                    pass
+                for _ in range(500):
+                    if not app.api.Run("TableRightCell"):
+                        break
                 app.api.Run("TableCellBlock")
                 app.api.Run("TableCellBlockCol")
                 col_text = app.api.GetTextFile("TEXT", "saveblock") or ""

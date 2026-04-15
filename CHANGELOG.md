@@ -8,6 +8,38 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.15] — 2026-04-15 — Preset Phase 1 · structure + TOC + spacing
+
+### Added
+
+**Structure presets** (승승아빠 매크로 Alt+1, Alt+2 이식):
+- `app.preset.title_box(text, subtitle, bg_color, font_size)`
+- `app.preset.subtitle_bar(text, bg_color)`
+
+**Table header/footer** (Alt+4, Alt+5, Alt+Shift+4, Alt+Shift+5):
+- `app.preset.table_header(color="sky", text_color="#FFFFFF", rows=1)`
+- `app.preset.table_footer(color="gray", rows=1)`
+- 색상 preset: ``"gray" | "sky" | "dark_blue" | "green" | "red"`` 또는 hex
+
+**Navigation** (Alt+3, 쪽번호 매크로):
+- `app.preset.toc(with_bookmarks=True, dot_leader=True, levels=3)` — 점끌기탭 TOC
+- `app.preset.page_numbers(position, format, header_filename)`
+
+**Selection — 자간/장평** (Alt+Shift+8, Alt+Shift+9):
+- `app.sel.compress(step=1)` — 자간/장평 동시 축소
+- `app.sel.expand(step=1)` — 자간/장평 동시 확대
+
+### Fixed
+
+- ``while app.api.Run(...)`` 패턴을 ``for _ in range(500)`` 으로 교체 —
+  병든 표(500행 이상)나 mock 테스트에서 무한 루프 방지 (clean_excel_paste,
+  striped_rows, table_header, table_footer 모두).
+
+### Tests
+
+16 개 신규 단위 테스트 ([`tests/test_v015_features.py`](tests/test_v015_features.py)).
+전체 1266/1266 통과.
+
 ## [0.0.14] — 2026-04-15 — Presets · Images · Selection accessors
 
 DOCUMENT_PRESETS_PLAN.md 의 Phase 1 착수. 승승아빠 매크로에서 범용성

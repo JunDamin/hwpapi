@@ -225,6 +225,51 @@ class Selection:
                 break
         return self
 
+    # ═════════════════════════════════════════════════════════════
+    # v0.0.15 — Character spacing / stretch adjustments
+    # ═════════════════════════════════════════════════════════════
+
+    def compress(self, step: int = 1) -> "Selection":
+        """
+        선택된 범위의 **자간 + 장평을 step 단위씩 축소**.
+        승승아빠 매크로 ``자간과_장평줄이기`` 이식.
+
+        Parameters
+        ----------
+        step : int
+            축소 강도 (1회 호출 = 자간 -1%, 장평 -1%). 2면 2%씩.
+
+        Examples
+        --------
+        >>> app.sel.current_paragraph().compress()          # 1회
+        >>> app.sel.current_paragraph().compress(step=3)    # 3회
+        """
+        app = self._app
+        for _ in range(max(1, step)):
+            try:
+                # CharShapeSpacingDecrease + CharShapeScaleDecrease
+                app.api.Run("CharShapeSpacingDecrease")
+                app.api.Run("CharShapeScaleDecrease")
+            except Exception as e:
+                app.logger.debug(f"compress: {e}")
+                break
+        return self
+
+    def expand(self, step: int = 1) -> "Selection":
+        """
+        선택된 범위의 **자간 + 장평을 step 단위씩 확대**.
+        승승아빠 매크로 ``자간과_장평늘리기`` 이식.
+        """
+        app = self._app
+        for _ in range(max(1, step)):
+            try:
+                app.api.Run("CharShapeSpacingIncrease")
+                app.api.Run("CharShapeScaleIncrease")
+            except Exception as e:
+                app.logger.debug(f"expand: {e}")
+                break
+        return self
+
     def __repr__(self) -> str:
         t = self.text
         if len(t) > 30:
