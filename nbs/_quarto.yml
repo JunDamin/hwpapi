@@ -5,6 +5,7 @@ project:
   render:
     - "index.qmd"
     - "01_tutorials/*.ipynb"
+    - "02_api_reference.qmd"
 
 format:
   html:
@@ -62,6 +63,8 @@ website:
             file: 01_tutorials/06_usecase_data_to_table.ipynb
           - text: "실무형 보고서 생성"
             file: 01_tutorials/07_usecase_report_generation.ipynb
+      - text: "API 레퍼런스"
+        file: 02_api_reference.qmd
     right:
       - icon: github
         href: "https://github.com/JunDamin/hwpapi"
@@ -93,6 +96,10 @@ website:
             file: 01_tutorials/06_usecase_data_to_table.ipynb
           - text: "실무형 보고서"
             file: 01_tutorials/07_usecase_report_generation.ipynb
+      - section: "📖 API 레퍼런스"
+        contents:
+          - text: "전체 API"
+            file: 02_api_reference.qmd
       - section: "🔗 외부 링크"
         contents:
           - text: "GitHub 저장소"

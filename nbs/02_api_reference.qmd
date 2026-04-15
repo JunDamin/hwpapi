@@ -1,0 +1,320 @@
+---
+pagetitle: "API 레퍼런스 — hwpapi"
+title: "API 레퍼런스"
+description: "hwpapi의 모든 public 메소드 · 액션 · ParameterSet 빠른 참조"
+toc: true
+toc-depth: 3
+toc-location: right
+---
+
+이 페이지는 hwpapi 의 **전체 API 표면** 을 자동 추출한 참조 문서입니다. 각 항목에는 짧은 설명만 있으니, 자세한 사용 예는 [튜토리얼](01_tutorials/01_app_basics.html) 과 [사용 사례](01_tutorials/04_usecase_meeting_minutes.html) 를 함께 보세요.
+
+## 핵심 클래스
+
+
+### `App` — 진입점 클래스
+
+`from hwpapi.core import App` 으로 import 합니다. 한글 오피스에 연결/실행하고 대부분의 기능을 이 객체를 통해 사용합니다.
+
+| 메소드 / 속성 | 설명 |
+|:---|:---|
+| `api` (property) | 현재 사용 중인 엔진의 구현체를 반환합니다. |
+| `charshape(self, facename=None, fonttype=None, size=None, ratio=None, spacing=None, offset=None, bold=None, italic=No...` | return null charshape |
+| `charshape_scope(self, **fmt)` | 블록 내부에서 입력된 텍스트에 CharShape 서식을 **스코프** 로 적용. |
+| `close(self)` | Closes the currently open document in the Hancom Office Hwp program. |
+| `create_action(self, action_key: str)` | `_Action` 클래스의 인스턴스를 생성하고 반환합니다. |
+| `create_parameterset(self, key: str)` |  |
+| `find_text(self, text='', ignore_message=True, direction=0, match_case=None, all_word_forms=None, several_words=None,...` | 문서에서 다양한 옵션을 사용해 특정 텍스트를 검색합니다. |
+| `get_charshape(self)` | Retrieves the character shape settings from the current application. |
+| `get_filepath(self)` | 현재 열려있는 한컴오피스 Hwp 문서의 파일 경로를 검색합니다. |
+| `get_font_list(self)` | Retrieves the list of fonts that used in the documnents from the current application. |
+| `get_hwnd(self)` | Retrieves the window handle (HWND) of the active window in the Hancom Office Hwp program. |
+| `get_parashape(self)` | Retrieves the paragraph shape settings from the current application. |
+| `get_selected_text(self)` | Hancom Office Hwp 문서에서 현재 선택된 영역의 텍스트를 가져옵니다. |
+| `get_text(self, spos=..., epos=...)` | 지정된 시작 및 끝 위치에 따라 문서에서 텍스트를 가져옵니다. |
+| `insert_file(self, fpath, keep_charshape=False, keep_parashape=False, keep_section=False, keep_style=False)` | Inserts the contents of a specified file into the current document. |
+| `insert_picture(self, fpath, width=None, height=None, size_option=..., reverse=False, watermark=False, effect=...)` | 지정된 크기와 효과 옵션으로 문서에 이미지를 삽입합니다. |
+| `insert_text(self, text: str, charshape: ... = None, **kwargs)` | Inserts text into the Hancom Office Hwp document with specified character shape settings. |
+| `open(self, path: str)` | 제공된 파일 경로를 사용하여 한컴오피스 Hwp 프로그램에서 파일을 엽니다. |
+| `parashape_scope(self, **fmt)` | 블록 내부 문단에 ParaShape 서식을 **스코프** 로 적용. |
+| `quit(self)` | Terminates the Hancom Office Hwp program instance associated with the `App`. |
+| `reload(self, new_app=False, dll_path=None)` | 새로운 HWPFrame.HwpObject로 `App` 인스턴스를 다시 로드하고 가시성과 DLL 경로를 재설정합니다. |
+| `replace_all(self, old_text='', new_text='', old_charshape=None, new_charshape=None, ignore_message=True, direction=Non...` | 문서에서 특정 텍스트를 새 텍스트로 모두 교체합니다. |
+| `save(self, path=None)` | Saves the current document in the Hancom Office Hwp program. |
+| `save_block(self, path: pathlib.Path)` | Saves a block of content in the Hancom Office Hwp program and returns the file path. |
+| `scan(self, option=..., selection=False, scan_spos=..., scan_epos=..., spara=None, spos=None, epara=None, epos=N...` |  |
+| `select_text(self, option=...)` | 지정된 옵션에 따라 문서에서 텍스트를 선택합니다. |
+| `set_cell_border(self, top=None, right=None, left=None, bottom=None, horizontal=None, vertical=None, top_width=..., right_w...` | Sets the border properties for cells in a table within a Hancom Office Hwp document. |
+| `set_cell_color(self, bg_color=None, hatch_color='#000000', hatch_style=6, alpha=None)` | Sets the background color and hatch style for cells in a Hancom Office Hwp document. |
+| `set_charshape(self, charshape: ... = None, **kwargs)` | Sets the character shape in the current paragraph of the Hancom Office Hwp application using the provided `CharShape`. |
+| `set_parashape(self, parashape: ... = None, **kwargs)` | Sets the paragraph shape in the Hancom Office Hwp application using the provided `ParaShape`. |
+| `set_visible(self, is_visible=True, window_i=0)` | 한컴오피스 Hwp 프로그램 창의 가시성을 설정합니다. |
+| `setup_page(self, top=20, bottom=10, right=20, left=20, header=15, footer=5, gutter=0)` | Hancom Office Hwp 문서의 페이지 레이아웃을 설정합니다. |
+| `styled_text(self, text: str, **fmt)` | 포맷팅이 **그 텍스트에만** 적용되도록 삽입합니다. |
+
+### `Engine` — 저수준 엔진
+
+내부적으로 `App` 이 사용합니다. 보통 직접 다룰 일은 없습니다.
+
+| 메소드 / 속성 | 설명 |
+|:---|:---|
+| `name` (property) | Hwp 객체의 이름(CLSID)을 반환합니다. |
+
+## 접근자 (Accessor)
+
+`app.move`, `app.cell`, `app.table`, `app.page` 로 도메인별 헬퍼에 접근합니다.
+
+
+### `app.move` — 커서 이동
+
+문서 내 커서/캐럿 이동 헬퍼 모음.
+
+| 메소드 / 속성 | 설명 |
+|:---|:---|
+| `bottom_of_cell(self)` | 현재 셀에서 열(column)의 끝으로 이동 |
+| `bottom_of_file(self)` | 문서의 끝으로 이동 |
+| `bottom_of_list(self)` | 현재 리스트의 끝으로 이동 |
+| `current_caret(self)` | 현재 캐럿이 위치한 곳으로 이동 |
+| `current_list(self, para, pos)` | 현재 리스트의 특정 위치.(para pos로 위치 지정) |
+| `down_of_cell(self)` | 현재 캐럿이 위치한 셀의 아래쪽으로 이동 |
+| `end_of_cell(self)` | 현재 셀에서 행(row)의 끝으로 이동 |
+| `end_of_line(self)` | 현재 위치한 줄의 끝으로 이동 |
+| `end_of_para(self)` | 현재 위치한 문단의 끝으로 이동 |
+| `end_of_word(self)` | 현재 위치한 단어의 끝으로 이동 |
+| `left_of_cell(self)` | 현재 캐럿이 위치한 셀의 왼쪽으로 이동 |
+| `main(self, para, pos)` | 루트 리스트의 특정 위치(para, pos로 위치 지정) |
+| `next_char(self)` | 한 글자 뒤로 이동 (현재 리스트만을 대상으로 동작) |
+| `next_line(self)` | 한 줄 아래로 이동 |
+| `next_para(self)` | 다음 문단의 시작으로 이동 |
+| `next_pos(self)` | 한 글자 뒤로 이동 |
+| `next_pos_ex(self)` | 한 글자 뒤로 이동 (머리말/꼬리말 포함) |
+| `next_word(self)` | 한 단어 뒤로 이동 |
+| `parent_list(self)` | 한 레벨 상위로 이동 |
+| `prev_char(self)` | 한 글자 앞으로 이동 (현재 리스트만을 대상으로 동작) |
+| `prev_line(self)` | 한 줄 위로 이동 |
+| `prev_para(self)` | 앞 문단의 끝으로 이동 |
+| `prev_pos(self)` | 한 글자 앞으로 이동 |
+| `prev_pos_ex(self)` | 한 글자 앞으로 이동 (머리말/꼬리말 포함) |
+| `prev_word(self)` | 한 단어 앞으로 이동 |
+| `right_of_cell(self)` | 현재 캐럿이 위치한 셀의 오른쪽으로 이동 |
+| `root_list(self)` | 루트 리스트로 이동 |
+| `scan_pos(self)` | GetText() 실행 후 위치로 이동 |
+| `scr_pos(self)` | screen 좌표로 위치를 설정 |
+| `start_of_cell(self)` | 현재 셀에서 행(row)의 시작으로 이동 |
+| `start_of_line(self)` | 현재 위치한 줄의 시작으로 이동 |
+| `start_of_para(self)` | 현재 위치한 문단의 시작으로 이동 |
+| `start_of_word(self)` | 현재 위치한 단어의 시작으로 이동 |
+| `top_level_list(self)` | 탑레벨 리스트로 이동 |
+| `top_of_cell(self)` | 현재 셀에서 열(column)의 시작으로 이동 |
+| `top_of_file(self)` | 문서의 시작으로 이동 |
+| `top_of_list(self)` | 현재 리스트의 시작으로 이동 |
+| `up_of_cell(self)` | 현재 캐럿이 위치한 셀의 위쪽으로 이동 |
+
+### `app.cell` — 표 셀 조작
+
+현재 표 셀의 속성을 읽거나 조작.
+
+| 메소드 / 속성 | 설명 |
+|:---|:---|
+| `height` (property) | 셀의 높이를 가져옵니다. |
+| `width` (property) | 셀의 너비를 가져옵니다. |
+
+### `app.table` — 표 조작
+
+표 구조 (행/열 추가/삭제, 병합, 크기 조정 등).
+
+| 메소드 / 속성 | 설명 |
+|:---|:---|
+| `adjust_prev_obj_attr` (property) | 이전 개체 속성 조정 상태를 반환하거나 설정합니다. |
+| `adjust_selection` (property) | 테이블 선택 조정 상태를 반환하거나 설정합니다. |
+| `adjust_text_box` (property) | 테이블 텍스트 상자 조정 상태를 반환하거나 설정합니다. |
+| `affects_line` (property) | 테이블이 줄에 영향을 미치는지 여부를 반환하거나 설정합니다. |
+| `allow_overlap` (property) | 테이블의 겹치기 허용 여부를 반환하거나 설정합니다. |
+| `flow_with_text` (property) | 테이블의 텍스트와 함께 이동 여부를 반환하거나 설정합니다. |
+| `height` (property) | 테이블의 높이를 반환하거나 설정합니다. |
+| `height_rel_to` (property) | 테이블의 높이 기준을 반환하거나 설정합니다. |
+| `hold_anchor_obj` (property) | 테이블의 고정 앵커 개체 상태를 반환하거나 설정합니다. |
+| `horz_align` (property) | 테이블의 수평 정렬 상태를 반환하거나 설정합니다. |
+| `horz_offset` (property) | 테이블의 수평 오프셋을 반환하거나 설정합니다. |
+| `horz_rel_to` (property) | 테이블의 수평 기준을 반환하거나 설정합니다. |
+| `layout_height` (property) | 테이블의 레이아웃 높이를 반환하거나 설정합니다. |
+| `layout_width` (property) | 테이블의 레이아웃 너비를 반환하거나 설정합니다. |
+| `lock` (property) | 테이블의 잠금 상태를 반환하거나 설정합니다. |
+| `numbering_type` (property) | 테이블의 번호 매기기 유형을 반환하거나 설정합니다. |
+| `outside_margin_bottom` (property) | 테이블의 아래쪽 외부 여백을 반환하거나 설정합니다. |
+| `outside_margin_left` (property) | 테이블의 왼쪽 외부 여백을 반환하거나 설정합니다. |
+| `outside_margin_right` (property) | 테이블의 오른쪽 외부 여백을 반환하거나 설정합니다. |
+| `outside_margin_top` (property) | 테이블의 위쪽 외부 여백을 반환하거나 설정합니다. |
+| `page_number` (property) | 테이블의 페이지 번호를 반환하거나 설정합니다. |
+| `protect_size` (property) | 테이블의 크기 보호 상태를 반환하거나 설정합니다. |
+| `text_flow` (property) | 테이블의 텍스트 흐름 상태를 반환하거나 설정합니다. |
+| `text_wrap` (property) | 테이블의 텍스트 줄바꿈 상태를 반환하거나 설정합니다. |
+| `treat_as_char` (property) | 테이블을 문자로 간주할지 여부를 반환하거나 설정합니다. |
+| `vert_align` (property) | 테이블의 수직 정렬 상태를 반환하거나 설정합니다. |
+| `vert_offset` (property) | 테이블의 수직 오프셋을 반환하거나 설정합니다. |
+| `vert_rel_to` (property) | 테이블의 수직 기준을 반환하거나 설정합니다. |
+| `width` (property) | 테이블의 너비를 반환하거나 설정합니다. |
+| `width_rel_to` (property) | 테이블의 너비 기준을 반환하거나 설정합니다. |
+
+### `app.page` — 페이지
+
+페이지 설정, 페이지 단위 탐색.
+
+| 메소드 / 속성 | 설명 |
+|:---|:---|
+| `bottom_margin` (property) |  |
+| `footer` (property) |  |
+| `gutter` (property) |  |
+| `header` (property) |  |
+| `inner_height` (property) |  |
+| `inner_width` (property) |  |
+| `left_margin` (property) |  |
+| `papaer_height` (property) |  |
+| `paper_height` (property) |  |
+| `paper_width` (property) |  |
+| `right_margin` (property) |  |
+| `top_margin` (property) |  |
+
+## Actions — 704개
+
+hwpapi 는 HWP 의 모든 액션을 자동 등록합니다. `app.actions.<ActionName>` 으로 접근.
+
+```python
+# 파라미터 없는 액션
+app.actions.Undo.run()
+app.actions.SelectAll.run()
+
+# 파라미터셋이 필요한 액션
+action = app.actions.InsertText
+action.pset.Text = "안녕"
+action.run()
+```
+
+전체 액션은 총 **704개** 입니다. 아래는 pset 종류별로 상위 액션을 정리한 것입니다 (ParameterSet 클래스를 공유하는 액션이 많아 같은 카테고리로 묶임).
+
+
+| ParameterSet | 액션 수 | 대표 액션 |
+|:---|:---:|:---|
+| `ShapeObject` | 69 | DrawObjCreatorArc, DrawObjCreatorCanvas, DrawObjCreatorCurve, DrawObjCreatorEllipse, DrawObjCreatorFreeDrawing, ... |
+| `RevisionDef` | 23 | InsertRevision, InsertRevisionAttach, InsertRevisionClipping, InsertRevisionDelete, InsertRevisionInsert, ... |
+| `ParaShape` | 12 | GetDefaultBullet, GetDefaultParaNumber, ParagraphShape, ParaNumberBullet, ParaNumberBulletLevelDown, ... |
+| `FindReplace` | 11 | AllReplace, BackwardFind, DocFindEnd, DocFindInit, ExecReplace, ... |
+| `CharShape` | 11 | CharShape, CharShapeDialog, CharShapeDialogWithoutBorder, CharShapeTextColorBlack, CharShapeTextColorBlue, ... |
+| `InsertFieldTemplate` | 11 | InsertDocTitle, InsertFieldFileName, InsertFieldTemplate, InsertFileName, InsertFilePath, ... |
+| `CellBorderFill` | 8 | CellBorder, CellBorderFill, CellFill, CellZoneBorder, CellZoneBorderFill, ... |
+| `VersionInfo` | 7 | GetVersionItemInfo, MakeAllVersionDiffs, SaveHistoryItem, VersionDelete, VersionDeleteAll, ... |
+| `SecDef` | 6 | FootnoteOption, MemoShape, ModifySection, OutlineNumber, PageBorder, ... |
+| `MasterPage` | 6 | MasterPage, MasterPageDelete, MasterPageEntry, MasterPageTypeDlg, MPSectionToNext, ... |
+| `TableInsertLine` | 6 | TableAppendRow, TableInsertLeftColumn, TableInsertLowerRow, TableInsertRightColumn, TableInsertRowColumn, ... |
+| `SelectionOpt` | 5 | Copy, Cut, Erase, Paste, TableDeleteCell |
+| `HyperLink` | 5 | Hyperlink, InsertHyperlink, InsertRevisionHyperlink, ModifyHyperlink, ModifyRevisionHyperlink |
+| `FileOpenSave` | 4 | FileOpen, FileOpenMRU, FileSave, FileSaveAs |
+| `Style` | 4 | Style, StyleAdd, StyleEdit, StyleEx |
+| `TableDeleteLine` | 4 | TableDeleteColumn, TableDeleteRow, TableDeleteRowColumn, TableSubtractRow |
+| `ViewProperties` | 4 | ViewZoom, ViewZoomFitPage, ViewZoomFitWidth, ViewZoomNormal |
+| `HeaderFooter` | 3 | HeaderFooter, HeaderFooterInsField, HeaderFooterToNext |
+| `Idiom` | 3 | Idiom, InsertIdiom, ViewIdiom |
+| `ScriptMacro` | 3 | MacroRepeatDlg, ScrMacroDefine, ScrMacroRepeatDlg |
+
+파라미터셋이 없는 액션은 **393개** 로, `app.actions.<Name>.run()` 만 호출하면 됩니다.
+
+## ParameterSets — 286개
+
+액션의 파라미터를 구성하는 데 쓰는 클래스. 속성을 set하고 `action.run()` 에 전달합니다.
+
+```python
+# CharShape 직접 생성 예
+from hwpapi.parametersets import CharShape
+cs = CharShape()
+cs.bold = True
+cs.height = 2400
+
+# action.pset 을 통해 접근하는 것이 더 일반적
+app.actions.CharShape.pset.bold = True
+app.actions.CharShape.run()
+```
+
+주요 ParameterSet 을 카테고리별로:
+
+
+| 카테고리 | 주요 ParameterSet |
+|:---|:---|
+| 문자 · 문단 | `CharShape`, `ParaShape`, `TabDef`, `NumberingShape` |
+| 표 | `Table`, `TableCreation`, `Cell`, `CellBorderFill` |
+| 찾기 · 바꾸기 | `FindReplace`, `DocFindInfo` |
+| 파일 | `FileOpen`, `FileSaveAs`, `Print` |
+| 서식 공유 | `BorderFill`, `Style`, `StyleTemplate` |
+| 그림 · 도형 | `ShapeObject`, `DrawLineAttr`, `DrawFillAttr`, `DrawImageAttr`, `DrawShadow` |
+| 페이지 · 문서 | `PageDef`, `SecDef`, `DocumentInfo`, `ColDef`, `Caption`, `FootnoteShape` |
+| 기타 | `HyperLink`, `BookMark`, `OleCreation` |
+
+전체 286개는 다음과 같이 확인할 수 있습니다:
+
+
+```python
+from hwpapi.parametersets import PARAMETERSET_REGISTRY
+print(len(PARAMETERSET_REGISTRY))  # 286
+print(sorted(PARAMETERSET_REGISTRY.keys()))  # 전체 이름 목록
+
+# 특정 ParameterSet 의 속성 보기
+cs_class = PARAMETERSET_REGISTRY['CharShape']
+print(list(cs_class._property_registry.keys()))
+```
+
+## 상수 (Enums)
+
+`from hwpapi import constants as const` 로 import 합니다.
+
+| 상수 | 용도 | 주요 값 |
+|:---|:---|:---|
+| `ScanStartPosition` | `get_text` 시작 범위 | `Current`, `Line`, `Paragraph`, `Section`, `Document` |
+| `ScanEndPosition` | `get_text` 종료 범위 | (위와 동일) |
+| `ScanDirection` | 검색 방향 | `Forward`, `Backward`, `All` |
+| `MaskOption` | `scan()` 마스크 | `All`, `Normal`, `Control` 등 |
+| `SelectionOption` | `select_text` 범위 | `Line`, `Word`, `Para`, `Sentence` |
+
+## 자동 리셋 서식 헬퍼
+
+```python
+# 한 조각 — 해당 텍스트에만 서식
+app.styled_text("중요", bold=True, text_color="#FF0000")
+app.styled_text("형광펜", shade_color="#FFFF00")  # shade 도 격리됨
+
+# 여러 줄 CharShape 블록
+with app.charshape_scope(bold=True, text_color="#0000FF"):
+    app.insert_text("파랑 굵은 글씨\n여러 insert 에 모두 적용")
+
+# ParaShape 블록
+with app.parashape_scope(align_type=3, line_spacing=200):
+    app.insert_text("가운데 정렬 + 200% 줄간격")
+```
+
+자세한 설명은 [`App 기초` 튜토리얼 §6-2](01_tutorials/tutorial.html#6-2-서식-자동-리셋-styled_text-charshape_scope-parashape_scope) 참고.
+
+## `app.api` — 탈출구
+
+hwpapi 가 래핑하지 않은 기능은 `app.api` 로 `win32com` 의 `HwpObject` 에 직접 접근할 수 있습니다.
+
+```python
+# 원시 Run / HAction
+app.api.Run("BreakPara")
+app.api.HAction.GetDefault("CharShape", app.api.HParameterSet.HCharShape.HSet)
+app.api.HParameterSet.HCharShape.Bold = 1
+app.api.HAction.Execute("CharShape", app.api.HParameterSet.HCharShape.HSet)
+
+# 문서/윈도우 객체
+app.api.XHwpDocuments.Count
+app.api.XHwpWindows.Item(0).Visible = True
+
+# 단위 변환
+app.api.PointToHwpUnit(12)  # 12pt → HWPUNIT
+app.api.HwpUnitToPoint(1200)  # HWPUNIT → pt
+```
+
+공식 문서 (PDF): [한컴 오피스 자동화 매뉴얼](https://developer.hancom.com/hwpctrl/docs)
+
+## 레퍼런스 링크
+
+- [GitHub 저장소](https://github.com/JunDamin/hwpapi)
+- [PyPI 페이지](https://pypi.org/project/hwpapi/)
+- [Issue 제보](https://github.com/JunDamin/hwpapi/issues)

@@ -20,7 +20,8 @@ xlwings가 Excel을 감싸듯, win32com의 장황한 COM API를 간결한 Python
 pip install hwpapi
 ```
 
-[시작하기 →](01_tutorials/01_app_basics.html){.btn .btn-primary .btn-lg}
+[시작하기 →](01_tutorials/tutorial.html){.btn .btn-primary .btn-lg}
+[API 레퍼런스](02_api_reference.html){.btn .btn-outline-light .btn-lg}
 [GitHub ↗](https://github.com/JunDamin/hwpapi){.btn .btn-outline-light .btn-lg}
 
 :::
