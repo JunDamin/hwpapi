@@ -43,6 +43,9 @@ from hwpapi.classes import (
     StylesAccessor, ControlsAccessor,
 )
 from hwpapi.classes.fields import Fields, Bookmarks, Hyperlinks
+from hwpapi.classes.images import Images
+from hwpapi.classes.selection import Selection
+from hwpapi.presets import Presets
 from .engine import Engine, Engines, Apps
 from hwpapi.functions import (
     check_dll,
@@ -126,6 +129,12 @@ class App:
         # v0.0.12+ collection accessors (v1.0 일관성 청사진 Phase 1)
         self.bookmarks = Bookmarks(self)
         self.hyperlinks = Hyperlinks(self)
+        # v0.0.14+ preset / images / selection accessor
+        # NOTE: `app.selection` 은 str property (선택된 텍스트) 유지.
+        # 선택 동작 accessor 는 `app.sel` — `app.move` 와 대칭.
+        self.images = Images(self)
+        self.sel = Selection(self)
+        self.preset = Presets(self)
         self.logger.info("App initialized successfully with all accessors")
 
     def _load(self, new_app=False, engine=None, dll_path=None):

@@ -16,6 +16,8 @@ from .shapes import Character, CharShape, Paragraph, ParaShape, PageShape
 from .styles import StylesAccessor, Style
 from .controls import ControlsAccessor, Control
 from .fields import Fields, Field, Bookmarks, Hyperlinks, Hyperlink
+from .images import Images, Image
+from .selection import Selection
 
 __all__ = [
     'MoveAccessor', 'CellAccessor', 'TableAccessor', 'PageAccessor',
@@ -23,4 +25,6 @@ __all__ = [
     'StylesAccessor', 'Style',
     'ControlsAccessor', 'Control',
     'Fields', 'Field', 'Bookmarks', 'Hyperlinks', 'Hyperlink',
+    'Images', 'Image',
+    'Selection',
 ]

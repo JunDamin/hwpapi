@@ -8,6 +8,34 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.14] — 2026-04-15 — Presets · Images · Selection accessors
+
+DOCUMENT_PRESETS_PLAN.md 의 Phase 1 착수. 승승아빠 매크로에서 범용성
+높은 기능을 추려 Python API 로 이식.
+
+### Added
+
+- **`app.preset`** ([`Presets`](hwpapi/presets/__init__.py)) — 문서 꾸미기 프리셋 accessor.
+  - `preset.striped_rows(colors=[...], header_color=None)` — 줄무늬 표 (zebra).
+- **`app.images`** ([`Images`](hwpapi/classes/images.py)) — 이미지 control 컬렉션.
+  - iter / len / `images[i]` — 이미지 순회
+  - `images.resize_all(width="100mm", keep_ratio=True)` — 일괄 크기 조정
+  - `images.grayscale_all()` — 흑백 변환
+- **`app.sel`** ([`Selection`](hwpapi/classes/selection.py)) — 선택 동작 accessor.
+  (``app.selection`` 은 str property 로 그대로 유지, ``app.sel`` 은 ``app.move`` 와 대칭인 accessor.)
+  - `sel.current_word()` / `.current_line()` / `.current_paragraph()` / `.current_sentence()`
+  - `sel.to_paragraph_end()` / `.to_paragraph_begin()` / `.to_line_end()` / `.to_line_begin()`
+  - `sel.to_document_end()` / `.to_document_begin()`
+  - `sel.expand_char(n)` / `.expand_word(n)`
+  - `sel.clear()` / `sel.text` / `sel.is_empty`
+- **`app.table.clean_excel_paste()`** — 엑셀→HWP 붙여넣은 표의 빈 행/열/공백 정돈
+  (승승아빠 매크로 ``엑셀_복사표_숫자_빈칸지우기`` 의 Python 포팅).
+
+### Tests
+
+19 개의 새 단위 테스트 ([`tests/test_v014_features.py`](tests/test_v014_features.py)).
+전체 1250/1250 통과 (regression 0).
+
 ## [0.0.13] — 2026-04-15 — V1 Phase 1 · Fluent API
 
 ### Changed

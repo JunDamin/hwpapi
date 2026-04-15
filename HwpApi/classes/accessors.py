@@ -871,6 +871,119 @@ class TableAccessor:
         """이전 개체 속성 조정 상태를 설정합니다."""
         self._set_shape_property("AdjustPrevObjAttr", value)
 
+    # ═════════════════════════════════════════════════════════════
+    # v0.0.14 — Batch operations
+    # ═════════════════════════════════════════════════════════════
+
+    def clean_excel_paste(self) -> "TableAccessor":
+        """
+        엑셀에서 복사 → 한글로 붙여넣은 표의 **빈 셀/행/열을 정돈**.
+
+        엑셀 → HWP 붙여넣기 시 흔히 발생하는 문제들:
+          1. 빈 행이 표 하단에 생성됨
+          2. 빈 열이 표 우측에 생성됨
+          3. 셀 안에 불필요한 공백 문자 다수 삽입
+
+        승승아빠 매크로 ``엑셀_복사표_숫자_빈칸지우기`` 의 Python 포팅.
+
+        호출 전 조건: 커서가 정리 대상 표 안에 있어야 함.
+
+        Returns
+        -------
+        TableAccessor
+            chainable — ``self``.
+
+        Examples
+        --------
+        >>> app.paste()                        # 엑셀 복사본 붙여넣기
+        >>> app.table.clean_excel_paste()      # 정리
+
+        Notes
+        -----
+        단순 구현: 각 셀을 돌며 ``ReplaceChar`` 로 내부 공백을 제거하고,
+        마지막 행/열이 완전히 비어 있으면 ``TableDeleteRow`` /
+        ``TableDeleteColumn`` 호출. 중간 빈 행은 의미있을 수 있으므로 건드리지 않음.
+        """
+        app = self._app
+        if not app.in_table():
+            app.logger.warning("clean_excel_paste: 커서가 표 안에 있지 않습니다.")
+            return self
+
+        # Step 1: 공백 정리 — Replace "  " (double space) 반복 제거 + trim
+        try:
+            # Go to table top-left
+            app.api.Run("TableColBegin")
+            while app.api.Run("TableUpperCell"):
+                pass
+
+            # Visit every cell and strip blanks
+            done = False
+            while not done:
+                # Select current cell content
+                app.api.Run("TableCellBlock")
+                app.api.Run("Cancel")
+
+                # Replace "  " (two spaces) with "" — multiple passes
+                for _ in range(3):
+                    try:
+                        find = app.api.CreateAction("AllReplace")
+                        pset = find.CreateSet()
+                        find.GetDefault(pset)
+                        pset.SetItem("FindString", "  ")
+                        pset.SetItem("ReplaceString", "")
+                        pset.SetItem("Direction", 2)  # all
+                        pset.SetItem("IgnoreMessage", 1)
+                        find.Execute(pset)
+                    except Exception:
+                        break
+
+                # Move to next cell
+                if not app.api.Run("TableRightCell"):
+                    done = True
+        except Exception as e:
+            app.logger.debug(f"clean_excel_paste step1: {e}")
+
+        # Step 2: 마지막 행이 완전히 비어있으면 삭제 (최대 5번 반복)
+        try:
+            for _ in range(5):
+                # 마지막 셀로 이동
+                while app.api.Run("TableRightCell"):
+                    pass
+                while app.api.Run("TableLowerCell"):
+                    pass
+                # 현재 행 선택
+                app.api.Run("TableCellBlock")
+                app.api.Run("TableCellBlockRow")
+                # 선택된 행의 텍스트가 비어있는지 확인
+                row_text = app.api.GetTextFile("TEXT", "saveblock") or ""
+                app.api.Run("Cancel")
+                if row_text.strip() == "":
+                    app.api.Run("TableDeleteRow")
+                else:
+                    break
+        except Exception as e:
+            app.logger.debug(f"clean_excel_paste step2: {e}")
+
+        # Step 3: 마지막 열이 완전히 비어있으면 삭제 (최대 5번 반복)
+        try:
+            for _ in range(5):
+                # 맨 오른쪽 셀로
+                while app.api.Run("TableRightCell"):
+                    pass
+                app.api.Run("TableCellBlock")
+                app.api.Run("TableCellBlockCol")
+                col_text = app.api.GetTextFile("TEXT", "saveblock") or ""
+                app.api.Run("Cancel")
+                if col_text.strip() == "":
+                    app.api.Run("TableDeleteColumn")
+                else:
+                    break
+        except Exception as e:
+            app.logger.debug(f"clean_excel_paste step3: {e}")
+
+        app.logger.info("clean_excel_paste: completed")
+        return self
+
 
 class PageAccessor:
     
