@@ -24,7 +24,8 @@ Accessors attached as attributes (see :mod:`hwpapi.classes.accessors`):
 - ``app.table`` — table structure ops
 - ``app.page`` — page ops
 """
-__all__ = ['Engine', 'Engines', 'Apps', 'App', 'move_to_line']
+__all__ = ['Engine', 'Engines', 'Apps', 'App', 'Document', 'Documents',
+           'move_to_line']
 
 from contextlib import contextmanager
 from pathlib import Path
@@ -48,6 +49,261 @@ from hwpapi.functions import (
     set_pset,
 )
 
+
+
+class Document:
+    """
+    여러 HWP 문서 중 **하나** 를 감싼 핸들.
+
+    ``app.documents[i]`` 또는 ``app.documents.active`` 로 얻을 수 있습니다.
+    문서 단위의 파일 경로 조회, 저장, 닫기, 활성화 등을 제공합니다.
+
+    Attributes
+    ----------
+    raw : COM object
+        원시 ``IXHwpDocument`` COM 래퍼. 직접 속성 접근이 필요할 때 사용.
+
+    Examples
+    --------
+    >>> doc = app.documents[0]
+    >>> print(doc.path)          # 현재 문서 경로
+    >>> print(doc.modified)      # 수정 여부
+    >>> doc.save()               # 현재 문서만 저장
+    >>> doc.activate()           # 이 문서를 활성창으로 전환
+    >>> doc.close()              # 이 문서만 닫기
+    """
+
+    def __init__(self, raw_doc, documents=None):
+        self.raw = raw_doc
+        self._collection = documents  # back-reference for activation
+
+    # ── 조회용 속성 ──────────────────────────────────────────
+
+    @property
+    def full_name(self) -> str:
+        """전체 경로 포함 파일 이름. 저장 안된 문서는 빈 문자열."""
+        try:
+            return str(self.raw.FullName or "")
+        except Exception:
+            return ""
+
+    @property
+    def path(self) -> str:
+        """문서 폴더 경로."""
+        try:
+            return str(self.raw.Path or "")
+        except Exception:
+            return ""
+
+    @property
+    def modified(self) -> bool:
+        """마지막 저장 이후 수정 여부."""
+        try:
+            return bool(self.raw.Modified)
+        except Exception:
+            return False
+
+    @property
+    def document_id(self):
+        """HWP 내부 문서 ID."""
+        try:
+            return self.raw.DocumentID
+        except Exception:
+            return None
+
+    @property
+    def edit_mode(self):
+        """편집 모드 (0=일반, 1=읽기 전용, ...)."""
+        try:
+            return self.raw.EditMode
+        except Exception:
+            return None
+
+    @property
+    def format(self):
+        """문서 포맷 문자열 (HWP, HWPX, PDF, ...)."""
+        try:
+            return self.raw.Format
+        except Exception:
+            return None
+
+    # ── 행동 ─────────────────────────────────────────────────
+
+    def activate(self) -> "Document":
+        """이 문서를 활성창으로 전환한 뒤 self 반환."""
+        try:
+            self.raw.SetActive_XHwpDocument()
+        except Exception:
+            pass
+        return self
+
+    def save(self) -> bool:
+        """현재 경로에 저장. 저장된 적 없으면 실패 (``save_as`` 사용)."""
+        try:
+            return bool(self.raw.Save())
+        except Exception:
+            return False
+
+    def save_as(self, path: str, format: str = None) -> bool:
+        """다른 이름/포맷으로 저장."""
+        try:
+            if format:
+                return bool(self.raw.SaveAs(str(path), format))
+            return bool(self.raw.SaveAs(str(path)))
+        except Exception:
+            return False
+
+    def close(self, save: bool = False) -> bool:
+        """이 문서만 닫기. ``save=True`` 면 저장 후 닫기."""
+        try:
+            return bool(self.raw.Close(save))
+        except Exception:
+            return False
+
+    def clear(self) -> bool:
+        """문서 내용 비우기 (새 문서처럼)."""
+        try:
+            return bool(self.raw.Clear())
+        except Exception:
+            return False
+
+    def undo(self) -> bool:
+        """이 문서의 되돌리기."""
+        try:
+            return bool(self.raw.Undo())
+        except Exception:
+            return False
+
+    def redo(self) -> bool:
+        """이 문서의 다시 실행."""
+        try:
+            return bool(self.raw.Redo())
+        except Exception:
+            return False
+
+    def __repr__(self):
+        name = self.full_name or "(unsaved)"
+        mod = " *" if self.modified else ""
+        return f"<Document {name}{mod}>"
+
+
+class Documents:
+    """
+    열린 모든 HWP 문서를 감싼 컬렉션 (``app.documents``).
+
+    파이썬 list 처럼 인덱싱/반복/`len()` 가능하며 ``add()``, ``open()``,
+    ``close_all()``, ``active`` 같은 컬렉션 레벨 메소드를 제공합니다.
+
+    Examples
+    --------
+    >>> # 전체 열린 문서 목록
+    >>> for doc in app.documents:
+    ...     print(doc.full_name, doc.modified)
+
+    >>> # 새 빈 문서 추가
+    >>> new_doc = app.documents.add()
+    >>> new_doc.activate()
+
+    >>> # 파일 열기 (기존 세션에 추가됨)
+    >>> doc = app.documents.open("C:/report.hwp")
+
+    >>> # 활성 문서
+    >>> active = app.documents.active
+
+    >>> # 전체 저장 후 닫기
+    >>> app.documents.save_all()
+    >>> app.documents.close_all()
+    """
+
+    def __init__(self, app):
+        self._app = app
+
+    @property
+    def _raw(self):
+        return self._app.api.XHwpDocuments
+
+    def __len__(self) -> int:
+        try:
+            return int(self._raw.Count)
+        except Exception:
+            return 0
+
+    def __getitem__(self, index: int) -> "Document":
+        n = len(self)
+        if index < 0:
+            index += n
+        if not (0 <= index < n):
+            raise IndexError(f"Document index {index} out of range (count={n})")
+        return Document(self._raw.Item(index), self)
+
+    def __iter__(self):
+        for i in range(len(self)):
+            yield self[i]
+
+    @property
+    def active(self) -> "Document":
+        """현재 활성 문서. ``app.api.XHwpDocuments.Active_XHwpDocument`` 기반."""
+        try:
+            raw = self._raw.Active_XHwpDocument
+        except Exception:
+            # Fallback — iterate and return the active one
+            return self[0] if len(self) else None
+        return Document(raw, self)
+
+    def add(self, is_tab: bool = True) -> "Document":
+        """새 빈 문서 추가. ``is_tab=True`` 면 같은 창의 새 탭."""
+        try:
+            raw = self._raw.Add(is_tab)
+        except Exception:
+            # Fallback: FileNew action
+            self._app.api.Run("FileNew")
+            raw = self._raw.Item(len(self) - 1)
+        return Document(raw, self)
+
+    def open(self, path: str, format: str = None,
+             arg: str = "") -> "Document":
+        """기존 파일을 새 문서로 열기."""
+        try:
+            if format:
+                raw = self._raw.Open(str(path), format, arg)
+            else:
+                raw = self._raw.Open(str(path))
+        except Exception:
+            # Fallback: use app.open, then grab the newest doc
+            self._app.open(str(path))
+            raw = self._raw.Item(len(self) - 1)
+        return Document(raw, self)
+
+    def close_all(self, save: bool = False) -> int:
+        """모든 문서를 닫고 닫은 개수를 반환."""
+        closed = 0
+        # Iterate from the end so indices don't shift while closing
+        for i in range(len(self) - 1, -1, -1):
+            try:
+                if self[i].close(save=save):
+                    closed += 1
+            except Exception:
+                pass
+        return closed
+
+    def save_all(self) -> int:
+        """모든 문서를 저장하고 성공 개수를 반환."""
+        saved = 0
+        for doc in self:
+            if doc.save():
+                saved += 1
+        return saved
+
+    def find(self, name_substr: str) -> "Document":
+        """파일 경로에 ``name_substr`` 이 포함된 첫 번째 문서 반환 (없으면 None)."""
+        s = name_substr.lower()
+        for doc in self:
+            if s in doc.full_name.lower():
+                return doc
+        return None
+
+    def __repr__(self):
+        return f"<Documents count={len(self)}>"
 
 
 class App:
@@ -112,6 +368,7 @@ class App:
         self.cell = CellAccessor(self)
         self.table = TableAccessor(self)
         self.page = PageAccessor(self)
+        self.documents = Documents(self)
         self.logger.info("App initialized successfully with all accessors")
 
     def _load(self, new_app=False, engine=None, dll_path=None):
@@ -726,6 +983,269 @@ class App:
 
         insert_text.run(p)
         return
+
+    def styled_text(self, text: str, **fmt):
+        """
+        포맷팅이 **그 텍스트에만** 적용되도록 삽입합니다.
+
+        동작 방식 — **snapshot + restore**:
+
+        1. 블록 진입 시 현재 CharShape / ParaShape 를 통째로 snapshot
+        2. 텍스트를 snapshot 상태 그대로 삽입 (이전 상태 유지)
+        3. 방금 삽입한 영역을 선택해서 요청한 서식만 적용
+        4. 커서를 끝으로 이동한 뒤 snapshot 으로 상태 **완전 복원**
+
+        이 방식은 ``shade_color`` 같은 "지울 수 없는" 속성에도 작동합니다.
+        snapshot 에 저장된 원래 값으로 돌려놓기만 하면 되기 때문입니다.
+
+        Parameters
+        ----------
+        text : str
+            삽입할 텍스트.
+        **fmt
+            ``set_charshape()`` 가 받는 키워드 — bold, italic, underline_type,
+            strike_out_type, super_script, sub_script, text_color, shade_color,
+            height, spacing_hangul 등.
+
+        Examples
+        --------
+        >>> app.insert_text("앞: ")
+        >>> app.styled_text("중요한 부분", bold=True, text_color="#FF0000")
+        >>> app.insert_text(" 뒤")
+        # "앞: " 기본, "중요한 부분" 빨간 굵은 글씨, " 뒤" 기본
+
+        >>> # shade_color (형광펜) 도 안전
+        >>> app.styled_text("하이라이트", shade_color="#FFFF00")
+        >>> app.insert_text(" ← 음영이 여기까지 이어지지 않습니다")
+        """
+        if not text:
+            return
+        # 1) Snapshot CharShape BEFORE any changes
+        char_before = self._snapshot_charshape()
+        # 2) Insert text using the current (unchanged) cursor state
+        self.insert_text(text)
+        # 3) Select the just-inserted region backwards
+        for _ in range(len(text)):
+            self.api.Run("MoveSelLeft")
+        # 4) Apply the requested formatting to the selection
+        if fmt:
+            self.set_charshape(**fmt)
+        # 5) Deselect + move cursor to end of the inserted text
+        try:
+            self.api.Run("Cancel")
+        except Exception:
+            pass
+        for _ in range(len(text)):
+            self.api.Run("MoveRight")
+        # 6) RESTORE the snapshot — cursor char state == pre-block state
+        self._restore_charshape(char_before)
+
+    def _snapshot_charshape(self):
+        """Capture the current CharShape at cursor as a restorable snapshot."""
+        try:
+            cs_action = self.actions.CharShape
+            cs_action.act.GetDefault(cs_action.pset._raw)
+            return cs_action.pset.clone() if hasattr(cs_action.pset, 'clone') else None
+        except Exception:
+            return None
+
+    def _restore_charshape(self, snapshot):
+        """Apply a previously-captured CharShape snapshot at cursor."""
+        if snapshot is None:
+            return
+        try:
+            self.set_charshape(snapshot)
+        except Exception:
+            pass
+
+    def _snapshot_parashape(self):
+        """Capture the current ParaShape at cursor as a restorable snapshot."""
+        try:
+            ps_action = self.actions.ParagraphShape
+            ps_action.act.GetDefault(ps_action.pset._raw)
+            return ps_action.pset.clone() if hasattr(ps_action.pset, 'clone') else None
+        except Exception:
+            return None
+
+    def _restore_parashape(self, snapshot):
+        """Apply a previously-captured ParaShape snapshot at cursor."""
+        if snapshot is None:
+            return
+        try:
+            self.set_parashape(snapshot)
+        except Exception:
+            pass
+
+    @contextmanager
+    def charshape_scope(self, **fmt):
+        """
+        블록 내부에서 입력된 텍스트에 CharShape 서식을 **스코프** 로 적용.
+
+        진입 시 현재 ParameterSet 을 snapshot 으로 저장하고, 블록 내용을
+        선택해서 서식을 적용한 뒤, **snapshot 으로 완전 복원** 합니다.
+        이렇게 하면 shade_color 같은 "기본값으로 되돌리기 어려운" 속성도
+        원래 값으로 정확히 되돌아갑니다.
+
+        Examples
+        --------
+        >>> with app.charshape_scope(bold=True, underline_type=1):
+        ...     app.insert_text("중요 공지:")
+        >>> app.insert_text(" 이후는 원래 서식 그대로")
+
+        >>> with app.charshape_scope(shade_color="#FFFF00"):
+        ...     app.insert_text("형광펜 여러 줄도\\n안전하게 처리")
+        """
+        before_pos = None
+        try:
+            before_pos = self.api.GetPos()
+        except Exception:
+            pass
+        # Snapshot cursor char shape BEFORE any changes
+        char_before = self._snapshot_charshape()
+
+        try:
+            yield
+        finally:
+            after_pos = None
+            try:
+                after_pos = self.api.GetPos()
+            except Exception:
+                pass
+
+            # Apply fmt to the block content via selection
+            if (before_pos and after_pos and before_pos != after_pos):
+                try:
+                    self.api.SetPos(*before_pos)
+                    try:
+                        self.api.SelectText(
+                            before_pos[0], before_pos[1], before_pos[2],
+                            after_pos[0],  after_pos[1],  after_pos[2],
+                        )
+                    except Exception:
+                        self.api.SetPos(*before_pos)
+                        self.api.Run("MoveSelDocEnd")
+                    if fmt:
+                        self.set_charshape(**fmt)
+                    try:
+                        self.api.Run("Cancel")
+                    except Exception:
+                        pass
+                except Exception:
+                    pass
+
+            # Restore cursor state — this is the KEY step for clean exit
+            if after_pos:
+                try:
+                    self.api.SetPos(*after_pos)
+                except Exception:
+                    pass
+            self._restore_charshape(char_before)
+
+    @contextmanager
+    def parashape_scope(self, **fmt):
+        """
+        블록 내부 문단에 ParaShape 서식을 **스코프** 로 적용.
+
+        정렬, 줄간격, 들여쓰기 등 문단 레벨 서식을 블록 내에서만 적용하고
+        블록 종료 시 원래 ParaShape 로 **완전 복원** 합니다.
+
+        Examples
+        --------
+        >>> with app.parashape_scope(align_type=3, line_spacing=200):
+        ...     app.insert_text("가운데 정렬 + 200% 줄간격\\n여러 줄도 OK\\n")
+        >>> app.insert_text("이후 문단은 원래 정렬/줄간격 그대로")
+        """
+        before_pos = None
+        try:
+            before_pos = self.api.GetPos()
+        except Exception:
+            pass
+        para_before = self._snapshot_parashape()
+
+        try:
+            yield
+        finally:
+            after_pos = None
+            try:
+                after_pos = self.api.GetPos()
+            except Exception:
+                pass
+
+            if (before_pos and after_pos and before_pos != after_pos):
+                try:
+                    self.api.SetPos(*before_pos)
+                    try:
+                        self.api.SelectText(
+                            before_pos[0], before_pos[1], before_pos[2],
+                            after_pos[0],  after_pos[1],  after_pos[2],
+                        )
+                    except Exception:
+                        self.api.SetPos(*before_pos)
+                        self.api.Run("MoveSelDocEnd")
+                    if fmt:
+                        self.set_parashape(**fmt)
+                    try:
+                        self.api.Run("Cancel")
+                    except Exception:
+                        pass
+                except Exception:
+                    pass
+
+            if after_pos:
+                try:
+                    self.api.SetPos(*after_pos)
+                except Exception:
+                    pass
+            self._restore_parashape(para_before)
+
+    @contextmanager
+    def use_document(self, doc_or_index):
+        """
+        지정한 문서를 **임시로 활성창** 으로 만들고, 블록 종료 시 원래 활성
+        문서로 복원하는 context manager.
+
+        다중 문서 작업에서 각 문서로 잠깐씩 전환하며 작업할 때 유용합니다.
+
+        Parameters
+        ----------
+        doc_or_index : Document | int
+            ``Document`` 인스턴스 또는 ``app.documents`` 의 인덱스.
+
+        Examples
+        --------
+        >>> # 인덱스로 전환
+        >>> with app.use_document(0):
+        ...     app.insert_text("첫 번째 문서에 추가")
+
+        >>> # Document 객체로 전환
+        >>> doc2 = app.documents.open("other.hwp")
+        >>> with app.use_document(doc2):
+        ...     app.replace_all("OLD", "NEW")
+
+        >>> # 여러 문서 순회하며 같은 작업 반복
+        >>> for doc in app.documents:
+        ...     with app.use_document(doc):
+        ...         app.replace_all("2025", "2026")
+        ...         doc.save()
+        """
+        # Remember which document was active before
+        prev_active = self.documents.active
+
+        # Resolve target
+        if isinstance(doc_or_index, Document):
+            target = doc_or_index
+        else:
+            target = self.documents[int(doc_or_index)]
+
+        target.activate()
+        try:
+            yield target
+        finally:
+            if prev_active is not None:
+                try:
+                    prev_active.activate()
+                except Exception:
+                    pass
 
     @contextmanager
     def scan(

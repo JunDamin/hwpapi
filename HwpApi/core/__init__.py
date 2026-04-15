@@ -12,6 +12,7 @@ All public names are re-exported at package root for backward compatibility:
 from __future__ import annotations
 
 from .engine import Engine, Engines, Apps
-from .app import App, move_to_line
+from .app import App, Document, Documents, move_to_line
 
-__all__ = ['Engine', 'Engines', 'Apps', 'App', 'move_to_line']
+__all__ = ['Engine', 'Engines', 'Apps', 'App',
+           'Document', 'Documents', 'move_to_line']
