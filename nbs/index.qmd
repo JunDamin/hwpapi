@@ -150,6 +150,7 @@ app.set_charshape(italic=True)
 - [App 기초](01_tutorials/01_app_basics.html)
 - [찾기와 바꾸기](01_tutorials/02_find_and_replace.html)
 - [기능 둘러보기](01_tutorials/03_feature_tour.html)
+- [**18개 Accessor 한눈에 (v0.0.21)**](01_tutorials/10_accessors_overview.html)
 :::
 
 ::: {.g-col-12 .g-col-md-6 .learn-card}
@@ -160,6 +161,29 @@ app.set_charshape(italic=True)
 - [폴더 내 HWP 파일 일괄 편집](01_tutorials/05_usecase_bulk_edit.html)
 - [CSV/DataFrame → HWP 표](01_tutorials/06_usecase_data_to_table.html)
 - [실무형 보고서 생성](01_tutorials/07_usecase_report_generation.html)
+- [Mail Merge](01_tutorials/09_usecase_mail_merge.html)
+:::
+
+::: {.g-col-12 .g-col-md-6 .learn-card}
+### 🎨 v0.0.14+ 신규 기능
+18개 accessor · 30+ preset · context manager.
+
+- [**Presets Gallery** — 문서 꾸미기](01_tutorials/11_presets_gallery.html)
+- [**대량 처리 · Context Managers**](01_tutorials/12_batch_and_workflow.html)
+- [**디버깅 · 품질 · 설정**](01_tutorials/13_debugging_tools.html)
+:::
+
+::: {.g-col-12 .g-col-md-6 .learn-card}
+### 🛠 새 기능 미리보기
+- `app.help()` — REPL 에서 accessor 카테고리별 출력
+- `app.preset.striped_rows()` — 줄무늬 표
+- `app.preset.title_box()` — 문서 타이틀
+- `app.lint()` — 긴 문장/빈 문단 자동 감지
+- `with app.batch_mode():` — 5~10배 빠른 대량 처리
+- `app.convert.number_to_korean()` — 숫자 → 한글숫자
+- `app.convert.replace_font(old, new)` — 폰트 일괄 교체
+- `app.view.zoom(150)` — 확대율 제어
+- `app.template.save/apply()` — 문서 템플릿
 :::
 
 :::

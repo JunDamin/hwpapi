@@ -8,6 +8,46 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.22] — 2026-04-15 — 튜토리얼 강화 · 4개 신규 튜토리얼 추가
+
+v0.0.14~21 의 18개 accessor 와 30+ 프리셋이 튜토리얼에 반영이 안 돼 있던
+것을 보강. **4개 신규 튜토리얼** 추가, 기존 튜토리얼 2개에 discovery 포인터 삽입.
+
+### Added
+
+- **`10_accessors_overview.ipynb`** — 18개 accessor 전체 투어.
+  - 매트릭스 표 + 카테고리별 소개 (Navigation/Collections/Structure/
+    Transform/Quality/Presets)
+  - 각 accessor 의 대표 메소드 + 예제 1~2개
+  - 8개 context manager 목록 + 사용법
+- **`11_presets_gallery.ipynb`** — 문서 꾸미기 프리셋 쇼케이스.
+  - 11개 preset 의 before/after 예제
+  - 조합 레시피: 공공 보고서 / 컬러 보고서
+- **`12_batch_and_workflow.ipynb`** — 대량 처리 + context manager.
+  - silenced / suppress_errors / batch_mode / undo_group /
+    charshape_scope / use_document
+  - 3개 실전 workflow: 급여명세서 1000장 · 폰트 재귀 교체 · 디렉터리 품질 감사
+- **`13_debugging_tools.ipynb`** — 디버깅 / 품질 / 설정.
+  - `app.help()` / `repr(app)` discovery
+  - `app.debug.state/print/timing/trace`
+  - `app.lint()` + CI 대량 품질 감사 예제
+  - `app.template.save/apply` + 대량 적용
+  - `app.config` + 팀 공유 json
+
+### Changed
+
+- **`_quarto.yml` sidebar** 재구성 — 3개 섹션:
+  - 📘 기초 튜토리얼 (10_accessors_overview 추가)
+  - 📗 사용 사례 (Mail Merge 노출)
+  - 🎨 v0.0.14+ 신규 기능 (11, 12, 13)
+- **`index.qmd`** 랜딩 카드 추가 — 신규 튜토리얼 3개 + 새 기능 미리보기 bullet 10개
+- **`03_feature_tour.ipynb`** — 상단에 신규 기능 pointer 섹션 삽입
+- **`01_app_basics.ipynb`** — `app.help()` tip 박스 삽입
+
+### Tests
+
+영향 없음 — 튜토리얼은 런타임 테스트 대상 아님. 1362/1362 유지.
+
 ## [0.0.21] — 2026-04-15 — 테스트 도메인별 재구성
 
 **Phase C.** 버전별 테스트 파일(`test_v014_features.py` ~ `test_v020_deprecations.py`)

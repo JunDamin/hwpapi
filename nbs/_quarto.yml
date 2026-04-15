@@ -92,6 +92,8 @@ website:
             file: 01_tutorials/03_feature_tour.ipynb
           - text: "다중 문서 다루기"
             file: 01_tutorials/08_multi_document.ipynb
+          - text: "18개 Accessor 한눈에 (v0.0.21)"
+            file: 01_tutorials/10_accessors_overview.ipynb
       - section: "📗 사용 사례"
         contents:
           - text: "회의록 자동 생성"
@@ -104,6 +106,14 @@ website:
             file: 01_tutorials/07_usecase_report_generation.ipynb
           - text: "Mail Merge"
             file: 01_tutorials/09_usecase_mail_merge.ipynb
+      - section: "🎨 v0.0.14+ 신규 기능"
+        contents:
+          - text: "Presets Gallery"
+            file: 01_tutorials/11_presets_gallery.ipynb
+          - text: "대량 처리 · Context Managers"
+            file: 01_tutorials/12_batch_and_workflow.ipynb
+          - text: "디버깅 · 품질 · 설정"
+            file: 01_tutorials/13_debugging_tools.ipynb
       - section: "📖 API 레퍼런스"
         contents:
           - text: "전체 API"
