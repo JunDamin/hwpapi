@@ -38,7 +38,10 @@ from hwpapi.logging import get_logger
 from hwpapi.actions import _Action, _Actions
 from hwpapi.parametersets import ParaShape
 import hwpapi.parametersets as parametersets
-from hwpapi.classes import MoveAccessor, CellAccessor, TableAccessor, PageAccessor
+from hwpapi.classes import (
+    MoveAccessor, CellAccessor, TableAccessor, PageAccessor,
+    StylesAccessor, ControlsAccessor,
+)
 from .engine import Engine, Engines, Apps
 from hwpapi.functions import (
     check_dll,
@@ -117,6 +120,8 @@ class App:
         self.table = TableAccessor(self)
         self.page = PageAccessor(self)
         self.documents = Documents(self)
+        self.styles = StylesAccessor(self)
+        self.controls = ControlsAccessor(self)
         self.logger.info("App initialized successfully with all accessors")
 
     def _load(self, new_app=False, engine=None, dll_path=None):

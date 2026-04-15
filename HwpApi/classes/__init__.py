@@ -13,8 +13,12 @@ from __future__ import annotations
 
 from .accessors import MoveAccessor, CellAccessor, TableAccessor, PageAccessor
 from .shapes import Character, CharShape, Paragraph, ParaShape, PageShape
+from .styles import StylesAccessor, Style
+from .controls import ControlsAccessor, Control
 
 __all__ = [
     'MoveAccessor', 'CellAccessor', 'TableAccessor', 'PageAccessor',
     'Character', 'CharShape', 'Paragraph', 'ParaShape', 'PageShape',
+    'StylesAccessor', 'Style',
+    'ControlsAccessor', 'Control',
 ]
