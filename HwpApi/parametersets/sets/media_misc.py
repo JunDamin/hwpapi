@@ -39,7 +39,7 @@ class EqEdit(ParameterSet):
     """EqEdit ParameterSet."""
     String = PropertyDescriptor("String", r"""수식 스크립트.""")
     BaseUnit = PropertyDescriptor("BaseUnit", r"""수식이 삽입되는 앞의 글자와 같은 높이 (기본 값은 POINT 10 )""")
-    Color = PropertyDescriptor("Color", r"""수식이 삽입되는 글자 색과 같은 색 (기본 값은 WINDOWTEXT 색)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
+    Color = ColorProperty("Color", r"""수식이 삽입되는 글자 색과 같은 색 (기본 값은 WINDOWTEXT 색)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
     LineMode = PropertyDescriptor("LineMode", r"""줄 단위를 사용할지의 여부 (한글2007에 새로 추가)""")
     Version = PropertyDescriptor("Version", r"""수식 스크립트 버전 정보 (한글2007에 새로 추가)""")
     ApplyTo = PropertyDescriptor("ApplyTo", r"""수식 속성 적용 범위 (한글2007에 새로 추가)0 : 선택된 수식 개체1 : 문서 전체""")
@@ -62,7 +62,7 @@ class FlashProperties(ParameterSet):
     AutoPlay = PropertyDescriptor("AutoPlay", r"""자동 재생 여부 : 0 \= off, 1 \= on""")
     LoopPlay = PropertyDescriptor("LoopPlay", r"""반복 재생 여부 : 0 \= off, 1 \= on""")
     ShowMenu = PropertyDescriptor("ShowMenu", r"""메뉴 보이기 : 0 \= Hide, 1 \= Show""")
-    BgColor = PropertyDescriptor("BgColor", r"""배경색 (COLORREF)""")
+    BgColor = ColorProperty("BgColor", r"""배경색 (COLORREF)""")
 
 
 class FtpDownload(ParameterSet):
@@ -166,9 +166,9 @@ class MemoShape(ParameterSet):
     Width = PropertyDescriptor("Width", r"""너비 (HWPUNIT)""")
     LineType = PropertyDescriptor("LineType", r"""선 종류""")
     LineWidth = PropertyDescriptor("LineWidth", r"""선 굵기""")
-    LineColor = PropertyDescriptor("LineColor", r"""선 색깔 (COLORREF)""")
-    FillColor = PropertyDescriptor("FillColor", r"""채우기 색깔 (COLORREF)""")
-    ActiveFillColor = PropertyDescriptor("ActiveFillColor", r"""활성화된 채우기 색깔 (COLORREF)""")
+    LineColor = ColorProperty("LineColor", r"""선 색깔 (COLORREF)""")
+    FillColor = ColorProperty("FillColor", r"""채우기 색깔 (COLORREF)""")
+    ActiveFillColor = ColorProperty("ActiveFillColor", r"""활성화된 채우기 색깔 (COLORREF)""")
     MemoType = PropertyDescriptor("MemoType", r"""메모 종류 \- 현재 사용안 함1 \= 메모 넣기, 2 \= 메모 지우기, 3 \= 메모 고치기""")
 
 

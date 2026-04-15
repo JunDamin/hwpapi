@@ -21,8 +21,8 @@ class BorderFillExt(ParameterSet):
     TypeVert = PropertyDescriptor("TypeVert", r"""중앙선 종류 : 세로""")
     WidthHorz = PropertyDescriptor("WidthHorz", r"""중앙선 두께 : 가로 \[선 굵기]""")
     WidthVert = PropertyDescriptor("WidthVert", r"""중앙선 두께 : 세로""")
-    ColorHorz = PropertyDescriptor("ColorHorz", r"""중앙선 색깔 : 가로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
-    ColorVert = PropertyDescriptor("ColorVert", r"""중앙선 색깔 : 세로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
+    ColorHorz = ColorProperty("ColorHorz", r"""중앙선 색깔 : 가로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
+    ColorVert = ColorProperty("ColorVert", r"""중앙선 색깔 : 세로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
 
 
 class StyleDelete(ParameterSet):

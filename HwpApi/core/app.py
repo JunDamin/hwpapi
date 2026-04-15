@@ -1365,16 +1365,12 @@ class App:
             setattr(charshape, key, value)
         self.set_charshape(charshape)
 
-        # IMPORTANT: create a FRESH action every call. The cached
-        # ``self.actions.InsertText`` is bound to whichever document was
-        # active at App.__init__ time, so it writes there regardless of
-        # SetActive_XHwpDocument. Creating a new action through app.api
-        # attaches to the currently-active document.
-        act = self.api.CreateAction("InsertText")
-        pset = act.CreateSet()
-        act.GetDefault(pset)
-        pset.SetItem("Text", text)
-        act.Execute(pset)
+        # NOTE: `_Action` is now doc-aware (lazy-cache keyed by active doc
+        # id), so we can safely use `self.actions.InsertText` again —
+        # it automatically binds to the currently active document.
+        action = self.actions.InsertText
+        action.pset.Text = text
+        action.run()
         return
 
     def styled_text(self, text: str, **fmt):

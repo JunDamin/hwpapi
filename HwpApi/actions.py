@@ -888,41 +888,109 @@ _action_info = {
 }
 
 class _Action:
-    """한글 Action 클래스 입니다. 엑션의 기능을 사용하기 쉽게 만들고자 했습니다."""
+    """
+    한글 Action 클래스. `app.api.CreateAction()` 로 생성되는 HWP 액션을
+    감싼 얇은 래퍼.
+
+    **문서 바인딩 규칙 (v0.0.4+)**:
+    `CreateAction()` 은 호출 시점의 **활성 문서** 에 바인딩된 action 을
+    반환합니다. 과거에는 ``__init__`` 에서 한 번만 호출했기 때문에 이후
+    다른 문서로 전환해도 action 이 원래 문서에 계속 writes 하는 버그가
+    있었습니다.
+
+    이제는 ``act`` 와 ``pset`` 을 **활성 문서 ID 별로 lazy-cache** 합니다.
+    동일 문서에서는 캐시 히트, 다른 문서로 전환하면 자동으로 새 action 을
+    생성합니다. Public API 는 기존과 동일합니다.
+    """
 
     def __init__(self, app, action_key: str):
         self.app = app
         self.logger = get_logger("actions.Action")
         self.action_key = action_key
         self.logger.debug(f"Action {action_key} initialized")
-        self.act = app.api.CreateAction(action_key)
 
-        # Resolve static metadata
+        # Lazy caches keyed by document ID — populated by `act` / `pset` properties
+        self._act_cache = {}   # {doc_id: IXHwpAction}
+        self._pset_cache = {}  # {doc_id: wrapped ParameterSet}
+
+        # Resolve static metadata (does not require an HWP call per-doc)
         pset_key, description = _action_info.get(action_key, (None, None))
         self.description = description if description else "Description is Not Available"
 
-        # Create pset ONCE and reuse — avoids the previous double CreateSet call.
-        raw_pset = None
+        # Determine pset_key using the FIRST active doc's pset (metadata-only).
+        # If the initial CreateSet/GetDefault fails it's no big deal — run() will
+        # retry at execution time.
         try:
-            raw_pset = self.act.CreateSet()
-            if raw_pset:
-                self.act.GetDefault(raw_pset)
+            first_act = self.app.api.CreateAction(action_key)
+            raw = first_act.CreateSet()
+            if raw:
+                first_act.GetDefault(raw)
+                hwp_setid = getattr(raw, "SetID", None)
+                if pset_key != hwp_setid:
+                    self.logger.warning(
+                        f"_action_info SetID mismatch for '{action_key}': "
+                        f"info={pset_key}, hwp={hwp_setid}. Using HWP value."
+                    )
+                pset_key = hwp_setid
+                # Seed the cache for the current doc
+                doc_id = self._current_doc_id()
+                self._act_cache[doc_id] = first_act
+                self._pset_cache[doc_id] = self._wrap_pset(raw)
         except Exception as e:
-            self.logger.debug(f"CreateSet/GetDefault failed for '{action_key}': {e}")
-            raw_pset = None
-
-        # Verify SetID against _action_info; prefer HWP's actual value
-        if raw_pset:
-            hwp_setid = getattr(raw_pset, 'SetID', None)
-            if pset_key != hwp_setid:
-                self.logger.warning(
-                    f"_action_info SetID mismatch for '{action_key}': "
-                    f"info={pset_key}, hwp={hwp_setid}. Using HWP value."
-                )
-            pset_key = hwp_setid
+            self.logger.debug(f"initial CreateSet/GetDefault for '{action_key}': {e}")
 
         self.pset_key = pset_key
-        self.pset = self._wrap_pset(raw_pset)
+
+    def _current_doc_id(self) -> int:
+        """현재 활성 문서의 고유 ID. 실패 시 0 (single-doc fallback)."""
+        try:
+            return int(self.app.api.XHwpDocuments.Active_XHwpDocument.DocumentID)
+        except Exception:
+            return 0
+
+    @property
+    def act(self):
+        """
+        현재 활성 문서에 바인딩된 IXHwpAction.
+
+        문서 전환 시 자동으로 새 action 을 생성합니다. 동일 문서 내에서는
+        캐시된 인스턴스를 재사용합니다.
+        """
+        doc_id = self._current_doc_id()
+        if doc_id not in self._act_cache:
+            self._act_cache[doc_id] = self.app.api.CreateAction(self.action_key)
+        return self._act_cache[doc_id]
+
+    @property
+    def pset(self):
+        """
+        현재 활성 문서에 바인딩된 wrapped ParameterSet.
+
+        ``act`` 와 마찬가지로 문서별 lazy-cache.
+        """
+        doc_id = self._current_doc_id()
+        if doc_id not in self._pset_cache:
+            try:
+                raw = self.act.CreateSet()
+                if raw:
+                    self.act.GetDefault(raw)
+                self._pset_cache[doc_id] = self._wrap_pset(raw)
+            except Exception as e:
+                self.logger.debug(
+                    f"CreateSet/GetDefault failed for '{self.action_key}' "
+                    f"on doc {doc_id}: {e}"
+                )
+                self._pset_cache[doc_id] = self._wrap_pset(None)
+        return self._pset_cache[doc_id]
+
+    @pset.setter
+    def pset(self, value):
+        """
+        Legacy 쓰기 경로 — 외부 코드가 직접 pset 을 바꿀 일은 거의 없지만
+        호환을 위해 setter 유지. 현재 활성 문서의 캐시에 저장.
+        """
+        doc_id = self._current_doc_id()
+        self._pset_cache[doc_id] = value
 
     def __str__(self):
         return f"<Action {self.action_key}: {self.description}>"

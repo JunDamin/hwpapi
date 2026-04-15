@@ -15,7 +15,8 @@ __all__ = ['PARAMETERSET_REGISTRY', 'DIRECTION_MAP', 'CAP_FULL_SIZE_MAP', 'ALIGN
            'ALL_MAPPINGS', 'ParameterBackend', 'ComBackend', 'AttrBackend', 'PsetBackend', 'HParamBackend',
            'make_backend', 'wrap_parameterset', 'resolve_action_args', 'apply_staged_to_backend',
            'MissingRequiredError', 'PropertyDescriptor', 'IntProperty', 'BoolProperty', 'StringProperty',
-           'ColorProperty', 'UnitProperty', 'MappedProperty', 'TypedProperty', 'NestedProperty', 'ArrayProperty',
+           'ColorProperty', 'Color', 'UNSET',
+           'UnitProperty', 'MappedProperty', 'TypedProperty', 'NestedProperty', 'ArrayProperty',
            'HArrayWrapper', 'ListProperty', 'ParameterSetMeta', 'ParameterSet', 'update_from', 'GenericParameterSet',
            'BorderFill', 'Caption', 'DrawFillAttr', 'CharShape', 'ParaShape', 'ShapeObject', 'Table', 'FindReplace',
            'BulletShape', 'Cell', 'CtrlData', 'DrawArcType', 'DrawCoordInfo', 'DrawCtrlHyperlink', 'DrawEditDetail',
@@ -157,7 +158,8 @@ def apply_staged_to_backend(backend: ParameterBackend, staged: dict, prefix: str
 # ── Property descriptors and HArrayWrapper ──────────────────────────────
 from .properties import (
     MissingRequiredError, PropertyDescriptor, IntProperty, BoolProperty,
-    StringProperty, ColorProperty, UnitProperty, MappedProperty, TypedProperty,
+    StringProperty, ColorProperty, Color, UNSET,
+    UnitProperty, MappedProperty, TypedProperty,
     NestedProperty, ArrayProperty, HArrayWrapper, ListProperty,
 )
 

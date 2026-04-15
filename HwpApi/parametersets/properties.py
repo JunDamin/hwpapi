@@ -256,21 +256,130 @@ class StringProperty(PropertyDescriptor):
         return self._set_value(instance, value)
 
 
+class _Unset:
+    """'이 필드를 손대지 마라' 센티넬.
+
+    ``UNSET`` 이 세팅 경로로 전달되면 ``ColorProperty.__set__`` 는 아무
+    변경도 하지 않습니다. ``None`` 은 **필드 제거**, ``UNSET`` 은 **유지**
+    라는 서로 다른 의미를 구분하기 위한 sentinel.
+    """
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __repr__(self):
+        return "UNSET"
+
+    def __bool__(self):
+        return False
+
+
+UNSET = _Unset()
+
+
+class Color:
+    """
+    HWP 색상 값을 감싸는 경량 래퍼.
+
+    ``None`` (필드 없음) 과 구체적 색상값 (``0xFFFF00`` = 노랑) 을 명확히
+    구분합니다. 또한 :class:`ColorProperty` 의 setter 가 ``None`` 과 ``UNSET``
+    을 서로 다르게 처리하므로 "삭제" vs "건드리지 않음" 의도를 표현할 수
+    있습니다.
+
+    Examples
+    --------
+    >>> Color("#FF0000").hex
+    '#ff0000'
+    >>> Color("#FFFF00") == "#FFFF00"   # 문자열 비교 지원
+    True
+    >>> Color(None).is_unset
+    True
+    """
+    __slots__ = ("_hwp_value",)
+
+    def __init__(self, value=None):
+        if value is None or value is UNSET:
+            object.__setattr__(self, "_hwp_value", None)
+        elif isinstance(value, Color):
+            object.__setattr__(self, "_hwp_value", value._hwp_value)
+        else:
+            object.__setattr__(self, "_hwp_value", convert_to_hwp_color(value))
+
+    @property
+    def hex(self):
+        """``"#rrggbb"`` 문자열 또는 ``None``."""
+        return (convert_hwp_color_to_hex(self._hwp_value)
+                if self._hwp_value is not None else None)
+
+    @property
+    def raw(self):
+        """HWP 내부 BBGGRR 정수 또는 ``None``."""
+        return self._hwp_value
+
+    @property
+    def is_unset(self):
+        """색이 비어있는지 (None 또는 UNSET 로 초기화된 경우)."""
+        return self._hwp_value is None
+
+    def __str__(self):
+        return self.hex or ""
+
+    def __eq__(self, other):
+        if isinstance(other, Color):
+            return self._hwp_value == other._hwp_value
+        if other is None:
+            return self._hwp_value is None
+        try:
+            return self._hwp_value == Color(other)._hwp_value
+        except Exception:
+            return NotImplemented
+
+    def __hash__(self):
+        return hash(self._hwp_value)
+
+    def __bool__(self):
+        return self._hwp_value is not None
+
+    def __repr__(self):
+        return f"Color({self.hex!r})" if self._hwp_value is not None else "Color(UNSET)"
+
+
 class ColorProperty(PropertyDescriptor):
-    """Property descriptor for color values with hex conversion."""
+    """
+    색상 속성 descriptor.
+
+    쓰기 의미론:
+
+    - ``prop = UNSET``  → 아무 변경 없음 (no-op)
+    - ``prop = None``   → 필드 제거 (backend ``delete`` 호출)
+    - 그 외 값         → ``convert_to_hwp_color`` 를 거쳐 저장
+
+    읽기는 항상 :class:`Color` 인스턴스를 반환합니다. ``str(color)`` 로
+    hex 문자열, ``color.raw`` 로 HWP 내부 정수값을 얻을 수 있습니다.
+    ``Color.__eq__`` 가 문자열 비교도 지원하므로 기존 ``color == "#FF0000"``
+    형태의 코드는 호환됩니다.
+    """
 
     def __get__(self, instance, owner):
         if instance is None:
             return self
-        value = self._get_value(instance)
-        return convert_hwp_color_to_hex(value) if value is not None else None
+        return Color(self._get_value(instance))
 
     def __set__(self, instance, value):
+        # UNSET → 건드리지 않음
+        if value is UNSET:
+            return
+        # None → 필드 제거
         if value is None:
             return self._del_value(instance)
-
-        numeric_value = convert_to_hwp_color(value)
-        return self._set_value(instance, numeric_value)
+        # Color 인스턴스이든 문자열/정수이든 Color 로 정규화
+        color = value if isinstance(value, Color) else Color(value)
+        if color._hwp_value is None:
+            return self._del_value(instance)
+        return self._set_value(instance, color._hwp_value)
 
 
 class UnitProperty(PropertyDescriptor):

@@ -168,7 +168,7 @@ class PrintToImage(ParameterSet):
     """PrintToImage ParameterSet."""
     Format = PropertyDescriptor("Format", r"""그림 형식0 : none1 : BMP2 : GIF3 : PNG4 : JPG5 : WMF""")
     FileName = PropertyDescriptor("FileName", r"""그림 경로""")
-    ColorDepth = PropertyDescriptor("ColorDepth", r"""색상수 (bits: 8, 16\...)""")
+    ColorDepth = ColorProperty("ColorDepth", r"""색상수 (bits: 8, 16\...)""")
     Resolution = PropertyDescriptor("Resolution", r"""해상도""")
 
 
@@ -191,8 +191,8 @@ class PrintWatermark(ParameterSet):
     ShadowType = PropertyDescriptor("ShadowType", r"""그림자 종류 : 0 \= none, 1 \= drop, 2 \= continuous""")
     ShadowOffsetX = PropertyDescriptor("ShadowOffsetX", r"""X축 그림자 간격 (\-48% \~ 48% )""")
     ShadowOffsetY = PropertyDescriptor("ShadowOffsetY", r"""Y축 그림자 간격 (\-48% \~ 48% )""")
-    ShadowColor = PropertyDescriptor("ShadowColor", r"""그림자 색 (COLORREF)""")
-    FontColor = PropertyDescriptor("FontColor", r"""글자색 (COLORREF)""")
+    ShadowColor = ColorProperty("ShadowColor", r"""그림자 색 (COLORREF)""")
+    FontColor = ColorProperty("FontColor", r"""글자색 (COLORREF)""")
     RotateAngle = PropertyDescriptor("RotateAngle", r"""회전각도 (\-360 \~ 360\)""")
     WaterMarkEff = PropertyDescriptor("WaterMarkEff", r"""워터마크 효과 : 0 \= off, 1 \= on""")
 

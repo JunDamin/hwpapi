@@ -109,7 +109,7 @@ class Dutmal(ParameterSet):
 
 class MarkpenShape(ParameterSet):
     """MarkpenShape ParameterSet."""
-    Color = PropertyDescriptor("Color", r"""형광펜색 (COLORREF)""")
+    Color = ColorProperty("Color", r"""형광펜색 (COLORREF)""")
 
 
 class QCorrect(ParameterSet):

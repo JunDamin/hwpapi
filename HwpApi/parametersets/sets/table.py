@@ -74,7 +74,7 @@ class TableDrawPen(ParameterSet):
     """TableDrawPen ParameterSet."""
     Style = PropertyDescriptor("Style", r"""Table을 그리는 연필(펜)의 선 모양""")
     Width = PropertyDescriptor("Width", r"""Table을 그리는 연필(펜)의 선 굵기""")
-    Color = PropertyDescriptor("Color", r"""Table을 그리는 연필(펜)의 선 색깔RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
+    Color = ColorProperty("Color", r"""Table을 그리는 연필(펜)의 선 색깔RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
 
 
 class TableInsertLine(ParameterSet):

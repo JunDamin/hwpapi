@@ -26,7 +26,7 @@ class ColDef(ParameterSet):
     Layout = PropertyDescriptor("Layout", r"""단 방향 지정 :0 \= 왼쪽부터, 1 \= 오른쪽부터, 2 \= 맞쪽""")
     LineType = PropertyDescriptor("LineType", r"""선 종류.""")
     LineWidth = PropertyDescriptor("LineWidth", r"""선 굵기.""")
-    LineColor = PropertyDescriptor("LineColor", r"""선 색깔. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
+    LineColor = ColorProperty("LineColor", r"""선 색깔. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)""")
     ApplyTo = PropertyDescriptor("ApplyTo", r"""적용범위 :0 \= 선택된 다단1 \= 선택된 문자열2 \= 현재 다단3 \= 개체 전체4 \= 선택된 셀5 \= 현재 구역6 \= 문서 전체7 \= 현재 셀8 \= 새 쪽으로9 \= 새 다단으로10 \= 모든 셀""")
     ApplyClass = PropertyDescriptor("ApplyClass", r"""적용범위의 분류. 아래 값의 조합이다.0x0001 \= 선택된 다단0x0002 \= 선택된 문자열0x0004 \= 현재 다단0x0008 \= 개체 전체0x0010 \= 선택된 셀0x0020 \= 현재 구역0x0040 \= 문서전체0x0080 \= 현재 셀0x0100 \= 새 쪽으로0x0200 \= 새 다단으로0x0400 \= 모든 셀""")
 
