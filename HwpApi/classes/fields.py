@@ -256,8 +256,13 @@ class Bookmarks:
         self._app = app
 
     def add(self, name: str) -> bool:
-        """현재 커서 위치에 책갈피 생성."""
-        return self._app.insert_bookmark(name)
+        """현재 커서 위치에 책갈피 생성. 성공 시 True."""
+        # insert_bookmark 는 v0.0.13 부터 self 반환 (Fluent) → bool 화
+        try:
+            self._app.insert_bookmark(name)
+            return True
+        except Exception:
+            return False
 
     def remove(self, name: str) -> bool:
         """책갈피 삭제."""

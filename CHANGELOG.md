@@ -8,6 +8,46 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.13] — 2026-04-15 — V1 Phase 1 · Fluent API
+
+### Changed
+
+V1.0 청사진의 "모든 set 메소드에 `return self` 추가" 항목 이행.
+**기존 None 반환처에 영향 없음** — 반환값을 쓰지 않는 코드는 그대로
+작동, 반환값을 체이닝에 쓰는 새 코드도 자연스럽게 작성 가능:
+
+- `app.insert_text(...)` → ``self``
+- `app.styled_text(...)` → ``self``
+- `app.insert_heading(...)` → ``self``
+- `app.insert_table(...)` → ``self``
+- `app.insert_hyperlink(...)` → ``self``
+- `app.insert_bookmark(...)` → ``self``
+- `app.insert_paragraph_break()` → ``self``
+- `app.insert_page_break()` → ``self``
+- `app.insert_line_break()` → ``self``
+- `app.insert_tab()` → ``self``
+
+값을 반환해야 하는 메소드 (``save`` → 경로, ``open`` → 경로,
+``find_text`` → bool, ``replace_all`` → count, ``page_count`` 등)
+는 그대로 유지. 이는 V1.0 청사진의 "prefix 기반 분류" 원칙에 부합.
+
+### Added
+
+- Fluent chain 사용 예:
+
+  ```python
+  (app
+   .insert_heading("보고서", level=1)
+   .insert_text("1. 개요\n")
+   .insert_paragraph_break()
+   .insert_table(rows=3, cols=4)
+   .insert_text("서명: ")
+   .styled_text("대표이사", bold=True)
+   .insert_paragraph_break())
+  ```
+
+- 9개의 Fluent API 단위 테스트 ([`tests/test_fluent_api.py`](tests/test_fluent_api.py)).
+
 ## [0.0.12] — 2026-04-15 — V1 Phase 1 · Fields/Bookmarks/Hyperlinks accessors + charshape/parashape properties
 
 ### Added

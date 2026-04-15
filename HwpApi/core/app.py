@@ -359,20 +359,24 @@ class App:
             return self.api.Run("DeleteBack")
 
     def insert_page_break(self):
-        """페이지 나누기 삽입."""
-        return self.api.Run("BreakPage")
+        """페이지 나누기 삽입. Fluent — chain 가능 (반환: ``self``)."""
+        self.api.Run("BreakPage")
+        return self
 
     def insert_line_break(self):
-        """줄 나누기 삽입 (문단 유지, 강제 줄바꿈)."""
-        return self.api.Run("BreakLine")
+        """줄 나누기 삽입 (문단 유지, 강제 줄바꿈). Fluent — chain 가능."""
+        self.api.Run("BreakLine")
+        return self
 
     def insert_paragraph_break(self):
-        """문단 나누기 삽입."""
-        return self.api.Run("BreakPara")
+        """문단 나누기 삽입. Fluent — chain 가능 (반환: ``self``)."""
+        self.api.Run("BreakPara")
+        return self
 
     def insert_tab(self):
-        """탭 문자 삽입."""
-        return self.api.Run("InsertTab")
+        """탭 문자 삽입. Fluent — chain 가능 (반환: ``self``)."""
+        self.api.Run("InsertTab")
+        return self
 
     # ═════════════════════════════════════════════════════════════
     # High-level insertion helpers
@@ -397,6 +401,7 @@ class App:
         sizes = {1: 2000, 2: 1600, 3: 1400, 4: 1200}
         self.styled_text(text, bold=True, height=sizes.get(level, 1000))
         self.insert_paragraph_break()
+        return self
 
     def insert_table(self, rows: int = None, cols: int = None,
                      data=None, headers=None):
@@ -462,6 +467,7 @@ class App:
                     else:
                         self.insert_text(str(cell))
                     self.api.Run("TableRightCell")
+        return self
 
     def insert_hyperlink(self, text: str, url: str):
         """
@@ -477,6 +483,7 @@ class App:
         pset.SetItem("Text", text)
         pset.SetItem("Command", url)
         act.Execute(pset)
+        return self
 
     def insert_bookmark(self, name: str):
         """
@@ -491,6 +498,7 @@ class App:
         act.GetDefault(pset)
         pset.SetItem("Name", name)
         act.Execute(pset)
+        return self
 
     def new_document(self, is_tab: bool = True) -> "Document":
         """
@@ -1986,7 +1994,7 @@ class App:
         action = self.actions.InsertText
         action.pset.Text = text
         action.run()
-        return
+        return self  # Fluent — chain 가능 (v0.0.13+)
 
     def styled_text(self, text: str, **fmt):
         """
@@ -2023,7 +2031,7 @@ class App:
         >>> app.insert_text(" ← 음영이 여기까지 이어지지 않습니다")
         """
         if not text:
-            return
+            return self  # Fluent — chain 가능 (v0.0.13+)
         # 1) Snapshot CharShape BEFORE any changes
         char_before = self._snapshot_charshape()
         # 2) Insert text using the current (unchanged) cursor state
@@ -2043,6 +2051,7 @@ class App:
             self.api.Run("MoveRight")
         # 6) RESTORE the snapshot — cursor char state == pre-block state
         self._restore_charshape(char_before)
+        return self  # Fluent — chain 가능 (v0.0.13+)
 
     def _snapshot_charshape(self):
         """Capture the current CharShape at cursor as a restorable snapshot."""
