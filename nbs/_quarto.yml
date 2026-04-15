@@ -53,6 +53,8 @@ website:
             file: 01_tutorials/02_find_and_replace.ipynb
           - text: "기능 둘러보기"
             file: 01_tutorials/03_feature_tour.ipynb
+          - text: "다중 문서 다루기"
+            file: 01_tutorials/08_multi_document.ipynb
       - text: "사용 사례"
         menu:
           - text: "회의록 자동 생성"
@@ -86,6 +88,8 @@ website:
             file: 01_tutorials/02_find_and_replace.ipynb
           - text: "기능 둘러보기"
             file: 01_tutorials/03_feature_tour.ipynb
+          - text: "다중 문서 다루기"
+            file: 01_tutorials/08_multi_document.ipynb
       - section: "📗 사용 사례"
         contents:
           - text: "회의록 자동 생성"
