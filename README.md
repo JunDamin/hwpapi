@@ -44,19 +44,87 @@ from hwpapi.core import App
 # HWP 연결 (실행 중이 아니면 자동 실행)
 app = App()
 
+# 어떤 기능이 있는지 궁금하면 한 줄:
+app.help()                                      # 18개 accessor + context manager 출력
+repr(app)                                       # App(visible=True, version='13.0.0', docs=1, page=1/1)
+
 # 파일 열기
 app.open("report.hwp")
 
-# 텍스트 삽입
+# 기본 편집
 app.insert_text("안녕하세요, 한글!")
-
-# 글자 모양 변경 (Pythonic)
-app.set_charshape(bold=True, italic=True)
-
-# 저장 / 닫기
+app.charshape = {"bold": True, "text_color": "#FF0000"}   # v0.0.12+ property
 app.save()
-app.close()
 ```
+
+---
+
+## v0.0.14~22 하이라이트 — 18개 Accessor
+
+``app.`` 다음에 무엇이 있는지 IDE tab completion 으로 바로 발견:
+
+```python
+# Navigation & Selection
+app.move.line.end()                             # 커서 이동 (sub-accessor 7종)
+app.sel.current_paragraph().compress(step=2)    # 선택 + 자간/장평 축소
+
+# Collections — dict/list-like
+app.fields["name"] = "홍길동"                    # 누름틀 (mail merge)
+app.fields.update({"date": "2026-04-15"})
+app.bookmarks.add("ch1")
+app.hyperlinks.add("GitHub", "https://...")
+app.images.resize_all(width="100mm")            # 모든 이미지 일괄 크기
+
+# Structure
+app.table.header_row(color="sky", bold=True)
+app.table.align(horz="right", scope="current_col")
+app.table.clean_excel_paste()                    # 엑셀 붙여넣기 빈 행/열 정돈
+
+# Transform & View
+app.convert.number_to_korean()                   # "1,234" → "천이백삼십사"
+app.convert.replace_font("맑은 고딕", "함초롬바탕")
+app.view.zoom(150)
+
+# Quality & Templates
+report = app.lint()                              # 긴 문장·빈 문단 감지
+app.template.save("company_style.json")
+app.config.default_font = "함초롬바탕"
+
+# Presets (승승아빠 매크로 이식 — 11종)
+app.preset.striped_rows()                        # 줄무늬 표
+app.preset.title_box(text="보고서 제목", subtitle="부서명")
+app.preset.table_header(color="sky", text_color="#FFFFFF")
+app.preset.toc(with_bookmarks=True, dot_leader=True)
+app.preset.page_numbers(position="bottom-center")
+
+# Debug
+app.debug.state()                                # 현재 커서/페이지/charshape 덤프
+with app.debug.trace(): ...                      # COM 호출 로그
+```
+
+### Context Managers — 대량 처리 필수
+
+```python
+with app.batch_mode():                          # 창 숨김 + dialog 억제 → 5~10배 가속
+    for row in df.iterrows():
+        app.fields.update(row.to_dict())
+        app.save(f"out/{row['name']}.hwp")
+
+with app.silenced("yes"): ...                    # 모든 dialog 자동 YES
+with app.suppress_errors(): ...                  # 에러 + Python 예외 swallow
+with app.undo_group("대량 편집"): ...            # Ctrl+Z 한 번으로 전체 rollback
+with app.charshape_scope(bold=True): ...         # 블록 내 임시 서식 (종료 시 복원)
+```
+
+### 학습 경로
+
+1. **REPL 에서 바로** → `app.help()` 로 전체 API 탐색
+2. **튜토리얼** — https://JunDamin.github.io/hwpapi
+   - [10. Accessors Overview](https://JunDamin.github.io/hwpapi/01_tutorials/10_accessors_overview.html) — 18개 accessor 매트릭스
+   - [11. Presets Gallery](https://JunDamin.github.io/hwpapi/01_tutorials/11_presets_gallery.html) — 문서 꾸미기 프리셋
+   - [12. Batch & Workflow](https://JunDamin.github.io/hwpapi/01_tutorials/12_batch_and_workflow.html) — 실전 대량 처리
+   - [13. Debugging Tools](https://JunDamin.github.io/hwpapi/01_tutorials/13_debugging_tools.html) — 품질 / 디버깅 / 설정
+3. **레퍼런스** — [docs/API_GUIDE.md](docs/API_GUIDE.md) — 18 accessor 매트릭스 + 레거시 마이그레이션 표
 
 ---
 
