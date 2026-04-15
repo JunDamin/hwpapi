@@ -218,7 +218,7 @@ app.set_charshape(bold=True, height=1600)
 app.insert_text("app.preset.striped_rows() 결과\n\n")
 app.set_charshape(bold=False, height=1000)
 
-# 데이터 표 생성
+# 데이터 표 생성 — insert_table 이 cursor 를 첫 셀에 남김
 data = [["지역", "Q1", "Q2", "Q3", "Q4"],
         ["서울", "820", "910", "1,020", "1,150"],
         ["부산", "450", "480", "510", "560"],
@@ -227,11 +227,7 @@ data = [["지역", "Q1", "Q2", "Q3", "Q4"],
         ["광주", "220", "240", "265", "290"]]
 app.insert_table(data=data, headers=None)
 
-# 표 안에서 striped_rows 적용
-app.api.Run("MoveLineEnd")
-app.api.Run("MoveUp")
-app.api.Run("MoveUp")
-app.api.Run("MoveUp")
+# striped_rows 적용 (cursor 가 이미 첫 셀에 있음)
 app.preset.striped_rows(
     colors=["#FFFFFF", "#F0F0F0"],
     header_color="#9FC5E8",
@@ -282,10 +278,7 @@ data = [["제품", "수량", "단가", "합계"],
         ["합계", "35", "", "11,100,000"]]
 app.insert_table(data=data, headers=None)
 
-# 헤더 행 — 하늘색
-app.api.Run("MoveLineEnd")
-for _ in range(4):
-    app.api.Run("MoveUp")
+# 헤더 행 — 하늘색 (cursor 가 첫 셀에 있음)
 app.preset.table_header(color="sky", text_color="#FFFFFF", bold=True)
 
 # 합계 행 (마지막) — 회색
@@ -441,9 +434,7 @@ data = [["지표", "목표", "실적", "달성률"],
         ["신규 고객", "50", "62", "124%"],
         ["유지율", "85%", "91%", "107%"]]
 app.insert_table(data=data, headers=None)
-app.api.Run("MoveLineEnd")
-for _ in range(3):
-    app.api.Run("MoveUp")
+# cursor 는 첫 셀에 있음
 app.preset.table_header(color="sky", text_color="#FFFFFF")
 app.preset.striped_rows(
     colors=["#FFFFFF", "#F5F5F5"],
@@ -541,34 +532,150 @@ else:
 '''
 
 
+# Batch worker — processes ALL demos in a SINGLE HWP session.
+# Between demos: FileClose (not quit!) + FileNew. Much faster than
+# spawning a fresh HWP per demo.
+BATCH_WORKER = r'''
+import sys, time, os, tempfile, json
+
+# argv[1] = JSON: {demo_name: code}, argv[2] = output dir
+with open(sys.argv[1], "r", encoding="utf-8") as f:
+    demos = json.load(f)
+out_dir = sys.argv[2]
+
+import fitz
+from hwpapi.core import App
+from hwpapi.classes.shapes import CharShape, ParaShape
+
+app = App(is_visible=False)
+time.sleep(0.5)
+
+# Monkey-patch insert_text so "\n" splits into paragraphs
+_orig_insert = app.insert_text
+def _insert_text(text, *a, **kw):
+    parts = text.split("\n")
+    for i, part in enumerate(parts):
+        if part:
+            _orig_insert(part, *a, **kw)
+        if i < len(parts) - 1:
+            app.api.Run("BreakPara")
+    return app
+app.insert_text = _insert_text
+
+results = {}
+
+for idx, (name, code) in enumerate(demos.items()):
+    print(f"[{idx+1}/{len(demos)}] {name}", flush=True)
+
+    # Close all existing docs (NOT quit!) and start fresh
+    try:
+        app.api.Run("FileClose")   # close current doc
+    except Exception:
+        pass
+    time.sleep(0.2)
+    try:
+        app.api.Run("FileNew")     # fresh blank doc
+    except Exception:
+        pass
+    time.sleep(0.4)
+
+    # Reset char/para state
+    try:
+        app.set_charshape(CharShape())
+    except Exception:
+        pass
+    try:
+        app.set_parashape(ParaShape())
+    except Exception:
+        pass
+
+    # Execute demo code
+    try:
+        exec(compile(code, f"<demo:{name}>", "exec"),
+             {"app": app, "__builtins__": __builtins__})
+        time.sleep(0.3)
+    except Exception as e:
+        print(f"  DEMO ERROR: {e}", flush=True)
+        results[name] = f"demo error: {e}"
+        continue
+
+    # Save as PDF → PNG
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        pdf_path = tmp.name
+    try:
+        app.save(pdf_path)
+        time.sleep(0.6)
+    except Exception as e:
+        results[name] = f"save error: {e}"
+        continue
+
+    out_png = os.path.join(out_dir, f"{name}.png")
+    if os.path.isfile(pdf_path) and os.path.getsize(pdf_path) > 500:
+        try:
+            with fitz.open(pdf_path) as pdf:
+                pix = pdf[0].get_pixmap(matrix=fitz.Matrix(2.0, 2.0), alpha=False)
+                pix.save(out_png)
+            os.remove(pdf_path)
+
+            # Auto-crop
+            try:
+                from PIL import Image, ImageChops
+                img = Image.open(out_png)
+                bg = Image.new(img.mode, img.size, (255, 255, 255))
+                diff = ImageChops.difference(img, bg)
+                bbox = diff.getbbox()
+                if bbox:
+                    L, T, R, B = bbox
+                    pad = 40
+                    img.crop((max(0, L-pad), max(0, T-pad),
+                             min(img.width, R+pad), min(img.height, B+pad))
+                            ).save(out_png)
+            except Exception:
+                pass
+            results[name] = "OK"
+        except Exception as e:
+            results[name] = f"render error: {e}"
+    else:
+        results[name] = "empty PDF"
+
+# Final cleanup
+try:
+    app.quit()
+except Exception:
+    pass
+
+# Summary
+print("\n=== Results ===", flush=True)
+for name, status in results.items():
+    print(f"  {name:35s} {status}", flush=True)
+'''
+
+
 def main():
     print(f"📁 Output: {IMG_DIR}")
-    worker_path = os.path.join(tempfile.gettempdir(), "hwpapi_demo_worker.py")
+
+    # Write batch worker + demos JSON
+    worker_path = os.path.join(tempfile.gettempdir(), "hwpapi_batch_worker.py")
     with open(worker_path, "w", encoding="utf-8") as f:
-        f.write(WORKER)
+        f.write(BATCH_WORKER)
 
-    for name, code in DEMOS.items():
-        print(f"\n[{name}]")
-        code_path = os.path.join(tempfile.gettempdir(), f"hwpapi_{name}.py")
-        with open(code_path, "w", encoding="utf-8") as f:
-            f.write(code)
-        out_png = os.path.join(IMG_DIR, f"{name}.png")
+    demos_json = os.path.join(tempfile.gettempdir(), "hwpapi_demos.json")
+    import json
+    with open(demos_json, "w", encoding="utf-8") as f:
+        json.dump(DEMOS, f, ensure_ascii=False)
 
-        try:
-            result = subprocess.run(
-                [sys.executable, worker_path, code_path, out_png],
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                timeout=120,
-            )
-            lines = (result.stdout + result.stderr).strip().split("\n")
-            print("  " + (lines[-1] if lines else "")[:200])
-            if result.returncode != 0:
-                print("  stderr:", result.stderr[-400:])
-        except Exception as e:
-            print(f"  ⚠ {e}")
+    # Run entire batch in ONE HWP session
+    try:
+        result = subprocess.run(
+            [sys.executable, worker_path, demos_json, IMG_DIR],
+            encoding="utf-8",
+            errors="replace",
+            timeout=600,   # allow 10 min for whole batch
+        )
+        if result.returncode != 0:
+            print(f"⚠ batch worker exited with code {result.returncode}")
+    except Exception as e:
+        print(f"⚠ {e}")
 
     print(f"\n✅ Done — images in {IMG_DIR}")
 

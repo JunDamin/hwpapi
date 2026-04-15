@@ -82,18 +82,24 @@ class Presets:
             app.logger.warning("striped_rows: 커서가 표 안에 있지 않습니다.")
             return app
 
-        # 표 맨 위 셀로 이동
-        try:
-            app.api.Run("TableColBegin")   # 현재 행 맨 앞
-            # 맨 위로 올라가기 (safety bound)
-            for _ in range(500):
-                if not app.api.Run("TableUpperCell"):
-                    break
-        except Exception:
-            pass
+        # 표 맨 위 셀로 이동 — cell_addr 로 진행 추적
+        app.api.Run("TableColBegin")
+        last_addr = None
+        for _ in range(500):   # safety bound
+            cur = _cell_addr(app)
+            if cur is None or cur == last_addr:
+                break
+            last_addr = cur
+            app.api.Run("TableUpperCell")
 
         row_index = 0
-        for _ in range(500):   # safety bound for pathological tables
+        visited = set()
+        for _ in range(500):
+            cur = _cell_addr(app)
+            if cur is None or cur in visited:
+                break
+            visited.add(cur)
+
             # 현재 행 전체 선택
             app.api.Run("TableCellBlock")
             app.api.Run("TableCellBlockRow")
@@ -111,15 +117,13 @@ class Presets:
             app.api.Run("Cancel")
             row_index += 1
 
-            # 다음 행으로 이동 — 실패 시 표 끝
-            moved = app.api.Run("TableLowerCell")
-            if not moved:
-                break
-            # TableLowerCell 이 열까지 이동시킬 수 있으므로 항상 0열로
-            try:
-                app.api.Run("TableColBegin")
-            except Exception:
-                pass
+            # 다음 행으로 이동 — cell_addr 변화로 진행 확인
+            prev_addr = _cell_addr(app)
+            app.api.Run("TableLowerCell")
+            app.api.Run("TableColBegin")
+            new_addr = _cell_addr(app)
+            if new_addr is None or new_addr == prev_addr:
+                break  # 더 이상 이동 불가 = 표 끝
 
         return app
 
@@ -153,7 +157,7 @@ class Presets:
         app = self._app
 
         try:
-            # 1x2 table 생성
+            # 1x2 table 생성 — TableCreate 는 cursor 를 **첫 셀에 배치**
             act = app.api.CreateAction("TableCreate")
             pset = act.CreateSet()
             act.GetDefault(pset)
@@ -168,28 +172,37 @@ class Presets:
             app.logger.warning(f"title_box: table create failed: {e}")
             return app
 
-        # 셀 안 커서 이동 + 배경색 적용 + 텍스트 삽입
+        # 1단계: 전체 표 배경색 칠하기 — 전체 셀 선택 후 CellFill
         try:
-            app.api.Run("TableColBegin")
-            # 전체 표 선택 → 배경
+            # 첫 셀에서 시작 → 전체 행 선택
             app.api.Run("TableCellBlock")
-            app.api.Run("TableColPageUp")
-            app.api.Run("TableCellBlockExtend")
+            app.api.Run("TableCellBlockRow")
             _apply_cell_bg(app, bg_color)
             app.api.Run("Cancel")
-        except Exception:
-            pass
+        except Exception as e:
+            app.logger.debug(f"title_box bg: {e}")
 
-        # 왼쪽 셀에 title
+        # 2단계: 첫 셀로 돌아와 title 삽입 — cell_addr 로 진행 추적
         try:
             app.api.Run("TableColBegin")
+            last = None
+            for _ in range(10):
+                cur = _cell_addr(app)
+                if cur is None or cur == last:
+                    break
+                last = cur
+                app.api.Run("TableLeftCell")
             if text:
                 app.styled_text(text, bold=True, height=font_size, text_color=title_color)
+            # 3단계: 두 번째 셀로 → subtitle
             app.api.Run("TableRightCell")
             if subtitle:
                 app.styled_text(subtitle, height=font_size - 200, text_color=title_color)
         except Exception as e:
             app.logger.debug(f"title_box text insertion: {e}")
+
+        # 4단계: 표 밖으로 이동 → 이후 호출되는 preset 은 표 밖 위치에서 시작
+        _exit_table(app)
 
         return app
 
@@ -221,6 +234,8 @@ class Presets:
             app.api.Run("Cancel")
             if text:
                 app.styled_text(text, bold=True, height=font_size)
+            # 다음 콘텐츠는 표 밖에서 이어지도록
+            _exit_table(app)
         except Exception as e:
             app.logger.warning(f"subtitle_bar: {e}")
         return app
@@ -272,15 +287,18 @@ class Presets:
 
         bg = self.TABLE_HEADER_COLORS.get(color, color)
 
-        # 맨 위로
+        # 맨 위로 — cell_addr 변화로 루프 종료 감지
         try:
             app.api.Run("TableColBegin")
-            # Safety bound: tables >500 rows are pathological; exit loop regardless
+            last = None
             for _ in range(500):
-                if not app.api.Run("TableUpperCell"):
+                cur = _cell_addr(app)
+                if cur is None or cur == last:
                     break
+                last = cur
+                app.api.Run("TableUpperCell")
 
-            for _ in range(rows):
+            for i in range(rows):
                 # 현재 행 전체 선택
                 app.api.Run("TableCellBlock")
                 app.api.Run("TableCellBlockRow")
@@ -291,9 +309,13 @@ class Presets:
                 except Exception:
                     pass
                 app.api.Run("Cancel")
-                if not app.api.Run("TableLowerCell"):
-                    break
-                app.api.Run("TableColBegin")
+                if i + 1 < rows:
+                    prev = _cell_addr(app)
+                    app.api.Run("TableLowerCell")
+                    app.api.Run("TableColBegin")
+                    new = _cell_addr(app)
+                    if new is None or new == prev:
+                        break
         except Exception as e:
             app.logger.debug(f"table_header: {e}")
         return app
@@ -321,15 +343,23 @@ class Presets:
         bg = self.TABLE_HEADER_COLORS.get(color, color)
 
         try:
-            # 맨 아래로 (safety bound)
+            # 맨 아래로 — cell_addr 변화 감지
+            last = None
             for _ in range(500):
-                if not app.api.Run("TableRightCell"):
+                cur = _cell_addr(app)
+                if cur is None or cur == last:
                     break
+                last = cur
+                app.api.Run("TableRightCell")
+            last = None
             for _ in range(500):
-                if not app.api.Run("TableLowerCell"):
+                cur = _cell_addr(app)
+                if cur is None or cur == last:
                     break
+                last = cur
+                app.api.Run("TableLowerCell")
 
-            for _ in range(rows):
+            for i in range(rows):
                 app.api.Run("TableCellBlock")
                 app.api.Run("TableCellBlockRow")
                 _apply_cell_bg(app, bg)
@@ -338,8 +368,12 @@ class Presets:
                 except Exception:
                     pass
                 app.api.Run("Cancel")
-                if not app.api.Run("TableUpperCell"):
-                    break
+                if i + 1 < rows:
+                    prev = _cell_addr(app)
+                    app.api.Run("TableUpperCell")
+                    new = _cell_addr(app)
+                    if new is None or new == prev:
+                        break
         except Exception as e:
             app.logger.debug(f"table_footer: {e}")
         return app
@@ -555,32 +589,97 @@ class Presets:
 
             if text:
                 app.insert_text(text)
+            # 다음 콘텐츠는 표 밖에서 이어지도록
+            _exit_table(app)
         except Exception as e:
             app.logger.debug(f"summary_box: {e}")
         return app
 
 
-def _apply_cell_bg(app, hex_color: str) -> None:
-    """현재 선택된 셀(들)의 배경색을 hex 색상으로 지정."""
+def _exit_table(app) -> None:
+    """
+    커서를 표 밖 (표 바로 다음 문단) 으로 이동.
+
+    ``TableCloseCellBlock`` → 마지막 셀로 → ``MoveRight`` 반복. in_table()
+    가 False 가 될 때까지.
+    """
     try:
-        from hwpapi.parametersets.properties import convert_to_hwp_color
-        color = convert_to_hwp_color(hex_color)
+        # Cancel any selection
+        app.api.Run("Cancel")
     except Exception:
-        # Fallback — parse hex manually (BBGGRR order for HWP)
-        h = hex_color.lstrip("#")
+        pass
+
+    # Move to last cell of table
+    last = None
+    for _ in range(200):
+        cur = _cell_addr(app)
+        if cur is None or cur == last:
+            break
+        last = cur
+        app.api.Run("TableRightCell")
+        app.api.Run("TableLowerCell")
+
+    # Move cursor past the end of last cell → outside table
+    for _ in range(20):
+        if _cell_addr(app) is None:
+            break
+        app.api.Run("MoveRight")
+
+
+def _cell_addr(app) -> Optional[str]:
+    """
+    현재 커서가 있는 셀의 주소 문자열을 반환 (예: "A1", "B3").
+    표 밖이면 None.
+
+    KeyIndicator()[8] 에서 "(cell_addr): ..." 형태 prefix 를 추출.
+    """
+    try:
+        ki = app.api.KeyIndicator()
+        if ki and len(ki) >= 9:
+            status = str(ki[8])
+            import re
+            m = re.match(r"^\(([A-Z]+\d+)\)", status)
+            if m:
+                return m.group(1)
+    except Exception:
+        pass
+    return None
+
+
+def _apply_cell_bg(app, hex_color: str) -> None:
+    """
+    현재 선택된 셀(들)의 배경색을 hex 색상으로 지정.
+
+    HWP 의 ``CellBorderFill`` action 을 사용, pset 의 중첩 구조:
+    ``HCellBorderFill.SelCellsBorderFill.FillAttr`` 의 ``WinBrushFaceColor``
+    등을 설정. ``ApplyTo=2`` 는 "선택된 셀들" 을 대상으로 함.
+
+    호출 전 조건: 대상 셀들이 ``TableCellBlock[Row|Col]`` 으로 **선택된 상태**.
+    """
+    # hex → (r, g, b) tuple
+    h = hex_color.lstrip("#")
+    if len(h) != 6:
+        return
+    try:
         r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
-        color = b * 0x10000 + g * 0x100 + r
+    except ValueError:
+        return
 
     try:
-        # Try modern CellFill pset approach
-        act = app.api.CreateAction("CellFill")
-        pset = act.CreateSet()
-        act.GetDefault(pset)
-        pset.SetItem("FillColor", color)
-        try:
-            pset.SetItem("HasFill", 1)
-        except Exception:
-            pass
-        act.Execute(pset)
+        # Raw HParameterSet chain (typed COM access)
+        hpset = app.api.HParameterSet.HCellBorderFill
+        app.api.HAction.GetDefault("CellBorderFill", hpset.HSet)
+
+        # Navigate to SelCellsBorderFill.FillAttr and configure fill
+        fa = hpset.SelCellsBorderFill.FillAttr
+        fa.type = 1              # Fill type: 1 = solid brush
+        fa.WindowsBrush = 1      # Enable Windows brush
+        fa.WinBrushFaceColor = app.api.RGBColor(r, g, b)
+        fa.WinBrushHatchColor = app.api.RGBColor(0, 0, 0)
+        fa.WinBrushFaceStyle = 6  # Solid pattern
+
+        hpset.ApplyTo = 2        # Apply to selected cells
+
+        app.api.HAction.Execute("CellBorderFill", hpset.HSet)
     except Exception as e:
         app.logger.debug(f"_apply_cell_bg failed: {e}")

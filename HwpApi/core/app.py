@@ -642,6 +642,36 @@ class App:
                     else:
                         self.insert_text(str(cell))
                     self.api.Run("TableRightCell")
+            # v0.0.23+ — Last TableRightCell moves cursor OUT of table.
+            # Navigate back to first cell so follow-up preset calls work.
+            # Try multiple strategies until in_table() is True.
+            try:
+                # Strategy 1: MoveLeft (usually puts cursor back inside last cell)
+                for _ in range(3):
+                    if self.in_table():
+                        break
+                    self.api.Run("MoveLeft")
+                # If still not in table, try MoveUp
+                for _ in range(5):
+                    if self.in_table():
+                        break
+                    self.api.Run("MoveUp")
+                # Now inside table → navigate to first cell
+                if self.in_table():
+                    for _ in range(500):
+                        if not self.api.Run("TableUpperCell"):
+                            break
+                    self.api.Run("TableColBegin")
+            except Exception:
+                pass
+        else:
+            # No data — TableCreate leaves cursor at table beginning, but
+            # sometimes not inside the first cell. Ensure we're in a cell
+            # for follow-up preset calls.
+            try:
+                self.api.Run("TableColBegin")
+            except Exception:
+                pass
         return self
 
     def insert_hyperlink(self, text: str, url: str):
@@ -1767,8 +1797,9 @@ class App:
         """
         현재 커서가 **표 안에 있는지** 판별. v0.0.23+.
 
-        내부적으로 ``TableCellBlock`` 액션을 시도해서 성공 여부로 판단한 뒤
-        즉시 ``Cancel`` 하여 선택을 해제. Non-destructive.
+        Non-destructive: ``KeyIndicator()`` 의 상태 문자열 (index 8) 을
+        파싱. 표 안이면 ``"(B2): 문자 입력"`` 형태로 셀 주소 prefix 를
+        포함, 밖이면 단순히 ``"문자 입력"`` 등.
 
         Returns
         -------
@@ -1781,16 +1812,17 @@ class App:
         ...     app.table.header_row(color="sky")
         """
         try:
-            ok = bool(self.api.Run("TableCellBlock"))
-            if ok:
-                # Cleanup — restore cursor state
-                try:
-                    self.api.Run("Cancel")
-                except Exception:
-                    pass
-            return ok
+            ki = self.api.KeyIndicator()
+            if ki and len(ki) >= 9:
+                status = str(ki[8])
+                # 셀 주소 prefix 감지: "(B2): ...", "(A1): ..." 형태
+                # 빈 괄호나 괄호 없으면 표 밖
+                import re
+                if re.match(r"^\([A-Z]+\d+\)", status):
+                    return True
         except Exception:
-            return False
+            pass
+        return False
 
     def get_hwnd(self):
         """
