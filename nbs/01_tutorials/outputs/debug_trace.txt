@@ -1,0 +1,4 @@
+[trace   0] Run('InsertText') → True (1142.98ms)
+[trace   1] Run('SelectAll') → True (8.15ms)
+[trace   2] Run('Cancel') → True (7.86ms)
+[trace] total: 3 Run() calls

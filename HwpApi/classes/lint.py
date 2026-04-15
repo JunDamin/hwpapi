@@ -255,6 +255,23 @@ class Template:
         except Exception as e:
             app.logger.debug(f"template.save parashape: {e}")
 
+        # Coerce non-JSON-serializable values (Color objects, etc.) to str
+        def _to_json_safe(v):
+            if v is None or isinstance(v, (bool, int, float, str)):
+                return v
+            # Try Color/hex-like object
+            for attr in ("hex", "to_hex", "value"):
+                if hasattr(v, attr):
+                    try:
+                        result = getattr(v, attr)
+                        return result() if callable(result) else result
+                    except Exception:
+                        pass
+            return str(v)
+
+        for group in ("charshape", "parashape", "page"):
+            tmpl[group] = {k: _to_json_safe(v) for k, v in tmpl[group].items()}
+
         # Strip None-valued keys (serialization cleanliness)
         for group in ("charshape", "parashape", "page"):
             tmpl[group] = {k: v for k, v in tmpl[group].items() if v is not None}

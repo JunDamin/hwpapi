@@ -1,0 +1,11 @@
+Document lint — 7 issue(s)
+  Total: 6 paragraphs, 4 sentences, 132 chars
+  Empty paragraphs: 2
+  Double spaces: 1 para(s)
+  Trailing whitespace: 4 para(s)
+
+상세 — long_sentences: []
+상세 — empty_paragraphs: [2, 5]
+상세 — double_spaces: [3]
+has_issues: True
+issue_count: 7

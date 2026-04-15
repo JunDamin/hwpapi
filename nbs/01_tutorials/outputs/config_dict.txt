@@ -1,0 +1,15 @@
+>>> app.config.to_dict()
+{'default_font': '함초롬바탕',
+ 'default_line_spacing': 160,
+ 'default_size': 11,
+ 'default_table_style': None,
+ 'palette': {'accent': '#FF6600',
+             'bg_alt': '#EEEEEE',
+             'primary': '#003366'}}
+
+>>> app.config.reset()
+{'default_font': None,
+ 'default_line_spacing': None,
+ 'default_size': None,
+ 'default_table_style': None,
+ 'palette': {}}

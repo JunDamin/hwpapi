@@ -1,0 +1,10 @@
+# SetMessageBoxMode 비트필드 상수
+  SILENCE_ALL_YES    =   0x111111
+  SILENCE_ALL_NO     =   0x222222
+  SILENCE_RESET      =   0xffffff
+  SILENCE_NO_SAVE    =   0x100000
+
+# silenced() context manager 동작
+  진입 전: mode = 0x0
+  진입 후: mode = 0x111111 (모든 dialog YES)
+  종료 후: mode = 0x0 (원래 모드 복원)

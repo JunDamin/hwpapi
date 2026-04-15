@@ -1,0 +1,17 @@
+{
+  "format": "hwpapi-template",
+  "version": "1.0",
+  "charshape": {
+    "fontsize": 1100,
+    "bold": 255,
+    "italic": 0,
+    "text_color": 0,
+    "facename_hangul": "함초롬바탕",
+    "facename_latin": "함초롬바탕"
+  },
+  "parashape": {
+    "align_type": 0,
+    "line_spacing": 160
+  },
+  "page": {}
+}

@@ -1,0 +1,9 @@
+{
+  "default_font": "함초롬바탕",
+  "default_size": 11,
+  "default_line_spacing": null,
+  "default_table_style": null,
+  "palette": {
+    "primary": "#003366"
+  }
+}

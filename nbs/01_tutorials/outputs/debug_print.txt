@@ -1,0 +1,25 @@
+============================================================
+ hwpapi debug state @ 22:47:24
+============================================================
+  cursor:
+    doc_id               = 0
+    para                 = 1
+    pos                  = 9
+  page:
+    current              = 2
+    total                = 1
+  selection:
+    text                 = ''
+    length               = 0
+  charshape_summary:
+    fontsize             = 1000
+    bold                 = 0
+    italic               = 0
+    text_color           = Color(0)
+    shade_color          = Color('#ffffff')
+  in_table               = False
+  documents_open         = 2
+  visible                = True
+  version                = '12, 0, 0, 3146'
+  filepath               = '(unsaved)'
+============================================================
