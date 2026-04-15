@@ -4,7 +4,80 @@
 포맷은 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), 버전은
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html) 을 따릅니다.
 
-## [Unreleased] — Phase 1+2 리팩토링
+## [Unreleased]
+
+*(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
+
+## [0.0.9] — 2026-04-15 — Styles parser · MoveAccessor sub-groups
+
+### Added
+
+- **MoveAccessor sub-grouping** — 38개의 flat 메소드를 의미 단위로 묶은
+  sub-accessor 도입 (기존 flat API 는 호환 유지):
+  - `app.move.doc.top() / bottom()`
+  - `app.move.line.start() / end() / next() / prev()`
+  - `app.move.word.start() / end() / next() / prev()`
+  - `app.move.para.start() / end() / next() / prev()`
+  - `app.move.char.next() / prev()`
+  - `app.move.page.top() / bottom() / next() / prev()`
+  - `app.move.cell.left() / right() / up() / down() / start() / end() / top() / bottom()`
+
+### Fixed
+
+- **`app.styles` parser 완전 작동** — pyhwpx 의 `FileSaveBlock_S` +
+  `HFileOpenSave` pset 패턴을 채용해 HWPML2X export 후 `<STYLE Name>`
+  태그 파싱. 22개 기본 스타일 (바탕글, 본문, 개요 1~8 등) 정확히 인식.
+- SaveBlockAs/SaveBlockAction 존재 가정 제거 (HWP COM 에 없음).
+- SelectionMode 검증 추가 — 선택 없이 호출해도 안전하게 실패.
+
+## [0.0.8] — 2026-04-15 — Phase D · E
+
+### Added
+
+- `app.styles` ([`StylesAccessor`](hwpapi/classes/styles.py)) — 문단
+  스타일 조회/적용/삭제/import/export.
+- `app.controls` ([`ControlsAccessor`](hwpapi/classes/controls.py)) —
+  문서 내 컨트롤 (표·그림·구역·하이퍼링크 등) linked-list 순회·검색.
+- `Control`, `Style` 값 객체 — `ctrl.select()`, `style.apply()` 등.
+
+## [0.0.7] — 2026-04-15 — 내부 중복 감사
+
+### Deprecated
+
+- `App.charshape()` legacy 빌더 — `DeprecationWarning` 추가. v0.1.0 에서 제거 예정.
+
+### Changed
+
+- 6개 public member 의 docstring cross-reference 추가 (selection / visible /
+  new_document / rgb_color / set_visible / 단위 변환).
+
+## [0.0.6] — 2026-04-15 — Phase C
+
+### Added
+
+- `app.goto_page(n)`, `app.highlight(color)`,
+  `app.save_page_image(n, path)`, `app.save_all_page_images(dir)`
+- `app.mm_to_hwpunit`, `point_to_hwpunit`, `hwpunit_to_mm`,
+  `hwpunit_to_point`, `rgb_color`
+- `app.status` property, `Color.from_rgb`, `Color.from_hex`
+
+### Fixed
+
+- `app.current_page` 가 section 번호를 반환하던 버그 (KeyIndicator[5] 로 수정)
+
+## [0.0.5] — 2026-04-15 — Phase A · B
+
+### Added
+
+- **Field API (Mail Merge)** — `create_field`, `set_field`, `get_field`,
+  `fields`, `fields_dict`, `field_exists`, `move_to_field`,
+  `delete_field`, `delete_all_fields`, `rename_field`,
+  `replace_brackets_with_fields`
+- **pandas 연동** — `insert_table(data=df)`, `read_table(to=...)`
+- **`app.silenced()`** context manager — 대화상자 자동 응답
+- **Mail Merge 튜토리얼** 추가
+
+## [0.0.4] — 2026-04-15 — Phase 1 refactor (_Action + Color/UNSET)
 
 ### Added
 - `hwpapi/core/document.py` — Document/Documents 클래스를 별도 모듈로 분리
