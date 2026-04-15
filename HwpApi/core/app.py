@@ -370,14 +370,15 @@ class App:
     def insert_table(self, rows: int = None, cols: int = None,
                      data=None, headers=None):
         """
-        표 생성 — 빈 표 또는 데이터로 채워진 표.
+        표 생성 — 빈 표, 데이터로 채워진 표, 또는 pandas DataFrame 에서.
 
         Parameters
         ----------
         rows, cols : int
             행/열 수 (``data`` 없을 때).
-        data : list[list] | None
-            2차원 리스트. 지정 시 rows/cols 자동 계산.
+        data : list[list] | pandas.DataFrame | None
+            2차원 리스트 또는 DataFrame. 지정 시 rows/cols 자동 계산.
+            DataFrame 이면 columns 가 자동으로 ``headers`` 로 사용됨.
         headers : list | None
             있으면 첫 행에 삽입되고 굵게 표시.
 
@@ -388,7 +389,23 @@ class App:
         ...     data=[[1, 2, 3], [4, 5, 6]],
         ...     headers=["A", "B", "C"],
         ... )                                        # 3x3 표 자동 채움
+
+        DataFrame 직접 삽입:
+
+        >>> import pandas as pd
+        >>> df = pd.DataFrame({"지역": ["서울", "경기"], "매출": [1850, 1320]})
+        >>> app.insert_table(data=df)                # columns 자동 헤더
         """
+        # Detect DataFrame — extract columns as headers and values as data
+        try:
+            import pandas as pd  # optional dependency
+            if isinstance(data, pd.DataFrame):
+                if headers is None:
+                    headers = data.columns.tolist()
+                data = data.values.tolist()
+        except ImportError:
+            pass
+
         if data is not None:
             all_rows = ([list(headers)] if headers else []) + list(data)
             rows = len(all_rows)
@@ -454,6 +471,393 @@ class App:
         >>> doc.insert_text("새 문서")
         """
         return self.documents.add(is_tab=is_tab)
+
+    # ═════════════════════════════════════════════════════════════
+    # Dialog suppression — set_message_box_mode / silenced()
+    # ═════════════════════════════════════════════════════════════
+
+    def get_message_box_mode(self) -> int:
+        """현재 다이얼로그 모드 반환 (HWP `GetMessageBoxMode`)."""
+        try:
+            return int(self.api.GetMessageBoxMode())
+        except Exception:
+            return 0
+
+    def set_message_box_mode(self, mode: int) -> int:
+        """
+        HWP 다이얼로그 처리 모드 지정 — 이전 모드값을 반환.
+
+        ``mode`` 는 상위 니블 + 하위 니블 조합:
+
+        ========  ===========================================================
+        0x10000   Yes 로 자동 응답
+        0x20000   No 로 자동 응답
+        0x30000   Cancel / Close
+        0x40000   Ignore
+        0x50000   Retry / OK
+        0x00000   수동 (기본)
+        ========  ===========================================================
+
+        Ex: ``0x00020000`` → 모든 예/아니오 질문에 No 자동. ``0xFFFFF`` →
+        전체 메시지박스 비활성 (모든 버튼 자동 "확인" 처리).
+
+        대부분의 사용자는 직접 이 값을 조작하기보다 :meth:`silenced` context
+        manager 를 권장합니다.
+        """
+        try:
+            return int(self.api.SetMessageBoxMode(int(mode)))
+        except Exception:
+            return 0
+
+    @contextmanager
+    def silenced(self, mode: int = 0x00100000):
+        """
+        다이얼로그 자동응답 context manager — 자동화 스크립트용.
+
+        블록 내부의 HWP 작업이 띄우는 모든 확인/경고 다이얼로그를 자동으로
+        처리하고, 블록 종료 시 원래 모드로 복원합니다.
+
+        Parameters
+        ----------
+        mode : int
+            자동응답 방식 (:meth:`set_message_box_mode` 참고).
+            기본값 ``0x00100000`` = 모든 질문에 YES 자동 응답.
+
+        Examples
+        --------
+        >>> with app.silenced():
+        ...     for path in paths:
+        ...         app.open(path)        # "변경사항 저장?" 다이얼로그 자동 YES
+        ...         app.replace_all("2025", "2026")
+        ...         app.save(path)
+
+        >>> # 모든 질문에 NO:
+        >>> with app.silenced(mode=0x00200000):
+        ...     app.close()
+
+        Notes
+        -----
+        HWP 내부 모드값:
+
+        - ``0x00100000`` — YES 자동 (기본)
+        - ``0x00200000`` — NO 자동
+        - ``0x00300000`` — Cancel 자동
+        - ``0x00500000`` — OK 자동
+        - ``0x00000000`` — 수동 모드 (사용자 대기)
+        """
+        prev = self.get_message_box_mode()
+        self.set_message_box_mode(mode)
+        try:
+            yield
+        finally:
+            self.set_message_box_mode(prev)
+
+    # ═════════════════════════════════════════════════════════════
+    # Field API (Mail Merge / Forms) — Phase A
+    # ═════════════════════════════════════════════════════════════
+    #
+    # HWP 필드는 문서 내에 이름표가 붙은 **값 주입 지점** 입니다. 템플릿
+    # 문서에서 `{{name}}` 같은 자리를 필드로 만든 뒤, 스크립트가 행별로
+    # 데이터를 채워넣어 여러 문서를 생성하는 mail merge 가 핵심 용도.
+
+    def create_field(self, name: str, memo: str = "", direction: str = ""):
+        """
+        현재 커서 위치에 **누름틀(필드)** 을 생성.
+
+        Parameters
+        ----------
+        name : str
+            필드 이름 (나중에 ``set_field(name, value)`` 로 값 주입).
+        memo : str
+            필드 설명 메모.
+        direction : str
+            필드에 표시될 안내 문구 (예: ``"이름 입력"``).
+
+        Examples
+        --------
+        >>> app.create_field("customer_name", direction="고객명")
+        >>> app.set_field("customer_name", "홍길동")
+        """
+        return self.api.CreateField(direction, memo, name)
+
+    def set_field(self, name: str, value) -> bool:
+        """
+        이름으로 지정한 필드에 값 주입.
+
+        Parameters
+        ----------
+        name : str
+            필드 이름. 동일 이름의 필드가 여러 개면 전부에 같은 값 주입.
+        value : Any
+            ``str()`` 로 변환되어 삽입.
+        """
+        return bool(self.api.PutFieldText(name, str(value)))
+
+    def get_field(self, name: str) -> str:
+        """이름으로 지정한 필드의 현재 값 반환."""
+        return self.api.GetFieldText(name) or ""
+
+    @property
+    def fields(self) -> list:
+        """
+        현재 문서의 모든 필드 이름 리스트.
+
+        Examples
+        --------
+        >>> app.fields
+        ['customer_name', 'order_date', 'total']
+        """
+        raw = self.api.GetFieldList(0, 0) or ""
+        # HWP separates field names by control char \x02 (STX)
+        # Some versions use \t or \n
+        for sep in ("\x02", "\t", "\n"):
+            if sep in raw:
+                names = raw.split(sep)
+                break
+        else:
+            names = [raw] if raw else []
+        # Deduplicate while preserving order
+        seen = set()
+        out = []
+        for n in names:
+            n = n.strip()
+            if n and n not in seen:
+                seen.add(n)
+                out.append(n)
+        return out
+
+    @property
+    def fields_dict(self) -> dict:
+        """
+        ``{필드이름: 값}`` 딕셔너리.
+
+        Examples
+        --------
+        >>> app.fields_dict
+        {'customer_name': '홍길동', 'order_date': '2026-04-15', 'total': '1,200,000원'}
+        """
+        return {name: self.get_field(name) for name in self.fields}
+
+    def field_exists(self, name: str) -> bool:
+        """해당 이름의 필드가 존재하는지."""
+        try:
+            return bool(self.api.FieldExist(name))
+        except Exception:
+            return name in self.fields
+
+    def move_to_field(self, name: str,
+                      text: bool = True, front: bool = True,
+                      select: bool = False) -> bool:
+        """
+        지정 필드로 커서 이동.
+
+        Parameters
+        ----------
+        name : str
+            필드 이름.
+        text : bool
+            필드 안의 텍스트 위치로 이동할지 (기본 True).
+        front : bool
+            필드 앞쪽으로 이동할지 (False 면 뒤쪽).
+        select : bool
+            필드 범위를 선택할지.
+        """
+        try:
+            return bool(self.api.MoveToField(name, text, front, select))
+        except Exception:
+            return False
+
+    def delete_field(self, name: str) -> bool:
+        """이름으로 지정한 필드 삭제."""
+        if not self.move_to_field(name, select=True):
+            return False
+        try:
+            return bool(self.api.Run("DeleteField"))
+        except Exception:
+            return bool(self.api.Run("Delete"))
+
+    def delete_all_fields(self) -> int:
+        """모든 필드 삭제. 삭제한 개수 반환."""
+        count = 0
+        for name in self.fields:
+            if self.delete_field(name):
+                count += 1
+        return count
+
+    def rename_field(self, old: str, new: str) -> bool:
+        """필드 이름 변경."""
+        try:
+            return bool(self.api.RenameField(old, new))
+        except Exception:
+            return False
+
+    def replace_brackets_with_fields(
+        self,
+        pattern: str = r"\{\{(\w+)\}\}",
+        memo: str = "",
+    ) -> list:
+        """
+        ``{{name}}`` 형태의 브래킷 표기를 모두 HWP 필드로 변환.
+
+        템플릿 문서를 mail merge 대상으로 준비하는 가장 간편한 방법.
+
+        Parameters
+        ----------
+        pattern : str
+            브래킷 감지 정규식. ``(\\w+)`` 캡처 그룹이 필드명이 됨.
+        memo : str
+            각 필드에 붙을 메모.
+
+        Returns
+        -------
+        list[str]
+            변환된 고유 필드 이름 목록.
+
+        Examples
+        --------
+        문서에 ``안녕하세요 {{name}}님, 오늘은 {{date}} 입니다.`` 가 있으면:
+
+        >>> names = app.replace_brackets_with_fields()
+        >>> names
+        ['name', 'date']
+        >>> app.set_field("name", "홍길동")
+        >>> app.set_field("date", "2026-04-15")
+        """
+        import re
+        pat = re.compile(pattern)
+        converted = []
+
+        # Iterate: find next match, replace it with a field.
+        # We restart from top_of_file each iteration because inserting a
+        # field shifts positions.
+        while True:
+            text = self.text
+            m = pat.search(text)
+            if not m:
+                break
+            name = m.group(1)
+            bracket = m.group(0)
+            self.move.top_of_file()
+            if not self.find_text(bracket):
+                break
+            # Selection is on the bracket — delete + create field
+            self.api.Run("Delete")
+            self.create_field(name, memo=memo)
+            if name not in converted:
+                converted.append(name)
+        return converted
+
+    # ═════════════════════════════════════════════════════════════
+    # Pandas integration — Phase B
+    # ═════════════════════════════════════════════════════════════
+
+    def read_table(self, to: str = "df",
+                   max_rows: int = 500, max_cols: int = 50):
+        """
+        커서가 들어있는 표를 파이썬 자료 구조로 추출.
+
+        Parameters
+        ----------
+        to : str
+            ``"df"`` (기본, pandas DataFrame) · ``"list"`` (2D list) ·
+            ``"csv"`` (CSV 문자열).
+        max_rows, max_cols : int
+            안전 상한 — 표가 이보다 크면 해당 값까지만 읽고 중단.
+
+        Returns
+        -------
+        pandas.DataFrame | list[list[str]] | str
+
+        Examples
+        --------
+        >>> df = app.read_table()
+        >>> df.to_csv("out.csv")
+        """
+        # A1 (표 좌상단) 셀로 이동. 실패하면 빈 결과 반환.
+        try:
+            self.api.Run("TableColBegin")
+            self.api.Run("TableColPageUp")
+        except Exception:
+            if to == "list":
+                return []
+            if to == "csv":
+                return ""
+            try:
+                import pandas as pd
+                return pd.DataFrame()
+            except ImportError:
+                return []
+
+        # 전체 셀을 `TableRightCell` 로 순회하면서 GetCellAddr 로 (row, col)
+        # 측정. 돌아가거나 이전 셀과 같으면 종료.
+        import re
+        def _cell_addr():
+            try:
+                addr = self.api.GetCellAddr() or ""
+                m = re.match(r"([A-Z]+)(\d+)", str(addr))
+                if m:
+                    col_letters, row_num = m.groups()
+                    col = 0
+                    for ch in col_letters:
+                        col = col * 26 + (ord(ch) - ord("A") + 1)
+                    return int(row_num) - 1, col - 1
+            except Exception:
+                pass
+            return None, None
+
+        cell_dict = {}  # {(row, col): text}
+        visited = set()
+        max_steps = max_rows * max_cols
+        for _ in range(max_steps):
+            r, c = _cell_addr()
+            if r is None or (r, c) in visited:
+                break
+            visited.add((r, c))
+            try:
+                self.api.Run("TableCellBlock")
+                txt = self.get_selected_text() or ""
+                self.api.Run("Cancel")
+            except Exception:
+                txt = ""
+            cell_dict[(r, c)] = str(txt).strip()
+            prev = self.api.GetPos()
+            try:
+                self.api.Run("TableRightCell")
+            except Exception:
+                break
+            if self.api.GetPos() == prev:
+                break
+
+        # cell_dict → rows (list of lists in row-major)
+        if not cell_dict:
+            rows = []
+        else:
+            max_r = max(r for r, c in cell_dict)
+            max_c = max(c for r, c in cell_dict)
+            rows = []
+            for r in range(max_r + 1):
+                row = []
+                for c in range(max_c + 1):
+                    row.append(cell_dict.get((r, c), ""))
+                rows.append(row)
+
+        if to == "list":
+            return rows
+        if to == "csv":
+            import csv, io
+            buf = io.StringIO()
+            csv.writer(buf).writerows(rows)
+            return buf.getvalue()
+        # default "df"
+        try:
+            import pandas as pd
+            if not rows:
+                return pd.DataFrame()
+            headers = rows[0]
+            data = rows[1:] if len(rows) > 1 else []
+            return pd.DataFrame(data, columns=headers)
+        except ImportError:
+            return rows
 
     def reload(self, new_app=False, dll_path=None):
         """

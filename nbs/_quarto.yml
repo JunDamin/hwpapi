@@ -65,6 +65,8 @@ website:
             file: 01_tutorials/06_usecase_data_to_table.ipynb
           - text: "실무형 보고서 생성"
             file: 01_tutorials/07_usecase_report_generation.ipynb
+          - text: "Mail Merge (필드 일괄 채우기)"
+            file: 01_tutorials/09_usecase_mail_merge.ipynb
       - text: "API 레퍼런스"
         file: 02_api_reference.qmd
     right:
@@ -100,6 +102,8 @@ website:
             file: 01_tutorials/06_usecase_data_to_table.ipynb
           - text: "실무형 보고서"
             file: 01_tutorials/07_usecase_report_generation.ipynb
+          - text: "Mail Merge"
+            file: 01_tutorials/09_usecase_mail_merge.ipynb
       - section: "📖 API 레퍼런스"
         contents:
           - text: "전체 API"
