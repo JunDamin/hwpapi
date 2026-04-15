@@ -781,6 +781,64 @@ class App:
     # Dialog suppression — set_message_box_mode / silenced()
     # ═════════════════════════════════════════════════════════════
 
+    def register_security_module(
+        self,
+        module_name: str = "FilePathCheckerModuleExample",
+        dll_path: str = None,
+    ) -> bool:
+        """
+        보안 모듈 (FilePathChecker) 명시적 등록.
+
+        HWP 는 외부 프로그램이 파일을 읽거나 쓸 때 보안 경고 dialog 를
+        띄웁니다. ``RegisterModule`` 로 ``FilePathCheckerModule`` 을
+        등록하면 이 경고를 사전에 차단합니다.
+
+        Notes
+        -----
+        ``App.__init__`` 에서 자동으로 한 번 호출됩니다 (DLL 경로
+        자동 탐색). 따라서 일반적으로 직접 호출할 필요는 없습니다.
+        다른 DLL 을 쓰거나 명시적 재등록이 필요할 때만 사용.
+
+        Parameters
+        ----------
+        module_name : str
+            HWP 에 등록할 모듈 식별자.
+        dll_path : str | None
+            DLL 파일 경로. ``None`` 이면 ``hwpapi`` 패키지에 포함된
+            기본 DLL 사용.
+
+        Returns
+        -------
+        bool
+            등록 성공 여부.
+
+        Examples
+        --------
+        >>> # 보통은 자동 등록되지만, 명시적 재등록:
+        >>> app.register_security_module()
+
+        >>> # 커스텀 DLL:
+        >>> app.register_security_module(
+        ...     module_name="MyCustomChecker",
+        ...     dll_path=r"C:\\my\\custom.dll",
+        ... )
+        """
+        if dll_path is None:
+            try:
+                from hwpapi.functions import get_hwp_dll_path
+                dll_path = get_hwp_dll_path("hwpapi", "FilePathCheckerModuleExample.dll")
+            except Exception:
+                dll_path = None
+        try:
+            self.api.RegisterModule(module_name, dll_path or "")
+            return True
+        except Exception as e:
+            try:
+                self.logger.warning(f"register_security_module failed: {e}")
+            except Exception:
+                pass
+            return False
+
     def get_message_box_mode(self) -> int:
         """현재 다이얼로그 모드 반환 (HWP `GetMessageBoxMode`)."""
         try:
@@ -788,26 +846,61 @@ class App:
         except Exception:
             return 0
 
+    # ── HWP MessageBox bitfield 상수 ─────────────────────────
+    #
+    # SetMessageBoxMode 인자는 6개 nibble (4 bit) 로 6가지 dialog 타입을
+    # 각각 어떻게 자동 응답할지 지정합니다.
+    #
+    #   nibble 0 (0xF)        확인 dialog (OK only)
+    #   nibble 1 (0xF0)       확인/취소 dialog (OK/Cancel)
+    #   nibble 2 (0xF00)      종료/재시도/무시 dialog (Abort/Retry/Ignore)
+    #   nibble 3 (0xF000)     예/아니오/취소 dialog (Yes/No/Cancel)
+    #   nibble 4 (0xF0000)    예/아니오 dialog (Yes/No)
+    #   nibble 5 (0xF00000)   재시도/취소 dialog (Retry/Cancel)
+    #
+    # 각 nibble 안에서 1=첫 버튼, 2=둘째, 4=셋째, F=해제(수동).
+
+    # 미리 정의된 preset (App 클래스 상수)
+    SILENCE_ALL_YES = 0x111111   # 모든 dialog 첫 버튼 (OK/Yes/Abort/Yes/Yes/Retry)
+    SILENCE_ALL_NO  = 0x222222   # 모든 dialog 둘째 버튼 (—/Cancel/Retry/No/No/Cancel)
+    SILENCE_RESET   = 0xFFFFFF   # 모든 자동 응답 해제 (수동 모드)
+
+    # 단일 카테고리 preset — hwp-mcp 와의 호환·간편 사용
+    SILENCE_OK_AUTO       = 0x00000001  # 확인 dialog 자동 OK
+    SILENCE_SAVE_YES      = 0x00010000  # 예/아니오 → YES (저장)
+    SILENCE_SAVE_NO       = 0x00020000  # 예/아니오 → NO (저장 안함)
+    SILENCE_OKCANCEL_OK   = 0x00000010  # 확인/취소 → OK
+    SILENCE_OKCANCEL_NO   = 0x00000020  # 확인/취소 → Cancel
+
     def set_message_box_mode(self, mode: int) -> int:
         """
         HWP 다이얼로그 처리 모드 지정 — 이전 모드값을 반환.
 
-        ``mode`` 는 상위 니블 + 하위 니블 조합:
+        6 개 dialog 카테고리에 대해 각각 자동 응답을 설정합니다.
+        클래스 상수 :attr:`SILENCE_ALL_YES`, :attr:`SILENCE_ALL_NO`,
+        :attr:`SILENCE_RESET` 사용 권장.
 
-        ========  ===========================================================
-        0x10000   Yes 로 자동 응답
-        0x20000   No 로 자동 응답
-        0x30000   Cancel / Close
-        0x40000   Ignore
-        0x50000   Retry / OK
-        0x00000   수동 (기본)
-        ========  ===========================================================
+        ====== ===========================================================
+        Bits   Dialog Type                            첫/둘째/셋째 버튼
+        ====== ===========================================================
+        0xF    확인                                    1=OK, F=수동
+        0xF0   확인/취소                                1=OK, 2=Cancel
+        0xF00  종료/재시도/무시                         1=Abort, 2=Retry, 4=Ignore
+        0xF000 예/아니오/취소                            1=Yes, 2=No, 4=Cancel
+        0xF0000 예/아니오                                1=Yes, 2=No
+        0xF00000 재시도/취소                              1=Retry, 2=Cancel
+        ====== ===========================================================
 
-        Ex: ``0x00020000`` → 모든 예/아니오 질문에 No 자동. ``0xFFFFF`` →
-        전체 메시지박스 비활성 (모든 버튼 자동 "확인" 처리).
+        Examples
+        --------
+        >>> # 모든 dialog 자동 첫 버튼 (YES/OK)
+        >>> app.set_message_box_mode(App.SILENCE_ALL_YES)
+        >>> # 또는 직접: 0x111111
 
-        대부분의 사용자는 직접 이 값을 조작하기보다 :meth:`silenced` context
-        manager 를 권장합니다.
+        >>> # 예/아니오 만 No 자동, 나머지 수동
+        >>> app.set_message_box_mode(0x020000)
+
+        대부분 :meth:`silenced` context manager 사용 권장.
         """
         try:
             return int(self.api.SetMessageBoxMode(int(mode)))
@@ -815,45 +908,104 @@ class App:
             return 0
 
     @contextmanager
-    def silenced(self, mode: int = 0x00100000):
+    def silenced(self, mode=SILENCE_ALL_YES):
         """
-        다이얼로그 자동응답 context manager — 자동화 스크립트용.
+        다이얼로그 자동응답 context manager.
 
-        블록 내부의 HWP 작업이 띄우는 모든 확인/경고 다이얼로그를 자동으로
-        처리하고, 블록 종료 시 원래 모드로 복원합니다.
+        블록 내부의 모든 HWP 확인/경고 dialog 를 자동으로 처리하고,
+        블록 종료 시 **원래 모드로 복원**.
 
         Parameters
         ----------
-        mode : int
-            자동응답 방식 (:meth:`set_message_box_mode` 참고).
-            기본값 ``0x00100000`` = 모든 질문에 YES 자동 응답.
+        mode : int | str
+            응답 방식.
+
+            **str preset** (권장):
+
+            - ``"yes"`` (기본) — 모든 dialog 첫 버튼 (OK/Yes/Abort/Yes/Yes/Retry)
+            - ``"no"`` — 모든 dialog 둘째 버튼 (Cancel/Retry/No/No/Cancel)
+            - ``"reset"`` — 자동 응답 해제 (사용자 수동 입력)
+
+            **int** — 직접 비트필드 지정 (:meth:`set_message_box_mode` 참고).
 
         Examples
         --------
-        >>> with app.silenced():
+        파일 일괄 처리 시 "저장하시겠습니까?" 자동 YES:
+
+        >>> with app.silenced():               # = silenced("yes")
         ...     for path in paths:
-        ...         app.open(path)        # "변경사항 저장?" 다이얼로그 자동 YES
+        ...         app.open(path)
         ...         app.replace_all("2025", "2026")
         ...         app.save(path)
 
-        >>> # 모든 질문에 NO:
-        >>> with app.silenced(mode=0x00200000):
-        ...     app.close()
+        저장하지 않고 모두 닫기:
+
+        >>> with app.silenced("no"):
+        ...     for doc in app.documents:
+        ...         doc.close()
+
+        세밀한 제어 — 예/아니오만 NO, 확인은 자동 OK:
+
+        >>> with app.silenced(0x020001):
+        ...     ...
 
         Notes
         -----
-        HWP 내부 모드값:
-
-        - ``0x00100000`` — YES 자동 (기본)
-        - ``0x00200000`` — NO 자동
-        - ``0x00300000`` — Cancel 자동
-        - ``0x00500000`` — OK 자동
-        - ``0x00000000`` — 수동 모드 (사용자 대기)
+        ``XHwpMessageBox`` 으로 띄우는 일반 정보 박스는 별도. 대부분은
+        ``SetMessageBoxMode`` 로 충분히 처리됩니다. 그래도 dialog 가
+        나타나면 :class:`~smoke_scenarios.dismiss_dialog_hwnd` 같은
+        외부 dismisser 를 병행하세요.
         """
+        # Preset 처리
+        if isinstance(mode, str):
+            preset = mode.lower()
+            mode_int = {
+                "yes": self.SILENCE_ALL_YES,
+                "no": self.SILENCE_ALL_NO,
+                "reset": self.SILENCE_RESET,
+            }.get(preset)
+            if mode_int is None:
+                raise ValueError(
+                    f"Unknown silenced preset {mode!r}. "
+                    f"Valid: 'yes', 'no', 'reset', or an int bitfield."
+                )
+            mode = mode_int
+
         prev = self.get_message_box_mode()
-        self.set_message_box_mode(mode)
+        self.set_message_box_mode(int(mode))
         try:
             yield
+        finally:
+            self.set_message_box_mode(prev)
+
+    @contextmanager
+    def suppress_errors(self):
+        """
+        에러/경고 dialog 를 모두 자동 ABORT 처리 + 예외 swallowing.
+
+        :meth:`silenced` 와 다르게 **에러 dialog 도** 자동 닫고, 블록
+        내부에서 발생하는 Python 예외도 ``logger.warning`` 으로 로그만
+        남기고 무시합니다. 대량 자동화에서 한두 파일이 실패해도 전체
+        루프를 계속 진행하고 싶을 때 사용.
+
+        Examples
+        --------
+        >>> for path in many_paths:
+        ...     with app.suppress_errors():
+        ...         app.open(path)        # 일부 깨진 파일이어도 계속
+        ...         app.save(path + ".out")
+        """
+        prev = self.get_message_box_mode()
+        # 에러/abort dialog 는 'abort' (첫 버튼 = 0x100), 나머지는 yes
+        # 종료/재시도/무시 카테고리에서 1=Abort
+        self.set_message_box_mode(0x111111)
+        try:
+            yield
+        except Exception as exc:
+            try:
+                self.logger.warning(f"suppress_errors caught: {exc}")
+            except Exception:
+                pass
         finally:
             self.set_message_box_mode(prev)
 
