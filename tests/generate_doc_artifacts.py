@@ -550,6 +550,12 @@ from hwpapi.classes.shapes import CharShape, ParaShape
 app = App(is_visible=False)
 time.sleep(0.5)
 
+# Silence all dialogs — so FileClose doesn't prompt "save?" etc.
+try:
+    app.set_message_box_mode(App.SILENCE_ALL_NO)   # "No" to save prompts
+except Exception:
+    pass
+
 # Monkey-patch insert_text so "\n" splits into paragraphs
 _orig_insert = app.insert_text
 def _insert_text(text, *a, **kw):
@@ -564,17 +570,27 @@ app.insert_text = _insert_text
 
 results = {}
 
+def close_all_docs():
+    """
+    Close ALL open documents via the COM-level Documents.close_all API.
+    This bypasses the action system entirely — no save dialog can pop up.
+    """
+    try:
+        app.documents.close_all(save=False)
+    except Exception:
+        pass
+
+
 for idx, (name, code) in enumerate(demos.items()):
     print(f"[{idx+1}/{len(demos)}] {name}", flush=True)
 
-    # Close all existing docs (NOT quit!) and start fresh
+    # Close ALL existing docs (including PDF output from previous iter)
+    close_all_docs()
+    time.sleep(0.3)
+
+    # Fresh blank doc for this demo
     try:
-        app.api.Run("FileClose")   # close current doc
-    except Exception:
-        pass
-    time.sleep(0.2)
-    try:
-        app.api.Run("FileNew")     # fresh blank doc
+        app.api.Run("FileNew")
     except Exception:
         pass
     time.sleep(0.4)
@@ -638,7 +654,12 @@ for idx, (name, code) in enumerate(demos.items()):
     else:
         results[name] = "empty PDF"
 
-# Final cleanup
+# Final cleanup — close everything before quit
+try:
+    close_all_docs()
+    time.sleep(0.3)
+except Exception:
+    pass
 try:
     app.quit()
 except Exception:
