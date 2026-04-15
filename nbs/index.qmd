@@ -62,6 +62,16 @@ HWPUNIT 몰라도 OK. mm/cm/in/pt 자동 변환.
 :::
 
 ::: {.g-col-12 .g-col-md-6 .g-col-lg-3 .feature-card}
+### 📑 다중 문서
+```python
+for doc in app.documents:
+    doc.replace_all("2025", "2026")
+    doc.save()
+```
+xlwings 스타일 — 각 문서에서 직접 메소드 호출.
+:::
+
+::: {.g-col-12 .g-col-md-6 .g-col-lg-3 .feature-card}
 ### 🔓 탈출구 내장
 ```python
 app.api.Run("BreakPara")

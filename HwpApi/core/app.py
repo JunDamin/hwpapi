@@ -73,9 +73,89 @@ class Document:
     >>> doc.close()              # 이 문서만 닫기
     """
 
+    # ── xlwings-style: App 메소드를 Document 에서도 쓸 수 있도록 위임 ─
+    #
+    # Document 자체에 정의된 속성/메소드 (file I/O, 상태 조회) 는 그대로
+    # 쓰고, 그 외의 이름 — insert_text, set_charshape, find_text, move,
+    # actions 등 — 을 ``doc.foo`` 로 접근하면 자동으로 (1) 이 문서를 활성
+    # 창으로 전환, (2) App 의 동일 이름 메소드/속성 호출, (3) 원래 활성
+    # 문서로 복원 후 결과 반환하도록 프록시합니다.
+    #
+    # 예:
+    #     doc.insert_text("...")        # app.insert_text 와 동일하지만
+    #                                    # doc 에 자동 활성화
+    #     doc.replace_all("a", "b")
+    #     doc.set_charshape(bold=True)
+    #     doc.styled_text("X", bold=True)
+    #     doc.actions.SelectAll.run()   # activate → 접근자 반환
+    #     doc.move.top_of_file()
+
     def __init__(self, raw_doc, documents=None):
-        self.raw = raw_doc
-        self._collection = documents  # back-reference for activation
+        # NOTE: set via object.__setattr__ to avoid __getattr__ recursion
+        # during init (before attributes exist).
+        object.__setattr__(self, "raw", raw_doc)
+        object.__setattr__(self, "_collection", documents)
+        object.__setattr__(self, "_app",
+                           documents._app if documents else None)
+
+    def __getattr__(self, name):
+        """
+        Proxy to ``self._app`` for any name not defined on Document itself.
+
+        Callable → wrapped to auto-activate the document before calling.
+        Non-callable (e.g. ``app.move`` accessor) → activate then return
+        the attribute (caller should use it immediately).
+        """
+        # Python calls __getattr__ only when normal lookup fails,
+        # so we won't interfere with Document's own attrs.
+        if name.startswith("_"):
+            raise AttributeError(name)
+
+        app = object.__getattribute__(self, "_app")
+        if app is None:
+            raise AttributeError(
+                f"{type(self).__name__!r} object has no attribute {name!r} "
+                f"and no bound App to proxy through"
+            )
+        if not hasattr(app, name):
+            raise AttributeError(
+                f"{type(self).__name__!r} has no attribute {name!r}; "
+                f"App also does not have it"
+            )
+
+        attr = getattr(app, name)
+
+        # Distinguish REAL methods/functions from callable accessor
+        # instances (MoveAccessor, _Actions etc. have __call__ in some
+        # cases, but we should NOT wrap those — the user wants
+        # `doc.move.top_of_file()`, not `doc.move()`).
+        import inspect as _inspect
+        is_routine = (
+            _inspect.isroutine(attr) or                   # function/method/builtin
+            _inspect.ismethoddescriptor(attr) or
+            _inspect.isbuiltin(attr)
+        )
+
+        if is_routine:
+            # Method → wrap with auto-activation
+            def wrapped(*args, **kwargs):
+                with app.use_document(self):
+                    return attr(*args, **kwargs)
+            wrapped.__name__ = name
+            wrapped.__qualname__ = f"Document.{name} (proxied)"
+            wrapped.__doc__ = (
+                f"[Proxied from App.{name}] — 호출 시 이 문서를 활성창으로 "
+                f"전환한 뒤 App.{name} 을 실행하고 원래 활성 문서로 복원합니다.\n\n"
+                f"{getattr(attr, '__doc__', '') or ''}"
+            )
+            return wrapped
+
+        # Accessor object (app.move, app.actions, app.cell, app.table,
+        # app.page, app.documents) or plain attribute (app.api,
+        # app.parameters): activate this doc FIRST so subsequent
+        # calls on the returned object go to this doc's context.
+        self.activate()
+        return attr
 
     # ── 조회용 속성 ──────────────────────────────────────────
 
@@ -130,11 +210,27 @@ class Document:
     # ── 행동 ─────────────────────────────────────────────────
 
     def activate(self) -> "Document":
-        """이 문서를 활성창으로 전환한 뒤 self 반환."""
+        """
+        이 문서를 활성창으로 전환하고 self 반환.
+
+        HWP 는 ``SetActive_XHwpDocument`` 호출 직후에도 내부 편집 컨텍스트가
+        완전히 전환되기까지 짧은 지연이 필요합니다. 호출 직후 insert 나
+        action 을 실행하면 이전 문서에 반영되는 현상을 피하기 위해 소폭의
+        대기와 이벤트 처리 기회를 제공합니다.
+        """
+        import time as _time
         try:
             self.raw.SetActive_XHwpDocument()
         except Exception:
             pass
+
+        # Nudge message pump — pywin32 pumps messages via PumpWaitingMessages
+        try:
+            import pythoncom
+            pythoncom.PumpWaitingMessages()
+        except Exception:
+            pass
+        _time.sleep(0.05)
         return self
 
     def save(self) -> bool:
@@ -977,11 +1073,16 @@ class App:
             setattr(charshape, key, value)
         self.set_charshape(charshape)
 
-        insert_text = self.actions.InsertText
-        p = insert_text.pset
-        p.text = text
-
-        insert_text.run(p)
+        # IMPORTANT: create a FRESH action every call. The cached
+        # ``self.actions.InsertText`` is bound to whichever document was
+        # active at App.__init__ time, so it writes there regardless of
+        # SetActive_XHwpDocument. Creating a new action through app.api
+        # attaches to the currently-active document.
+        act = self.api.CreateAction("InsertText")
+        pset = act.CreateSet()
+        act.GetDefault(pset)
+        pset.SetItem("Text", text)
+        act.Execute(pset)
         return
 
     def styled_text(self, text: str, **fmt):
