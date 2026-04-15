@@ -8,6 +8,36 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.21] — 2026-04-15 — 테스트 도메인별 재구성
+
+**Phase C.** 버전별 테스트 파일(`test_v014_features.py` ~ `test_v020_deprecations.py`)
+를 **도메인별 13개 파일** 로 재편. 이제 "Selection 관련 테스트" 를 찾으려면
+``tests/test_selection.py`` 하나만 열면 된다.
+
+### Changed
+
+- 기존 7개 버전별 파일 → 13개 도메인별 파일:
+  - `test_selection.py` (18) — Selection accessor 전반
+  - `test_images.py` (5) — Images accessor
+  - `test_presets.py` (20) — 모든 Preset 메소드
+  - `test_table_accessor.py` (8) — TableAccessor batch + clean_excel_paste
+  - `test_debug.py` (12) — Debug (state/trace/timing/print)
+  - `test_context_managers.py` (2) — batch_mode, undo_group
+  - `test_convert.py` (6, 14 실행) — Convert + _int_to_korean parametrize
+  - `test_view.py` (9) — View accessor
+  - `test_lint.py` (10) — Linter
+  - `test_template.py` (4) — Template
+  - `test_config.py` (8) — Config
+  - `test_discovery.py` (9) — app.help() + __repr__
+  - `test_deprecations.py` (12) — 레거시 API DeprecationWarning
+
+- 각 파일은 AST 파싱 기반 자동 재분배. 공통 imports + 관련 fixture 는 여러
+  파일에 복제되어 독립 실행 가능 (pytest 단일 파일 실행 친화).
+
+### Tests
+
+테스트 수는 그대로 유지 (1362/1362 통과) — 재배치만 수행.
+
 ## [0.0.20] — 2026-04-15 — 레거시 API DeprecationWarning + API_GUIDE.md 재작성
 
 **Phase B 중복 제거.** 17개 레거시 method 에 DeprecationWarning 부착 (호환

@@ -1,14 +1,8 @@
-"""Test v0.0.19 — app.help() + App.__repr__ + _ACCESSOR_MAP consistency."""
+"""Domain-grouped tests: discovery."""
+from hwpapi.core.app import App
 from unittest.mock import MagicMock, patch
-
 import pytest
 
-from hwpapi.core.app import App
-
-
-# ═════════════════════════════════════════════════════════════════
-# _ACCESSOR_MAP consistency
-# ═════════════════════════════════════════════════════════════════
 
 def test_accessor_map_has_all_categories():
     categories = set(App._ACCESSOR_MAP.keys())
@@ -53,10 +47,6 @@ def test_context_manager_list_non_empty():
         assert len(desc) > 5
 
 
-# ═════════════════════════════════════════════════════════════════
-# help() output
-# ═════════════════════════════════════════════════════════════════
-
 def test_help_prints_categories(capsys):
     """help() prints all _ACCESSOR_MAP categories."""
     # Create a minimal mock instance without calling __init__
@@ -84,10 +74,6 @@ def test_help_prints_main_properties(capsys):
         assert p in out
 
 
-# ═════════════════════════════════════════════════════════════════
-# __repr__
-# ═════════════════════════════════════════════════════════════════
-
 def test_repr_empty_uninitialized():
     app = App.__new__(App)
     r = App.__repr__(app)
@@ -101,3 +87,5 @@ def test_repr_resilient_to_broken_props():
     r = App.__repr__(app)
     assert isinstance(r, str)
     assert r.startswith("App(")
+
+

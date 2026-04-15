@@ -1,15 +1,30 @@
-"""Test v0.0.20 — DeprecationWarning on legacy Field/Bookmark methods."""
-import warnings
-from unittest.mock import MagicMock
-
-import pytest
-
+"""Domain-grouped tests: deprecations."""
 from hwpapi.core.app import _warn_legacy
+from unittest.mock import MagicMock
+import pytest
+import warnings
 
 
-# ═════════════════════════════════════════════════════════════════
-# _warn_legacy helper
-# ═════════════════════════════════════════════════════════════════
+def _mock_app():
+    """Create an App-like mock with api that supports field calls."""
+    from hwpapi.core.app import App
+    app = App.__new__(App)
+    # api is a @property returning self.engine.impl — stub via a fake engine
+    fake_api = MagicMock()
+    fake_api.CreateField.return_value = 1
+    fake_api.PutFieldText.return_value = 1
+    fake_api.GetFieldText.return_value = "value"
+    fake_api.FieldExist.return_value = True
+    fake_api.MoveToField.return_value = True
+    fake_api.RenameField.return_value = True
+    fake_api.GetFieldList.return_value = "a\x02b\x02"
+    fake_api.Run.return_value = True
+    fake_engine = MagicMock()
+    fake_engine.impl = fake_api
+    app.engine = fake_engine
+    app.logger = MagicMock()
+    return app
+
 
 def test_warn_legacy_emits_deprecation():
     with warnings.catch_warnings(record=True) as w:
@@ -59,31 +74,6 @@ def hwpapi_internal_caller(app):
         )
     finally:
         del sys.modules["hwpapi.fake_accessor"]
-
-
-# ═════════════════════════════════════════════════════════════════
-# Legacy field methods emit warnings
-# ═════════════════════════════════════════════════════════════════
-
-def _mock_app():
-    """Create an App-like mock with api that supports field calls."""
-    from hwpapi.core.app import App
-    app = App.__new__(App)
-    # api is a @property returning self.engine.impl — stub via a fake engine
-    fake_api = MagicMock()
-    fake_api.CreateField.return_value = 1
-    fake_api.PutFieldText.return_value = 1
-    fake_api.GetFieldText.return_value = "value"
-    fake_api.FieldExist.return_value = True
-    fake_api.MoveToField.return_value = True
-    fake_api.RenameField.return_value = True
-    fake_api.GetFieldList.return_value = "a\x02b\x02"
-    fake_api.Run.return_value = True
-    fake_engine = MagicMock()
-    fake_engine.impl = fake_api
-    app.engine = fake_engine
-    app.logger = MagicMock()
-    return app
 
 
 def test_create_field_warns():
@@ -177,10 +167,6 @@ def test_fields_dict_warns():
     assert any("fields_dict" in m for m in msgs)
 
 
-# ═════════════════════════════════════════════════════════════════
-# Fields accessor should NOT emit warnings when used
-# ═════════════════════════════════════════════════════════════════
-
 def test_fields_accessor_silent():
     """When the new Fields accessor is used, no DeprecationWarning should fire."""
     from hwpapi.classes.fields import Fields
@@ -198,3 +184,5 @@ def test_fields_accessor_silent():
         f.rename("old", "new")
     deprecations = [x for x in w if issubclass(x.category, DeprecationWarning)]
     assert not deprecations, f"Unexpected deprecations: {[str(x.message) for x in deprecations]}"
+
+
