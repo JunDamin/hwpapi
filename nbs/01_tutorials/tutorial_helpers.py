@@ -67,6 +67,7 @@ def _insert_text(text, *a, **kw):
             _orig_insert(part, *a, **kw)
         if i < len(parts) - 1:
             app.api.Run("BreakPara")
+    return app   # Fluent — chain 호환
 app.insert_text = _insert_text
 
 # Run the demo code
