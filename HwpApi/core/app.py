@@ -1763,6 +1763,35 @@ class App:
         self.api.Open(name)
         return name
 
+    def in_table(self) -> bool:
+        """
+        현재 커서가 **표 안에 있는지** 판별. v0.0.23+.
+
+        내부적으로 ``TableCellBlock`` 액션을 시도해서 성공 여부로 판단한 뒤
+        즉시 ``Cancel`` 하여 선택을 해제. Non-destructive.
+
+        Returns
+        -------
+        bool
+            표 안 → True, 아니면 False.
+
+        Examples
+        --------
+        >>> if app.in_table():
+        ...     app.table.header_row(color="sky")
+        """
+        try:
+            ok = bool(self.api.Run("TableCellBlock"))
+            if ok:
+                # Cleanup — restore cursor state
+                try:
+                    self.api.Run("Cancel")
+                except Exception:
+                    pass
+            return ok
+        except Exception:
+            return False
+
     def get_hwnd(self):
         """
         Retrieves the window handle (HWND) of the active window in the Hancom Office Hwp program.
