@@ -7,29 +7,24 @@ toc-depth: 4
 toc-location: right
 ---
 
-이 페이지는 hwpapi 의 **모든 public API** 를 자동 추출한 **완전 목록** 입니다.
-
-- [핵심 클래스](#핵심-클래스) (`App`, 접근자)
+- [핵심 클래스](#핵심-클래스)
 - [다중 문서](#다중-문서-multi-document)
-- [Actions](#actions-전체-704개) — 704개 액션 전부
-- [ParameterSets](#parametersets-전체-286개) — 286개 ParameterSet 과 속성 전부
-
-::: {.callout-tip}
-자세한 사용 예는 [튜토리얼](01_tutorials/tutorial.html) · [사용 사례](01_tutorials/usecase_meeting_minutes.html) · [다중 문서](01_tutorials/multi_document.html) 참고.
-:::
+- [Actions 704개 전부](#actions-전체-704개)
+- [ParameterSets 286개 전부](#parametersets-전체-286개)
 
 ## 핵심 클래스
 
-### `App` — 진입점 클래스
-
-`from hwpapi.core import App`. 한글 오피스에 연결/실행하고 대부분의 기능을 이 객체를 통해 사용합니다.
+### `App` — 진입점
 
 **속성 (Properties)**
 
 - **`api`** — 현재 사용 중인 엔진의 구현체를 반환합니다.
 - **`current_page`** — 현재 커서가 위치한 페이지 번호 (1부터).
+- **`fields`** — 현재 문서의 모든 필드 이름 리스트.
+- **`fields_dict`** — ``{필드이름: 값}`` 딕셔너리.
 - **`page_count`** — 현재 문서의 페이지 수.
 - **`selection`** — 현재 선택된 텍스트 — ``get_selected_text()`` alias.
+- **`status`** — 상태바 정보 — ``KeyIndicator()`` 반환값을 dict 로.
 - **`text`** — 현재 활성 문서의 **전체 텍스트** (읽기/쓰기).
 - **`version`** — HWP 어플리케이션 버전 문자열 (예: ``"12, 0, 1, 3335"``).
 - **`visible`** — HWP 메인 창의 가시성 (``window_i=0``). 읽기/쓰기.
@@ -120,6 +115,30 @@ _Action
 
 </details>
 
+#### `create_field(self, name: str, memo: str = '', direction: str = '')`
+
+현재 커서 위치에 **누름틀(필드)** 을 생성.
+
+<details><summary>상세 docstring</summary>
+
+```
+Parameters
+----------
+name : str
+    필드 이름 (나중에 ``set_field(name, value)`` 로 값 주입).
+memo : str
+    필드 설명 메모.
+direction : str
+    필드에 표시될 안내 문구 (예: ``"이름 입력"``).
+
+Examples
+--------
+>>> app.create_field("customer_name", direction="고객명")
+>>> app.set_field("customer_name", "홍길동")
+```
+
+</details>
+
 #### `create_parameterset(self, key: str)`
 
 *(no docstring)*
@@ -131,6 +150,18 @@ _Action
 #### `delete(self)`
 
 선택 영역 또는 커서 위치 글자 삭제.
+
+#### `delete_all_fields(self) -> int`
+
+모든 필드 삭제. 삭제한 개수 반환.
+
+#### `delete_field(self, name: str) -> bool`
+
+이름으로 지정한 필드 삭제.
+
+#### `field_exists(self, name: str) -> bool`
+
+해당 이름의 필드가 존재하는지.
 
 #### `find_text(self, text='', ignore_message=True, direction=0, match_case=None, all_word_forms=None, several_words=None, use_wild_cards=None, whole_word_only=No...`
 
@@ -182,6 +213,10 @@ Examples
 ```
 
 </details>
+
+#### `get_field(self, name: str) -> str`
+
+이름으로 지정한 필드의 현재 값 반환.
 
 #### `get_filepath(self)`
 
@@ -255,6 +290,10 @@ Examples
 ```
 
 </details>
+
+#### `get_message_box_mode(self) -> int`
+
+현재 다이얼로그 모드 반환 (HWP `GetMessageBoxMode`).
 
 #### `get_parashape(self)`
 
@@ -331,6 +370,61 @@ str
 ```
 
 </details>
+
+#### `goto_page(self, page: int) -> bool`
+
+지정 페이지로 커서 이동 (1-indexed).
+
+<details><summary>상세 docstring</summary>
+
+```
+HWP의 ``Goto`` 액션을 ``GotoE`` pset 으로 호출. pset 의 주요 키:
+
+- ``SetSelectionIndex = 1`` → 페이지 번호로 이동
+- ``DialogResult = page`` → 페이지 번호 (1-indexed)
+
+Parameters
+----------
+page : int
+    이동할 페이지 번호 (1 = 첫 페이지).
+
+Examples
+--------
+>>> app.goto_page(5)     # 5페이지로
+>>> app.goto_page(1)     # 첫 페이지로
+```
+
+</details>
+
+#### `highlight(self, color='#FFFF00') -> bool`
+
+현재 선택 영역에 **형광펜** 효과 적용 (``shade_color`` 와 별개).
+
+<details><summary>상세 docstring</summary>
+
+```
+Parameters
+----------
+color : str | int | Color | tuple
+    형광펜 색. 문자열 (``"#FFFF00"``) / Color / (r, g, b) 튜플 /
+    정수 HWP 색상 모두 지원.
+
+Examples
+--------
+>>> app.find_text("중요")
+>>> app.highlight("#FFFF00")            # 노란색
+>>> app.highlight((255, 150, 150))       # 분홍 RGB
+```
+
+</details>
+
+#### `hwpunit_to_mm(self, hu: int) -> float`
+
+HWPUNIT → 밀리미터.
+
+#### `hwpunit_to_point(self, hu: int) -> float`
+
+HWPUNIT → 포인트.
 
 #### `insert_bookmark(self, name: str)`
 
@@ -475,7 +569,7 @@ bool
 
 #### `insert_table(self, rows: int = None, cols: int = None, data=None, headers=None)`
 
-표 생성 — 빈 표 또는 데이터로 채워진 표.
+표 생성 — 빈 표, 데이터로 채워진 표, 또는 pandas DataFrame 에서.
 
 <details><summary>상세 docstring</summary>
 
@@ -484,8 +578,9 @@ Parameters
 ----------
 rows, cols : int
     행/열 수 (``data`` 없을 때).
-data : list[list] | None
-    2차원 리스트. 지정 시 rows/cols 자동 계산.
+data : list[list] | pandas.DataFrame | None
+    2차원 리스트 또는 DataFrame. 지정 시 rows/cols 자동 계산.
+    DataFrame 이면 columns 가 자동으로 ``headers`` 로 사용됨.
 headers : list | None
     있으면 첫 행에 삽입되고 굵게 표시.
 
@@ -496,6 +591,12 @@ Examples
 ...     data=[[1, 2, 3], [4, 5, 6]],
 ...     headers=["A", "B", "C"],
 ... )                                        # 3x3 표 자동 채움
+
+DataFrame 직접 삽입:
+
+>>> import pandas as pd
+>>> df = pd.DataFrame({"지역": ["서울", "경기"], "매출": [1850, 1320]})
+>>> app.insert_table(data=df)                # columns 자동 헤더
 ```
 
 </details>
@@ -524,6 +625,31 @@ Examples
 --------
 >>> app = App()
 >>> app.insert_text("Hello World", fontName="Arial", fontSize=12)
+```
+
+</details>
+
+#### `mm_to_hwpunit(self, mm: float) -> int`
+
+밀리미터 → HWPUNIT.
+
+#### `move_to_field(self, name: str, text: bool = True, front: bool = True, select: bool = False) -> bool`
+
+지정 필드로 커서 이동.
+
+<details><summary>상세 docstring</summary>
+
+```
+Parameters
+----------
+name : str
+    필드 이름.
+text : bool
+    필드 안의 텍스트 위치로 이동할지 (기본 True).
+front : bool
+    필드 앞쪽으로 이동할지 (False 면 뒤쪽).
+select : bool
+    필드 범위를 선택할지.
 ```
 
 </details>
@@ -595,6 +721,10 @@ Examples
 
 클립보드 내용을 커서 위치에 붙여넣기.
 
+#### `point_to_hwpunit(self, pt: float) -> int`
+
+포인트 → HWPUNIT.
+
 #### `quit(self)`
 
 Terminates the Hancom Office Hwp program instance associated with the `App`.
@@ -610,6 +740,33 @@ Examples
 >>> app = App()
 >>> # Perform actions with the app
 >>> app.quit()
+```
+
+</details>
+
+#### `read_table(self, to: str = 'df', max_rows: int = 500, max_cols: int = 50)`
+
+커서가 들어있는 표를 파이썬 자료 구조로 추출.
+
+<details><summary>상세 docstring</summary>
+
+```
+Parameters
+----------
+to : str
+    ``"df"`` (기본, pandas DataFrame) · ``"list"`` (2D list) ·
+    ``"csv"`` (CSV 문자열).
+max_rows, max_cols : int
+    안전 상한 — 표가 이보다 크면 해당 값까지만 읽고 중단.
+
+Returns
+-------
+pandas.DataFrame | list[list[str]] | str
+
+Examples
+--------
+>>> df = app.read_table()
+>>> df.to_csv("out.csv")
 ```
 
 </details>
@@ -646,6 +803,10 @@ dll_path : str, optional
 
 </details>
 
+#### `rename_field(self, old: str, new: str) -> bool`
+
+필드 이름 변경.
+
 #### `replace_all(self, old_text='', new_text='', old_charshape=None, new_charshape=None, ignore_message=True, direction=None, match_case=None, all_word_forms=None,...`
 
 문서에서 특정 텍스트를 새 텍스트로 모두 교체합니다.
@@ -671,6 +832,57 @@ bool
 >>> app = App()
 >>> success = app.replace_all(old_text="Hello", new_text="Hi", direction=Direction.All)
 >>> print(success)
+```
+
+</details>
+
+#### `replace_brackets_with_fields(self, pattern: str = '\\{\\{(\\w+)\\}\\}', memo: str = '') -> list`
+
+``{{name}}`` 형태의 브래킷 표기를 모두 HWP 필드로 변환.
+
+<details><summary>상세 docstring</summary>
+
+```
+템플릿 문서를 mail merge 대상으로 준비하는 가장 간편한 방법.
+
+Parameters
+----------
+pattern : str
+    브래킷 감지 정규식. ``(\w+)`` 캡처 그룹이 필드명이 됨.
+memo : str
+    각 필드에 붙을 메모.
+
+Returns
+-------
+list[str]
+    변환된 고유 필드 이름 목록.
+
+Examples
+--------
+문서에 ``안녕하세요 {{name}}님, 오늘은 {{date}} 입니다.`` 가 있으면:
+
+>>> names = app.replace_brackets_with_fields()
+>>> names
+['name', 'date']
+>>> app.set_field("name", "홍길동")
+>>> app.set_field("date", "2026-04-15")
+```
+
+</details>
+
+#### `rgb_color(self, r: int, g: int, b: int) -> int`
+
+RGB 값을 HWP 내부 색상 정수 (BBGGRR) 로 변환.
+
+<details><summary>상세 docstring</summary>
+
+```
+Examples
+--------
+>>> app.rgb_color(255, 0, 0)    # 빨강
+255
+>>> app.rgb_color(0, 255, 0)    # 초록
+65280
 ```
 
 </details>
@@ -705,6 +917,22 @@ Examples
 
 </details>
 
+#### `save_all_page_images(self, out_dir: str, prefix: str = 'page', format: str = 'png', dpi: int = 300) -> list`
+
+모든 페이지를 이미지로 저장 — 생성된 파일 경로 리스트 반환.
+
+<details><summary>상세 docstring</summary>
+
+```
+Examples
+--------
+>>> paths = app.save_all_page_images("out/")
+>>> len(paths)
+12
+```
+
+</details>
+
 #### `save_block(self, path: pathlib.Path)`
 
 Saves a block of content in the Hancom Office Hwp program and returns the file path.
@@ -731,6 +959,45 @@ Examples
 >>> app = App()
 >>> saved_path = app.save_block(Path('path/to/save/block.hwp'))
 >>> print(saved_path)
+```
+
+</details>
+
+#### `save_page_image(self, page: int, path: str, dpi: int = 100, depth: int = 8, format: int = -1) -> bool`
+
+지정 페이지를 이미지 파일로 저장.
+
+<details><summary>상세 docstring</summary>
+
+```
+HWP의 ``CreatePageImage(Path, pgno, resolution, depth, Format)``
+를 감쌉니다.
+
+Parameters
+----------
+page : int
+    페이지 번호 (1-indexed).
+path : str
+    저장 경로. 확장자로 포맷 결정 (``.bmp``/``.png``/``.jpg``/``.gif``).
+    확장자 기반 자동 인식이 안되는 경우 ``format`` 파라미터로 명시.
+dpi : int
+    해상도 (기본 100). HWP 는 값이 너무 낮거나 높으면 무시하거나
+    실패할 수 있습니다.
+depth : int
+    색 깊이 비트수 (8 / 24 / 32). 기본 8.
+format : int
+    ``-1`` (자동, 확장자 기반) / ``0`` (BMP) / ``1`` (GIF) /
+    ``2`` (JPEG) / ``3`` (PNG).
+
+Returns
+-------
+bool
+    성공 여부 (파일 실제 생성 확인 포함).
+
+Examples
+--------
+>>> app.save_page_image(1, "page1.bmp")              # BMP 추천
+>>> app.save_page_image(2, "page2.png", format=3)    # PNG
 ```
 
 </details>
@@ -878,6 +1145,50 @@ Examples
 
 </details>
 
+#### `set_field(self, name: str, value) -> bool`
+
+이름으로 지정한 필드에 값 주입.
+
+<details><summary>상세 docstring</summary>
+
+```
+Parameters
+----------
+name : str
+    필드 이름. 동일 이름의 필드가 여러 개면 전부에 같은 값 주입.
+value : Any
+    ``str()`` 로 변환되어 삽입.
+```
+
+</details>
+
+#### `set_message_box_mode(self, mode: int) -> int`
+
+HWP 다이얼로그 처리 모드 지정 — 이전 모드값을 반환.
+
+<details><summary>상세 docstring</summary>
+
+```
+``mode`` 는 상위 니블 + 하위 니블 조합:
+
+========  ===========================================================
+0x10000   Yes 로 자동 응답
+0x20000   No 로 자동 응답
+0x30000   Cancel / Close
+0x40000   Ignore
+0x50000   Retry / OK
+0x00000   수동 (기본)
+========  ===========================================================
+
+Ex: ``0x00020000`` → 모든 예/아니오 질문에 No 자동. ``0xFFFFF`` →
+전체 메시지박스 비활성 (모든 버튼 자동 "확인" 처리).
+
+대부분의 사용자는 직접 이 값을 조작하기보다 :meth:`silenced` context
+manager 를 권장합니다.
+```
+
+</details>
+
 #### `set_parashape(self, parashape: ParaShape = None, **kwargs)`
 
 Sets the paragraph shape in the Hancom Office Hwp application using the provided `ParaShape`.
@@ -977,6 +1288,47 @@ bool
 
 </details>
 
+#### `silenced(self, mode: int = 1048576)`
+
+다이얼로그 자동응답 context manager — 자동화 스크립트용.
+
+<details><summary>상세 docstring</summary>
+
+```
+블록 내부의 HWP 작업이 띄우는 모든 확인/경고 다이얼로그를 자동으로
+처리하고, 블록 종료 시 원래 모드로 복원합니다.
+
+Parameters
+----------
+mode : int
+    자동응답 방식 (:meth:`set_message_box_mode` 참고).
+    기본값 ``0x00100000`` = 모든 질문에 YES 자동 응답.
+
+Examples
+--------
+>>> with app.silenced():
+...     for path in paths:
+...         app.open(path)        # "변경사항 저장?" 다이얼로그 자동 YES
+...         app.replace_all("2025", "2026")
+...         app.save(path)
+
+>>> # 모든 질문에 NO:
+>>> with app.silenced(mode=0x00200000):
+...     app.close()
+
+Notes
+-----
+HWP 내부 모드값:
+
+- ``0x00100000`` — YES 자동 (기본)
+- ``0x00200000`` — NO 자동
+- ``0x00300000`` — Cancel 자동
+- ``0x00500000`` — OK 자동
+- ``0x00000000`` — 수동 모드 (사용자 대기)
+```
+
+</details>
+
 #### `styled_text(self, text: str, **fmt)`
 
 포맷팅이 **그 텍스트에만** 적용되도록 삽입합니다.
@@ -1057,9 +1409,7 @@ Examples
 
 </details>
 
-### `Engine` — 저수준 엔진
-
-App 이 내부적으로 사용. 보통 직접 다룰 일은 없습니다.
+### `Engine`
 
 **속성 (Properties)**
 
@@ -1068,11 +1418,7 @@ App 이 내부적으로 사용. 보통 직접 다룰 일은 없습니다.
 
 ## 다중 문서 (Multi-Document)
 
-한 HWP 세션에서 여러 문서를 동시에 다루기 위한 API. 구현은 `hwpapi/core/document.py` 에 있으며, [다중 문서 튜토리얼](01_tutorials/multi_document.html) 참고.
-
-### `app.documents` — 문서 컬렉션
-
-열린 모든 문서를 리스트처럼 다루는 컬렉션.
+### `app.documents`
 
 **속성 (Properties)**
 
@@ -1100,9 +1446,7 @@ App 이 내부적으로 사용. 보통 직접 다룰 일은 없습니다.
 
 모든 문서를 저장하고 성공 개수를 반환.
 
-### `Document` — 단일 문서 핸들 (xlwings 스타일)
-
-App 의 모든 메소드/속성을 자동 위임받아 `doc.insert_text(...)`, `doc.text`, `doc.set_charshape(...)` 등을 바로 사용할 수 있습니다.
+### `Document`
 
 **속성 (Properties)**
 
@@ -1157,11 +1501,9 @@ action 을 실행하면 이전 문서에 반영되는 현상을 피하기 위해
 이 문서의 되돌리기.
 
 
-## 접근자 (Accessor)
+## 접근자
 
-`app.move`, `app.cell`, `app.table`, `app.page` 로 도메인별 헬퍼에 접근.
-
-### `app.move` — 커서/캐럿 이동
+### `app.move`
 
 **메소드 (Methods)**
 
@@ -1317,14 +1659,14 @@ screen 좌표로 위치를 설정
 
 현재 캐럿이 위치한 셀의 위쪽으로 이동
 
-### `app.cell` — 표 셀 조작
+### `app.cell`
 
 **속성 (Properties)**
 
 - **`height`** — 셀의 높이를 가져옵니다.
 - **`width`** — 셀의 너비를 가져옵니다.
 
-### `app.table` — 표 조작
+### `app.table`
 
 **속성 (Properties)**
 
@@ -1359,7 +1701,7 @@ screen 좌표로 위치를 설정
 - **`width`** — 테이블의 너비를 반환하거나 설정합니다.
 - **`width_rel_to`** — 테이블의 너비 기준을 반환하거나 설정합니다.
 
-### `app.page` — 페이지
+### `app.page`
 
 **속성 (Properties)**
 
@@ -1378,13 +1720,9 @@ screen 좌표로 위치를 설정
 
 ## Actions — 전체 704개
 
-hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
+### `ShapeObject` — 69개
 
-### ParameterSet 별 액션
-
-#### `ShapeObject` — 69개 액션
-
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `DrawObjCreatorArc` | 호 그리기 |
 | `DrawObjCreatorCanvas` | 캔버스 그리기 |
@@ -1456,9 +1794,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `ShapeObjShear` | 그리기 개체 기울이기 |
 | `TablePropertyDialog` | 표 고치기 |
 
-#### `RevisionDef` — 23개 액션
+### `RevisionDef` — 23개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `InsertRevision` | 교정 부호 넣기([입력-교정 부호-교정 부호 넣기]메뉴와 동일) |
 | `InsertRevisionAttach` | 교정 부호 넣기 : 붙임표 |
@@ -1484,9 +1822,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `InsertRevisionTransferSplit` | 교정 부호 넣기 : 자리바꿈 나눔표(내부용) |
 | `ModifyRevision` | 교정 부호 고치기ModifyFieldDateTime과 마찬가지로 정확히 교정부호(조판 부호)의 앞에 캐럿이 존재해야 실행된다. |
 
-#### `ParaShape` — 12개 액션
+### `ParaShape` — 12개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `GetDefaultBullet` | 글머리표 디폴트 값 |
 | `GetDefaultParaNumber` | 문단번호 디폴트 값 |
@@ -1501,9 +1839,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `PutParaNumber` | 문단번호 달기 |
 | `StyleParaNumberBullet` | 문단번호/글머리표 |
 
-#### `CharShape` — 11개 액션
+### `CharShape` — 11개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `CharShape` | 글자 모양 |
 | `CharShapeDialog` | 글자 모양 대화상자(내부 구현용) |
@@ -1517,9 +1855,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `CharShapeTextColorWhite` | 글자색을 흰색 |
 | `CharShapeTextColorYellow` | 글자색을 노랑 |
 
-#### `FindReplace` — 11개 액션
+### `FindReplace` — 11개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `AllReplace` | 모두 바꾸기 |
 | `BackwardFind` | 뒤로 찾기 |
@@ -1533,9 +1871,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `ReplaceDlg` | 찾아 바꾸기 |
 | `ReverseFind` | 거꾸로 찾기 |
 
-#### `InsertFieldTemplate` — 11개 액션
+### `InsertFieldTemplate` — 11개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `InsertDocTitle` | 상용구 코드 넣기(문서 제목) |
 | `InsertFieldFileName` | 파일 이름 넣기([입력-날짜/시간-파일 이름]메뉴와 동일) |
@@ -1549,9 +1887,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `ModifyFieldSummary` | 문서 요약 필드 고치기 |
 | `ModifyFieldUserInfo` | 개인 정보 필드 고치기 |
 
-#### `CellBorderFill` — 8개 액션
+### `CellBorderFill` — 8개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `CellBorder` | 셀 테두리 |
 | `CellBorderFill` | 셀 테두리 |
@@ -1562,9 +1900,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `TableCellShadeDec` | 셀 배경의 음영을 낮춘다.(결과적으로 밝아진다) |
 | `TableCellShadeInc` | 셀 배경의 음영을 높인다.(결과적으로 어두워진다) |
 
-#### `VersionInfo` — 7개 액션
+### `VersionInfo` — 7개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `GetVersionItemInfo` | 저장된 버전 정보/비교 Item을 얻어오는 액션이다. 	ParameterSet에 얻어올 Item의 Index값을 반드시 세팅한 후 사용한다. |
 | `MakeAllVersionDiffs` | 모든 버전비교 문서 만들기. 	현재 문서 및 문서가 가지고 있는 버전정보를 HML파일로 생성한다.(생성된 파일을 가지고 향 후 버전비교를 실행한다) |
@@ -1574,9 +1912,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `VersionInfo` | 버전 정보 |
 | `VersionSave` | 버전 저장하기 |
 
-#### `MasterPage` — 6개 액션
+### `MasterPage` — 6개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `MPSectionToNext` | 이후 구역으로 |
 | `MPSectionToPrevious` | 이전 구역으로 |
@@ -1585,9 +1923,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `MasterPageEntry` | 바탕쪽 편집모드 	바탕쪽이 존재할 때만 편집모드로 변환한다. |
 | `MasterPageTypeDlg` | 바탕쪽 종류 다이얼로그 띄움 |
 
-#### `SecDef` — 6개 액션
+### `SecDef` — 6개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `FootnoteOption` | 각주/미주 모양 |
 | `MemoShape` | 메모 모양([입력-메모-메모 모양]메뉴와 동일함) |
@@ -1596,9 +1934,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `PageBorder` | 쪽 테두리/배경 |
 | `PageSetup` | 편집 용지 |
 
-#### `TableInsertLine` — 6개 액션
+### `TableInsertLine` — 6개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `TableAppendRow` | 줄 추가 |
 | `TableInsertLeftColumn` | 왼쪽 칸 삽입 |
@@ -1607,9 +1945,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `TableInsertRowColumn` | 줄-칸 삽입 |
 | `TableInsertUpperRow` | 위쪽 줄 삽입 |
 
-#### `HyperLink` — 5개 액션
+### `HyperLink` — 5개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `Hyperlink` | 캐럿이 필드 안에 위치했는지 여부에 따라 Insert 또는 Modify 하이퍼링크 액션 |
 | `InsertHyperlink` | 하이퍼링크 만들기 |
@@ -1617,9 +1955,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `ModifyHyperlink` | 하이퍼링크 고치기 |
 | `ModifyRevisionHyperlink` | 자료 연결(교정 부호) 고치기 	ModifyRevision과 마찬가지로 정확히 교정부호(조판 부호)의 앞에 캐럿이 존재해야 실행된다. Run()으로 실행되지 않는다. |
 
-#### `SelectionOpt` — 5개 액션
+### `SelectionOpt` — 5개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `Copy` | 복사하기 |
 | `Cut` | 오려두기 |
@@ -1627,560 +1965,560 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `Paste` | 붙이기 |
 | `TableDeleteCell` | 셀 삭제 |
 
-#### `FileOpenSave` — 4개 액션
+### `FileOpenSave` — 4개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `FileOpen` | 파일 열기 |
 | `FileOpenMRU` | 최근 작업 문서 |
 | `FileSave` | 파일 저장 |
 | `FileSaveAs` | 다른 이름으로 저장 |
 
-#### `Style` — 4개 액션
+### `Style` — 4개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `Style` | 스타일 (한글2005이하버전) |
 | `StyleAdd` | 스타일 추가(한글2007, 스타일 대화상자를 띄움) |
 | `StyleEdit` | 스타일 편집 |
 | `StyleEx` | 스타일 (한글2007) |
 
-#### `TableDeleteLine` — 4개 액션
+### `TableDeleteLine` — 4개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `TableDeleteColumn` | 칸 지우기 |
 | `TableDeleteRow` | 줄-칸 지우기 |
 | `TableDeleteRowColumn` | 줄-칸 지우기 |
 | `TableSubtractRow` | 표 줄 삭제 |
 
-#### `ViewProperties` — 4개 액션
+### `ViewProperties` — 4개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `ViewZoom` | 화면 확대(Ribbon) |
 | `ViewZoomFitPage` | 화면 확대: 페이지에 맞춤 |
 | `ViewZoomFitWidth` | 화면 확대: 폭에 맞춤 |
 | `ViewZoomNormal` | 화면 확대: 정상 |
 
-#### `AutoFill` — 3개 액션
+### `AutoFill` — 3개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `TableAutoFill` | 자동 채우기 |
 | `TableAutoFillDlg` | 자동 채우기 |
 | `UserAutoFill` | 자동 채우기(TableAutoFill, TableAutoFillDlg와 동일) |
 
-#### `FieldCtrl` — 3개 액션
+### `FieldCtrl` — 3개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `MailMergeInsert` | 메일 머지 표시 달기 |
 | `MailMergeModify` | 메일 머지 고치기 |
 | `TableFormula` | 계산식 |
 
-#### `HeaderFooter` — 3개 액션
+### `HeaderFooter` — 3개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `HeaderFooter` | 머리말/꼬리말 |
 | `HeaderFooterInsField` | 코드 넣기 |
 | `HeaderFooterToNext` | 이후 머리말 |
 
-#### `Idiom` — 3개 액션
+### `Idiom` — 3개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `Idiom` | 상용구 |
 | `InsertIdiom` | 상용구 등록 |
 | `ViewIdiom` | 상용구 보기 |
 
-#### `ScriptMacro` — 3개 액션
+### `ScriptMacro` — 3개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `MacroRepeatDlg` | 매크로 실행 |
 | `ScrMacroDefine` | 매크로 정의 	매크로 정의 대화상자를 띄우고, 설정이 끝나면 매크로를 기록한다. |
 | `ScrMacroRepeatDlg` | 스크립트 매크로 실행 대화상자([도구-매크로-스크립트 매크로 실행]메뉴와 동일) |
 
-#### `TableDrawPen` — 3개 액션
+### `TableDrawPen` — 3개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `TableAutoDrawPenStyleWidthDlg` | 표 그리기 선 모양 |
 | `TableDrawPen` | 표 그리기 |
 | `TableEraser` | 표 지우개 |
 
-#### `TableSplitCell` — 3개 액션
+### `TableSplitCell` — 3개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `TableSplitCell` | 셀 나누기 |
 | `TableSplitCellCol2` | 셀 칸 나누기 |
 | `TableSplitCellRow2` | 셀 줄 나누기 |
 
-#### `ActionCrossRef` — 2개 액션
+### `ActionCrossRef` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `InsertCrossReference` | 상호 참조 만들기(삽입하기) |
 | `ModifyCrossReference` | 상호 참조 고치기 |
 
-#### `AutoNum` — 2개 액션
+### `AutoNum` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `NewNumber` | 새 번호로 시작 |
 | `NewNumberModify` | 새 번호 고치기 |
 
-#### `BookMark` — 2개 액션
+### `BookMark` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `Bookmark` | 책갈피 |
 | `ModifyBookmark` | 책갈피 고치기 |
 
-#### `EqEdit` — 2개 액션
+### `EqEdit` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `EquationCreate` | 수식 만들기 |
 | `EquationModify` | 수식 편집하기 |
 
-#### `FileOpen` — 2개 액션
+### `FileOpen` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `FileTemplate` | 문서마당 |
 | `ManuScriptTemplate` | 원고지 쓰기 |
 
-#### `FileSendMail` — 2개 액션
+### `FileSendMail` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `SendMailAttach` | 편지 보내기 - 첨부파일로 |
 | `SendMailText` | 편지 보내기 - 본문으로 |
 
-#### `FtpUpload` — 2개 액션
+### `FtpUpload` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `FtpDownload` | FTP서버에서 파일 다운 받아 문서 오픈하기 |
 | `FtpUpload` | 웹 서버로 올리기 |
 
-#### `GotoE` — 2개 액션
+### `GotoE` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `Goto` | 찾아가기 |
 | `GotoStyle` | 찾아가기-스타일(찾기/바꾸기 대화상자에서 사용) |
 
-#### `GridInfo` — 2개 액션
+### `GridInfo` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `ViewGridOption` | 격자 |
 | `ViewShowGrid` | 격자 보이기 |
 
-#### `IndexMark` — 2개 액션
+### `IndexMark` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `IndexMark` | 찾아보기 표시 |
 | `IndexMarkModify` | 찾아보기 표시 고치기 |
 
-#### `InputDateStyle` — 2개 액션
+### `InputDateStyle` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `InputDateStyle` | 날짜/시간 형식 지정해서 넣기 ([입력-날짜/시간-날짜/시간 형식]메뉴와 동일). |
 | `ModifyFieldDateTime` | 날짜/시간 넣기 고치기. 	반드시 코드로 작성된 "날짜/시간"이어야하며 코드의 앞(누름틀 밖의)에 캐럿이 존재해야만 동작한다. |
 
-#### `InsertText` — 2개 액션
+### `InsertText` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `InsertSpace` | 공백 삽입 |
 | `InsertText` | 텍스트 삽입 |
 
-#### `OleCreation` — 2개 액션
+### `OleCreation` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `InsertVoice` | 음성 삽입 |
 | `OleCreateNew` | 개체 삽입 |
 
-#### `PageHiding` — 2개 액션
+### `PageHiding` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `PageHiding` | 감추기 |
 | `PageHidingModify` | 감추기 고치기 |
 
-#### `PageNumPos` — 2개 액션
+### `PageNumPos` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `PageNumPos` | 쪽 번호 매기기 |
 | `PageNumPosModify` | 쪽 번호 매기기 |
 
-#### `Presentation` — 2개 액션
+### `Presentation` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `Presentation` | 프레젠테이션 |
 | `PresentationSetup` | 프레젠테이션 설정 |
 
-#### `Print` — 2개 액션
+### `Print` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `FilePreview` | 미리 보기 |
 | `Print` | 인쇄 |
 
-#### `SectionApply` — 2개 액션
+### `SectionApply` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `GetSectionApplyString` | 유틸리티 액션 |
 | `GetSectionApplyTo` | 유틸리티 액션 |
 
-#### `ShapeObjSaveAsPicture` — 2개 액션
+### `ShapeObjSaveAsPicture` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `PictureSave` | 그림 빼내기 |
 | `ShapeObjSaveAsPicture` | 그리기개체를 그림으로 저장하기 |
 
-#### `ShapeObjectCopyPaste` — 2개 액션
+### `ShapeObjectCopyPaste` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `ShapeObjectCopy` | 그리기 모양 복사 |
 | `ShapeObjectPaste` | 그리기 모양 붙여넣기 |
 
-#### `Sum` — 2개 액션
+### `Sum` — 2개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `Average` | 블록 평균 |
 | `Sum` | 블록 합계 |
 
-#### `AddHanjaWord` — 1개 액션
+### `AddHanjaWord` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `AddHanjaWord` | 한자단어 등록 |
 
-#### `CCLMark` — 1개 액션
+### `CCLMark` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `InsertCCLMark` | CCL 넣기 |
 
-#### `ChCompose` — 1개 액션
+### `ChCompose` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `ComposeChars` | 글자 겹침 |
 
-#### `ChangeRome` — 1개 액션
+### `ChangeRome` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `ChangeRome` | 로마자변환 |
 
-#### `ChartObjShape` — 1개 액션
+### `ChartObjShape` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `InsertChart` | 차트 만들기 |
 
-#### `CodeTable` — 1개 액션
+### `CodeTable` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `InputCodeTable` | 문자표 |
 
-#### `ColDef` — 1개 액션
+### `ColDef` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `MultiColumn` | 다단 |
 
-#### `ConvertCase` — 1개 액션
+### `ConvertCase` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `ConvertCase` | 대소문자 바꾸기 |
 
-#### `ConvertFullHalf` — 1개 액션
+### `ConvertFullHalf` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `ConvertFullHalfWidth` | 전각 반각 바꾸기 |
 
-#### `ConvertHiraToGata` — 1개 액션
+### `ConvertHiraToGata` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `ConvertHiraGata` | 일어 바꾸기 |
 
-#### `ConvertJianFan` — 1개 액션
+### `ConvertJianFan` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `ConvertJianFan` | 간/번체 바꾸기 	Text가 선택된 상태에서만 동작 |
 
-#### `ConvertToHangul` — 1개 액션
+### `ConvertToHangul` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `ConvertToHangul` | 한글로 |
 
-#### `DeleteCtrls` — 1개 액션
+### `DeleteCtrls` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `DeleteCtrls` | 조판 부호 지우기 |
 
-#### `DocFilters` — 1개 액션
+### `DocFilters` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `GetDocFilters` | 유틸리티 액션 |
 
-#### `DocFindInfo` — 1개 액션
+### `DocFindInfo` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `DocFindNext` | 문서 찾기 계속 |
 
-#### `DocumentInfo` — 1개 액션
+### `DocumentInfo` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `DocumentInfo` | 현재 문서에 대한 정보 |
 
-#### `DrawObjTemplateSave` — 1개 액션
+### `DrawObjTemplateSave` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `DrawObjTemplateSave` | 그리기 마당에 등록 |
 
-#### `DropCap` — 1개 액션
+### `DropCap` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `DropCap` | 문단 첫 글자 장식 |
 
-#### `Dutmal` — 1개 액션
+### `Dutmal` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `DutmalChars` | 덧말 넣기 |
 
-#### `ExchangeFootnoteEndNote` — 1개 액션
+### `ExchangeFootnoteEndNote` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `ExchangeFootnoteEndnote` | 각주/미주 변환 |
 
-#### `FileSaveBlock` — 1개 액션
+### `FileSaveBlock` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `SaveBlockAction` | 블록 저장하기 |
 
-#### `FileSetSecurity` — 1개 액션
+### `FileSetSecurity` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `FileSetSecurity` | 배포용 문서(출판 전용 문서). 	대화상자를 띄우지 않고 ParameterSet을 직접 설정하여 생성한다. 	예제는 “배포용 문서 만들기“ 참고 |
 
-#### `FindImagePath` — 1개 액션
+### `FindImagePath` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `ImageFindPath` | 그림 경로 찾기 |
 
-#### `HyperlinkJump` — 1개 액션
+### `HyperlinkJump` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `HyperlinkJump` | 하이퍼링크 이동 |
 
-#### `InputHanja` — 1개 액션
+### `InputHanja` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `InputHanja` | 한자 변환 |
 
-#### `InputHanjaBusu` — 1개 액션
+### `InputHanjaBusu` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `InputHanjaBusu` | 부수로 입력 |
 
-#### `InputHanjaMean` — 1개 액션
+### `InputHanjaMean` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `InputHanjaMean` | 새김으로 입력 |
 
-#### `InsertFile` — 1개 액션
+### `InsertFile` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `InsertFile` | 끼워 넣기 |
 
-#### `KeyMacro` — 1개 액션
+### `KeyMacro` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `MacroDefine` | 매크로 정의 |
 
-#### `Label` — 1개 액션
+### `Label` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `LabelTemplate` | 라벨 문서 만들기 |
 
-#### `LinkDocument` — 1개 액션
+### `LinkDocument` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `LinkDocument` | 문서 연결([파일-문서 연결]메뉴와 동일) |
 
-#### `MailMergeGenerate` — 1개 액션
+### `MailMergeGenerate` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `MailMergeGenerate` | 메일 머지 만들기 |
 
-#### `MakeContents` — 1개 액션
+### `MakeContents` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `MakeContents` | 차례 만들기 |
 
-#### `MarkpenShape` — 1개 액션
+### `MarkpenShape` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `MarkPenShape` | 형광펜, 선택된 Text영역의 배경을 형광펜으로 칠해준다. 	Run() 실행불가, 반드시 MarkpenShape ParameterSet의 Color 아이템 값을 설정하고 사용해야 함 |
 
-#### `Password` — 1개 액션
+### `Password` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `FilePassword` | 문서 암호 |
 
-#### `Preference` — 1개 액션
+### `Preference` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `Preference` | 환경 설정 |
 
-#### `PrintToImage` — 1개 액션
+### `PrintToImage` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `PrintToImage` | 그림으로 저장하기 |
 
-#### `QCorrect` — 1개 액션
+### `QCorrect` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `QuickCorrect` | 빠른 교정 (실질적인 동작 Action) |
 
-#### `SaveFootnote` — 1개 액션
+### `SaveFootnote` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `SaveFootnote` | 주석 저장 |
 
-#### `ShapeCopyPaste` — 1개 액션
+### `ShapeCopyPaste` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `ShapeCopyPaste` | 모양 복사 |
 
-#### `Sort` — 1개 액션
+### `Sort` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `Sort` | 소트 |
 
-#### `SpellingCheck` — 1개 액션
+### `SpellingCheck` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `SpellingCheck` | 맞춤법 |
 
-#### `StyleDelete` — 1개 액션
+### `StyleDelete` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `StyleDelete` | 스타일 제거 |
 
-#### `StyleTemplate` — 1개 액션
+### `StyleTemplate` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `StyleTemplate` | 스타일 마당 |
 
-#### `SummaryInfo` — 1개 액션
+### `SummaryInfo` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `DocSummaryInfo` | 문서 정보 |
 
-#### `TableCreation` — 1개 액션
+### `TableCreation` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `TableCreate` | 표 만들기 |
 
-#### `TableStrToTbl` — 1개 액션
+### `TableStrToTbl` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `TableStringToTable` | 문자열을 표로 |
 
-#### `TableSwap` — 1개 액션
+### `TableSwap` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `TableSwap` | 표 뒤집기 |
 
-#### `TableTblToStr` — 1개 액션
+### `TableTblToStr` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `TableTableToString` | 표를 문자열로 |
 
-#### `TableTemplate` — 1개 액션
+### `TableTemplate` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `TableTemplate` | 표 마당 |
 
-#### `TextVertical` — 1개 액션
+### `TextVertical` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `VerticalText` | 세로쓰기 |
 
-#### `UserQCommandFile` — 1개 액션
+### `UserQCommandFile` — 1개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `AQcommandMerge` | 입력 자동 명령 파일 저장/로드 	(한글메뉴의 [도구-빠른 교정-빠른 교정내용]에서 [입력 자동 명령 사용자 사전] 대화상자) 	ParameterSet을 직접 조작하여 사용함. |
 
 ### 파라미터셋 없는 액션 — 393개
 
-| 액션 이름 | 설명 |
+| 액션 | 설명 |
 |:---|:---|
 | `AutoChangeHangul` | 낱자모 우선 |
 | `AutoChangeRun` | 동작 |
@@ -2580,41 +2918,29 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ActionCrossRef` — 1개 속성
 
-*ActionCrossRef ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Command` | PropertyDescriptor | `Command` | ※command string 참조 (한글2007에 새로 추가) |
 
 ### `AddHanjaWord` — 0개 속성
 
-*AddHanjaWord ParameterSet - 한자단어 등록.*
-
-*(no registered properties)*
-
 ### `AutoFill` — 2개 속성
 
-*AutoFill ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AutoFillItem` | PropertyDescriptor | `AutoFillItem` | 섹션의 아이템 인덱스 : 0 \~ |
 | `AutoFillSection` | PropertyDescriptor | `AutoFillSection` | 자동 채우기 섹션 : 0 \= 기본, 1 \= 사용자 정의 |
 
 ### `AutoNum` — 2개 속성
 
-*AutoNum ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `NewNumber` | PropertyDescriptor | `NewNumber` | 새 시작 번호 (1 .. n) |
 | `NumType` | PropertyDescriptor | `NumType` | 번호 종류 : 0 \= 쪽 번호1 \= 각주 번호2 \= 미주 번호3 \= 그림 번호4 \= 표 번호5 \= 수식 번호 |
 
 ### `BookMark` — 3개 속성
 
-*BookMark ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Command` | PropertyDescriptor | `Command` | 책갈피 명령의 종류 :0 \= 책갈피 생성, 1 \= 책갈피로 이동, 2 \= 책갈피 수정 |
 | `Name` | PropertyDescriptor | `Name` | 책갈피 이름 |
@@ -2622,9 +2948,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `BorderFill` — 27개 속성
 
-*BorderFill ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `BackSlashFlag` | PropertyDescriptor | `BackSlashFlag` | 백슬래쉬 대각선 플래그 : 비트 플래그의 조합으로 표현되며 각 위치의 비트는 다음을 나타낸다.bit 0 \= 하단 대각선bit 1 \= 중앙 대각선bit 2 \= 상단 대각선더 자세한 내용은 하단의 ※ 대각선의 형태를 참고한다. |
 | `BorderColorBottom` | ColorProperty | `BorderColorBottom` | 4방향 테두리 색깔 :아래RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
@@ -2656,9 +2980,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `BorderFillExt` — 6개 속성
 
-*BorderFillExt ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ColorHorz` | ColorProperty | `ColorHorz` | 중앙선 색깔 : 가로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `ColorVert` | ColorProperty | `ColorVert` | 중앙선 색깔 : 세로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
@@ -2669,9 +2991,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `BulletShape` — 11개 속성
 
-*BulletShape ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Alignment` | PropertyDescriptor | `Alignment` | 번호 정렬 :0 \= 왼쪽 정렬, 1 \= 가운데 정렬, 2 \= 오른쪽 정렬 |
 | `AutoIndent` | PropertyDescriptor | `AutoIndent` | 번호 너비 자동 들여쓰기 여부 : 0 \= 들여쓰기 안함, 1 \= 들여쓰기 |
@@ -2687,15 +3007,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `CCLMark` — 0개 속성
 
-*CCLMark ParameterSet - CCL 마크 삽입.*
-
-*(no registered properties)*
-
 ### `Caption` — 4개 속성
 
-*Caption ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CapFullSize` | PropertyDescriptor | `CapFullSize` | 캡션 폭에 여백을 포함할지 여부 (세로 방향일 때만 사용됨) |
 | `Gap` | PropertyDescriptor | `Gap` | 캡션과 틀 사이 간격(HWPUNIT) |
@@ -2704,9 +3018,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `CaptureEnd` — 5개 속성
 
-*CaptureEnd ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `BeginX` | PropertyDescriptor | `BeginX` | 시작점과 X 좌표(페이지 X좌표) |
 | `BeginY` | PropertyDescriptor | `BeginY` | 시작점과 Y 좌표(페이지 Y좌표) |
@@ -2716,9 +3028,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `Cell` — 8개 속성
 
-*Cell ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CellCtrlData` | PropertyDescriptor | `CellCtrlData` | 셀 데이터 (한글2007에 새로 추가) |
 | `Dirty` | PropertyDescriptor | `Dirty` | 초기화 상태인지 수정된 상태인지 여부 : 0 \= off, 1 \= on(한글2007에 새로 추가) |
@@ -2731,9 +3041,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `CellBorderFill` — 5개 속성
 
-*CellBorderFill ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AllCellsBorderFill` | PropertyDescriptor | `AllCellsBorderFill` | 전체 셀의 테두리/배경 |
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용 대상 : 0 \= 선택된 셀, 1 \= 전체 셀, 2 \= 여러 셀에 걸쳐 적용 |
@@ -2743,26 +3051,20 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ChCompose` — 1개 속성
 
-*ChCompose ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Chars` | PropertyDescriptor | `Chars` | 겹쳐질 글자들 |
 
 ### `ChangeRome` — 2개 속성
 
-*ChangeRome ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `HanString` | PropertyDescriptor | `HanString` | 변경시킬 또는 변경된 한글문자 |
 | `Option` | PropertyDescriptor | `Option` | 변환옵션 :0 \= 일반1 \= 주소2 \= 사람이름3 \= 한글복원 |
 
 ### `CharShape` — 65개 속성
 
-*CharShape ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Bold` | PropertyDescriptor | `Bold` | Bold : 0 \= off, 1 \= on |
 | `BorderFill` | PropertyDescriptor | `BorderFill` | 테두리/배경 (한글2007에 새로 추가) |
@@ -2832,23 +3134,15 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ChartObjShape` — 0개 속성
 
-*ChartObjShape ParameterSet - 차트 개체.*
-
-*(no registered properties)*
-
 ### `CodeTable` — 1개 속성
 
-*CodeTable ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Text` | PropertyDescriptor | `Text` | 삽입될 스트링 |
 
 ### `ColDef` — 11개 속성
 
-*ColDef ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyClass` | PropertyDescriptor | `ApplyClass` | 적용범위의 분류. 아래 값의 조합이다.0x0001 \= 선택된 다단0x0002 \= 선택된 문자열0x0004 \= 현재 다단0x0008 \= 개체 전체0x0010 \= 선택된 셀0x0020 \= 현재 구역0x0040 \= 문서전체0x0080 \= 현재 |
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용범위 :0 \= 선택된 다단1 \= 선택된 문자열2 \= 현재 다단3 \= 개체 전체4 \= 선택된 셀5 \= 현재 구역6 \= 문서 전체7 \= 현재 셀8 \= 새 쪽으로9 \= 새 다단으로10 \= 모든 셀 |
@@ -2864,17 +3158,13 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ConvertCase` — 1개 속성
 
-*ConvertCase ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Type` | PropertyDescriptor | `Type` | 공통사용. |
 
 ### `ConvertFullHalf` — 6개 속성
 
-*ConvertFullHalf ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Alpha` | PropertyDescriptor | `Alpha` | 변경 대상에 영문자를 추가할지 여부 : 0 \= off, 1 \= on |
 | `Gata` | PropertyDescriptor | `Gata` | 변경 대상에 가타가나를 추가할지 여부 : 0 \= off, 1 \= on |
@@ -2885,25 +3175,19 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ConvertHiraToGata` — 1개 속성
 
-*ConvertHiraToGata ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Type` | PropertyDescriptor | `Type` | 히라가나로 변경할지, 가타가나로 변경할지 여부0 \= 가타가나로 변경, 1 \= 히라가나로 변경 |
 
 ### `ConvertJianFan` — 1개 속성
 
-*ConvertJianFan ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Type` | PropertyDescriptor | `Type` | 간체로 변경할지, 번체로 변경할지 여부0 \= 번체로 변경, 1 \= 간체로 변경 |
 
 ### `ConvertToHangul` — 5개 속성
 
-*ConvertToHangul ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Gata` | PropertyDescriptor | `Gata` | 가타가나를 한글로 변경할지 여부 : 0 \= off, 1 \= on확장 또는 변환 액션 간 파라메터셋의 호환을 위해 선언됨. |
 | `Gu` | PropertyDescriptor | `Gu` | 구결을 한글로 변경할지 여부 : 0 \= off, 1 \= on |
@@ -2913,25 +3197,19 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `CtrlData` — 1개 속성
 
-*### CtrlData*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `name` | StringProperty | `Name` | 제어 데이터의 이름. |
 
 ### `DeleteCtrls` — 1개 속성
 
-*DeleteCtrls ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DeleteCtrlType` | PropertyDescriptor | `DeleteCtrlType` | 지울 개체 목록 |
 
 ### `DocFilters` — 3개 속성
 
-*DocFilters ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DocFilters` | PropertyDescriptor | `DocFilters` | Parameter property |
 | `Format` | PropertyDescriptor | `Format` | 필터 리스트를 string array형태로 가져옴 (Export시에만) |
@@ -2939,9 +3217,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DocFindInfo` — 3개 속성
 
-*DocFindInfo ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ListID` | PropertyDescriptor | `ListID` | 현재 위치한 리스트 |
 | `ParaID` | PropertyDescriptor | `ParaID` | 현재 위치한 문단 |
@@ -2949,9 +3225,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DocumentInfo` — 17개 속성
 
-*DocumentInfo ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CurCtrl` | PropertyDescriptor | `CurCtrl` | 현재 리스트의 종류0 \= 일반 텍스트1 \= 글상자기타 \= 컨트롤 ID |
 | `CurPara` | PropertyDescriptor | `CurPara` | 현재 위치한 문단 |
@@ -2973,18 +3247,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DrawArcType` — 2개 속성
 
-*### DrawArcType*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `interval` | ListProperty | `Interval` | 곡선의 시작점과 끝점을 나타내는 배열 |
 | `type` | MappedProperty | `Type` | 곡선 유형: 0 = 선, 1 = 필수곡선, 2 = 화살표 |
 
 ### `DrawCoordInfo` — 3개 속성
 
-*### DrawCoordInfo*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `count` | IntProperty | `Count` | 점의 개수: 정수 값을 입력하세요. |
 | `line` | ListProperty | `Line` | 선 정보 배열: 리스트 값을 입력하세요. |
@@ -2992,17 +3262,13 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DrawCtrlHyperlink` — 1개 속성
 
-*### DrawCtrlHyperlink*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `command` | StringProperty | `Command` | Command String: 명령 문자열을 입력하세요. |
 
 ### `DrawEditDetail` — 4개 속성
 
-*### DrawEditDetail*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `command` | IntProperty | `Command` | Command: Reserved. |
 | `index` | IntProperty | `Index` | Index: 교점 정의의 인덱스. |
@@ -3011,9 +3277,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DrawFillAttr` — 37개 속성
 
-*DrawFillAttr ParameterSet - 그리기 개체의 채우기 속성.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Brightness` | PropertyDescriptor | `Brightness` | 명도 (-100~100) |
 | `Contrast` | PropertyDescriptor | `Contrast` | 밝기 (-100~100) |
@@ -3055,9 +3319,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DrawImageAttr` — 21개 속성
 
-*DrawImageAttr ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Brightness` | PropertyDescriptor | `Brightness` | 명도 (\-100 \~ 100\) |
 | `Contrast` | PropertyDescriptor | `Contrast` | 밝기 (\-100 \~ 100\) |
@@ -3083,9 +3345,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DrawImageScissoring` — 3개 속성
 
-*### DrawImageScissoring*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `handle_index` | IntProperty | `HandleIndex` | Reserved: 정수 값을 입력하세요. |
 | `x_offset` | IntProperty | `Xoffset` | 자를 x좌표 오프셋: 정수 값을 입력하세요. |
@@ -3093,9 +3353,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DrawLayout` — 3개 속성
 
-*### DrawLayout*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `create_num_pt` | IntProperty | `CreateNumPt` | 생성할 점의 수: 정수 값을 입력하세요. |
 | `create_pt` | ListProperty | `CreatePt` | 생성할 점의 좌표정보: (x, y) 튜플의 리스트 |
@@ -3103,9 +3361,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DrawLineAttr` — 12개 속성
 
-*### DrawLineAttr*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `alpha` | IntProperty | `Alpha` | 투명도: 정수를 입력하세요. |
 | `color` | IntProperty | `Color` | 선 색상 (RGB 0x00BBGGRR): 정수를 입력하세요. |
@@ -3122,23 +3378,15 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DrawObjTemplateSave` — 0개 속성
 
-*DrawObjTemplateSave ParameterSet - 그리기 마당에 등록.*
-
-*(no registered properties)*
-
 ### `DrawRectType` — 1개 속성
 
-*### DrawRectType*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `type` | IntProperty | `Type` | 도형의 종류: 0 ~ 50 사이의 정수 값을 입력하세요. |
 
 ### `DrawResize` — 4개 속성
 
-*### DrawResize*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `handle_index` | IntProperty | `HandleIndex` | Reserved: 정수 값을 입력하세요. |
 | `mode` | IntProperty | `Mode` | Reserved: 정수 값을 입력하세요. |
@@ -3147,9 +3395,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DrawRotate` — 7개 속성
 
-*### DrawRotate*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `angle` | IntProperty | `Angle` | 회전 각도. |
 | `center_x` | IntProperty | `CenterX` | 회전 중심의 X 좌표. |
@@ -3161,9 +3407,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DrawScAction` — 5개 속성
 
-*### DrawScAction*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `horz_flip` | BoolProperty | `HorzFlip` | 수평 flip (좌우 대칭 설정) |
 | `rotate_angle` | IntProperty | `RotateAngel` | 회전각 |
@@ -3173,9 +3417,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DrawShadow` — 5개 속성
 
-*### DrawShadow*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `shadow_alpha` | IntProperty | `ShadowAlpha` | 그림자 투명도 (0 ~ 255) |
 | `shadow_color` | IntProperty | `ShadowColor` | 그림자 색상 (COLORREF): 정수를 입력하세요. |
@@ -3185,18 +3427,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DrawShear` — 2개 속성
 
-*### DrawShear*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `x_factor` | IntProperty | `XFactor` | X shear factor: 정수 값을 입력하세요. |
 | `y_factor` | IntProperty | `YFactor` | Y shear factor: 정수 값을 입력하세요. |
 
 ### `DrawTextart` — 13개 속성
 
-*### DrawTextart*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `align_type` | IntProperty | `AlignType` | 정렬 유형. |
 | `char_spacing` | IntProperty | `CharSpacing` | 문자 간격 (50 ~ 500). |
@@ -3214,9 +3452,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `DropCap` — 7개 속성
 
-*DropCap ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `FaceColor` | ColorProperty | `FaceColor` | 글꼴 색RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `FaceName` | PropertyDescriptor | `FaceName` | Parameter property |
@@ -3228,9 +3464,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `Dutmal` — 9개 속성
 
-*Dutmal ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Align` | PropertyDescriptor | `Align` | 덧말의 좌우 Align. 0 \= 양쪽 정렬1 \= 왼쪽 정렬2 \= 오른쪽 정렬3 \= 가운데 정렬4 \= 배분 정렬5 \= 나눔 정렬기본은 가운데 정렬이며 옵션이 켜있을 때만 유효 |
 | `Delete` | PropertyDescriptor | `Delete` | 덧말 지움 (한글2007에 새로 추가) |
@@ -3244,9 +3478,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `EndnoteShape` — 17개 속성
 
-*EndnoteShape ParameterSet - 미주 모양 (FootnoteShape와 동일 구조).*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyClass` | PropertyDescriptor | `ApplyClass` | 적용범위 분류 (비트마스크): 0x01=선택된 구역, 0x02=선택된 문자열, 0x04=현재 구역, 0x08=문서전체, 0x10=새 구역 |
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용범위: 0=선택된 구역, 1=선택된 문자열, 2=현재 구역, 3=문서전체, 4=새 구역 |
@@ -3268,9 +3500,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `EngineProperties` — 7개 속성
 
-*EngineProperties ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DoAnyCursorEdit` | PropertyDescriptor | `DoAnyCursorEdit` | 마우스로 두 번 누르기 한곳에 입력가능 |
 | `DoOutLineStyle` | PropertyDescriptor | `DoOutLineStyle` | 개요 번호 삽입 문단에 개요 스타일 자동 적용 |
@@ -3282,9 +3512,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `EqEdit` — 6개 속성
 
-*EqEdit ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 수식 속성 적용 범위 (한글2007에 새로 추가)0 : 선택된 수식 개체1 : 문서 전체 |
 | `BaseUnit` | PropertyDescriptor | `BaseUnit` | 수식이 삽입되는 앞의 글자와 같은 높이 (기본 값은 POINT 10 ) |
@@ -3295,17 +3523,13 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ExchangeFootnoteEndNote` — 1개 속성
 
-*ExchangeFootnoteEndNote ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Flag` | PropertyDescriptor | `Flag` | 옵션 0 : 모든 각주를 미주로 바꾸기1 : 모든 미주를 각주로 바꾸기2 : 각주와 미주를 서로 바꾸기 |
 
 ### `FieldCtrl` — 4개 속성
 
-*FieldCtrl ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Command` | PropertyDescriptor | `Command` | 필드의 명령문 |
 | `CtrlData` | PropertyDescriptor | `CtrlData` | 필드 이름 저장을 위한 영역 |
@@ -3314,9 +3538,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `FileConvert` — 3개 속성
 
-*FileConvert ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DestFileList` | PropertyDescriptor | `DestFileList` | Destination 파일 리스트 |
 | `Format` | PropertyDescriptor | `Format` | 변환 포맷 |
@@ -3324,9 +3546,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `FileInfo` — 4개 속성
 
-*FileInfo ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Encrypted` | PropertyDescriptor | `Encrypted` | 암호 여부 (현재는 파일 버전 3\.0\.0\.0 이후 문서\-한글97, 한글 워디안, 한글 2002\-에 대해서만 판단한다.)\-1 : 판단 할 수 없음0 : 암호가 걸려 있지 않음양수: 암호가 걸려 있음. |
 | `Format` | PropertyDescriptor | `Format` | 파일의 형식.HWP : 한글 파일UNKNOWN : 알 수 없음. |
@@ -3335,9 +3555,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `FileOpen` — 11개 속성
 
-*FileOpen ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Argument` | PropertyDescriptor | `Argument` | Argument |
 | `ModifiedFlag` | PropertyDescriptor | `ModifiedFlag` | Modify 플래그 |
@@ -3353,15 +3571,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `FileOpenSave` — 0개 속성
 
-*FileOpenSave ParameterSet - 파일 열기/저장.*
-
-*(no registered properties)*
-
 ### `FileSaveAs` — 11개 속성
 
-*FileSaveAs ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Argument` | PropertyDescriptor | `Argument` | Argument |
 | `ModifiedFlag` | PropertyDescriptor | `ModifiedFlag` | Modify 플래그 |
@@ -3377,9 +3589,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `FileSaveBlock` — 3개 속성
 
-*FileSaveBlock ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Argument` | PropertyDescriptor | `Argument` | argument |
 | `FileName` | PropertyDescriptor | `FileName` | 파일 이름 |
@@ -3387,9 +3597,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `FileSendMail` — 4개 속성
 
-*FileSendMail ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Filepath` | PropertyDescriptor | `Filepath` | 사용자가 직접 입력한 파일 (이 아이템은 Type 아이템이 1(첨부파일)로 설정되어 있을 때만 유효하다) (한글2007에 새로 추가) |
 | `Subject` | PropertyDescriptor | `Subject` | Parameter property |
@@ -3398,9 +3606,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `FileSetSecurity` — 3개 속성
 
-*FileSetSecurity ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `NoCopy` | PropertyDescriptor | `NoCopy` | 문서 내용 복사가 가능한 배포용 문서를 만들지의 여부0 : 복사 가능1 : 복사 가능하지 않음 |
 | `NoPrint` | PropertyDescriptor | `NoPrint` | 프린트 가능한 배포용 문서를 만들지의 여부0 : 프린트 가능1 : 프린트 가능하지 않음 |
@@ -3408,15 +3614,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `FindImagePath` — 0개 속성
 
-*FindImagePath ParameterSet - 그림 경로 찾기.*
-
-*(no registered properties)*
-
 ### `FindReplace` — 23개 속성
 
-*### FindReplace*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AllWordForms` | BoolProperty | `AllWordForms` | Match all word forms |
 | `AutoSpell` | BoolProperty | `AutoSpell` | Auto spelling check |
@@ -3444,9 +3644,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `FlashProperties` — 8개 속성
 
-*FlashProperties ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AutoPlay` | PropertyDescriptor | `AutoPlay` | 자동 재생 여부 : 0 \= off, 1 \= on |
 | `Base` | PropertyDescriptor | `Base` | 경로의 Base |
@@ -3459,9 +3657,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `FootnoteShape` — 17개 속성
 
-*FootnoteShape ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyClass` | PropertyDescriptor | `ApplyClass` | 적용범위의 분류 (대화상자를 호출할 경우 사용)0x01 \= 선택된 구역0x02 \= 선택된 문자열0x04 \= 현재 구역0x08 \= 문서전체0x10 \= 새 구역 : 현재 위치부터 새로 |
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용범위0 \= 선택된 구역1 \= 선택된 문자열2 \= 현재 구역3 \= 문서전체4 \= 새 구역 : 현재 위치부터 새로 |
@@ -3483,9 +3679,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `FtpDownload` — 6개 속성
 
-*FtpDownload ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Directory` | PropertyDescriptor | `Directory` | 디렉터리 |
 | `FileName` | PropertyDescriptor | `FileName` | 파일 명 |
@@ -3496,9 +3690,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `FtpUpload` — 7개 속성
 
-*FtpUpload ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Directory` | PropertyDescriptor | `Directory` | 디렉터리 |
 | `FileName` | PropertyDescriptor | `FileName` | 파일 명 |
@@ -3510,18 +3702,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `GotoE` — 2개 속성
 
-*GotoE ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DialogResult` | PropertyDescriptor | `DialogResult` | 대화상자의 반환값 (한글2007에 새로 추가) |
 | `SetSelectionIndex` | PropertyDescriptor | `SetSelectionIndex` | 현재 선택되어 있는 라디오 값 (한글2007에 새로 추가) |
 
 ### `GridInfo` — 12개 속성
 
-*GridInfo ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Align` | PropertyDescriptor | `Align` | 격자 기준(쪽 \= 0 / 종이 \= 1\) |
 | `HorzAlign` | PropertyDescriptor | `HorzAlign` | 격자 기준 가로 offset (단위 HWPUNIT) |
@@ -3538,9 +3726,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `HeaderFooter` — 6개 속성
 
-*HeaderFooter ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CtrlType` | PropertyDescriptor | `CtrlType` | 머리말/꼬리말 여부 : 0=머리말, 1=꼬리말 |
 | `DialogOption` | PropertyDescriptor | `DialogOption` | 머리말/꼬리말 대화상자를 실행할 때 "편집"버튼을 보일 것인지 말 것인지 지정한다. 1=보이기, 그외=안보이기 |
@@ -3551,9 +3737,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `HyperLink` — 5개 속성
 
-*HyperLink ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Command` | PropertyDescriptor | `Command` | Command String 참조 |
 | `DirectInsert` | PropertyDescriptor | `DirectInsert` | 현재 캐럿 위치에 무조건 하이퍼링크 삽입 여부 (블록지정 상태면 블록해제 후 삽입) (한글2007에 새로 추가) |
@@ -3563,63 +3747,41 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `HyperlinkJump` — 2개 속성
 
-*HyperlinkJump ParameterSet - 하이퍼링크 이동.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Command` | PropertyDescriptor | `Command` | Command String |
 | `Text` | PropertyDescriptor | `Text` | 하이퍼링크가 표시되는 문자열 |
 
 ### `Idiom` — 2개 속성
 
-*Idiom ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `InputText` | PropertyDescriptor | `InputText` | 삽입될 스트링/끼워 넣을 파일 |
 | `InputType` | PropertyDescriptor | `InputType` | 입력기 상용구/한글 상용구 |
 
 ### `IndexMark` — 2개 속성
 
-*IndexMark ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `First` | PropertyDescriptor | `First` | 첫 번째 키 |
 | `Second` | PropertyDescriptor | `Second` | 두 번째 키 |
 
 ### `InputDateStyle` — 2개 속성
 
-*InputDateStyle ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DateStyleDataForm` | PropertyDescriptor | `DateStyleDataForm` | 필드 컨트롤의 안내문/지시문 |
 | `DateStyleType` | PropertyDescriptor | `DateStyleType` | 문자열로 넣기/코드로 넣기 |
 
 ### `InputHanja` — 0개 속성
 
-*InputHanja ParameterSet - 한자 변환.*
-
-*(no registered properties)*
-
 ### `InputHanjaBusu` — 0개 속성
-
-*InputHanjaBusu ParameterSet - 부수로 입력.*
-
-*(no registered properties)*
 
 ### `InputHanjaMean` — 0개 속성
 
-*InputHanjaMean ParameterSet - 새김으로 입력.*
-
-*(no registered properties)*
-
 ### `InsertFieldTemplate` — 6개 속성
 
-*InsertFieldTemplate ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Editable` | PropertyDescriptor | `Editable` | 필드의 양식모드에서 편집여부 (한글2007에 새로 추가)0 \= 편집 불가능1 \= 편집 가능 |
 | `ShowSingle` | PropertyDescriptor | `ShowSingle` | 문서마당 정보 대화상자에서 페이지(탭) 보이기 옵션 :\-1 \= 모든 페이지 보이기0 \= 누름틀 페이지만 보이기1 \= 개인 정보 페이지만 보이기2 \= 문서 요약 페이지만 보이기3 \= 만든 날짜 페이지만 보이기4 \= 파일 경로 페이지만 보이기 |
@@ -3630,9 +3792,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `InsertFile` — 7개 속성
 
-*InsertFile ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `FileArg` | PropertyDescriptor | `FileArg` | 삽입할 파일의 Argument |
 | `FileFormat` | PropertyDescriptor | `FileFormat` | 삽입할 파일의 확장자 |
@@ -3644,26 +3804,20 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `InsertText` — 1개 속성
 
-*### InsertText*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `text` | StringProperty | `Text` | 삽입할 텍스트 |
 
 ### `Internet` — 2개 속성
 
-*Internet ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `OpenUrlString` | PropertyDescriptor | `OpenUrlString` | 불러올 문서가 존재하는 URL |
 | `OpenUrlWhere` | PropertyDescriptor | `OpenUrlWhere` | 웹브라우저로 불러오거나 한글 문서로 불러오기 |
 
 ### `KeyMacro` — 3개 속성
 
-*KeyMacro ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Index` | PropertyDescriptor | `Index` | 정의(or 실행)할 매크로의 인덱스. |
 | `Name` | PropertyDescriptor | `Name` | 매크로 이름 |
@@ -3671,15 +3825,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `Label` — 0개 속성
 
-*Label ParameterSet - 라벨 문서.*
-
-*(no registered properties)*
-
 ### `LinkDocument` — 3개 속성
 
-*LinkDocument ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `FootnoteInherit` | PropertyDescriptor | `FootnoteInherit` | TRUE \= 각주 번호 잇기, FALSE \= 각주 번호 잇지 않기. |
 | `Name` | PropertyDescriptor | `Name` | 연결 문서 FILE NAME |
@@ -3687,9 +3835,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ListParaPos` — 3개 속성
 
-*ListParaPos ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `List` | PropertyDescriptor | `List` | 현재 위치한 리스트 |
 | `Para` | PropertyDescriptor | `Para` | 현재 위치한 문단 |
@@ -3697,9 +3843,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ListProperties` — 7개 속성
 
-*### ListProperties*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `line_wrap` | MappedProperty | `LineWrap` | 줄 바꿈 옵션: 0 = 기본값, 1 = 줄 바꿈 없음, 2 = 강제 줄 바꿈 |
 | `margin_bottom` | IntProperty | `MarginBottom` | 아래쪽 여백: 정수 값을 입력하세요. |
@@ -3711,9 +3855,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `MailMergeGenerate` — 14개 속성
 
-*MailMergeGenerate ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Continue` | PropertyDescriptor | `Continue` | 쪽번호 잇기 |
 | `DbfCode` | PropertyDescriptor | `DbfCode` | dbf file codepage0 \= KS1 \= KSSM2 \= GB3 \= BIG54 \= SJIS |
@@ -3732,9 +3874,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `MakeContents` — 9개 속성
 
-*MakeContents ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AutoTabRight` | PropertyDescriptor | `AutoTabRight` | 문단 오른쪽 끝 자동 탭 여부 : 0 \= 자동 탭 사용안함, 1 \= 자동 탭 사용 |
 | `Leader` | PropertyDescriptor | `Leader` | 오른쪽 끝 탭 채울 모양(선 종류) |
@@ -3748,17 +3888,13 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `MarkpenShape` — 1개 속성
 
-*MarkpenShape ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Color` | ColorProperty | `Color` | 형광펜색 (COLORREF) |
 
 ### `MasterPage` — 4개 속성
 
-*MasterPage ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용대상 (한글2007에 새로 추가)0 \= 현재구역1 \= 문서 전체 |
 | `Duplicate` | PropertyDescriptor | `Duplicate` | 기존 바탕쪽과 겹침 (On/Off) (한글2007에 새로 추가) |
@@ -3767,9 +3903,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `MemoShape` — 7개 속성
 
-*MemoShape ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ActiveFillColor` | ColorProperty | `ActiveFillColor` | 활성화된 채우기 색깔 (COLORREF) |
 | `FillColor` | ColorProperty | `FillColor` | 채우기 색깔 (COLORREF) |
@@ -3781,9 +3915,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `MousePos` — 5개 속성
 
-*MousePos ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Page` | PropertyDescriptor | `Page` | 페이지 번호 ( 0 based) |
 | `X` | PropertyDescriptor | `X` | 가로 클릭한 위치 (HWPUNIT) |
@@ -3793,9 +3925,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `MovieProperties` — 13개 속성
 
-*MovieProperties ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AutoPlay` | PropertyDescriptor | `AutoPlay` | 자동 재생 여부 : 0 \= off, 1 \= on |
 | `AutoRewind` | PropertyDescriptor | `AutoRewind` | 되감기 여부 : 0 \= off, 1 \= on |
@@ -3813,9 +3943,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `NumberingShape` — 72개 속성
 
-*NumberingShape ParameterSet - 문단 번호 모양 정의. Level0~Level6 (7개 수준).*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AlignmentLevel0` | PropertyDescriptor | `AlignmentLevel0` | 수준0: 번호 정렬 0=왼쪽, 1=가운데, 2=오른쪽 |
 | `AlignmentLevel1` | PropertyDescriptor | `AlignmentLevel1` | 수준1: 번호 정렬 |
@@ -3892,9 +4020,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `OleCreation` — 12개 속성
 
-*OleCreation ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Aspect` | PropertyDescriptor | `Aspect` | 생성된 OLE 개체를 아이콘으로 표시할지 여부 :0 \= 내용으로 표시, 1 \= 아이콘으로 표시 |
 | `Clsid` | PropertyDescriptor | `Clsid` | 클래스 ID (새로 개체 생성‘일 때 사용) |
@@ -3911,9 +4037,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `PageBorderFill` — 8개 속성
 
-*PageBorderFill ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `FillArea` | PropertyDescriptor | `FillArea` | 채울 영역0 \= 종이1 \= 쪽2 \= 테두리 |
 | `FooterInside` | PropertyDescriptor | `FooterInside` | 꼬리말 포함 (on / off) |
@@ -3926,9 +4050,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `PageDef` — 13개 속성
 
-*PageDef ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyClass` | PropertyDescriptor | `ApplyClass` | 적용범위의 분류 (대화상자를 호출할 경우 사용)0x01 \= 선택된 구역0x02 \= 선택된 문자열0x04 \= 현재 구역0x08 \= 문서전체0x10 \= 새 구역 : 현재 위치부터 새로 |
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용범위0 \= 선택된 구역1 \= 선택된 문자열2 \= 현재 구역3 \= 문서전체4 \= 새 구역 : 현재 위치부터 새로 |
@@ -3946,25 +4068,19 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `PageHiding` — 1개 속성
 
-*PageHiding ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Fields` | PropertyDescriptor | `Fields` | 감출 대상 비트 필드.0x01 \= 머리말0x02 \= 꼬리말0x04 \= 바탕쪽0x08 \= 테두리0x10 \= 배경0x20 \= 쪽번호 위치 |
 
 ### `PageNumCtrl` — 1개 속성
 
-*PageNumCtrl ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `PageStartsOn` | PropertyDescriptor | `PageStartsOn` | 페이지 번호 적용 옵션. 0 \= 양쪽1 \= 짝수쪽2 \= 홀수쪽 |
 
 ### `PageNumPos` — 6개 속성
 
-*PageNumPos ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DrawPos` | PropertyDescriptor | `DrawPos` | 번호 위치0 \= 쪽 번호 없음1 \= 왼쪽 위,2 \= 가운데 위,3 \= 오른쪽 위,4 \= 왼쪽 아래,5 \= 가운데 아래,6 \= 오른쪽 아래,7 \= 바깥쪽 위,8 \= 바깥쪽 아래,9 \= 안쪽 위,10 \= 안쪽 아래 |
 | `NumberFormat` | PropertyDescriptor | `NumberFormat` | 번호 모양 :0 \= 1, 2, 31 \= ①, ②, ③2 \= Ⅰ, Ⅱ, Ⅲ3 \= ⅰ, ⅱ, ⅲ4 \= A, B, C8 \= 가, 나, 다13 \= 一, 二, 三15 \= 갑, 을, 병16 \= 甲, 乙, 丙※ 중간에 빈 번호에도 문자포맷이 존재하 |
@@ -3975,9 +4091,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ParaShape` — 32개 속성
 
-*ParaShape ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AlignType` | PropertyDescriptor | `AlignType` | 정렬 방식0 \= 양쪽 정렬1 \= 왼쪽 정렬2 \= 오른쪽 정렬3 \= 가운데 정렬4 \= 배분 정렬5 \= 나눔 정렬 (공백에만 배분) |
 | `BorderConnect` | PropertyDescriptor | `BorderConnect` | 문단 테두리/배경 \- 테두리 연결 (on / off) |
@@ -4014,9 +4128,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `Password` — 5개 속성
 
-*Password ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Ask` | PropertyDescriptor | `Ask` | TRUE=문서 암호 확인, FALSE=문서 암호 설정 |
 | `DialogResult` | PropertyDescriptor | `DialogResult` | 암호해제 버튼 클릭 여부. 1=암호해제 |
@@ -4026,9 +4138,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `Preference` — 5개 속성
 
-*Preference ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyForbidden` | PropertyDescriptor | `ApplyForbidden` | (금칙 처리) 새 문서에 기본 값으로 설정 (on/off)(한글2007에 새로 추가) |
 | `ApplyLinkAttr` | PropertyDescriptor | `ApplyLinkAttr` | 하이퍼링크 글자 속성 문서 전체에 적용하기 여부 (on/off)(한글2007에 새로 추가) |
@@ -4038,9 +4148,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `Presentation` — 7개 속성
 
-*Presentation ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DialogResult` | PropertyDescriptor | `DialogResult` | 프리젠테이션 대화상자의 "실행"버튼이 클릭되었는지 여부.한글2007에서는 이 Set Item이 제거되었다. |
 | `Effect` | PropertyDescriptor | `Effect` | 화면 전환 효과 |
@@ -4052,9 +4160,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `Print` — 44개 속성
 
-*Print ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `BinderHoleType` | PropertyDescriptor | `BinderHoleType` | 바인더 구멍 |
 | `Collate` | PropertyDescriptor | `Collate` | 한 부씩 찍기 |
@@ -4103,9 +4209,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `PrintToImage` — 4개 속성
 
-*PrintToImage ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ColorDepth` | ColorProperty | `ColorDepth` | 색상수 (bits: 8, 16\...) |
 | `FileName` | PropertyDescriptor | `FileName` | 그림 경로 |
@@ -4114,9 +4218,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `PrintWatermark` — 21개 속성
 
-*PrintWatermark ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AlphaImage` | PropertyDescriptor | `AlphaImage` | 그림 투명도 (0 \~ 255\) |
 | `AlphaText` | PropertyDescriptor | `AlphaText` | 글자 투명도 (0 \~ 255\) |
@@ -4142,18 +4244,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `QCorrect` — 2개 속성
 
-*QCorrect ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `HyperLinkRunKey` | PropertyDescriptor | `HyperLinkRunKey` | URL 또는 email 하이퍼링크 작성 키 정보 (한글2007에 새로 추가) |
 | `LauncherKey` | PropertyDescriptor | `LauncherKey` | 빠른 교정을 실행한 키 정보 (한글2007에 새로 추가) |
 
 ### `RevisionDef` — 4개 속성
 
-*RevisionDef ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `BeginPos` | PropertyDescriptor | `BeginPos` | 시작위치(HWPUNIT). 오른자리 옮김표와 왼자리 옮김표일 경우에만 적용. |
 | `Margin` | PropertyDescriptor | `Margin` | 여백(HWPUNIT). 오른자리 옮김표와 왼자리 옮김표일 경우에만 적용. |
@@ -4162,18 +4260,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `SaveFootnote` — 2개 속성
 
-*SaveFootnote ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `FileName` | PropertyDescriptor | `FileName` | 파일 이름 |
 | `Flag` | PropertyDescriptor | `Flag` | 옵션1 : 각주 저장2 : 미주 저장3 : 각주/미주 저장 |
 
 ### `ScriptMacro` — 4개 속성
 
-*ScriptMacro ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Detail` | PropertyDescriptor | `Detail` | 매크로 설명 |
 | `Index` | PropertyDescriptor | `Index` | 정의(or 실행)할 매크로의 인덱스 |
@@ -4182,9 +4276,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `SecDef` — 32개 속성
 
-*SecDef ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyClass` | PropertyDescriptor | `ApplyClass` | 적용범위의 분류 (대화상자를 호출할 경우 사용)0x01 \= 선택된 구역0x02 \= 선택된 문자열0x04 \= 현재 구역0x08 \= 문서전체0x10 \= 새 구역 : 현재 위치부터 새로 |
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용범위0 \= 선택된 구역1 \= 선택된 문자열2 \= 현재 구역3 \= 문서전체4 \= 새 구역 : 현재 위치부터 새로 |
@@ -4221,9 +4313,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `SectionApply` — 5개 속성
 
-*SectionApply ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용범위 분류(ApplyClass)에서 하나의 값 |
 | `Category` | PropertyDescriptor | `Category` | 적용범위 분류(ApplyClass)를 사용자가 직접 설정할 때 사용.아이템이 없으면 한글이 현재 상태에 맞춰 적용범위 분류(ApplyClass)를 설정한다. (일반적으로 설정하지 않고 사용) |
@@ -4233,15 +4323,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `SelectionOpt` — 0개 속성
 
-*SelectionOpt ParameterSet - 선택 옵션 (Copy/Cut/Paste/Erase 등).*
-
-*(no registered properties)*
-
 ### `ShapeCopyPaste` — 5개 속성
 
-*ShapeCopyPaste ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CellAttr` | PropertyDescriptor | `CellAttr` | 셀 모양 복사 |
 | `CellBorder` | PropertyDescriptor | `CellBorder` | 선 모양 복사 |
@@ -4251,15 +4335,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ShapeObjSaveAsPicture` — 0개 속성
 
-*ShapeObjSaveAsPicture ParameterSet - 그리기 개체를 그림으로 저장.*
-
-*(no registered properties)*
-
 ### `ShapeObject` — 53개 속성
 
-*ShapeObject ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AdjustPrevObjAttr` | PropertyDescriptor | `AdjustPrevObjAttr` | 앞개체 속성 따라가기 TRUE/FASLE (한글2007에 새로 추가) |
 | `AdjustSelection` | PropertyDescriptor | `AdjustSelection` | 개체 Selection 상태 TRUE/FASLE (한글2007에 새로 추가) |
@@ -4317,9 +4395,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ShapeObjectCopyPaste` — 6개 속성
 
-*ShapeObjectCopyPaste ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ShapeObjectFill` | PropertyDescriptor | `ShapeObjectFill` | 그리기 채우기 복사 |
 | `ShapeObjectLine` | PropertyDescriptor | `ShapeObjectLine` | 그리기 선 모양 복사 |
@@ -4330,9 +4406,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `Sort` — 10개 속성
 
-*Sort ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CheckExtendYear` | PropertyDescriptor | `CheckExtendYear` | 두 자리 년도 확장 check Flag |
 | `CheckFromRear` | PropertyDescriptor | `CheckFromRear` | 단어 뒤에서 부터 비교 Flag |
@@ -4347,40 +4421,28 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `SpellingCheck` — 0개 속성
 
-*SpellingCheck ParameterSet - 맞춤법 검사.*
-
-*(no registered properties)*
-
 ### `Style` — 1개 속성
 
-*Style ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Apply` | PropertyDescriptor | `Apply` | 적용할 스타일 인덱스 |
 
 ### `StyleDelete` — 2개 속성
 
-*StyleDelete ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Alternation` | PropertyDescriptor | `Alternation` | 대체할 스타일 인덱스 |
 | `Target` | PropertyDescriptor | `Target` | 지워야할 스타일 인덱스 |
 
 ### `StyleTemplate` — 1개 속성
 
-*StyleTemplate ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `FileName` | PropertyDescriptor | `FileName` | 파일 이름 |
 
 ### `Sum` — 5개 속성
 
-*Sum ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Average` | PropertyDescriptor | `Average` | Parameter property |
 | `Comma` | PropertyDescriptor | `Comma` | 세 자리마다 쉼표로 자리 구분 (on / off) |
@@ -4390,9 +4452,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `SummaryInfo` — 23개 속성
 
-*SummaryInfo ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Author` | PropertyDescriptor | `Author` | 지은이 |
 | `Characters` | PropertyDescriptor | `Characters` | 문서분량 (글자) |
@@ -4420,9 +4480,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `TabDef` — 3개 속성
 
-*### TabDef*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AutoTabLeft` | BoolProperty | `AutoTabLeft` | Auto left tab |
 | `AutoTabRight` | BoolProperty | `AutoTabRight` | Auto right tab |
@@ -4430,9 +4488,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `Table` — 11개 속성
 
-*Table ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `BorderFill` | PropertyDescriptor | `BorderFill` | 표에 적용되는 테두리/배경 |
 | `Cell` | PropertyDescriptor | `Cell` | 셀 속성 |
@@ -4448,9 +4504,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `TableCreation` — 13개 속성
 
-*TableCreation ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CellInfo` | PropertyDescriptor | `CellInfo` | 정보가 없는 셀은 디폴트값을 따라가므로 모든 셀에 대해 정보를 줄 필요는 없다. |
 | `ColWidth` | PropertyDescriptor | `ColWidth` | 칼럼의 디폴트 폭 (PIT_I4\) |
@@ -4468,17 +4522,13 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `TableDeleteLine` — 1개 속성
 
-*TableDeleteLine ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Type` | PropertyDescriptor | `Type` | 0 \= 줄, 1 \= 칸 |
 
 ### `TableDrawPen` — 3개 속성
 
-*TableDrawPen ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Color` | ColorProperty | `Color` | Table을 그리는 연필(펜)의 선 색깔RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `Style` | PropertyDescriptor | `Style` | Table을 그리는 연필(펜)의 선 모양 |
@@ -4486,18 +4536,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `TableInsertLine` — 2개 속성
 
-*TableInsertLine ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Count` | PropertyDescriptor | `Count` | Parameter property |
 | `Side` | PropertyDescriptor | `Side` | Parameter property |
 
 ### `TableSplitCell` — 5개 속성
 
-*TableSplitCell ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Cols` | PropertyDescriptor | `Cols` | 칸 수 |
 | `DistributeHeight` | PropertyDescriptor | `DistributeHeight` | 줄 높이를 같게 |
@@ -4507,9 +4553,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `TableStrToTbl` — 5개 속성
 
-*TableStrToTbl ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AutoOrDefine` | PropertyDescriptor | `AutoOrDefine` | 자동으로 할 것인지 분리 문자를 지정 할 것인지를 결정 |
 | `DelimiterEtc` | PropertyDescriptor | `DelimiterEtc` | 기타 문자 필드 구분 기호 |
@@ -4519,27 +4563,21 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `TableSwap` — 2개 속성
 
-*TableSwap ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `SwapMargin` | PropertyDescriptor | `SwapMargin` | 여백 뒤집기 지원여부 |
 | `Type` | PropertyDescriptor | `Type` | 표 뒤집기 형식0 \= 상하 뒤집기1 \= 좌우 뒤집기2 \= X와 Y를 바꿈3 \= 반시계 방향으로 90도 회전4 \= 180도 회전5 \= 시계 방향으로 90도 회전 |
 
 ### `TableTblToStr` — 2개 속성
 
-*TableTblToStr ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DelimiterType` | PropertyDescriptor | `DelimiterType` | 분리 문자(탭, 쉼표, 공백) |
 | `UserDefine` | PropertyDescriptor | `UserDefine` | 사용자 정의 필드 구분 기호 |
 
 ### `TableTemplate` — 4개 속성
 
-*TableTemplate ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyTarger` | PropertyDescriptor | `ApplyTarger` | 적용 대상. 다음 값의 조합으로 구성된다.0x0001 \= 제목 줄0x0002 \= 마지막 줄0x0004 \= 첫째 칸0x0008 \= 마지막 칸 |
 | `CreateMode` | PropertyDescriptor | `CreateMode` | 표 만들기 모드 (표 만들기에서 제목줄에 제목 속성 넣기 위해) |
@@ -4548,17 +4586,13 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `TextCtrl` — 1개 속성
 
-*TextCtrl ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CtrlData` | PropertyDescriptor | `CtrlData` | 컨트롤 이름 저장을 위한 영역 |
 
 ### `TextVertical` — 5개 속성
 
-*TextVertical ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyClass` | PropertyDescriptor | `ApplyClass` | 적용 대상 분류.적용 대상 분류는 현재 캐럿의 상태에 따라 ApplyTo에 적용 가능한 대상을 한정짓는 역할을 한다. 내부적으로 값이 계산되므로, 값을 참조하는 용도로만 사용하도록 한다. 다음의 값의 조합으로 구성된다.0x0001 \= 선택된 구역0x |
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용 대상0 \= 선택된 구역1 \= 선택된 문자열2 \= 현재 구역3 \= 문서전체4 \= 새 구역 : 현재 위치부터 새로5 \= no items (적용대상 없음) |
@@ -4568,9 +4602,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `UserQCommandFile` — 3개 속성
 
-*UserQCommandFile ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `FileName` | PropertyDescriptor | `FileName` | 파일명 |
 | `LoadType` | PropertyDescriptor | `LoadType` | 로드 방법 (TRUE \= Overwrite, FALSE \= Merge) |
@@ -4578,9 +4610,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `VersionInfo` — 14개 속성
 
-*VersionInfo ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ItemEndIndex` | PropertyDescriptor | `ItemEndIndex` | 버전 비교를 보여줄 마지막 히스토리 인덱스 |
 | `ItemInfoDescription` | PropertyDescriptor | `ItemInfoDescription` | 해당 버전에 대한 설명 |
@@ -4599,9 +4629,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ViewProperties` — 6개 속성
 
-*ViewProperties ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `OptionFlag` | PropertyDescriptor | `OptionFlag` | 뷰 옵션 플랙. 여러 개를 OR연산하여 지정할 수 있음.0x00000001 \= off : 쪽윤곽, on : 기본 보기0x00000002 \= 공백과 폭이 없는 컨트롤을 기호로0x00000004 \= 문단 마크 기호로0x00000008 \= 안내선0x |
 | `ZoomCntX` | PropertyDescriptor | `ZoomCntX` | 화면 확대 종류가 "여러 쪽"인 경우 가로 페이지 수. 1 \~ 8 |
@@ -4612,9 +4640,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ViewStatus` — 3개 속성
 
-*ViewStatus ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Type` | PropertyDescriptor | `Type` | 0 (현재 View의 절대 Pos값만 지원함) |
 | `ViewPosX` | PropertyDescriptor | `ViewPosX` | 현재 뷰의 X값 |
@@ -4622,41 +4648,29 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `actioncrossref` — 1개 속성
 
-*ActionCrossRef ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Command` | PropertyDescriptor | `Command` | ※command string 참조 (한글2007에 새로 추가) |
 
 ### `addhanjaword` — 0개 속성
 
-*AddHanjaWord ParameterSet - 한자단어 등록.*
-
-*(no registered properties)*
-
 ### `autofill` — 2개 속성
 
-*AutoFill ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AutoFillItem` | PropertyDescriptor | `AutoFillItem` | 섹션의 아이템 인덱스 : 0 \~ |
 | `AutoFillSection` | PropertyDescriptor | `AutoFillSection` | 자동 채우기 섹션 : 0 \= 기본, 1 \= 사용자 정의 |
 
 ### `autonum` — 2개 속성
 
-*AutoNum ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `NewNumber` | PropertyDescriptor | `NewNumber` | 새 시작 번호 (1 .. n) |
 | `NumType` | PropertyDescriptor | `NumType` | 번호 종류 : 0 \= 쪽 번호1 \= 각주 번호2 \= 미주 번호3 \= 그림 번호4 \= 표 번호5 \= 수식 번호 |
 
 ### `bookmark` — 3개 속성
 
-*BookMark ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Command` | PropertyDescriptor | `Command` | 책갈피 명령의 종류 :0 \= 책갈피 생성, 1 \= 책갈피로 이동, 2 \= 책갈피 수정 |
 | `Name` | PropertyDescriptor | `Name` | 책갈피 이름 |
@@ -4664,9 +4678,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `borderfill` — 27개 속성
 
-*BorderFill ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `BackSlashFlag` | PropertyDescriptor | `BackSlashFlag` | 백슬래쉬 대각선 플래그 : 비트 플래그의 조합으로 표현되며 각 위치의 비트는 다음을 나타낸다.bit 0 \= 하단 대각선bit 1 \= 중앙 대각선bit 2 \= 상단 대각선더 자세한 내용은 하단의 ※ 대각선의 형태를 참고한다. |
 | `BorderColorBottom` | ColorProperty | `BorderColorBottom` | 4방향 테두리 색깔 :아래RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
@@ -4698,9 +4710,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `borderfillext` — 6개 속성
 
-*BorderFillExt ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ColorHorz` | ColorProperty | `ColorHorz` | 중앙선 색깔 : 가로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `ColorVert` | ColorProperty | `ColorVert` | 중앙선 색깔 : 세로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
@@ -4711,9 +4721,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `bulletshape` — 11개 속성
 
-*BulletShape ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Alignment` | PropertyDescriptor | `Alignment` | 번호 정렬 :0 \= 왼쪽 정렬, 1 \= 가운데 정렬, 2 \= 오른쪽 정렬 |
 | `AutoIndent` | PropertyDescriptor | `AutoIndent` | 번호 너비 자동 들여쓰기 여부 : 0 \= 들여쓰기 안함, 1 \= 들여쓰기 |
@@ -4729,9 +4737,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `caption` — 4개 속성
 
-*Caption ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CapFullSize` | PropertyDescriptor | `CapFullSize` | 캡션 폭에 여백을 포함할지 여부 (세로 방향일 때만 사용됨) |
 | `Gap` | PropertyDescriptor | `Gap` | 캡션과 틀 사이 간격(HWPUNIT) |
@@ -4740,9 +4746,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `captureend` — 5개 속성
 
-*CaptureEnd ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `BeginX` | PropertyDescriptor | `BeginX` | 시작점과 X 좌표(페이지 X좌표) |
 | `BeginY` | PropertyDescriptor | `BeginY` | 시작점과 Y 좌표(페이지 Y좌표) |
@@ -4752,15 +4756,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `cclmark` — 0개 속성
 
-*CCLMark ParameterSet - CCL 마크 삽입.*
-
-*(no registered properties)*
-
 ### `cell` — 8개 속성
 
-*Cell ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CellCtrlData` | PropertyDescriptor | `CellCtrlData` | 셀 데이터 (한글2007에 새로 추가) |
 | `Dirty` | PropertyDescriptor | `Dirty` | 초기화 상태인지 수정된 상태인지 여부 : 0 \= off, 1 \= on(한글2007에 새로 추가) |
@@ -4773,9 +4771,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `cellborderfill` — 5개 속성
 
-*CellBorderFill ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AllCellsBorderFill` | PropertyDescriptor | `AllCellsBorderFill` | 전체 셀의 테두리/배경 |
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용 대상 : 0 \= 선택된 셀, 1 \= 전체 셀, 2 \= 여러 셀에 걸쳐 적용 |
@@ -4785,18 +4781,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `changerome` — 2개 속성
 
-*ChangeRome ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `HanString` | PropertyDescriptor | `HanString` | 변경시킬 또는 변경된 한글문자 |
 | `Option` | PropertyDescriptor | `Option` | 변환옵션 :0 \= 일반1 \= 주소2 \= 사람이름3 \= 한글복원 |
 
 ### `charshape` — 65개 속성
 
-*CharShape ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Bold` | PropertyDescriptor | `Bold` | Bold : 0 \= off, 1 \= on |
 | `BorderFill` | PropertyDescriptor | `BorderFill` | 테두리/배경 (한글2007에 새로 추가) |
@@ -4866,31 +4858,21 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `chartobjshape` — 0개 속성
 
-*ChartObjShape ParameterSet - 차트 개체.*
-
-*(no registered properties)*
-
 ### `chcompose` — 1개 속성
 
-*ChCompose ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Chars` | PropertyDescriptor | `Chars` | 겹쳐질 글자들 |
 
 ### `codetable` — 1개 속성
 
-*CodeTable ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Text` | PropertyDescriptor | `Text` | 삽입될 스트링 |
 
 ### `coldef` — 11개 속성
 
-*ColDef ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyClass` | PropertyDescriptor | `ApplyClass` | 적용범위의 분류. 아래 값의 조합이다.0x0001 \= 선택된 다단0x0002 \= 선택된 문자열0x0004 \= 현재 다단0x0008 \= 개체 전체0x0010 \= 선택된 셀0x0020 \= 현재 구역0x0040 \= 문서전체0x0080 \= 현재 |
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용범위 :0 \= 선택된 다단1 \= 선택된 문자열2 \= 현재 다단3 \= 개체 전체4 \= 선택된 셀5 \= 현재 구역6 \= 문서 전체7 \= 현재 셀8 \= 새 쪽으로9 \= 새 다단으로10 \= 모든 셀 |
@@ -4906,17 +4888,13 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `convertcase` — 1개 속성
 
-*ConvertCase ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Type` | PropertyDescriptor | `Type` | 공통사용. |
 
 ### `convertfullhalf` — 6개 속성
 
-*ConvertFullHalf ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Alpha` | PropertyDescriptor | `Alpha` | 변경 대상에 영문자를 추가할지 여부 : 0 \= off, 1 \= on |
 | `Gata` | PropertyDescriptor | `Gata` | 변경 대상에 가타가나를 추가할지 여부 : 0 \= off, 1 \= on |
@@ -4927,25 +4905,19 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `converthiratogata` — 1개 속성
 
-*ConvertHiraToGata ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Type` | PropertyDescriptor | `Type` | 히라가나로 변경할지, 가타가나로 변경할지 여부0 \= 가타가나로 변경, 1 \= 히라가나로 변경 |
 
 ### `convertjianfan` — 1개 속성
 
-*ConvertJianFan ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Type` | PropertyDescriptor | `Type` | 간체로 변경할지, 번체로 변경할지 여부0 \= 번체로 변경, 1 \= 간체로 변경 |
 
 ### `converttohangul` — 5개 속성
 
-*ConvertToHangul ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Gata` | PropertyDescriptor | `Gata` | 가타가나를 한글로 변경할지 여부 : 0 \= off, 1 \= on확장 또는 변환 액션 간 파라메터셋의 호환을 위해 선언됨. |
 | `Gu` | PropertyDescriptor | `Gu` | 구결을 한글로 변경할지 여부 : 0 \= off, 1 \= on |
@@ -4955,25 +4927,19 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ctrldata` — 1개 속성
 
-*### CtrlData*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `name` | StringProperty | `Name` | 제어 데이터의 이름. |
 
 ### `deletectrls` — 1개 속성
 
-*DeleteCtrls ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DeleteCtrlType` | PropertyDescriptor | `DeleteCtrlType` | 지울 개체 목록 |
 
 ### `docfilters` — 3개 속성
 
-*DocFilters ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DocFilters` | PropertyDescriptor | `DocFilters` | Parameter property |
 | `Format` | PropertyDescriptor | `Format` | 필터 리스트를 string array형태로 가져옴 (Export시에만) |
@@ -4981,9 +4947,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `docfindinfo` — 3개 속성
 
-*DocFindInfo ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ListID` | PropertyDescriptor | `ListID` | 현재 위치한 리스트 |
 | `ParaID` | PropertyDescriptor | `ParaID` | 현재 위치한 문단 |
@@ -4991,9 +4955,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `documentinfo` — 17개 속성
 
-*DocumentInfo ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CurCtrl` | PropertyDescriptor | `CurCtrl` | 현재 리스트의 종류0 \= 일반 텍스트1 \= 글상자기타 \= 컨트롤 ID |
 | `CurPara` | PropertyDescriptor | `CurPara` | 현재 위치한 문단 |
@@ -5015,18 +4977,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `drawarctype` — 2개 속성
 
-*### DrawArcType*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `interval` | ListProperty | `Interval` | 곡선의 시작점과 끝점을 나타내는 배열 |
 | `type` | MappedProperty | `Type` | 곡선 유형: 0 = 선, 1 = 필수곡선, 2 = 화살표 |
 
 ### `drawcoordinfo` — 3개 속성
 
-*### DrawCoordInfo*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `count` | IntProperty | `Count` | 점의 개수: 정수 값을 입력하세요. |
 | `line` | ListProperty | `Line` | 선 정보 배열: 리스트 값을 입력하세요. |
@@ -5034,17 +4992,13 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `drawctrlhyperlink` — 1개 속성
 
-*### DrawCtrlHyperlink*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `command` | StringProperty | `Command` | Command String: 명령 문자열을 입력하세요. |
 
 ### `draweditdetail` — 4개 속성
 
-*### DrawEditDetail*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `command` | IntProperty | `Command` | Command: Reserved. |
 | `index` | IntProperty | `Index` | Index: 교점 정의의 인덱스. |
@@ -5053,9 +5007,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `drawfillattr` — 37개 속성
 
-*DrawFillAttr ParameterSet - 그리기 개체의 채우기 속성.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Brightness` | PropertyDescriptor | `Brightness` | 명도 (-100~100) |
 | `Contrast` | PropertyDescriptor | `Contrast` | 밝기 (-100~100) |
@@ -5097,9 +5049,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `drawimageattr` — 21개 속성
 
-*DrawImageAttr ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Brightness` | PropertyDescriptor | `Brightness` | 명도 (\-100 \~ 100\) |
 | `Contrast` | PropertyDescriptor | `Contrast` | 밝기 (\-100 \~ 100\) |
@@ -5125,9 +5075,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `drawimagescissoring` — 3개 속성
 
-*### DrawImageScissoring*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `handle_index` | IntProperty | `HandleIndex` | Reserved: 정수 값을 입력하세요. |
 | `x_offset` | IntProperty | `Xoffset` | 자를 x좌표 오프셋: 정수 값을 입력하세요. |
@@ -5135,9 +5083,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `drawlayout` — 3개 속성
 
-*### DrawLayout*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `create_num_pt` | IntProperty | `CreateNumPt` | 생성할 점의 수: 정수 값을 입력하세요. |
 | `create_pt` | ListProperty | `CreatePt` | 생성할 점의 좌표정보: (x, y) 튜플의 리스트 |
@@ -5145,9 +5091,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `drawlineattr` — 12개 속성
 
-*### DrawLineAttr*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `alpha` | IntProperty | `Alpha` | 투명도: 정수를 입력하세요. |
 | `color` | IntProperty | `Color` | 선 색상 (RGB 0x00BBGGRR): 정수를 입력하세요. |
@@ -5164,23 +5108,15 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `drawobjtemplatesave` — 0개 속성
 
-*DrawObjTemplateSave ParameterSet - 그리기 마당에 등록.*
-
-*(no registered properties)*
-
 ### `drawrecttype` — 1개 속성
 
-*### DrawRectType*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `type` | IntProperty | `Type` | 도형의 종류: 0 ~ 50 사이의 정수 값을 입력하세요. |
 
 ### `drawresize` — 4개 속성
 
-*### DrawResize*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `handle_index` | IntProperty | `HandleIndex` | Reserved: 정수 값을 입력하세요. |
 | `mode` | IntProperty | `Mode` | Reserved: 정수 값을 입력하세요. |
@@ -5189,9 +5125,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `drawrotate` — 7개 속성
 
-*### DrawRotate*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `angle` | IntProperty | `Angle` | 회전 각도. |
 | `center_x` | IntProperty | `CenterX` | 회전 중심의 X 좌표. |
@@ -5203,9 +5137,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `drawscaction` — 5개 속성
 
-*### DrawScAction*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `horz_flip` | BoolProperty | `HorzFlip` | 수평 flip (좌우 대칭 설정) |
 | `rotate_angle` | IntProperty | `RotateAngel` | 회전각 |
@@ -5215,9 +5147,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `drawshadow` — 5개 속성
 
-*### DrawShadow*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `shadow_alpha` | IntProperty | `ShadowAlpha` | 그림자 투명도 (0 ~ 255) |
 | `shadow_color` | IntProperty | `ShadowColor` | 그림자 색상 (COLORREF): 정수를 입력하세요. |
@@ -5227,18 +5157,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `drawshear` — 2개 속성
 
-*### DrawShear*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `x_factor` | IntProperty | `XFactor` | X shear factor: 정수 값을 입력하세요. |
 | `y_factor` | IntProperty | `YFactor` | Y shear factor: 정수 값을 입력하세요. |
 
 ### `drawtextart` — 13개 속성
 
-*### DrawTextart*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `align_type` | IntProperty | `AlignType` | 정렬 유형. |
 | `char_spacing` | IntProperty | `CharSpacing` | 문자 간격 (50 ~ 500). |
@@ -5256,9 +5182,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `dropcap` — 7개 속성
 
-*DropCap ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `FaceColor` | ColorProperty | `FaceColor` | 글꼴 색RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `FaceName` | PropertyDescriptor | `FaceName` | Parameter property |
@@ -5270,9 +5194,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `dutmal` — 9개 속성
 
-*Dutmal ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Align` | PropertyDescriptor | `Align` | 덧말의 좌우 Align. 0 \= 양쪽 정렬1 \= 왼쪽 정렬2 \= 오른쪽 정렬3 \= 가운데 정렬4 \= 배분 정렬5 \= 나눔 정렬기본은 가운데 정렬이며 옵션이 켜있을 때만 유효 |
 | `Delete` | PropertyDescriptor | `Delete` | 덧말 지움 (한글2007에 새로 추가) |
@@ -5286,9 +5208,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `endnoteshape` — 17개 속성
 
-*EndnoteShape ParameterSet - 미주 모양 (FootnoteShape와 동일 구조).*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyClass` | PropertyDescriptor | `ApplyClass` | 적용범위 분류 (비트마스크): 0x01=선택된 구역, 0x02=선택된 문자열, 0x04=현재 구역, 0x08=문서전체, 0x10=새 구역 |
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용범위: 0=선택된 구역, 1=선택된 문자열, 2=현재 구역, 3=문서전체, 4=새 구역 |
@@ -5310,9 +5230,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `engineproperties` — 7개 속성
 
-*EngineProperties ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DoAnyCursorEdit` | PropertyDescriptor | `DoAnyCursorEdit` | 마우스로 두 번 누르기 한곳에 입력가능 |
 | `DoOutLineStyle` | PropertyDescriptor | `DoOutLineStyle` | 개요 번호 삽입 문단에 개요 스타일 자동 적용 |
@@ -5324,9 +5242,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `eqedit` — 6개 속성
 
-*EqEdit ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 수식 속성 적용 범위 (한글2007에 새로 추가)0 : 선택된 수식 개체1 : 문서 전체 |
 | `BaseUnit` | PropertyDescriptor | `BaseUnit` | 수식이 삽입되는 앞의 글자와 같은 높이 (기본 값은 POINT 10 ) |
@@ -5337,17 +5253,13 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `exchangefootnoteendnote` — 1개 속성
 
-*ExchangeFootnoteEndNote ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Flag` | PropertyDescriptor | `Flag` | 옵션 0 : 모든 각주를 미주로 바꾸기1 : 모든 미주를 각주로 바꾸기2 : 각주와 미주를 서로 바꾸기 |
 
 ### `fieldctrl` — 4개 속성
 
-*FieldCtrl ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Command` | PropertyDescriptor | `Command` | 필드의 명령문 |
 | `CtrlData` | PropertyDescriptor | `CtrlData` | 필드 이름 저장을 위한 영역 |
@@ -5356,9 +5268,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `fileconvert` — 3개 속성
 
-*FileConvert ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DestFileList` | PropertyDescriptor | `DestFileList` | Destination 파일 리스트 |
 | `Format` | PropertyDescriptor | `Format` | 변환 포맷 |
@@ -5366,9 +5276,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `fileinfo` — 4개 속성
 
-*FileInfo ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Encrypted` | PropertyDescriptor | `Encrypted` | 암호 여부 (현재는 파일 버전 3\.0\.0\.0 이후 문서\-한글97, 한글 워디안, 한글 2002\-에 대해서만 판단한다.)\-1 : 판단 할 수 없음0 : 암호가 걸려 있지 않음양수: 암호가 걸려 있음. |
 | `Format` | PropertyDescriptor | `Format` | 파일의 형식.HWP : 한글 파일UNKNOWN : 알 수 없음. |
@@ -5377,9 +5285,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `fileopen` — 11개 속성
 
-*FileOpen ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Argument` | PropertyDescriptor | `Argument` | Argument |
 | `ModifiedFlag` | PropertyDescriptor | `ModifiedFlag` | Modify 플래그 |
@@ -5395,15 +5301,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `fileopensave` — 0개 속성
 
-*FileOpenSave ParameterSet - 파일 열기/저장.*
-
-*(no registered properties)*
-
 ### `filesaveas` — 11개 속성
 
-*FileSaveAs ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Argument` | PropertyDescriptor | `Argument` | Argument |
 | `ModifiedFlag` | PropertyDescriptor | `ModifiedFlag` | Modify 플래그 |
@@ -5419,9 +5319,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `filesaveblock` — 3개 속성
 
-*FileSaveBlock ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Argument` | PropertyDescriptor | `Argument` | argument |
 | `FileName` | PropertyDescriptor | `FileName` | 파일 이름 |
@@ -5429,9 +5327,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `filesendmail` — 4개 속성
 
-*FileSendMail ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Filepath` | PropertyDescriptor | `Filepath` | 사용자가 직접 입력한 파일 (이 아이템은 Type 아이템이 1(첨부파일)로 설정되어 있을 때만 유효하다) (한글2007에 새로 추가) |
 | `Subject` | PropertyDescriptor | `Subject` | Parameter property |
@@ -5440,9 +5336,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `filesetsecurity` — 3개 속성
 
-*FileSetSecurity ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `NoCopy` | PropertyDescriptor | `NoCopy` | 문서 내용 복사가 가능한 배포용 문서를 만들지의 여부0 : 복사 가능1 : 복사 가능하지 않음 |
 | `NoPrint` | PropertyDescriptor | `NoPrint` | 프린트 가능한 배포용 문서를 만들지의 여부0 : 프린트 가능1 : 프린트 가능하지 않음 |
@@ -5450,15 +5344,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `findimagepath` — 0개 속성
 
-*FindImagePath ParameterSet - 그림 경로 찾기.*
-
-*(no registered properties)*
-
 ### `findreplace` — 23개 속성
 
-*### FindReplace*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AllWordForms` | BoolProperty | `AllWordForms` | Match all word forms |
 | `AutoSpell` | BoolProperty | `AutoSpell` | Auto spelling check |
@@ -5486,9 +5374,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `flashproperties` — 8개 속성
 
-*FlashProperties ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AutoPlay` | PropertyDescriptor | `AutoPlay` | 자동 재생 여부 : 0 \= off, 1 \= on |
 | `Base` | PropertyDescriptor | `Base` | 경로의 Base |
@@ -5501,9 +5387,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `footnoteshape` — 17개 속성
 
-*FootnoteShape ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyClass` | PropertyDescriptor | `ApplyClass` | 적용범위의 분류 (대화상자를 호출할 경우 사용)0x01 \= 선택된 구역0x02 \= 선택된 문자열0x04 \= 현재 구역0x08 \= 문서전체0x10 \= 새 구역 : 현재 위치부터 새로 |
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용범위0 \= 선택된 구역1 \= 선택된 문자열2 \= 현재 구역3 \= 문서전체4 \= 새 구역 : 현재 위치부터 새로 |
@@ -5525,9 +5409,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ftpdownload` — 6개 속성
 
-*FtpDownload ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Directory` | PropertyDescriptor | `Directory` | 디렉터리 |
 | `FileName` | PropertyDescriptor | `FileName` | 파일 명 |
@@ -5538,9 +5420,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `ftpupload` — 7개 속성
 
-*FtpUpload ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Directory` | PropertyDescriptor | `Directory` | 디렉터리 |
 | `FileName` | PropertyDescriptor | `FileName` | 파일 명 |
@@ -5552,18 +5432,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `gotoe` — 2개 속성
 
-*GotoE ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DialogResult` | PropertyDescriptor | `DialogResult` | 대화상자의 반환값 (한글2007에 새로 추가) |
 | `SetSelectionIndex` | PropertyDescriptor | `SetSelectionIndex` | 현재 선택되어 있는 라디오 값 (한글2007에 새로 추가) |
 
 ### `gridinfo` — 12개 속성
 
-*GridInfo ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Align` | PropertyDescriptor | `Align` | 격자 기준(쪽 \= 0 / 종이 \= 1\) |
 | `HorzAlign` | PropertyDescriptor | `HorzAlign` | 격자 기준 가로 offset (단위 HWPUNIT) |
@@ -5580,9 +5456,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `headerfooter` — 6개 속성
 
-*HeaderFooter ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CtrlType` | PropertyDescriptor | `CtrlType` | 머리말/꼬리말 여부 : 0=머리말, 1=꼬리말 |
 | `DialogOption` | PropertyDescriptor | `DialogOption` | 머리말/꼬리말 대화상자를 실행할 때 "편집"버튼을 보일 것인지 말 것인지 지정한다. 1=보이기, 그외=안보이기 |
@@ -5593,9 +5467,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `hyperlink` — 5개 속성
 
-*HyperLink ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Command` | PropertyDescriptor | `Command` | Command String 참조 |
 | `DirectInsert` | PropertyDescriptor | `DirectInsert` | 현재 캐럿 위치에 무조건 하이퍼링크 삽입 여부 (블록지정 상태면 블록해제 후 삽입) (한글2007에 새로 추가) |
@@ -5605,63 +5477,41 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `hyperlinkjump` — 2개 속성
 
-*HyperlinkJump ParameterSet - 하이퍼링크 이동.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Command` | PropertyDescriptor | `Command` | Command String |
 | `Text` | PropertyDescriptor | `Text` | 하이퍼링크가 표시되는 문자열 |
 
 ### `idiom` — 2개 속성
 
-*Idiom ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `InputText` | PropertyDescriptor | `InputText` | 삽입될 스트링/끼워 넣을 파일 |
 | `InputType` | PropertyDescriptor | `InputType` | 입력기 상용구/한글 상용구 |
 
 ### `indexmark` — 2개 속성
 
-*IndexMark ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `First` | PropertyDescriptor | `First` | 첫 번째 키 |
 | `Second` | PropertyDescriptor | `Second` | 두 번째 키 |
 
 ### `inputdatestyle` — 2개 속성
 
-*InputDateStyle ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DateStyleDataForm` | PropertyDescriptor | `DateStyleDataForm` | 필드 컨트롤의 안내문/지시문 |
 | `DateStyleType` | PropertyDescriptor | `DateStyleType` | 문자열로 넣기/코드로 넣기 |
 
 ### `inputhanja` — 0개 속성
 
-*InputHanja ParameterSet - 한자 변환.*
-
-*(no registered properties)*
-
 ### `inputhanjabusu` — 0개 속성
-
-*InputHanjaBusu ParameterSet - 부수로 입력.*
-
-*(no registered properties)*
 
 ### `inputhanjamean` — 0개 속성
 
-*InputHanjaMean ParameterSet - 새김으로 입력.*
-
-*(no registered properties)*
-
 ### `insertfieldtemplate` — 6개 속성
 
-*InsertFieldTemplate ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Editable` | PropertyDescriptor | `Editable` | 필드의 양식모드에서 편집여부 (한글2007에 새로 추가)0 \= 편집 불가능1 \= 편집 가능 |
 | `ShowSingle` | PropertyDescriptor | `ShowSingle` | 문서마당 정보 대화상자에서 페이지(탭) 보이기 옵션 :\-1 \= 모든 페이지 보이기0 \= 누름틀 페이지만 보이기1 \= 개인 정보 페이지만 보이기2 \= 문서 요약 페이지만 보이기3 \= 만든 날짜 페이지만 보이기4 \= 파일 경로 페이지만 보이기 |
@@ -5672,9 +5522,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `insertfile` — 7개 속성
 
-*InsertFile ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `FileArg` | PropertyDescriptor | `FileArg` | 삽입할 파일의 Argument |
 | `FileFormat` | PropertyDescriptor | `FileFormat` | 삽입할 파일의 확장자 |
@@ -5686,26 +5534,20 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `inserttext` — 1개 속성
 
-*### InsertText*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `text` | StringProperty | `Text` | 삽입할 텍스트 |
 
 ### `internet` — 2개 속성
 
-*Internet ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `OpenUrlString` | PropertyDescriptor | `OpenUrlString` | 불러올 문서가 존재하는 URL |
 | `OpenUrlWhere` | PropertyDescriptor | `OpenUrlWhere` | 웹브라우저로 불러오거나 한글 문서로 불러오기 |
 
 ### `keymacro` — 3개 속성
 
-*KeyMacro ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Index` | PropertyDescriptor | `Index` | 정의(or 실행)할 매크로의 인덱스. |
 | `Name` | PropertyDescriptor | `Name` | 매크로 이름 |
@@ -5713,15 +5555,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `label` — 0개 속성
 
-*Label ParameterSet - 라벨 문서.*
-
-*(no registered properties)*
-
 ### `linkdocument` — 3개 속성
 
-*LinkDocument ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `FootnoteInherit` | PropertyDescriptor | `FootnoteInherit` | TRUE \= 각주 번호 잇기, FALSE \= 각주 번호 잇지 않기. |
 | `Name` | PropertyDescriptor | `Name` | 연결 문서 FILE NAME |
@@ -5729,9 +5565,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `listparapos` — 3개 속성
 
-*ListParaPos ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `List` | PropertyDescriptor | `List` | 현재 위치한 리스트 |
 | `Para` | PropertyDescriptor | `Para` | 현재 위치한 문단 |
@@ -5739,9 +5573,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `listproperties` — 7개 속성
 
-*### ListProperties*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `line_wrap` | MappedProperty | `LineWrap` | 줄 바꿈 옵션: 0 = 기본값, 1 = 줄 바꿈 없음, 2 = 강제 줄 바꿈 |
 | `margin_bottom` | IntProperty | `MarginBottom` | 아래쪽 여백: 정수 값을 입력하세요. |
@@ -5753,9 +5585,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `mailmergegenerate` — 14개 속성
 
-*MailMergeGenerate ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Continue` | PropertyDescriptor | `Continue` | 쪽번호 잇기 |
 | `DbfCode` | PropertyDescriptor | `DbfCode` | dbf file codepage0 \= KS1 \= KSSM2 \= GB3 \= BIG54 \= SJIS |
@@ -5774,9 +5604,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `makecontents` — 9개 속성
 
-*MakeContents ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AutoTabRight` | PropertyDescriptor | `AutoTabRight` | 문단 오른쪽 끝 자동 탭 여부 : 0 \= 자동 탭 사용안함, 1 \= 자동 탭 사용 |
 | `Leader` | PropertyDescriptor | `Leader` | 오른쪽 끝 탭 채울 모양(선 종류) |
@@ -5790,17 +5618,13 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `markpenshape` — 1개 속성
 
-*MarkpenShape ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Color` | ColorProperty | `Color` | 형광펜색 (COLORREF) |
 
 ### `masterpage` — 4개 속성
 
-*MasterPage ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용대상 (한글2007에 새로 추가)0 \= 현재구역1 \= 문서 전체 |
 | `Duplicate` | PropertyDescriptor | `Duplicate` | 기존 바탕쪽과 겹침 (On/Off) (한글2007에 새로 추가) |
@@ -5809,9 +5633,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `memoshape` — 7개 속성
 
-*MemoShape ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ActiveFillColor` | ColorProperty | `ActiveFillColor` | 활성화된 채우기 색깔 (COLORREF) |
 | `FillColor` | ColorProperty | `FillColor` | 채우기 색깔 (COLORREF) |
@@ -5823,9 +5645,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `mousepos` — 5개 속성
 
-*MousePos ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Page` | PropertyDescriptor | `Page` | 페이지 번호 ( 0 based) |
 | `X` | PropertyDescriptor | `X` | 가로 클릭한 위치 (HWPUNIT) |
@@ -5835,9 +5655,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `movieproperties` — 13개 속성
 
-*MovieProperties ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AutoPlay` | PropertyDescriptor | `AutoPlay` | 자동 재생 여부 : 0 \= off, 1 \= on |
 | `AutoRewind` | PropertyDescriptor | `AutoRewind` | 되감기 여부 : 0 \= off, 1 \= on |
@@ -5855,9 +5673,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `numberingshape` — 72개 속성
 
-*NumberingShape ParameterSet - 문단 번호 모양 정의. Level0~Level6 (7개 수준).*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AlignmentLevel0` | PropertyDescriptor | `AlignmentLevel0` | 수준0: 번호 정렬 0=왼쪽, 1=가운데, 2=오른쪽 |
 | `AlignmentLevel1` | PropertyDescriptor | `AlignmentLevel1` | 수준1: 번호 정렬 |
@@ -5934,9 +5750,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `olecreation` — 12개 속성
 
-*OleCreation ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Aspect` | PropertyDescriptor | `Aspect` | 생성된 OLE 개체를 아이콘으로 표시할지 여부 :0 \= 내용으로 표시, 1 \= 아이콘으로 표시 |
 | `Clsid` | PropertyDescriptor | `Clsid` | 클래스 ID (새로 개체 생성‘일 때 사용) |
@@ -5953,9 +5767,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `pageborderfill` — 8개 속성
 
-*PageBorderFill ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `FillArea` | PropertyDescriptor | `FillArea` | 채울 영역0 \= 종이1 \= 쪽2 \= 테두리 |
 | `FooterInside` | PropertyDescriptor | `FooterInside` | 꼬리말 포함 (on / off) |
@@ -5968,9 +5780,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `pagedef` — 13개 속성
 
-*PageDef ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyClass` | PropertyDescriptor | `ApplyClass` | 적용범위의 분류 (대화상자를 호출할 경우 사용)0x01 \= 선택된 구역0x02 \= 선택된 문자열0x04 \= 현재 구역0x08 \= 문서전체0x10 \= 새 구역 : 현재 위치부터 새로 |
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용범위0 \= 선택된 구역1 \= 선택된 문자열2 \= 현재 구역3 \= 문서전체4 \= 새 구역 : 현재 위치부터 새로 |
@@ -5988,25 +5798,19 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `pagehiding` — 1개 속성
 
-*PageHiding ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Fields` | PropertyDescriptor | `Fields` | 감출 대상 비트 필드.0x01 \= 머리말0x02 \= 꼬리말0x04 \= 바탕쪽0x08 \= 테두리0x10 \= 배경0x20 \= 쪽번호 위치 |
 
 ### `pagenumctrl` — 1개 속성
 
-*PageNumCtrl ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `PageStartsOn` | PropertyDescriptor | `PageStartsOn` | 페이지 번호 적용 옵션. 0 \= 양쪽1 \= 짝수쪽2 \= 홀수쪽 |
 
 ### `pagenumpos` — 6개 속성
 
-*PageNumPos ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DrawPos` | PropertyDescriptor | `DrawPos` | 번호 위치0 \= 쪽 번호 없음1 \= 왼쪽 위,2 \= 가운데 위,3 \= 오른쪽 위,4 \= 왼쪽 아래,5 \= 가운데 아래,6 \= 오른쪽 아래,7 \= 바깥쪽 위,8 \= 바깥쪽 아래,9 \= 안쪽 위,10 \= 안쪽 아래 |
 | `NumberFormat` | PropertyDescriptor | `NumberFormat` | 번호 모양 :0 \= 1, 2, 31 \= ①, ②, ③2 \= Ⅰ, Ⅱ, Ⅲ3 \= ⅰ, ⅱ, ⅲ4 \= A, B, C8 \= 가, 나, 다13 \= 一, 二, 三15 \= 갑, 을, 병16 \= 甲, 乙, 丙※ 중간에 빈 번호에도 문자포맷이 존재하 |
@@ -6017,9 +5821,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `parashape` — 32개 속성
 
-*ParaShape ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AlignType` | PropertyDescriptor | `AlignType` | 정렬 방식0 \= 양쪽 정렬1 \= 왼쪽 정렬2 \= 오른쪽 정렬3 \= 가운데 정렬4 \= 배분 정렬5 \= 나눔 정렬 (공백에만 배분) |
 | `BorderConnect` | PropertyDescriptor | `BorderConnect` | 문단 테두리/배경 \- 테두리 연결 (on / off) |
@@ -6056,9 +5858,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `password` — 5개 속성
 
-*Password ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Ask` | PropertyDescriptor | `Ask` | TRUE=문서 암호 확인, FALSE=문서 암호 설정 |
 | `DialogResult` | PropertyDescriptor | `DialogResult` | 암호해제 버튼 클릭 여부. 1=암호해제 |
@@ -6068,9 +5868,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `preference` — 5개 속성
 
-*Preference ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyForbidden` | PropertyDescriptor | `ApplyForbidden` | (금칙 처리) 새 문서에 기본 값으로 설정 (on/off)(한글2007에 새로 추가) |
 | `ApplyLinkAttr` | PropertyDescriptor | `ApplyLinkAttr` | 하이퍼링크 글자 속성 문서 전체에 적용하기 여부 (on/off)(한글2007에 새로 추가) |
@@ -6080,9 +5878,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `presentation` — 7개 속성
 
-*Presentation ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DialogResult` | PropertyDescriptor | `DialogResult` | 프리젠테이션 대화상자의 "실행"버튼이 클릭되었는지 여부.한글2007에서는 이 Set Item이 제거되었다. |
 | `Effect` | PropertyDescriptor | `Effect` | 화면 전환 효과 |
@@ -6094,9 +5890,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `print` — 44개 속성
 
-*Print ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `BinderHoleType` | PropertyDescriptor | `BinderHoleType` | 바인더 구멍 |
 | `Collate` | PropertyDescriptor | `Collate` | 한 부씩 찍기 |
@@ -6145,9 +5939,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `printtoimage` — 4개 속성
 
-*PrintToImage ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ColorDepth` | ColorProperty | `ColorDepth` | 색상수 (bits: 8, 16\...) |
 | `FileName` | PropertyDescriptor | `FileName` | 그림 경로 |
@@ -6156,9 +5948,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `printwatermark` — 21개 속성
 
-*PrintWatermark ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AlphaImage` | PropertyDescriptor | `AlphaImage` | 그림 투명도 (0 \~ 255\) |
 | `AlphaText` | PropertyDescriptor | `AlphaText` | 글자 투명도 (0 \~ 255\) |
@@ -6184,18 +5974,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `qcorrect` — 2개 속성
 
-*QCorrect ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `HyperLinkRunKey` | PropertyDescriptor | `HyperLinkRunKey` | URL 또는 email 하이퍼링크 작성 키 정보 (한글2007에 새로 추가) |
 | `LauncherKey` | PropertyDescriptor | `LauncherKey` | 빠른 교정을 실행한 키 정보 (한글2007에 새로 추가) |
 
 ### `revisiondef` — 4개 속성
 
-*RevisionDef ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `BeginPos` | PropertyDescriptor | `BeginPos` | 시작위치(HWPUNIT). 오른자리 옮김표와 왼자리 옮김표일 경우에만 적용. |
 | `Margin` | PropertyDescriptor | `Margin` | 여백(HWPUNIT). 오른자리 옮김표와 왼자리 옮김표일 경우에만 적용. |
@@ -6204,18 +5990,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `savefootnote` — 2개 속성
 
-*SaveFootnote ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `FileName` | PropertyDescriptor | `FileName` | 파일 이름 |
 | `Flag` | PropertyDescriptor | `Flag` | 옵션1 : 각주 저장2 : 미주 저장3 : 각주/미주 저장 |
 
 ### `scriptmacro` — 4개 속성
 
-*ScriptMacro ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Detail` | PropertyDescriptor | `Detail` | 매크로 설명 |
 | `Index` | PropertyDescriptor | `Index` | 정의(or 실행)할 매크로의 인덱스 |
@@ -6224,9 +6006,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `secdef` — 32개 속성
 
-*SecDef ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyClass` | PropertyDescriptor | `ApplyClass` | 적용범위의 분류 (대화상자를 호출할 경우 사용)0x01 \= 선택된 구역0x02 \= 선택된 문자열0x04 \= 현재 구역0x08 \= 문서전체0x10 \= 새 구역 : 현재 위치부터 새로 |
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용범위0 \= 선택된 구역1 \= 선택된 문자열2 \= 현재 구역3 \= 문서전체4 \= 새 구역 : 현재 위치부터 새로 |
@@ -6263,9 +6043,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `sectionapply` — 5개 속성
 
-*SectionApply ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용범위 분류(ApplyClass)에서 하나의 값 |
 | `Category` | PropertyDescriptor | `Category` | 적용범위 분류(ApplyClass)를 사용자가 직접 설정할 때 사용.아이템이 없으면 한글이 현재 상태에 맞춰 적용범위 분류(ApplyClass)를 설정한다. (일반적으로 설정하지 않고 사용) |
@@ -6275,15 +6053,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `selectionopt` — 0개 속성
 
-*SelectionOpt ParameterSet - 선택 옵션 (Copy/Cut/Paste/Erase 등).*
-
-*(no registered properties)*
-
 ### `shapecopypaste` — 5개 속성
 
-*ShapeCopyPaste ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CellAttr` | PropertyDescriptor | `CellAttr` | 셀 모양 복사 |
 | `CellBorder` | PropertyDescriptor | `CellBorder` | 선 모양 복사 |
@@ -6293,9 +6065,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `shapeobject` — 53개 속성
 
-*ShapeObject ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AdjustPrevObjAttr` | PropertyDescriptor | `AdjustPrevObjAttr` | 앞개체 속성 따라가기 TRUE/FASLE (한글2007에 새로 추가) |
 | `AdjustSelection` | PropertyDescriptor | `AdjustSelection` | 개체 Selection 상태 TRUE/FASLE (한글2007에 새로 추가) |
@@ -6353,9 +6123,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `shapeobjectcopypaste` — 6개 속성
 
-*ShapeObjectCopyPaste ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ShapeObjectFill` | PropertyDescriptor | `ShapeObjectFill` | 그리기 채우기 복사 |
 | `ShapeObjectLine` | PropertyDescriptor | `ShapeObjectLine` | 그리기 선 모양 복사 |
@@ -6366,15 +6134,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `shapeobjsaveaspicture` — 0개 속성
 
-*ShapeObjSaveAsPicture ParameterSet - 그리기 개체를 그림으로 저장.*
-
-*(no registered properties)*
-
 ### `sort` — 10개 속성
 
-*Sort ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CheckExtendYear` | PropertyDescriptor | `CheckExtendYear` | 두 자리 년도 확장 check Flag |
 | `CheckFromRear` | PropertyDescriptor | `CheckFromRear` | 단어 뒤에서 부터 비교 Flag |
@@ -6389,40 +6151,28 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `spellingcheck` — 0개 속성
 
-*SpellingCheck ParameterSet - 맞춤법 검사.*
-
-*(no registered properties)*
-
 ### `style` — 1개 속성
 
-*Style ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Apply` | PropertyDescriptor | `Apply` | 적용할 스타일 인덱스 |
 
 ### `styledelete` — 2개 속성
 
-*StyleDelete ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Alternation` | PropertyDescriptor | `Alternation` | 대체할 스타일 인덱스 |
 | `Target` | PropertyDescriptor | `Target` | 지워야할 스타일 인덱스 |
 
 ### `styletemplate` — 1개 속성
 
-*StyleTemplate ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `FileName` | PropertyDescriptor | `FileName` | 파일 이름 |
 
 ### `sum` — 5개 속성
 
-*Sum ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Average` | PropertyDescriptor | `Average` | Parameter property |
 | `Comma` | PropertyDescriptor | `Comma` | 세 자리마다 쉼표로 자리 구분 (on / off) |
@@ -6432,9 +6182,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `summaryinfo` — 23개 속성
 
-*SummaryInfo ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Author` | PropertyDescriptor | `Author` | 지은이 |
 | `Characters` | PropertyDescriptor | `Characters` | 문서분량 (글자) |
@@ -6462,9 +6210,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `tabdef` — 3개 속성
 
-*### TabDef*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AutoTabLeft` | BoolProperty | `AutoTabLeft` | Auto left tab |
 | `AutoTabRight` | BoolProperty | `AutoTabRight` | Auto right tab |
@@ -6472,9 +6218,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `table` — 11개 속성
 
-*Table ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `BorderFill` | PropertyDescriptor | `BorderFill` | 표에 적용되는 테두리/배경 |
 | `Cell` | PropertyDescriptor | `Cell` | 셀 속성 |
@@ -6490,9 +6234,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `tablecreation` — 13개 속성
 
-*TableCreation ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CellInfo` | PropertyDescriptor | `CellInfo` | 정보가 없는 셀은 디폴트값을 따라가므로 모든 셀에 대해 정보를 줄 필요는 없다. |
 | `ColWidth` | PropertyDescriptor | `ColWidth` | 칼럼의 디폴트 폭 (PIT_I4\) |
@@ -6510,17 +6252,13 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `tabledeleteline` — 1개 속성
 
-*TableDeleteLine ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Type` | PropertyDescriptor | `Type` | 0 \= 줄, 1 \= 칸 |
 
 ### `tabledrawpen` — 3개 속성
 
-*TableDrawPen ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Color` | ColorProperty | `Color` | Table을 그리는 연필(펜)의 선 색깔RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `Style` | PropertyDescriptor | `Style` | Table을 그리는 연필(펜)의 선 모양 |
@@ -6528,18 +6266,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `tableinsertline` — 2개 속성
 
-*TableInsertLine ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Count` | PropertyDescriptor | `Count` | Parameter property |
 | `Side` | PropertyDescriptor | `Side` | Parameter property |
 
 ### `tablesplitcell` — 5개 속성
 
-*TableSplitCell ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Cols` | PropertyDescriptor | `Cols` | 칸 수 |
 | `DistributeHeight` | PropertyDescriptor | `DistributeHeight` | 줄 높이를 같게 |
@@ -6549,9 +6283,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `tablestrtotbl` — 5개 속성
 
-*TableStrToTbl ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `AutoOrDefine` | PropertyDescriptor | `AutoOrDefine` | 자동으로 할 것인지 분리 문자를 지정 할 것인지를 결정 |
 | `DelimiterEtc` | PropertyDescriptor | `DelimiterEtc` | 기타 문자 필드 구분 기호 |
@@ -6561,27 +6293,21 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `tableswap` — 2개 속성
 
-*TableSwap ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `SwapMargin` | PropertyDescriptor | `SwapMargin` | 여백 뒤집기 지원여부 |
 | `Type` | PropertyDescriptor | `Type` | 표 뒤집기 형식0 \= 상하 뒤집기1 \= 좌우 뒤집기2 \= X와 Y를 바꿈3 \= 반시계 방향으로 90도 회전4 \= 180도 회전5 \= 시계 방향으로 90도 회전 |
 
 ### `tabletbltostr` — 2개 속성
 
-*TableTblToStr ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `DelimiterType` | PropertyDescriptor | `DelimiterType` | 분리 문자(탭, 쉼표, 공백) |
 | `UserDefine` | PropertyDescriptor | `UserDefine` | 사용자 정의 필드 구분 기호 |
 
 ### `tabletemplate` — 4개 속성
 
-*TableTemplate ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyTarger` | PropertyDescriptor | `ApplyTarger` | 적용 대상. 다음 값의 조합으로 구성된다.0x0001 \= 제목 줄0x0002 \= 마지막 줄0x0004 \= 첫째 칸0x0008 \= 마지막 칸 |
 | `CreateMode` | PropertyDescriptor | `CreateMode` | 표 만들기 모드 (표 만들기에서 제목줄에 제목 속성 넣기 위해) |
@@ -6590,17 +6316,13 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `textctrl` — 1개 속성
 
-*TextCtrl ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `CtrlData` | PropertyDescriptor | `CtrlData` | 컨트롤 이름 저장을 위한 영역 |
 
 ### `textvertical` — 5개 속성
 
-*TextVertical ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ApplyClass` | PropertyDescriptor | `ApplyClass` | 적용 대상 분류.적용 대상 분류는 현재 캐럿의 상태에 따라 ApplyTo에 적용 가능한 대상을 한정짓는 역할을 한다. 내부적으로 값이 계산되므로, 값을 참조하는 용도로만 사용하도록 한다. 다음의 값의 조합으로 구성된다.0x0001 \= 선택된 구역0x |
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용 대상0 \= 선택된 구역1 \= 선택된 문자열2 \= 현재 구역3 \= 문서전체4 \= 새 구역 : 현재 위치부터 새로5 \= no items (적용대상 없음) |
@@ -6610,9 +6332,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `userqcommandfile` — 3개 속성
 
-*UserQCommandFile ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `FileName` | PropertyDescriptor | `FileName` | 파일명 |
 | `LoadType` | PropertyDescriptor | `LoadType` | 로드 방법 (TRUE \= Overwrite, FALSE \= Merge) |
@@ -6620,9 +6340,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `versioninfo` — 14개 속성
 
-*VersionInfo ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `ItemEndIndex` | PropertyDescriptor | `ItemEndIndex` | 버전 비교를 보여줄 마지막 히스토리 인덱스 |
 | `ItemInfoDescription` | PropertyDescriptor | `ItemInfoDescription` | 해당 버전에 대한 설명 |
@@ -6641,9 +6359,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `viewproperties` — 6개 속성
 
-*ViewProperties ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `OptionFlag` | PropertyDescriptor | `OptionFlag` | 뷰 옵션 플랙. 여러 개를 OR연산하여 지정할 수 있음.0x00000001 \= off : 쪽윤곽, on : 기본 보기0x00000002 \= 공백과 폭이 없는 컨트롤을 기호로0x00000004 \= 문단 마크 기호로0x00000008 \= 안내선0x |
 | `ZoomCntX` | PropertyDescriptor | `ZoomCntX` | 화면 확대 종류가 "여러 쪽"인 경우 가로 페이지 수. 1 \~ 8 |
@@ -6654,63 +6370,24 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 ### `viewstatus` — 3개 속성
 
-*ViewStatus ParameterSet.*
-
-| 속성명 | 타입 | HWP 키 | 설명 |
+| 속성 | 타입 | 키 | 설명 |
 |:---|:---|:---|:---|
 | `Type` | PropertyDescriptor | `Type` | 0 (현재 View의 절대 Pos값만 지원함) |
 | `ViewPosX` | PropertyDescriptor | `ViewPosX` | 현재 뷰의 X값 |
 | `ViewPosY` | PropertyDescriptor | `ViewPosY` | 현재 뷰의 Y값 |
 
-## Color 와 UNSET
+## Color / UNSET
 
-색상 처리에 사용되는 유틸리티 타입. `from hwpapi.parametersets import Color, UNSET`.
+`from hwpapi.parametersets import Color, UNSET`
 
-### `Color`
+- `Color("#FF0000")`, `Color.from_rgb(r, g, b)`, `Color.from_hex(hex_str)`
+- `color.hex`, `color.raw`, `color.is_unset`
+- `UNSET` — "값 건드리지 않음" 센티넬
+- `None` — "필드 제거"
 
-HWP 색상 값을 감싸는 경량 래퍼.
+## 레퍼런스
 
-- `Color("#FF0000")` — hex 문자열에서 생성
-- `color.hex` → `"#ff0000"`
-- `color.raw` → HWP 내부 BBGGRR 정수
-- `color.is_unset` → 값 없음 여부
-- `str(color)` → hex (기존 문자열 비교 호환)
-- `color == "#FF0000"` → True
-
-### `UNSET`
-
-"이 필드를 손대지 마라" 센티넬.
-
-- `prop = UNSET` → 아무 변경 없음 (no-op)
-- `prop = None`  → 필드 제거
-- 다른 값         → 정상 설정
-
-이는 `charshape_scope` / `styled_text` 의 snapshot + restore 패턴에서 유용하게 활용됩니다.
-
-## 상수 (Enums)
-
-`from hwpapi import constants as const` 로 import.
-
-| 상수 | 용도 | 주요 값 |
-|:---|:---|:---|
-| `ScanStartPosition` | `get_text` 시작 범위 | `Current`, `Line`, `Paragraph`, `Section`, `Document` |
-| `ScanEndPosition` | `get_text` 종료 범위 | (위와 동일) |
-| `ScanDirection` | 검색 방향 | `Forward`, `Backward`, `All` |
-| `MaskOption` | `scan()` 마스크 | `All`, `Normal`, `Control` 등 |
-| `SelectionOption` | `select_text` 범위 | `Line`, `Word`, `Para`, `Sentence` |
-
-## `app.api` — 탈출구
-
-```python
-app.api.Run("BreakPara")
-app.api.HAction.GetDefault("CharShape", app.api.HParameterSet.HCharShape.HSet)
-app.api.HParameterSet.HCharShape.Bold = 1
-app.api.HAction.Execute("CharShape", app.api.HParameterSet.HCharShape.HSet)
-```
-
-## 레퍼런스 링크
-
-- [GitHub 저장소](https://github.com/JunDamin/hwpapi)
-- [PyPI 페이지](https://pypi.org/project/hwpapi/)
+- [GitHub](https://github.com/JunDamin/hwpapi)
+- [PyPI](https://pypi.org/project/hwpapi/)
 - [리팩토링 계획](https://github.com/JunDamin/hwpapi/blob/main/docs/REFACTORING_PLAN.md)
-- [CHANGELOG](https://github.com/JunDamin/hwpapi/blob/main/CHANGELOG.md)
+- [pyhwpx 비교](https://github.com/JunDamin/hwpapi/blob/main/docs/PYHWPX_COMPARISON.md)
