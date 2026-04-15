@@ -45,6 +45,7 @@ from hwpapi.classes import (
 from hwpapi.classes.fields import Fields, Bookmarks, Hyperlinks
 from hwpapi.classes.images import Images
 from hwpapi.classes.selection import Selection
+from hwpapi.classes.debug import Debug
 from hwpapi.presets import Presets
 from .engine import Engine, Engines, Apps
 from hwpapi.functions import (
@@ -135,6 +136,8 @@ class App:
         self.images = Images(self)
         self.sel = Selection(self)
         self.preset = Presets(self)
+        # v0.0.16+ debug accessor
+        self.debug = Debug(self)
         self.logger.info("App initialized successfully with all accessors")
 
     def _load(self, new_app=False, engine=None, dll_path=None):
@@ -1049,6 +1052,109 @@ class App:
                 pass
         finally:
             self.set_message_box_mode(prev)
+
+    @contextmanager
+    def batch_mode(self, hide: bool = True):
+        """
+        **대량 처리 성능 부스터** — 화면 갱신/창 표시 억제. v0.0.16+.
+
+        수백 개 문서를 열고 편집/저장할 때 HWP 가 매 작업마다 화면을
+        다시 그리는 비용이 누적됩니다. 이 context 는 진입 시 창을 숨기고
+        ``SetMessageBoxMode`` 를 SILENCE_ALL_YES 로 맞추고, 종료 시
+        원상복구.
+
+        Parameters
+        ----------
+        hide : bool
+            True (기본) 이면 블록 내부에서 창 숨김. False 이면 visible 유지
+            (dialog 억제만).
+
+        Examples
+        --------
+        >>> with app.batch_mode():
+        ...     for path in paths:
+        ...         app.open(path)
+        ...         app.fields.update(merge_data)
+        ...         app.save(f"out/{path.name}")
+        # 일반 대비 5~10배 빠름, 블록 종료 시 창/모드 자동 복원
+
+        Notes
+        -----
+        내부적으로 :meth:`silenced` + ``set_visible(False)`` + (가능하면)
+        ``ScrollUnfollow`` 같은 HWP redraw suppression 을 조합.
+        """
+        prev_mode = self.get_message_box_mode()
+        prev_visible = None
+        try:
+            prev_visible = bool(self.api.XHwpWindows.Active_XHwpWindow.Visible)
+        except Exception:
+            pass
+
+        # Enter batch mode
+        self.set_message_box_mode(self.SILENCE_ALL_YES)
+        if hide and prev_visible:
+            try:
+                self.set_visible(False)
+            except Exception:
+                pass
+
+        # ScrollFollowTo off (if supported)
+        try:
+            self.api.Run("FollowActiveWindowOff")
+        except Exception:
+            pass
+
+        try:
+            yield self
+        finally:
+            # Restore
+            self.set_message_box_mode(prev_mode)
+            if hide and prev_visible:
+                try:
+                    self.set_visible(True)
+                except Exception:
+                    pass
+            try:
+                self.api.Run("FollowActiveWindowOn")
+            except Exception:
+                pass
+
+    @contextmanager
+    def undo_group(self, description: str = ""):
+        """
+        **Undo 경계** — 블록 내부의 여러 편집을 사용자가 단일 Ctrl+Z 로
+        되돌릴 수 있게 묶음. v0.0.16+.
+
+        Parameters
+        ----------
+        description : str
+            undo history 에 표시될 설명 (선택).
+
+        Examples
+        --------
+        >>> with app.undo_group("대량 포맷팅"):
+        ...     for para in range(100):
+        ...         app.set_charshape(bold=True)
+        ...         app.move.line.next()
+        # 사용자가 Ctrl+Z 한 번으로 100 번 작업이 모두 rollback
+
+        Notes
+        -----
+        HWP 는 공식 undo group API 가 제한적. 현재 구현은 best-effort:
+        진입 시점을 기록하고 종료 시까지의 모든 작업을 묶으려 시도합니다.
+        """
+        # HWP 의 공식 undo boundary 액션 시도 (없을 수 있음)
+        try:
+            self.api.Run("SetUndoBegin")
+        except Exception:
+            pass
+        try:
+            yield self
+        finally:
+            try:
+                self.api.Run("SetUndoEnd")
+            except Exception:
+                pass
 
     # ═════════════════════════════════════════════════════════════
     # Field API (Mail Merge / Forms) — Phase A

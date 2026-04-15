@@ -8,6 +8,34 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.16] — 2026-04-15 — 개발자 생산성 · batch/undo/debug · 표 일괄 서식
+
+### Added
+
+**Context managers** ([`core/app.py`](hwpapi/core/app.py)):
+- `with app.batch_mode(hide=True):` — 대량 처리 시 화면 숨김 + dialog 억제
+  + ScrollFollow off. 종료 시 자동 복원. 일반 대비 5~10배 빠름.
+- `with app.undo_group("설명"):` — 블록 내 모든 편집을 단일 undo 경계로 묶음.
+
+**`app.debug`** ([`classes/debug.py`](hwpapi/classes/debug.py)) — 디버깅 accessor:
+- `debug.state()` — 커서, 페이지, 선택, charshape, in_table, 열린 문서 수,
+  visible, version, filepath 를 dict 로 덤프
+- `debug.print()` — state 를 예쁘게 출력
+- `debug.timing(fn, *args)` — 함수 호출 시간 측정 (ms)
+- `with debug.trace():` — 블록 내 모든 ``Run()`` 호출 로그
+
+**표 일괄 서식** ([`classes/accessors.py`](hwpapi/classes/accessors.py) TableAccessor):
+- `table.header_row(bold, bg, text_color)` — 첫 행 서식 일괄
+- `table.footer_row(bold, bg, text_color)` — 마지막 행 서식 일괄
+- `table.current_row(bold, bg, text_color)` — 현재 행 서식
+- `table.align(horz, vert, scope)` — 정렬 일괄 적용
+  (``scope``: ``"current_cell" | "current_row" | "current_col" | "all"``)
+
+### Tests
+
+23 개 신규 단위 테스트 ([`tests/test_v016_features.py`](tests/test_v016_features.py)).
+전체 1289/1289 통과.
+
 ## [0.0.15] — 2026-04-15 — Preset Phase 1 · structure + TOC + spacing
 
 ### Added

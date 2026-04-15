@@ -18,6 +18,7 @@ from .controls import ControlsAccessor, Control
 from .fields import Fields, Field, Bookmarks, Hyperlinks, Hyperlink
 from .images import Images, Image
 from .selection import Selection
+from .debug import Debug
 
 __all__ = [
     'MoveAccessor', 'CellAccessor', 'TableAccessor', 'PageAccessor',
@@ -27,4 +28,5 @@ __all__ = [
     'Fields', 'Field', 'Bookmarks', 'Hyperlinks', 'Hyperlink',
     'Images', 'Image',
     'Selection',
+    'Debug',
 ]

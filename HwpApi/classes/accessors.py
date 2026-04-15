@@ -872,6 +872,180 @@ class TableAccessor:
         self._set_shape_property("AdjustPrevObjAttr", value)
 
     # ═════════════════════════════════════════════════════════════
+    # v0.0.16 — Batch row/col operations
+    # ═════════════════════════════════════════════════════════════
+
+    def header_row(self, bold: bool = True, bg: Optional[str] = None,
+                    text_color: Optional[str] = None) -> "TableAccessor":
+        """
+        현재 표의 첫 행(header) 에 서식 일괄 적용 — shortcut.
+
+        Parameters
+        ----------
+        bold : bool
+            굵게 (기본 True).
+        bg : str, optional
+            배경 hex 색상.
+        text_color : str, optional
+            글자 hex 색상.
+
+        Examples
+        --------
+        >>> app.table.header_row(bold=True, bg="#E8F4F8")
+        """
+        app = self._app
+        if not app.in_table():
+            app.logger.warning("header_row: 커서가 표 안에 있지 않습니다.")
+            return self
+        try:
+            app.api.Run("TableColBegin")
+            for _ in range(500):
+                if not app.api.Run("TableUpperCell"):
+                    break
+            app.api.Run("TableCellBlock")
+            app.api.Run("TableCellBlockRow")
+            if bg:
+                from hwpapi.presets import _apply_cell_bg
+                _apply_cell_bg(app, bg)
+            fmt = {}
+            if bold is not None:
+                fmt["bold"] = bold
+            if text_color:
+                fmt["text_color"] = text_color
+            if fmt:
+                try:
+                    app.set_charshape(**fmt)
+                except Exception:
+                    pass
+            app.api.Run("Cancel")
+        except Exception as e:
+            app.logger.debug(f"header_row: {e}")
+        return self
+
+    def footer_row(self, bold: bool = True, bg: Optional[str] = None,
+                    text_color: Optional[str] = None) -> "TableAccessor":
+        """현재 표의 마지막 행에 서식 일괄 적용 — :meth:`header_row` 의 끝판."""
+        app = self._app
+        if not app.in_table():
+            app.logger.warning("footer_row: 커서가 표 안에 있지 않습니다.")
+            return self
+        try:
+            for _ in range(500):
+                if not app.api.Run("TableRightCell"):
+                    break
+            for _ in range(500):
+                if not app.api.Run("TableLowerCell"):
+                    break
+            app.api.Run("TableCellBlock")
+            app.api.Run("TableCellBlockRow")
+            if bg:
+                from hwpapi.presets import _apply_cell_bg
+                _apply_cell_bg(app, bg)
+            fmt = {}
+            if bold is not None:
+                fmt["bold"] = bold
+            if text_color:
+                fmt["text_color"] = text_color
+            if fmt:
+                try:
+                    app.set_charshape(**fmt)
+                except Exception:
+                    pass
+            app.api.Run("Cancel")
+        except Exception as e:
+            app.logger.debug(f"footer_row: {e}")
+        return self
+
+    def current_row(self, bold: Optional[bool] = None, bg: Optional[str] = None,
+                     text_color: Optional[str] = None) -> "TableAccessor":
+        """
+        현재 커서가 있는 행 전체에 서식 일괄 적용.
+
+        Examples
+        --------
+        >>> app.table.current_row(bg="#FFFFCC")       # 강조
+        """
+        app = self._app
+        if not app.in_table():
+            app.logger.warning("current_row: 커서가 표 안에 있지 않습니다.")
+            return self
+        try:
+            app.api.Run("TableCellBlock")
+            app.api.Run("TableCellBlockRow")
+            if bg:
+                from hwpapi.presets import _apply_cell_bg
+                _apply_cell_bg(app, bg)
+            fmt = {}
+            if bold is not None:
+                fmt["bold"] = bold
+            if text_color:
+                fmt["text_color"] = text_color
+            if fmt:
+                try:
+                    app.set_charshape(**fmt)
+                except Exception:
+                    pass
+            app.api.Run("Cancel")
+        except Exception as e:
+            app.logger.debug(f"current_row: {e}")
+        return self
+
+    def align(self, horz: Optional[str] = None,
+               vert: Optional[str] = None,
+               scope: str = "current_row") -> "TableAccessor":
+        """
+        표 셀 정렬 일괄 적용.
+
+        Parameters
+        ----------
+        horz : str, optional
+            ``"left" | "center" | "right" | "justify"``.
+        vert : str, optional
+            ``"top" | "middle" | "bottom"``.
+        scope : str
+            ``"current_cell" | "current_row" | "current_col" | "all"``.
+
+        Examples
+        --------
+        >>> app.table.align(horz="right", scope="current_col")   # 숫자 열 우정렬
+        >>> app.table.align(horz="center", vert="middle", scope="all")
+        """
+        app = self._app
+        if not app.in_table():
+            app.logger.warning("align: 커서가 표 안에 있지 않습니다.")
+            return self
+
+        H_ACTIONS = {
+            "left": "ParagraphAlignLeft",
+            "center": "ParagraphAlignCenter",
+            "right": "ParagraphAlignRight",
+            "justify": "ParagraphAlignJustify",
+        }
+        V_ACTIONS = {
+            "top": "CellAlignTop",
+            "middle": "CellAlignCenter",
+            "bottom": "CellAlignBottom",
+        }
+        SCOPE_ACTIONS = {
+            "current_cell": ["TableCellBlock"],
+            "current_row": ["TableCellBlock", "TableCellBlockRow"],
+            "current_col": ["TableCellBlock", "TableCellBlockCol"],
+            "all": ["TableCellBlock", "TableCellBlockRow", "TableCellBlockCol"],
+        }
+
+        try:
+            for act in SCOPE_ACTIONS.get(scope, SCOPE_ACTIONS["current_row"]):
+                app.api.Run(act)
+            if horz and horz in H_ACTIONS:
+                app.api.Run(H_ACTIONS[horz])
+            if vert and vert in V_ACTIONS:
+                app.api.Run(V_ACTIONS[vert])
+            app.api.Run("Cancel")
+        except Exception as e:
+            app.logger.debug(f"align: {e}")
+        return self
+
+    # ═════════════════════════════════════════════════════════════
     # v0.0.14 — Batch operations
     # ═════════════════════════════════════════════════════════════
 
