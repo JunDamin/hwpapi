@@ -2390,6 +2390,29 @@ class App:
             self.api.Run("MoveRight")
         # 6) RESTORE the snapshot — cursor char state == pre-block state
         self._restore_charshape(char_before)
+        # 7) Explicitly RESET any formatting attrs we applied so they don't
+        #    bleed into subsequent text. HWP keeps cursor's "last applied"
+        #    charshape after a selection is canceled, which overrides the
+        #    snapshot restore for unset (default) attributes.
+        if fmt:
+            reset_fmt = {}
+            for key in fmt.keys():
+                # Boolean / toggle attrs → reset to False
+                if key in ("bold", "italic", "super_script", "sub_script"):
+                    reset_fmt[key] = False
+                # Type-enum attrs → reset to 0 (none)
+                elif key in ("underline_type", "strike_out_type", "outline_type"):
+                    reset_fmt[key] = 0
+                # Color attrs → reset to None (removed)
+                elif key in ("text_color", "shade_color", "underline_color",
+                             "strike_out_color", "outline_color"):
+                    reset_fmt[key] = None
+                # Height/spacing — leave alone since user often wants size cascading
+            if reset_fmt:
+                try:
+                    self.set_charshape(**reset_fmt)
+                except Exception:
+                    pass
         return self  # Fluent — chain 가능 (v0.0.13+)
 
     def _snapshot_charshape(self):
