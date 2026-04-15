@@ -8,6 +8,35 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.18] — 2026-04-15 — Linter · Template · Config
+
+### Added
+
+**`app.lint()`** ([`classes/lint.py`](hwpapi/classes/lint.py)) — 문서 품질 체크:
+- callable accessor: ``report = app.lint()`` 반환
+- 검사 항목:
+  - 긴 문장 (기본 80자 초과) → ``report.long_sentences``
+  - 긴 문단 (기본 500자 초과) → ``report.long_paragraphs``
+  - 빈 문단 → ``report.empty_paragraphs``
+  - 연속 공백 → ``report.double_spaces``
+  - 끝 공백 → ``report.trailing_whitespace``
+- ``report.has_issues``, ``.issue_count``, ``.summary`` 헬퍼
+
+**`app.template`** ([`classes/lint.py`](hwpapi/classes/lint.py)) — 문서 템플릿:
+- ``template.save(path)`` — 현재 charshape/parashape/page 설정을 JSON 으로
+- ``template.apply(path)`` — JSON 템플릿을 현재 문서에 적용
+
+**`app.config`** ([`classes/lint.py`](hwpapi/classes/lint.py)) — App 선호도:
+- ``config.default_font``, ``.default_size``, ``.default_line_spacing``,
+  ``.default_table_style``, ``.palette``
+- ``config.update(**kw)``, ``.reset()``, ``.to_dict()``
+- ``config.save(path="~/.hwpapirc")`` / ``.load(path)``
+
+### Tests
+
+22 개 신규 단위 테스트 ([`tests/test_v018_features.py`](tests/test_v018_features.py)).
+전체 1341/1341 통과.
+
 ## [0.0.17] — 2026-04-15 — Convert · View · more presets
 
 ### Added

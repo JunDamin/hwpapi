@@ -48,6 +48,7 @@ from hwpapi.classes.selection import Selection
 from hwpapi.classes.debug import Debug
 from hwpapi.classes.convert import Convert
 from hwpapi.classes.view import View
+from hwpapi.classes.lint import Linter, Template, Config
 from hwpapi.presets import Presets
 from .engine import Engine, Engines, Apps
 from hwpapi.functions import (
@@ -143,6 +144,10 @@ class App:
         # v0.0.17+ convert / view accessors
         self.convert = Convert(self)
         self.view = View(self)
+        # v0.0.18+ lint / template / config accessors
+        self.lint = Linter(self)
+        self.template = Template(self)
+        self.config = Config(self)
         self.logger.info("App initialized successfully with all accessors")
 
     def _load(self, new_app=False, engine=None, dll_path=None):

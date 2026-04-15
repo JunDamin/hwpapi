@@ -21,6 +21,7 @@ from .selection import Selection
 from .debug import Debug
 from .convert import Convert
 from .view import View
+from .lint import Linter, LintReport, Template, Config
 
 __all__ = [
     'MoveAccessor', 'CellAccessor', 'TableAccessor', 'PageAccessor',
@@ -33,4 +34,5 @@ __all__ = [
     'Debug',
     'Convert',
     'View',
+    'Linter', 'LintReport', 'Template', 'Config',
 ]
