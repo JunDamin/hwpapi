@@ -1068,7 +1068,7 @@ App 이 내부적으로 사용. 보통 직접 다룰 일은 없습니다.
 
 ## 다중 문서 (Multi-Document)
 
-한 HWP 세션에서 여러 문서를 동시에 다루기 위한 API. [다중 문서 튜토리얼](01_tutorials/multi_document.html) 참고.
+한 HWP 세션에서 여러 문서를 동시에 다루기 위한 API. 구현은 `hwpapi/core/document.py` 에 있으며, [다중 문서 튜토리얼](01_tutorials/multi_document.html) 참고.
 
 ### `app.documents` — 문서 컬렉션
 
@@ -1080,23 +1080,23 @@ App 이 내부적으로 사용. 보통 직접 다룰 일은 없습니다.
 
 **메소드 (Methods)**
 
-#### `add(self, is_tab: bool = True) -> 'Document'`
+#### `add(self, is_tab: 'bool' = True) -> "'Document'"`
 
 새 빈 문서 추가. ``is_tab=True`` 면 같은 창의 새 탭.
 
-#### `close_all(self, save: bool = False) -> int`
+#### `close_all(self, save: 'bool' = False) -> 'int'`
 
 모든 문서를 닫고 닫은 개수를 반환.
 
-#### `find(self, name_substr: str) -> 'Document'`
+#### `find(self, name_substr: 'str') -> "'Document'"`
 
 파일 경로에 ``name_substr`` 이 포함된 첫 번째 문서 반환 (없으면 None).
 
-#### `open(self, path: str, format: str = None, arg: str = '') -> 'Document'`
+#### `open(self, path: 'str', format: 'str' = None, arg: 'str' = '') -> "'Document'"`
 
 기존 파일을 새 문서로 열기.
 
-#### `save_all(self) -> int`
+#### `save_all(self) -> 'int'`
 
 모든 문서를 저장하고 성공 개수를 반환.
 
@@ -1117,7 +1117,7 @@ App 의 모든 메소드/속성을 자동 위임받아 `doc.insert_text(...)`, `
 
 **메소드 (Methods)**
 
-#### `activate(self) -> 'Document'`
+#### `activate(self) -> "'Document'"`
 
 이 문서를 활성창으로 전환하고 self 반환.
 
@@ -1132,27 +1132,27 @@ action 을 실행하면 이전 문서에 반영되는 현상을 피하기 위해
 
 </details>
 
-#### `clear(self) -> bool`
+#### `clear(self) -> 'bool'`
 
 문서 내용 비우기 (새 문서처럼).
 
-#### `close(self, save: bool = False) -> bool`
+#### `close(self, save: 'bool' = False) -> 'bool'`
 
 이 문서만 닫기. ``save=True`` 면 저장 후 닫기.
 
-#### `redo(self) -> bool`
+#### `redo(self) -> 'bool'`
 
 이 문서의 다시 실행.
 
-#### `save(self) -> bool`
+#### `save(self) -> 'bool'`
 
 현재 경로에 저장. 저장된 적 없으면 실패 (``save_as`` 사용).
 
-#### `save_as(self, path: str, format: str = None) -> bool`
+#### `save_as(self, path: 'str', format: 'str' = None) -> 'bool'`
 
 다른 이름/포맷으로 저장.
 
-#### `undo(self) -> bool`
+#### `undo(self) -> 'bool'`
 
 이 문서의 되돌리기.
 
@@ -2627,10 +2627,10 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
 | `BackSlashFlag` | PropertyDescriptor | `BackSlashFlag` | 백슬래쉬 대각선 플래그 : 비트 플래그의 조합으로 표현되며 각 위치의 비트는 다음을 나타낸다.bit 0 \= 하단 대각선bit 1 \= 중앙 대각선bit 2 \= 상단 대각선더 자세한 내용은 하단의 ※ 대각선의 형태를 참고한다. |
-| `BorderColorBottom` | PropertyDescriptor | `BorderColorBottom` | 4방향 테두리 색깔 :아래RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| `BorderColorRight` | PropertyDescriptor | `BorderColorRight` | 4방향 테두리 색깔 : 오른쪽RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| `BorderColorTop` | PropertyDescriptor | `BorderColorTop` | 4방향 테두리 색깔 : 위RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| `BorderCorlorLeft` | PropertyDescriptor | `BorderCorlorLeft` | 4방향 테두리 색깔 : 왼쪽RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `BorderColorBottom` | ColorProperty | `BorderColorBottom` | 4방향 테두리 색깔 :아래RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `BorderColorRight` | ColorProperty | `BorderColorRight` | 4방향 테두리 색깔 : 오른쪽RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `BorderColorTop` | ColorProperty | `BorderColorTop` | 4방향 테두리 색깔 : 위RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `BorderCorlorLeft` | ColorProperty | `BorderCorlorLeft` | 4방향 테두리 색깔 : 왼쪽RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `BorderFill3D` | PropertyDescriptor | `BorderFill3D` | 3차원 효과 : 0 \= off, 1 \= on |
 | `BorderTypeBottom` | PropertyDescriptor | `BorderTypeBottom` | 4방향 테두리 종류 : 아래 |
 | `BorderTypeLeft` | PropertyDescriptor | `BorderTypeLeft` | 4방향 테두리 종류 : 왼쪽 \[선 종류] |
@@ -2647,7 +2647,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `CrookedSlashFlag` | PropertyDescriptor | `CrookedSlashFlag` | 꺾인 대각선 플래그 (bit 0, 1이 각각 slash, back slash의 가운데 대각선이 꺾인 대각선임을 나타낸다.) |
 | `CrookedSlashFlag1` | PropertyDescriptor | `CrookedSlashFlag1` | Low Byte CrookedSlashFlag (슬래쉬 대각선의 꺾임 여부)(CrookedSlashFlag를 쓰기 편하도록 CrookedSlashFlag1,2로 나눔) |
 | `CrookedSlashFlag2` | PropertyDescriptor | `CrookedSlashFlag2` | High Byte CrookedSlashFlag (역슬래쉬 대각선의 꺾임 여부)(CrookedSlashFlag를 쓰기 편하도록 CrookedSlashFlag1,2로 나눔) |
-| `DiagonalColor` | PropertyDescriptor | `DiagonalColor` | 선 색상RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용 |
+| `DiagonalColor` | ColorProperty | `DiagonalColor` | 선 색상RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용 |
 | `DiagonalType` | PropertyDescriptor | `DiagonalType` | 선 종류 셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용 |
 | `DiagonalWidth` | PropertyDescriptor | `DiagonalWidth` | 선 굵기 셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용 |
 | `FillAttr` | PropertyDescriptor | `FillAttr` | 배경 채우기 속성 |
@@ -2660,8 +2660,8 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
-| `ColorHorz` | PropertyDescriptor | `ColorHorz` | 중앙선 색깔 : 가로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| `ColorVert` | PropertyDescriptor | `ColorVert` | 중앙선 색깔 : 세로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `ColorHorz` | ColorProperty | `ColorHorz` | 중앙선 색깔 : 가로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `ColorVert` | ColorProperty | `ColorVert` | 중앙선 색깔 : 세로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `TypeHorz` | PropertyDescriptor | `TypeHorz` | 중앙선 종류 : 가로 \[선 종류] |
 | `TypeVert` | PropertyDescriptor | `TypeVert` | 중앙선 종류 : 세로 |
 | `WidthHorz` | PropertyDescriptor | `WidthHorz` | 중앙선 두께 : 가로 \[선 굵기] |
@@ -2800,8 +2800,8 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `RatioOther` | PropertyDescriptor | `RatioOther` | 각 언어별 장평 비율. (기타) 50% \- 200% |
 | `RatioSymbol` | PropertyDescriptor | `RatioSymbol` | 각 언어별 장평 비율. (심벌) 50% \- 200% |
 | `RatioUser` | PropertyDescriptor | `RatioUser` | 각 언어별 장평 비율. (사용자) 50% \- 200% |
-| `ShadeColor` | PropertyDescriptor | `ShadeColor` | 음영색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| `ShadowColor` | PropertyDescriptor | `ShadowColor` | 그림자 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `ShadeColor` | ColorProperty | `ShadeColor` | 음영색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `ShadowColor` | ColorProperty | `ShadowColor` | 그림자 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `ShadowOffsetX` | PropertyDescriptor | `ShadowOffsetX` | 그림자 간격 (X 방향) \-100% \- 100% |
 | `ShadowOffsetY` | PropertyDescriptor | `ShadowOffsetY` | 그림자 간격 (Y 방향) \-100% \- 100% |
 | `ShadowType` | PropertyDescriptor | `ShadowType` | 그림자 종류 : 0 \= none, 1 \= drop, 2 \= continuous |
@@ -2823,8 +2823,8 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `StrikeOutType` | PropertyDescriptor | `StrikeOutType` | 취소선 종류 : 0 \= none, 1 \= red single, 2 \= red double, 3 \= text single, 4 \= text double |
 | `SubScript` | PropertyDescriptor | `SubScript` | Subscript : 0 \= off, 1 \= on |
 | `SuperScript` | PropertyDescriptor | `SuperScript` | Superscript : 0 \= off, 1 \= on |
-| `TextColor` | PropertyDescriptor | `TextColor` | 글자색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| `UnderlineColor` | PropertyDescriptor | `UnderlineColor` | 밑줄 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `TextColor` | ColorProperty | `TextColor` | 글자색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `UnderlineColor` | ColorProperty | `UnderlineColor` | 밑줄 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `UnderlineShape` | PropertyDescriptor | `UnderlineShape` | 밑줄 모양 : 선 종류 |
 | `UnderlineType` | PropertyDescriptor | `UnderlineType` | 밑줄 종류 : 0 \= none, 1 \= bottom, 2 \= center, 3 \= top |
 | `UseFontSpace` | PropertyDescriptor | `UseFontSpace` | 글꼴에 어울리는 빈칸 : 0 \= off, 1 \= on |
@@ -2854,7 +2854,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용범위 :0 \= 선택된 다단1 \= 선택된 문자열2 \= 현재 다단3 \= 개체 전체4 \= 선택된 셀5 \= 현재 구역6 \= 문서 전체7 \= 현재 셀8 \= 새 쪽으로9 \= 새 다단으로10 \= 모든 셀 |
 | `Count` | PropertyDescriptor | `Count` | 단 개수. 1\-255까지. |
 | `Layout` | PropertyDescriptor | `Layout` | 단 방향 지정 :0 \= 왼쪽부터, 1 \= 오른쪽부터, 2 \= 맞쪽 |
-| `LineColor` | PropertyDescriptor | `LineColor` | 선 색깔. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `LineColor` | ColorProperty | `LineColor` | 선 색깔. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `LineType` | PropertyDescriptor | `LineType` | 선 종류. |
 | `LineWidth` | PropertyDescriptor | `LineWidth` | 선 굵기. |
 | `SameGap` | PropertyDescriptor | `SameGap` | 단 사이 간격(HWPUNIT) SAME_SIZE가 1일 때만 사용된다. |
@@ -3025,8 +3025,8 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `GradationBrush` | PropertyDescriptor | `GradationBrush` | 현재 브러시가 그러데이션 브러시인지 여부 |
 | `GradationCenterX` | PropertyDescriptor | `GradationCenterX` | 그러데이션 가로 중심 X 좌표 |
 | `GradationCenterY` | PropertyDescriptor | `GradationCenterY` | 그러데이션 세로 중심 Y 좌표 |
-| `GradationColor` | PropertyDescriptor | `GradationColor` | 그러데이션 색깔 배열 (PIT_ARRAY) |
-| `GradationColorNum` | PropertyDescriptor | `GradationColorNum` | 그러데이션 색 수 |
+| `GradationColor` | ColorProperty | `GradationColor` | 그러데이션 색깔 배열 (PIT_ARRAY) |
+| `GradationColorNum` | ColorProperty | `GradationColorNum` | 그러데이션 색 수 |
 | `GradationIndexPos` | PropertyDescriptor | `GradationIndexPos` | 그러데이션 다음 색깔과의 거리 배열 (PIT_ARRAY) |
 | `GradationStep` | PropertyDescriptor | `GradationStep` | 그러데이션 번짐 정도 (0~100) |
 | `GradationStepCenter` | PropertyDescriptor | `GradationStepCenter` | 그러데이션 번짐 정도의 중심 (0~100) |
@@ -3048,9 +3048,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `SkipTop` | PropertyDescriptor | `SkipTop` | 위 자르기 |
 | `Type` | PropertyDescriptor | `Type` | 배경 유형: 0=채우기 없음, 1=면색/무늬색, 2=그림, 3=그러데이션 |
 | `WinBrushAlpha` | PropertyDescriptor | `WinBrushAlpha` | 면/무늬 색 투명도 |
-| `WinBrushFaceColor` | PropertyDescriptor | `WinBrushFaceColor` | 면 색 (RGB 0x00BBGGRR) |
+| `WinBrushFaceColor` | ColorProperty | `WinBrushFaceColor` | 면 색 (RGB 0x00BBGGRR) |
 | `WinBrushFaceStyle` | PropertyDescriptor | `WinBrushFaceStyle` | 무늬 스타일 |
-| `WinBrushHatchColor` | PropertyDescriptor | `WinBrushHatchColor` | 무늬 색 (RGB 0x00BBGGRR) |
+| `WinBrushHatchColor` | ColorProperty | `WinBrushHatchColor` | 무늬 색 (RGB 0x00BBGGRR) |
 | `WindowsBrush` | PropertyDescriptor | `WindowsBrush` | 현재 브러시가 면/무늬 브러시인지 여부 |
 
 ### `DrawImageAttr` — 21개 속성
@@ -3218,9 +3218,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
-| `FaceColor` | PropertyDescriptor | `FaceColor` | 글꼴 색RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `FaceColor` | ColorProperty | `FaceColor` | 글꼴 색RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `FaceName` | PropertyDescriptor | `FaceName` | Parameter property |
-| `LineColor` | PropertyDescriptor | `LineColor` | 선 색RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `LineColor` | ColorProperty | `LineColor` | 선 색RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `LineStyle` | PropertyDescriptor | `LineStyle` | 선 스타일 |
 | `LineWeight` | PropertyDescriptor | `LineWeight` | 선 굵기 |
 | `Spacing` | PropertyDescriptor | `Spacing` | 본문과의 간격 |
@@ -3288,7 +3288,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 |:---|:---|:---|:---|
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 수식 속성 적용 범위 (한글2007에 새로 추가)0 : 선택된 수식 개체1 : 문서 전체 |
 | `BaseUnit` | PropertyDescriptor | `BaseUnit` | 수식이 삽입되는 앞의 글자와 같은 높이 (기본 값은 POINT 10 ) |
-| `Color` | PropertyDescriptor | `Color` | 수식이 삽입되는 글자 색과 같은 색 (기본 값은 WINDOWTEXT 색)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `Color` | ColorProperty | `Color` | 수식이 삽입되는 글자 색과 같은 색 (기본 값은 WINDOWTEXT 색)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `LineMode` | PropertyDescriptor | `LineMode` | 줄 단위를 사용할지의 여부 (한글2007에 새로 추가) |
 | `String` | PropertyDescriptor | `String` | 수식 스크립트. |
 | `Version` | PropertyDescriptor | `Version` | 수식 스크립트 버전 정보 (한글2007에 새로 추가) |
@@ -3450,7 +3450,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 |:---|:---|:---|:---|
 | `AutoPlay` | PropertyDescriptor | `AutoPlay` | 자동 재생 여부 : 0 \= off, 1 \= on |
 | `Base` | PropertyDescriptor | `Base` | 경로의 Base |
-| `BgColor` | PropertyDescriptor | `BgColor` | 배경색 (COLORREF) |
+| `BgColor` | ColorProperty | `BgColor` | 배경색 (COLORREF) |
 | `LoopPlay` | PropertyDescriptor | `LoopPlay` | 반복 재생 여부 : 0 \= off, 1 \= on |
 | `Qulaity` | PropertyDescriptor | `Qulaity` | 재생 품질 |
 | `Scale` | PropertyDescriptor | `Scale` | 스케일 |
@@ -3752,7 +3752,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
-| `Color` | PropertyDescriptor | `Color` | 형광펜색 (COLORREF) |
+| `Color` | ColorProperty | `Color` | 형광펜색 (COLORREF) |
 
 ### `MasterPage` — 4개 속성
 
@@ -3771,9 +3771,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
-| `ActiveFillColor` | PropertyDescriptor | `ActiveFillColor` | 활성화된 채우기 색깔 (COLORREF) |
-| `FillColor` | PropertyDescriptor | `FillColor` | 채우기 색깔 (COLORREF) |
-| `LineColor` | PropertyDescriptor | `LineColor` | 선 색깔 (COLORREF) |
+| `ActiveFillColor` | ColorProperty | `ActiveFillColor` | 활성화된 채우기 색깔 (COLORREF) |
+| `FillColor` | ColorProperty | `FillColor` | 채우기 색깔 (COLORREF) |
+| `LineColor` | ColorProperty | `LineColor` | 선 색깔 (COLORREF) |
 | `LineType` | PropertyDescriptor | `LineType` | 선 종류 |
 | `LineWidth` | PropertyDescriptor | `LineWidth` | 선 굵기 |
 | `MemoType` | PropertyDescriptor | `MemoType` | 메모 종류 \- 현재 사용안 함1 \= 메모 넣기, 2 \= 메모 지우기, 3 \= 메모 고치기 |
@@ -4107,7 +4107,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
-| `ColorDepth` | PropertyDescriptor | `ColorDepth` | 색상수 (bits: 8, 16\...) |
+| `ColorDepth` | ColorProperty | `ColorDepth` | 색상수 (bits: 8, 16\...) |
 | `FileName` | PropertyDescriptor | `FileName` | 그림 경로 |
 | `Format` | PropertyDescriptor | `Format` | 그림 형식0 : none1 : BMP2 : GIF3 : PNG4 : JPG5 : WMF |
 | `Resolution` | PropertyDescriptor | `Resolution` | 해상도 |
@@ -4124,14 +4124,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `Contrast` | PropertyDescriptor | `Contrast` | 밝기 (\-100 \~ 100\) |
 | `DrawFillImageType` | PropertyDescriptor | `DrawFillImageType` | 채우기 유형0 \= 바둑판식으로 \- 모두1 \= 바둑판식으로 \- 가로/위2 \= 바둑판식으로 \- 가로/아래3 \= 바둑판식으로 \- 세로/왼쪽4 \= 바둑판식으로 \- 세로/오른쪽5 \= 크기에 맞추어6 \= 가운데로7 \= 가운데 위로 8 \= |
 | `FileName` | PropertyDescriptor | `FileName` | 그림 파일의 경로 or 그림파일 삽입일 경우에는 binary data |
-| `FontColor` | PropertyDescriptor | `FontColor` | 글자색 (COLORREF) |
+| `FontColor` | ColorProperty | `FontColor` | 글자색 (COLORREF) |
 | `FontName` | PropertyDescriptor | `FontName` | Parameter property |
 | `FontSize` | PropertyDescriptor | `FontSize` | 글꼴 크기 (HWPUNIT : 2500(25pt) \~ 25400(254pt) |
 | `FontType` | PropertyDescriptor | `FontType` | 글꼴 속성 : 0 \= dont care, 1 \= TTF, 2 \= HFT |
 | `PicEffect` | PropertyDescriptor | `PicEffect` | 그림 효과 :0 \= 실제 이미지 그대로, 1 \= 그레이스케일, 2 \= 흑백효과 |
 | `PosPage` | PropertyDescriptor | `PosPage` | 워터마크의 위치 기준 : 0 \= 종이 기준, 1 \= 쪽 기준 |
 | `RotateAngle` | PropertyDescriptor | `RotateAngle` | 회전각도 (\-360 \~ 360\) |
-| `ShadowColor` | PropertyDescriptor | `ShadowColor` | 그림자 색 (COLORREF) |
+| `ShadowColor` | ColorProperty | `ShadowColor` | 그림자 색 (COLORREF) |
 | `ShadowOffsetX` | PropertyDescriptor | `ShadowOffsetX` | X축 그림자 간격 (\-48% \~ 48% ) |
 | `ShadowOffsetY` | PropertyDescriptor | `ShadowOffsetY` | Y축 그림자 간격 (\-48% \~ 48% ) |
 | `ShadowType` | PropertyDescriptor | `ShadowType` | 그림자 종류 : 0 \= none, 1 \= drop, 2 \= continuous |
@@ -4480,7 +4480,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
-| `Color` | PropertyDescriptor | `Color` | Table을 그리는 연필(펜)의 선 색깔RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `Color` | ColorProperty | `Color` | Table을 그리는 연필(펜)의 선 색깔RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `Style` | PropertyDescriptor | `Style` | Table을 그리는 연필(펜)의 선 모양 |
 | `Width` | PropertyDescriptor | `Width` | Table을 그리는 연필(펜)의 선 굵기 |
 
@@ -4669,10 +4669,10 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
 | `BackSlashFlag` | PropertyDescriptor | `BackSlashFlag` | 백슬래쉬 대각선 플래그 : 비트 플래그의 조합으로 표현되며 각 위치의 비트는 다음을 나타낸다.bit 0 \= 하단 대각선bit 1 \= 중앙 대각선bit 2 \= 상단 대각선더 자세한 내용은 하단의 ※ 대각선의 형태를 참고한다. |
-| `BorderColorBottom` | PropertyDescriptor | `BorderColorBottom` | 4방향 테두리 색깔 :아래RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| `BorderColorRight` | PropertyDescriptor | `BorderColorRight` | 4방향 테두리 색깔 : 오른쪽RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| `BorderColorTop` | PropertyDescriptor | `BorderColorTop` | 4방향 테두리 색깔 : 위RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| `BorderCorlorLeft` | PropertyDescriptor | `BorderCorlorLeft` | 4방향 테두리 색깔 : 왼쪽RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `BorderColorBottom` | ColorProperty | `BorderColorBottom` | 4방향 테두리 색깔 :아래RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `BorderColorRight` | ColorProperty | `BorderColorRight` | 4방향 테두리 색깔 : 오른쪽RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `BorderColorTop` | ColorProperty | `BorderColorTop` | 4방향 테두리 색깔 : 위RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `BorderCorlorLeft` | ColorProperty | `BorderCorlorLeft` | 4방향 테두리 색깔 : 왼쪽RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `BorderFill3D` | PropertyDescriptor | `BorderFill3D` | 3차원 효과 : 0 \= off, 1 \= on |
 | `BorderTypeBottom` | PropertyDescriptor | `BorderTypeBottom` | 4방향 테두리 종류 : 아래 |
 | `BorderTypeLeft` | PropertyDescriptor | `BorderTypeLeft` | 4방향 테두리 종류 : 왼쪽 \[선 종류] |
@@ -4689,7 +4689,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `CrookedSlashFlag` | PropertyDescriptor | `CrookedSlashFlag` | 꺾인 대각선 플래그 (bit 0, 1이 각각 slash, back slash의 가운데 대각선이 꺾인 대각선임을 나타낸다.) |
 | `CrookedSlashFlag1` | PropertyDescriptor | `CrookedSlashFlag1` | Low Byte CrookedSlashFlag (슬래쉬 대각선의 꺾임 여부)(CrookedSlashFlag를 쓰기 편하도록 CrookedSlashFlag1,2로 나눔) |
 | `CrookedSlashFlag2` | PropertyDescriptor | `CrookedSlashFlag2` | High Byte CrookedSlashFlag (역슬래쉬 대각선의 꺾임 여부)(CrookedSlashFlag를 쓰기 편하도록 CrookedSlashFlag1,2로 나눔) |
-| `DiagonalColor` | PropertyDescriptor | `DiagonalColor` | 선 색상RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용 |
+| `DiagonalColor` | ColorProperty | `DiagonalColor` | 선 색상RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR)셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용 |
 | `DiagonalType` | PropertyDescriptor | `DiagonalType` | 선 종류 셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용 |
 | `DiagonalWidth` | PropertyDescriptor | `DiagonalWidth` | 선 굵기 셀에서는 대각선, 표에서는 자동으로 나눠진 경계선에서 사용 |
 | `FillAttr` | PropertyDescriptor | `FillAttr` | 배경 채우기 속성 |
@@ -4702,8 +4702,8 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
-| `ColorHorz` | PropertyDescriptor | `ColorHorz` | 중앙선 색깔 : 가로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| `ColorVert` | PropertyDescriptor | `ColorVert` | 중앙선 색깔 : 세로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `ColorHorz` | ColorProperty | `ColorHorz` | 중앙선 색깔 : 가로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `ColorVert` | ColorProperty | `ColorVert` | 중앙선 색깔 : 세로RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `TypeHorz` | PropertyDescriptor | `TypeHorz` | 중앙선 종류 : 가로 \[선 종류] |
 | `TypeVert` | PropertyDescriptor | `TypeVert` | 중앙선 종류 : 세로 |
 | `WidthHorz` | PropertyDescriptor | `WidthHorz` | 중앙선 두께 : 가로 \[선 굵기] |
@@ -4834,8 +4834,8 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `RatioOther` | PropertyDescriptor | `RatioOther` | 각 언어별 장평 비율. (기타) 50% \- 200% |
 | `RatioSymbol` | PropertyDescriptor | `RatioSymbol` | 각 언어별 장평 비율. (심벌) 50% \- 200% |
 | `RatioUser` | PropertyDescriptor | `RatioUser` | 각 언어별 장평 비율. (사용자) 50% \- 200% |
-| `ShadeColor` | PropertyDescriptor | `ShadeColor` | 음영색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| `ShadowColor` | PropertyDescriptor | `ShadowColor` | 그림자 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `ShadeColor` | ColorProperty | `ShadeColor` | 음영색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `ShadowColor` | ColorProperty | `ShadowColor` | 그림자 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `ShadowOffsetX` | PropertyDescriptor | `ShadowOffsetX` | 그림자 간격 (X 방향) \-100% \- 100% |
 | `ShadowOffsetY` | PropertyDescriptor | `ShadowOffsetY` | 그림자 간격 (Y 방향) \-100% \- 100% |
 | `ShadowType` | PropertyDescriptor | `ShadowType` | 그림자 종류 : 0 \= none, 1 \= drop, 2 \= continuous |
@@ -4857,8 +4857,8 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `StrikeOutType` | PropertyDescriptor | `StrikeOutType` | 취소선 종류 : 0 \= none, 1 \= red single, 2 \= red double, 3 \= text single, 4 \= text double |
 | `SubScript` | PropertyDescriptor | `SubScript` | Subscript : 0 \= off, 1 \= on |
 | `SuperScript` | PropertyDescriptor | `SuperScript` | Superscript : 0 \= off, 1 \= on |
-| `TextColor` | PropertyDescriptor | `TextColor` | 글자색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
-| `UnderlineColor` | PropertyDescriptor | `UnderlineColor` | 밑줄 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `TextColor` | ColorProperty | `TextColor` | 글자색. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `UnderlineColor` | ColorProperty | `UnderlineColor` | 밑줄 색 (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `UnderlineShape` | PropertyDescriptor | `UnderlineShape` | 밑줄 모양 : 선 종류 |
 | `UnderlineType` | PropertyDescriptor | `UnderlineType` | 밑줄 종류 : 0 \= none, 1 \= bottom, 2 \= center, 3 \= top |
 | `UseFontSpace` | PropertyDescriptor | `UseFontSpace` | 글꼴에 어울리는 빈칸 : 0 \= off, 1 \= on |
@@ -4896,7 +4896,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 적용범위 :0 \= 선택된 다단1 \= 선택된 문자열2 \= 현재 다단3 \= 개체 전체4 \= 선택된 셀5 \= 현재 구역6 \= 문서 전체7 \= 현재 셀8 \= 새 쪽으로9 \= 새 다단으로10 \= 모든 셀 |
 | `Count` | PropertyDescriptor | `Count` | 단 개수. 1\-255까지. |
 | `Layout` | PropertyDescriptor | `Layout` | 단 방향 지정 :0 \= 왼쪽부터, 1 \= 오른쪽부터, 2 \= 맞쪽 |
-| `LineColor` | PropertyDescriptor | `LineColor` | 선 색깔. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `LineColor` | ColorProperty | `LineColor` | 선 색깔. (COLORREF)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `LineType` | PropertyDescriptor | `LineType` | 선 종류. |
 | `LineWidth` | PropertyDescriptor | `LineWidth` | 선 굵기. |
 | `SameGap` | PropertyDescriptor | `SameGap` | 단 사이 간격(HWPUNIT) SAME_SIZE가 1일 때만 사용된다. |
@@ -5067,8 +5067,8 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `GradationBrush` | PropertyDescriptor | `GradationBrush` | 현재 브러시가 그러데이션 브러시인지 여부 |
 | `GradationCenterX` | PropertyDescriptor | `GradationCenterX` | 그러데이션 가로 중심 X 좌표 |
 | `GradationCenterY` | PropertyDescriptor | `GradationCenterY` | 그러데이션 세로 중심 Y 좌표 |
-| `GradationColor` | PropertyDescriptor | `GradationColor` | 그러데이션 색깔 배열 (PIT_ARRAY) |
-| `GradationColorNum` | PropertyDescriptor | `GradationColorNum` | 그러데이션 색 수 |
+| `GradationColor` | ColorProperty | `GradationColor` | 그러데이션 색깔 배열 (PIT_ARRAY) |
+| `GradationColorNum` | ColorProperty | `GradationColorNum` | 그러데이션 색 수 |
 | `GradationIndexPos` | PropertyDescriptor | `GradationIndexPos` | 그러데이션 다음 색깔과의 거리 배열 (PIT_ARRAY) |
 | `GradationStep` | PropertyDescriptor | `GradationStep` | 그러데이션 번짐 정도 (0~100) |
 | `GradationStepCenter` | PropertyDescriptor | `GradationStepCenter` | 그러데이션 번짐 정도의 중심 (0~100) |
@@ -5090,9 +5090,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `SkipTop` | PropertyDescriptor | `SkipTop` | 위 자르기 |
 | `Type` | PropertyDescriptor | `Type` | 배경 유형: 0=채우기 없음, 1=면색/무늬색, 2=그림, 3=그러데이션 |
 | `WinBrushAlpha` | PropertyDescriptor | `WinBrushAlpha` | 면/무늬 색 투명도 |
-| `WinBrushFaceColor` | PropertyDescriptor | `WinBrushFaceColor` | 면 색 (RGB 0x00BBGGRR) |
+| `WinBrushFaceColor` | ColorProperty | `WinBrushFaceColor` | 면 색 (RGB 0x00BBGGRR) |
 | `WinBrushFaceStyle` | PropertyDescriptor | `WinBrushFaceStyle` | 무늬 스타일 |
-| `WinBrushHatchColor` | PropertyDescriptor | `WinBrushHatchColor` | 무늬 색 (RGB 0x00BBGGRR) |
+| `WinBrushHatchColor` | ColorProperty | `WinBrushHatchColor` | 무늬 색 (RGB 0x00BBGGRR) |
 | `WindowsBrush` | PropertyDescriptor | `WindowsBrush` | 현재 브러시가 면/무늬 브러시인지 여부 |
 
 ### `drawimageattr` — 21개 속성
@@ -5260,9 +5260,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
-| `FaceColor` | PropertyDescriptor | `FaceColor` | 글꼴 색RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `FaceColor` | ColorProperty | `FaceColor` | 글꼴 색RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `FaceName` | PropertyDescriptor | `FaceName` | Parameter property |
-| `LineColor` | PropertyDescriptor | `LineColor` | 선 색RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `LineColor` | ColorProperty | `LineColor` | 선 색RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `LineStyle` | PropertyDescriptor | `LineStyle` | 선 스타일 |
 | `LineWeight` | PropertyDescriptor | `LineWeight` | 선 굵기 |
 | `Spacing` | PropertyDescriptor | `Spacing` | 본문과의 간격 |
@@ -5330,7 +5330,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 |:---|:---|:---|:---|
 | `ApplyTo` | PropertyDescriptor | `ApplyTo` | 수식 속성 적용 범위 (한글2007에 새로 추가)0 : 선택된 수식 개체1 : 문서 전체 |
 | `BaseUnit` | PropertyDescriptor | `BaseUnit` | 수식이 삽입되는 앞의 글자와 같은 높이 (기본 값은 POINT 10 ) |
-| `Color` | PropertyDescriptor | `Color` | 수식이 삽입되는 글자 색과 같은 색 (기본 값은 WINDOWTEXT 색)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `Color` | ColorProperty | `Color` | 수식이 삽입되는 글자 색과 같은 색 (기본 값은 WINDOWTEXT 색)RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `LineMode` | PropertyDescriptor | `LineMode` | 줄 단위를 사용할지의 여부 (한글2007에 새로 추가) |
 | `String` | PropertyDescriptor | `String` | 수식 스크립트. |
 | `Version` | PropertyDescriptor | `Version` | 수식 스크립트 버전 정보 (한글2007에 새로 추가) |
@@ -5492,7 +5492,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 |:---|:---|:---|:---|
 | `AutoPlay` | PropertyDescriptor | `AutoPlay` | 자동 재생 여부 : 0 \= off, 1 \= on |
 | `Base` | PropertyDescriptor | `Base` | 경로의 Base |
-| `BgColor` | PropertyDescriptor | `BgColor` | 배경색 (COLORREF) |
+| `BgColor` | ColorProperty | `BgColor` | 배경색 (COLORREF) |
 | `LoopPlay` | PropertyDescriptor | `LoopPlay` | 반복 재생 여부 : 0 \= off, 1 \= on |
 | `Qulaity` | PropertyDescriptor | `Qulaity` | 재생 품질 |
 | `Scale` | PropertyDescriptor | `Scale` | 스케일 |
@@ -5794,7 +5794,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
-| `Color` | PropertyDescriptor | `Color` | 형광펜색 (COLORREF) |
+| `Color` | ColorProperty | `Color` | 형광펜색 (COLORREF) |
 
 ### `masterpage` — 4개 속성
 
@@ -5813,9 +5813,9 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
-| `ActiveFillColor` | PropertyDescriptor | `ActiveFillColor` | 활성화된 채우기 색깔 (COLORREF) |
-| `FillColor` | PropertyDescriptor | `FillColor` | 채우기 색깔 (COLORREF) |
-| `LineColor` | PropertyDescriptor | `LineColor` | 선 색깔 (COLORREF) |
+| `ActiveFillColor` | ColorProperty | `ActiveFillColor` | 활성화된 채우기 색깔 (COLORREF) |
+| `FillColor` | ColorProperty | `FillColor` | 채우기 색깔 (COLORREF) |
+| `LineColor` | ColorProperty | `LineColor` | 선 색깔 (COLORREF) |
 | `LineType` | PropertyDescriptor | `LineType` | 선 종류 |
 | `LineWidth` | PropertyDescriptor | `LineWidth` | 선 굵기 |
 | `MemoType` | PropertyDescriptor | `MemoType` | 메모 종류 \- 현재 사용안 함1 \= 메모 넣기, 2 \= 메모 지우기, 3 \= 메모 고치기 |
@@ -6149,7 +6149,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
-| `ColorDepth` | PropertyDescriptor | `ColorDepth` | 색상수 (bits: 8, 16\...) |
+| `ColorDepth` | ColorProperty | `ColorDepth` | 색상수 (bits: 8, 16\...) |
 | `FileName` | PropertyDescriptor | `FileName` | 그림 경로 |
 | `Format` | PropertyDescriptor | `Format` | 그림 형식0 : none1 : BMP2 : GIF3 : PNG4 : JPG5 : WMF |
 | `Resolution` | PropertyDescriptor | `Resolution` | 해상도 |
@@ -6166,14 +6166,14 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `Contrast` | PropertyDescriptor | `Contrast` | 밝기 (\-100 \~ 100\) |
 | `DrawFillImageType` | PropertyDescriptor | `DrawFillImageType` | 채우기 유형0 \= 바둑판식으로 \- 모두1 \= 바둑판식으로 \- 가로/위2 \= 바둑판식으로 \- 가로/아래3 \= 바둑판식으로 \- 세로/왼쪽4 \= 바둑판식으로 \- 세로/오른쪽5 \= 크기에 맞추어6 \= 가운데로7 \= 가운데 위로 8 \= |
 | `FileName` | PropertyDescriptor | `FileName` | 그림 파일의 경로 or 그림파일 삽입일 경우에는 binary data |
-| `FontColor` | PropertyDescriptor | `FontColor` | 글자색 (COLORREF) |
+| `FontColor` | ColorProperty | `FontColor` | 글자색 (COLORREF) |
 | `FontName` | PropertyDescriptor | `FontName` | Parameter property |
 | `FontSize` | PropertyDescriptor | `FontSize` | 글꼴 크기 (HWPUNIT : 2500(25pt) \~ 25400(254pt) |
 | `FontType` | PropertyDescriptor | `FontType` | 글꼴 속성 : 0 \= dont care, 1 \= TTF, 2 \= HFT |
 | `PicEffect` | PropertyDescriptor | `PicEffect` | 그림 효과 :0 \= 실제 이미지 그대로, 1 \= 그레이스케일, 2 \= 흑백효과 |
 | `PosPage` | PropertyDescriptor | `PosPage` | 워터마크의 위치 기준 : 0 \= 종이 기준, 1 \= 쪽 기준 |
 | `RotateAngle` | PropertyDescriptor | `RotateAngle` | 회전각도 (\-360 \~ 360\) |
-| `ShadowColor` | PropertyDescriptor | `ShadowColor` | 그림자 색 (COLORREF) |
+| `ShadowColor` | ColorProperty | `ShadowColor` | 그림자 색 (COLORREF) |
 | `ShadowOffsetX` | PropertyDescriptor | `ShadowOffsetX` | X축 그림자 간격 (\-48% \~ 48% ) |
 | `ShadowOffsetY` | PropertyDescriptor | `ShadowOffsetY` | Y축 그림자 간격 (\-48% \~ 48% ) |
 | `ShadowType` | PropertyDescriptor | `ShadowType` | 그림자 종류 : 0 \= none, 1 \= drop, 2 \= continuous |
@@ -6522,7 +6522,7 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 
 | 속성명 | 타입 | HWP 키 | 설명 |
 |:---|:---|:---|:---|
-| `Color` | PropertyDescriptor | `Color` | Table을 그리는 연필(펜)의 선 색깔RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
+| `Color` | ColorProperty | `Color` | Table을 그리는 연필(펜)의 선 색깔RGB color를 나타내기 위한 32비트 값 (0x00BBGGRR) |
 | `Style` | PropertyDescriptor | `Style` | Table을 그리는 연필(펜)의 선 모양 |
 | `Width` | PropertyDescriptor | `Width` | Table을 그리는 연필(펜)의 선 굵기 |
 
@@ -6662,6 +6662,31 @@ hwpapi 는 HWP 의 모든 액션을 자동 등록합니다.
 | `ViewPosX` | PropertyDescriptor | `ViewPosX` | 현재 뷰의 X값 |
 | `ViewPosY` | PropertyDescriptor | `ViewPosY` | 현재 뷰의 Y값 |
 
+## Color 와 UNSET
+
+색상 처리에 사용되는 유틸리티 타입. `from hwpapi.parametersets import Color, UNSET`.
+
+### `Color`
+
+HWP 색상 값을 감싸는 경량 래퍼.
+
+- `Color("#FF0000")` — hex 문자열에서 생성
+- `color.hex` → `"#ff0000"`
+- `color.raw` → HWP 내부 BBGGRR 정수
+- `color.is_unset` → 값 없음 여부
+- `str(color)` → hex (기존 문자열 비교 호환)
+- `color == "#FF0000"` → True
+
+### `UNSET`
+
+"이 필드를 손대지 마라" 센티넬.
+
+- `prop = UNSET` → 아무 변경 없음 (no-op)
+- `prop = None`  → 필드 제거
+- 다른 값         → 정상 설정
+
+이는 `charshape_scope` / `styled_text` 의 snapshot + restore 패턴에서 유용하게 활용됩니다.
+
 ## 상수 (Enums)
 
 `from hwpapi import constants as const` 로 import.
@@ -6687,3 +6712,5 @@ app.api.HAction.Execute("CharShape", app.api.HParameterSet.HCharShape.HSet)
 
 - [GitHub 저장소](https://github.com/JunDamin/hwpapi)
 - [PyPI 페이지](https://pypi.org/project/hwpapi/)
+- [리팩토링 계획](https://github.com/JunDamin/hwpapi/blob/main/docs/REFACTORING_PLAN.md)
+- [CHANGELOG](https://github.com/JunDamin/hwpapi/blob/main/CHANGELOG.md)
