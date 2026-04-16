@@ -79,7 +79,19 @@ class Engine:
                 hwp_object = "HWPFrame.HwpObject"
             self.logger.debug(f"Initializing Engine with hwp_object: {hwp_object}")
             self.impl = dispatch(hwp_object)
-            self.logger.info(f"Engine initialized successfully with CLSID: {self.impl.CLSID if self.impl else 'None'}")
+            # v0.0.24+: Engine 식별 정보 INFO 로깅 — AI/디버깅 친화
+            try:
+                import os
+                version = self.impl.Version if self.impl else "?"
+                clsid = self.impl.CLSID if self.impl else "None"
+                self.logger.info(
+                    f"Engine ready: PID={os.getpid()} version={version} clsid={clsid}"
+                )
+            except Exception:
+                self.logger.info(
+                    f"Engine initialized successfully with CLSID: "
+                    f"{self.impl.CLSID if self.impl else 'None'}"
+                )
         except Exception as e:
             self.logger.error(f"Failed to initialize Hwp object: {e}")
             self.impl = None

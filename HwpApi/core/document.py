@@ -229,15 +229,21 @@ class Document:
         import time as _time
         try:
             self.raw.SetActive_XHwpDocument()
-        except Exception:
-            pass
+        except Exception as e:
+            self.logger.debug(
+                f"activate: {type(e).__name__}: {e}",
+                exc_info=True,
+            )
 
         # Nudge message pump — pywin32 pumps messages via PumpWaitingMessages
         try:
             import pythoncom
             pythoncom.PumpWaitingMessages()
-        except Exception:
-            pass
+        except Exception as e:
+            self.logger.debug(
+                f"activate: {type(e).__name__}: {e}",
+                exc_info=True,
+            )
         _time.sleep(0.05)
         return self
 
@@ -386,8 +392,11 @@ class Documents:
             try:
                 if self[i].close(save=save):
                     closed += 1
-            except Exception:
-                pass
+            except Exception as e:
+                self.logger.debug(
+                    f"close_all: {type(e).__name__}: {e}",
+                    exc_info=True,
+                )
         return closed
 
     def save_all(self) -> int:

@@ -187,14 +187,20 @@ class Images:
                     try:
                         ctrl.Width = target_w
                         ctrl.Height = new_h
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        self._app.logger.debug(
+                            f"resize_all: {type(e).__name__}: {e}",
+                            exc_info=True,
+                        )
                 count += 1
                 # Deselect
                 try:
                     app.api.Run("Cancel")
-                except Exception:
-                    pass
+                except Exception as e:
+                    self._app.logger.debug(
+                        f"resize_all: {type(e).__name__}: {e}",
+                        exc_info=True,
+                    )
             except Exception as e:
                 app.logger.debug(f"resize_all: image {img.index} failed: {e}")
 
@@ -229,8 +235,11 @@ class Images:
                         continue
                 try:
                     app.api.Run("Cancel")
-                except Exception:
-                    pass
+                except Exception as e:
+                    self._app.logger.debug(
+                        f"grayscale_all: {type(e).__name__}: {e}",
+                        exc_info=True,
+                    )
             except Exception as e:
                 app.logger.debug(f"grayscale_all: image {img.index} failed: {e}")
         app.logger.info(f"grayscale_all: {count} images processed")

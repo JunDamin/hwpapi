@@ -1793,6 +1793,7 @@ class App:
         logger.debug(f"Calling open")
         name = get_absolute_path(path)
         self.api.Open(name)
+        logger.info(f"open: {name}")   # v0.0.24+ INFO 로깅
         return name
 
     def in_table(self) -> bool:
@@ -1877,7 +1878,9 @@ class App:
         logger.debug(f"Calling save")
         if not path:
             self.api.Save()
-            return self.get_filepath()
+            current = self.get_filepath()
+            logger.info(f"save (in-place): {current}")   # v0.0.24+ INFO
+            return current
 
         name = get_absolute_path(path)
         extension = Path(name).suffix
@@ -1892,6 +1895,7 @@ class App:
         }.get(extension)
 
         self.api.SaveAs(name, format_)
+        logger.info(f"save: {name} (format={format_})")  # v0.0.24+ INFO
         return name
 
     def save_block(self, path: Path):

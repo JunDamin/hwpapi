@@ -127,31 +127,46 @@ class StylesAccessor:
             try:
                 self._app.api.Run("MoveSelRight")
                 saved = self._try_save_block(xml_path)
-            except Exception:
-                pass
+            except Exception as e:
+                self._app.logger.debug(
+                    f"_iter_styles: {type(e).__name__}: {e}",
+                    exc_info=True,
+                )
             try:
                 self._app.api.Run("Cancel")
-            except Exception:
-                pass
+            except Exception as e:
+                self._app.logger.debug(
+                    f"_iter_styles: {type(e).__name__}: {e}",
+                    exc_info=True,
+                )
 
             # Attempt 2: SelectAll (covers empty docs / edge positions)
             if not saved:
                 try:
                     self._app.api.Run("SelectAll")
                     saved = self._try_save_block(xml_path)
-                except Exception:
-                    pass
+                except Exception as e:
+                    self._app.logger.debug(
+                        f"_iter_styles: {type(e).__name__}: {e}",
+                        exc_info=True,
+                    )
                 try:
                     self._app.api.Run("Cancel")
-                except Exception:
-                    pass
+                except Exception as e:
+                    self._app.logger.debug(
+                        f"_iter_styles: {type(e).__name__}: {e}",
+                        exc_info=True,
+                    )
 
             # Restore original position
             if prev_pos is not None:
                 try:
                     self._app.api.SetPos(*prev_pos)
-                except Exception:
-                    pass
+                except Exception as e:
+                    self._app.logger.debug(
+                        f"_iter_styles: {type(e).__name__}: {e}",
+                        exc_info=True,
+                    )
 
             if not (saved and os.path.isfile(xml_path)
                     and os.path.getsize(xml_path) > 0):
@@ -170,8 +185,11 @@ class StylesAccessor:
             if xml_path:
                 try:
                     os.remove(xml_path)
-                except Exception:
-                    pass
+                except Exception as e:
+                    self._app.logger.debug(
+                        f"_iter_styles: {type(e).__name__}: {e}",
+                        exc_info=True,
+                    )
 
     def _try_save_block(self, path: str) -> bool:
         """
@@ -182,8 +200,11 @@ class StylesAccessor:
         try:
             if self._app.api.SelectionMode == 0:
                 return False  # No selection
-        except Exception:
-            pass
+        except Exception as e:
+            self._app.logger.debug(
+                f"_try_save_block: {type(e).__name__}: {e}",
+                exc_info=True,
+            )
         abspath = os.path.abspath(path)
         try:
             pset = self._app.api.HParameterSet.HFileOpenSave
@@ -338,8 +359,11 @@ class StylesAccessor:
                     if 0 <= idx < len(names):
                         used.add(names[idx])
                 os.remove(xml_path)
-        except Exception:
-            pass
+        except Exception as e:
+            self._app.logger.debug(
+                f"remove_unused: {type(e).__name__}: {e}",
+                exc_info=True,
+            )
 
         unused = all_names - used
         count = 0
