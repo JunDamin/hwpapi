@@ -375,6 +375,37 @@ class Color:
         return f"Color({self.hex!r})" if self._hwp_value is not None else "Color(UNSET)"
 
 
+# ─── v0.0.25+ : 16개 표준 named-color 클래스 상수 ────────────────────
+# 사용자가 Color.RED 처럼 직접 접근 가능. functions.get_rgb_tuple() 의
+# named-color dict 와 동일.
+def _make_named_colors():
+    """클래스 정의 후에 setattr 로 상수 추가 (Color 자체 참조 회피)."""
+    _STANDARD = {
+        "RED":        (255,   0,   0),
+        "GREEN":      (  0, 255,   0),
+        "BLUE":       (  0,   0, 255),
+        "BLACK":      (  0,   0,   0),
+        "WHITE":      (255, 255, 255),
+        "YELLOW":     (255, 255,   0),
+        "CYAN":       (  0, 255, 255),
+        "MAGENTA":    (255,   0, 255),
+        "ORANGE":     (255, 165,   0),
+        "PURPLE":     (128,   0, 128),
+        "PINK":       (255, 192, 203),
+        "BROWN":      (165,  42,  42),
+        "GRAY":       (128, 128, 128),
+        "LIGHT_GRAY": (211, 211, 211),
+        "DARK_GRAY":  ( 64,  64,  64),
+        "NAVY":       (  0,   0, 128),
+    }
+    for name, (r, g, b) in _STANDARD.items():
+        setattr(Color, name, Color.from_rgb(r, g, b))
+
+
+_make_named_colors()
+del _make_named_colors
+
+
 class ColorProperty(PropertyDescriptor):
     """
     색상 속성 descriptor.

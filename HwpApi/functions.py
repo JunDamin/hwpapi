@@ -490,13 +490,25 @@ def convert_to_hwp_color(color):
         return color 
     
     if isinstance(color, str):  # if the color is a string, we assume it's a hex string
-        #hwp use bgr order
+        # hwp uses BGR order
+        # v0.0.25+: 16개 표준색 확장
         colors = {
-            "red": "0000FF",
-            "green": "00FF00",
-            "blue": "FF0000",
-            "black": "000000",
-            "white": "FFFFFF",
+            "red":         "0000FF",
+            "green":       "00FF00",
+            "blue":        "FF0000",
+            "black":       "000000",
+            "white":       "FFFFFF",
+            "yellow":      "00FFFF",
+            "cyan":        "FFFF00",
+            "magenta":     "FF00FF",
+            "orange":      "00A5FF",
+            "purple":      "800080",
+            "pink":        "CBC0FF",
+            "brown":       "2A2AA5",
+            "gray":        "808080",
+            "light_gray":  "D3D3D3",
+            "dark_gray":   "404040",
+            "navy":        "800000",
         }
             
         if color in colors.keys():

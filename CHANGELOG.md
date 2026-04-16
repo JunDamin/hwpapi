@@ -8,6 +8,46 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.25] — 2026-04-15 — v1.0 Phase 3: ENUM 통일 + Color 상수
+
+사용자 지적 ("선 모양도 enum 같은 걸로 되어야 할 거 같은데?") 반영.
+매직 넘버 (`BorderType=8`, `hatch_style=6`) → 사용자 친화 이름 (`"double"`, `"diagonal_cross"`).
+
+### Added
+
+**`hwpapi/parametersets/mappings.py`** — 4개 신규 enum/MAP:
+- `BORDER_TYPE_MAP` — 16종 선 종류 (`"none"`, `"solid"`, `"dash"`, `"dot"`,
+  `"dash_dot"`, `"long_dash"`, `"double"`, `"wave"`, `"thick_3d"` 등)
+- `HATCH_STYLE_MAP` — 13종 빗금 패턴 (`"horizontal"`, `"diagonal_cross"`,
+  `"dense_horizontal"` 등)
+- `CELL_APPLY_TO_MAP` — 셀 적용 범위 (`"current"`/`"selected"`/`"all"`)
+- `DIAGONAL_FLAG_MAP` — 대각선 비트플래그 (`"top"`/`"middle"`/`"bottom"`/`"all"`)
+- `resolve_enum(map, value)` 헬퍼 — 문자열/정수 양방향 해석 (case-insensitive)
+
+**`Color` 클래스 상수 16개** ([`properties.py`](hwpapi/parametersets/properties.py)):
+```python
+Color.RED, Color.GREEN, Color.BLUE, Color.BLACK, Color.WHITE,
+Color.YELLOW, Color.CYAN, Color.MAGENTA, Color.ORANGE, Color.PURPLE,
+Color.PINK, Color.BROWN, Color.GRAY, Color.LIGHT_GRAY,
+Color.DARK_GRAY, Color.NAVY
+```
+
+**`get_rgb_tuple` named-color 5 → 16개 확장** ([`functions.py`](hwpapi/functions.py))
+
+### Changed
+
+- **`set_cell_border(top="solid", bottom="double", ...)`** — 문자열 enum
+  지원. 기존 정수도 그대로 작동.
+- **`set_cell_color(hatch_style="diagonal_cross", ...)`** — 문자열 지원.
+  추가로 FillAttr 위치 버그 fix (SelCellsBorderFill.FillAttr 사용 + ApplyTo=2)
+
+### Tests
+
+`tests/test_enums.py` — 14 신규 테스트 (BORDER_TYPE_MAP / HATCH_STYLE_MAP /
+CELL_APPLY_TO_MAP / DIAGONAL_FLAG_MAP / resolve_enum / Color.RED 등 16 상수).
+
+전체 1388/1388 통과.
+
 ## [0.0.24] — 2026-04-15 — v1.0 Phase 1: P0/P1 버그 fix
 
 v1.0 release 전 분명히 깨진 5개 P0 + P1 버그 수정. 사용자 지적

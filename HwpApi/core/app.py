@@ -3114,13 +3114,19 @@ class App:
         -----
         The function relies on the `self.actions.CellFill` action to set the border properties. The `Thickness` Enum provides predefined thickness levels for the borders. The color parameters should be provided in hex format.
         """
+        # v0.0.25+: 문자열 enum 입력 지원 ("solid", "double" 등)
+        from hwpapi.parametersets.mappings import BORDER_TYPE_MAP, resolve_enum
+
+        def _bt(v):
+            return resolve_enum(BORDER_TYPE_MAP, v) if v is not None else None
+
         attrs = {
-            "BorderTypeTop": top,
-            "BorderTypeRight": right,
-            "BorderTypeLeft": left,
-            "BorderTypeBottom": bottom,
-            "TypeHorz": horizontal,
-            "TypeVert": vertical,
+            "BorderTypeTop": _bt(top),
+            "BorderTypeRight": _bt(right),
+            "BorderTypeLeft": _bt(left),
+            "BorderTypeBottom": _bt(bottom),
+            "TypeHorz": _bt(horizontal),
+            "TypeVert": _bt(vertical),
             "BorderWidthTop": top_width.value,
             "BorderWidthRight": right_width.value,
             "BorderWidthLeft": left_width.value,
@@ -3202,6 +3208,10 @@ class App:
         logger = get_logger('core')
         logger.debug(f"Calling set_cell_color")
 
+        # v0.0.25+: hatch_style 가 문자열이면 HATCH_STYLE_MAP 으로 해석
+        from hwpapi.parametersets.mappings import HATCH_STYLE_MAP, resolve_enum
+        hatch_style = resolve_enum(HATCH_STYLE_MAP, hatch_style)
+
         fill_type = windows_brush = None
         if bg_color:
             fill_type = 1
@@ -3216,12 +3226,30 @@ class App:
             "WinBrushFaceStyle": hatch_style,
         }
 
+        # v0.0.25+: FillAttr 가 SelCellsBorderFill 안에 중첩됨 (P0 fix 동일 패턴)
+        # 이전엔 p.FillAttr 직접 접근 시도 — AttributeError 났음. 정확한 경로 사용.
         action = self.actions.CellBorderFill
         p = action.pset
 
+        # SelCellsBorderFill.FillAttr 가 정확한 위치
+        try:
+            target = p.SelCellsBorderFill.FillAttr
+        except Exception:
+            target = p.FillAttr if hasattr(p, "FillAttr") else None
+
+        if target is None:
+            logger.warning("set_cell_color: FillAttr 위치를 찾을 수 없음")
+            return False
+
+        # ApplyTo = 2 (selected cells) 명시
+        try:
+            p.ApplyTo = 2
+        except Exception as e:
+            logger.debug(f"set_cell_color ApplyTo: {type(e).__name__}: {e}")
+
         for key, value in attrs.items():
             if value is not None:
-                setattr(p.FillAttr, key, value)
+                setattr(target, key, value)
 
         return action.run()
 

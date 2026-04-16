@@ -124,6 +124,90 @@ ALL_MAPPINGS = {
 }
 
 
+# ════════════════════════════════════════════════════════════════════
+# v0.0.25+ — ENUM 통일 (BorderType, HatchStyle, ApplyTo, DiagonalFlag)
+# ════════════════════════════════════════════════════════════════════
+
+#: Border / line type — BorderFill.BorderType*, set_cell_border 의 top/bottom
+BORDER_TYPE_MAP = {
+    "none": 0,                 # 선 없음
+    "solid": 1,                # 실선
+    "dash": 2,                 # 짧은 점선
+    "dot": 3,                  # 작은 점
+    "dash_dot": 4,             # 1점쇄선
+    "dash_dot_dot": 5,         # 2점쇄선
+    "long_dash": 6,            # 긴 점선
+    "circle": 7,               # 원형 점
+    "double": 8,               # 이중선
+    "thick_thin": 9,           # 얇음+굵음
+    "thin_thick": 10,          # 굵음+얇음
+    "thin_thick_thin": 11,     # 얇음+굵음+얇음
+    "wave": 12,                # 물결
+    "double_wave": 13,         # 이중 물결
+    "thick_3d": 14,            # 두꺼운 3D
+    "thick_3d_inset": 15,      # 두꺼운 3D inset
+}
+
+#: Hatch style — set_cell_color 의 hatch_style, FillAttr.WinBrushFaceStyle
+HATCH_STYLE_MAP = {
+    "none": 0,                 # 채우기 없음
+    "horizontal": 1,
+    "vertical": 2,
+    "diagonal_down": 3,
+    "diagonal_up": 4,
+    "cross": 5,
+    "diagonal_cross": 6,
+    "dense_horizontal": 7,
+    "dense_vertical": 8,
+    "solid": 9,
+    "dense_diagonal_down": 10,
+    "dense_diagonal_up": 11,
+    "dense_cross": 12,
+}
+
+#: Cell ApplyTo — CellBorderFill 등의 ApplyTo
+CELL_APPLY_TO_MAP = {
+    "current": 1,              # 현재 셀만
+    "selected": 2,             # 선택된 셀들
+    "all": 3,                  # 표 전체
+}
+
+#: Diagonal flag (bit-flag) — BorderFill.SlashFlag / CounterSlashFlag
+DIAGONAL_FLAG_MAP = {
+    "none": 0,
+    "bottom": 1,
+    "middle": 2,
+    "top": 4,
+    "all": 7,                  # bottom | middle | top
+}
+
+
+def resolve_enum(map_dict: dict, value):
+    """
+    Enum/MAP 값 해석 — 문자열이면 dict 조회, 정수면 그대로 반환.
+
+    Examples
+    --------
+    >>> resolve_enum(BORDER_TYPE_MAP, "solid")
+    1
+    >>> resolve_enum(BORDER_TYPE_MAP, 1)
+    1
+    >>> resolve_enum(BORDER_TYPE_MAP, "double")
+    8
+    """
+    if isinstance(value, str):
+        if value in map_dict:
+            return map_dict[value]
+        # case-insensitive fallback
+        lower = {k.lower(): v for k, v in map_dict.items()}
+        if value.lower() in lower:
+            return lower[value.lower()]
+        raise ValueError(
+            f"Unknown enum value {value!r}. Valid: {sorted(map_dict.keys())}"
+        )
+    return value
+
+
 __all__ = [
     "PARAMETERSET_REGISTRY",  # re-declared in __init__.py, just for clarity
     "DIRECTION_MAP", "CAP_FULL_SIZE_MAP", "ALIGNMENT_MAP", "VERT_ALIGN_MAP",
@@ -137,6 +221,9 @@ __all__ = [
     "USE_KERNING_MAP", "DIAC_SYM_MARK_MAP", "USE_FONT_SPACE_MAP",
     "HEADING_TYPE_MAP", "NUMBERING_TYPE_MAP", "NUMBER_FORMAT_MAP",
     "PAGE_BREAK_MAP", "ALL_MAPPINGS",
+    # v0.0.25+
+    "BORDER_TYPE_MAP", "HATCH_STYLE_MAP", "CELL_APPLY_TO_MAP",
+    "DIAGONAL_FLAG_MAP", "resolve_enum",
 ]
 # Note: PARAMETERSET_REGISTRY is defined in __init__.py, not here
 __all__.remove("PARAMETERSET_REGISTRY")
