@@ -56,7 +56,9 @@ app.set_charshape(
 ```python
 page.width = "210mm"
 page.width = "21cm"
-page.width = "8.27in"
+
+from hwpapi import units as U
+hwp = U.mm(210)
 ```
 HWPUNIT 몰라도 OK. mm/cm/in/pt 자동 변환.
 :::

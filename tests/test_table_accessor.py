@@ -1,6 +1,6 @@
 """Domain-grouped tests: table_accessor."""
 from hwpapi.classes.debug import Debug
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, ANY, patch
 import pytest
 
 
@@ -48,20 +48,20 @@ def test_header_row_needs_table():
 def test_header_row_applies_bg(tbl_app):
     from hwpapi.classes.accessors import TableAccessor
     TableAccessor(tbl_app).header_row(bg="#E8F4F8")
-    # CellFill CreateAction attempted
-    tbl_app.api.CreateAction.assert_any_call("CellFill")
+    # CellBorderFill GetDefault attempted
+    tbl_app.api.HAction.GetDefault.assert_any_call("CellBorderFill", ANY)
 
 
 def test_footer_row_applies_bg(tbl_app):
     from hwpapi.classes.accessors import TableAccessor
     TableAccessor(tbl_app).footer_row(bg="#EEEEEE")
-    tbl_app.api.CreateAction.assert_any_call("CellFill")
+    tbl_app.api.HAction.GetDefault.assert_any_call("CellBorderFill", ANY)
 
 
 def test_current_row_applies(tbl_app):
     from hwpapi.classes.accessors import TableAccessor
     TableAccessor(tbl_app).current_row(bg="#FFFF00")
-    tbl_app.api.CreateAction.assert_any_call("CellFill")
+    tbl_app.api.HAction.GetDefault.assert_any_call("CellBorderFill", ANY)
 
 
 def test_align_center(tbl_app):

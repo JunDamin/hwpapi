@@ -65,6 +65,8 @@ app.status              # 종합 상태 dict
 
 v0.0.20 부터 DeprecationWarning 발생. 동작은 유지.
 
+**Field 관련** (DeprecationWarning 부착):
+
 | 레거시 | 신규 권장 |
 |:---|:---|
 | `app.create_field(name)` | `app.fields.add(name)` |
@@ -77,6 +79,35 @@ v0.0.20 부터 DeprecationWarning 발생. 동작은 유지.
 | `app.rename_field(o, n)` | `app.fields.rename(o, n)` |
 | `app.field_names` | `list(app.fields)` |
 | `app.fields_dict` | `app.fields.to_dict()` |
+
+**Soft deprecation** (docstring 안내만, accessor 가 내부 delegation):
+
+| 레거시 | 신규 권장 |
+|:---|:---|
+| `app.insert_bookmark(n)` | `app.bookmarks.add(n)` |
+| `app.insert_hyperlink(t, u)` | `app.hyperlinks.add(t, u)` |
+| `app.replace_brackets_with_fields()` | `app.fields.from_brackets()` |
+| `app.get_charshape()` | `app.charshape` (property) |
+| `app.set_charshape(**kw)` | `app.charshape = ...` (또는 기존 kwargs 유지) |
+| `app.get_parashape()` | `app.parashape` (property) |
+| `app.set_parashape(**kw)` | `app.parashape = ...` |
+| `app.get_text()` | `app.text` (property) |
+| `app.get_selected_text()` | `app.selection` (property) |
+| `app.highlight(color)` | `app.preset.highlight_yellow()` (toggle) 또는 `app.styled_text(..., shade_color=...)` |
+
+**단위 변환** (v0.0.23+ `hwpapi.units` 모듈 권장):
+
+```python
+# 이전 (App 인스턴스 필요)
+hwp = app.mm_to_hwpunit(210)
+mm = app.hwpunit_to_mm(59430)
+
+# 신규 (App 인스턴스 불필요)
+from hwpapi import units as U
+hwp = U.mm(210)                  # 59430
+mm = U.to_mm(59430)              # 210.0
+hwp = U.parse("210mm")           # 59430 (또는 "21cm", "8.27in", "12pt")
+```
 
 ---
 

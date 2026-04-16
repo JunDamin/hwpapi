@@ -4,8 +4,7 @@ from hwpapi.classes.images import Image, Images
 from hwpapi.classes.selection import Selection
 from hwpapi.classes.view import View
 from hwpapi.presets import Presets
-from unittest.mock import MagicMock
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, ANY, call, patch
 import pytest
 
 
@@ -48,6 +47,16 @@ def table_app():
     app.in_table.return_value = True
     # TableLowerCell returns True 3x then False → 3 rows
     app.api.Run.side_effect = [True] * 50 + [False] * 50
+    # KeyIndicator yields 3 different cell addresses (simulating 3-row table)
+    # then same address (simulating end of rows)
+    addr_seq = [
+        (True, 1, 1, 1, 1, 1, 1, 0, "(A1): text"),
+        (True, 1, 1, 1, 1, 1, 1, 0, "(A1): text"),   # at top
+        (True, 1, 1, 1, 1, 1, 1, 0, "(A2): text"),   # next row
+        (True, 1, 1, 1, 1, 1, 1, 0, "(A3): text"),   # next row
+        (True, 1, 1, 1, 1, 1, 1, 0, "(A3): text"),   # repeated → loop ends
+    ] + [(True, 1, 1, 1, 1, 1, 1, 0, "(A3): text")] * 100  # plenty extra
+    app.api.KeyIndicator.side_effect = addr_seq
     return app
 
 
@@ -98,13 +107,13 @@ def test_table_header_requires_table():
 
 def test_table_header_resolves_color_preset(table_app):
     Presets(table_app).table_header(color="sky")
-    # CellFill CreateAction should have been attempted
-    table_app.api.CreateAction.assert_any_call("CellFill")
+    # CellBorderFill GetDefault should have been attempted
+    table_app.api.HAction.GetDefault.assert_any_call("CellBorderFill", ANY)
 
 
 def test_table_header_accepts_hex_color(table_app):
     Presets(table_app).table_header(color="#FF6600")
-    table_app.api.CreateAction.assert_any_call("CellFill")
+    table_app.api.HAction.GetDefault.assert_any_call("CellBorderFill", ANY)
 
 
 def test_table_header_multiple_rows(table_app):
@@ -124,7 +133,7 @@ def test_table_footer_requires_table():
 
 def test_table_footer_runs(table_app):
     Presets(table_app).table_footer(color="gray")
-    table_app.api.CreateAction.assert_any_call("CellFill")
+    table_app.api.HAction.GetDefault.assert_any_call("CellBorderFill", ANY)
 
 
 def test_toc_calls_makeindex():
