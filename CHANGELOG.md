@@ -8,6 +8,61 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.26] — 2026-04-15 — v1.0 Phase 4: 객체별 API 문서 페이지
+
+사용자 지적 ("Unit 같은 것도 홈페이지에 설명이 잘 있어야 하지 않을까?
+모든 객체를 설명해주는 거지") 반영.
+
+### Added
+
+**`nbs/02_api/` — 객체별 .qmd 페이지 25개** 자동 생성:
+- `core/` (app, engine, document)
+- `navigation/` (move, selection)
+- `collections/` (fields, bookmarks, hyperlinks, images, controls, styles)
+- `structure/` (cell, table, page)
+- `transform/` (convert, view)
+- `quality/` (lint, template, config)
+- `presets/` (presets — 11 메소드)
+- `debug/` (debug)
+- `data/` (shapes — CharShape/ParaShape/PageShape)
+- `utilities/` (units, enums, functions)
+- `index.qmd` — 전체 매트릭스
+
+각 페이지: import + 한 줄 요약 + docstring + 메소드/속성 표 (시그니처 + 한 줄 설명) + cross-link.
+
+**`utilities/units.qmd`** — 사용자 친화적으로 보강:
+- Quick Start 코드 6개 형태
+- 함수 매트릭스 (mm/cm/inch/pt + parse)
+- 변환표 (1mm = 283 HWPUNIT 등)
+- 페이지 크기/폰트/테두리 사용 예
+
+**`utilities/enums.qmd`** — Phase 3 ENUM 종합 가이드:
+- BORDER_TYPE_MAP 16종 표
+- HATCH_STYLE_MAP 13종 표
+- CELL_APPLY_TO_MAP, DIAGONAL_FLAG_MAP
+- Color 클래스 상수 16개
+- resolve_enum 사용법
+- 기존 35개 MAP 목록
+
+### Changed
+
+**`nbs/_quarto.yml` sidebar 확장**: 기존 4 섹션에 "📖 API 레퍼런스" 트리
+신설 — 카테고리별 8개 sub-section, 25개 페이지 직접 navigate 가능.
+
+**`nbs/index.qmd` 카드 변경**: '익숙한 단위' 카드를 '익숙한 단위 / Enum'
+으로 확장 — units, Color 상수, set_cell_border 예제 + 링크 2개.
+
+### v1.0 release 준비도
+
+- [x] 모든 P0 bug fix (v0.0.24)
+- [x] silent fail 가시화 (v0.0.24)
+- [x] BorderType / HatchStyle / Color 등 매직 넘버 enum 전환 (v0.0.25)
+- [x] 모든 18 accessor + dataclass + units + presets 02_api/ 페이지 보유 (v0.0.26)
+- [x] sidebar 에 "API 레퍼런스" 트리 노출 (v0.0.26)
+- [x] units.qmd / enums.qmd 가 homepage 카드에서 1-click 도달 (v0.0.26)
+- [ ] tests/generate_doc_artifacts.py demo 13+개 실제 HWP 재생성
+- [ ] CHANGELOG 정리 + v1.0.0 tag
+
 ## [0.0.25] — 2026-04-15 — v1.0 Phase 3: ENUM 통일 + Color 상수
 
 사용자 지적 ("선 모양도 enum 같은 걸로 되어야 할 거 같은데?") 반영.

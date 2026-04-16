@@ -1,0 +1,32 @@
+---
+title: "Debug — 디버깅 도구 (`app.debug`)"
+---
+
+## 한 줄 요약
+
+디버깅 헬퍼 accessor.
+
+## Import
+
+```python
+# app.debug 로 자동 생성됨
+```
+
+## 개요
+
+모든 메소드는 실패 시 조용히 ``None`` 또는 빈 값 반환 — debug tool이
+디버그 대상 문제로 깨지면 본말전도.
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `print(self) -> 'None'` | :meth:`state` 를 예쁘게 표 형태로 출력. |
+| method | `state(self) -> 'Dict[str, Any]'` | 현재 문서·커서·선택 상태를 dict 로 반환. |
+| method | `timing(self, fn: 'Callable', *args, **kwargs) -> 'Dict[str, Any]'` | 함수 한 번 호출 시간을 측정. 반환값 + 걸린 시간(ms) 반환. |
+| method | `trace(self, verbose: 'bool' = True)` | **Context manager** — 블록 내부의 모든 COM ``Run`` 호출을 로그. |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

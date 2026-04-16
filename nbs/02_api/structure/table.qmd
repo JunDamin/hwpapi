@@ -1,0 +1,62 @@
+---
+title: "TableAccessor — 표 구조/배치 서식 (`app.table`)"
+---
+
+## 한 줄 요약
+
+테이블 속성에 접근하고 조작할 수 있는 클래스입니다.
+
+## Import
+
+```python
+# app.table 로 자동 생성됨
+```
+
+## 개요
+
+이 클래스는 HWP 문서의 테이블과 관련된 속성에 접근하거나 수정할 수 있는 기능을 제공합니다.
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| property | `adjust_prev_obj_attr` | 이전 개체 속성 조정 상태를 반환하거나 설정합니다. |
+| property | `adjust_selection` | 테이블 선택 조정 상태를 반환하거나 설정합니다. |
+| property | `adjust_text_box` | 테이블 텍스트 상자 조정 상태를 반환하거나 설정합니다. |
+| property | `affects_line` | 테이블이 줄에 영향을 미치는지 여부를 반환하거나 설정합니다. |
+| method | `align(self, horz: Optional[str] = None, vert: Optional[str] = None, scope: str = 'current_row') -> 'TableAccessor'` | 표 셀 정렬 일괄 적용. |
+| property | `allow_overlap` | 테이블의 겹치기 허용 여부를 반환하거나 설정합니다. |
+| method | `clean_excel_paste(self) -> 'TableAccessor'` | 엑셀에서 복사 → 한글로 붙여넣은 표의 **빈 셀/행/열을 정돈**. |
+| method | `current_row(self, bold: Optional[bool] = None, bg: Optional[str] = None, text_color: Optional[str] = None) -> 'TableAccessor'` | 현재 커서가 있는 행 전체에 서식 일괄 적용. |
+| property | `flow_with_text` | 테이블의 텍스트와 함께 이동 여부를 반환하거나 설정합니다. |
+| method | `footer_row(self, bold: bool = True, bg: Optional[str] = None, text_color: Optional[str] = None) -> 'TableAccessor'` | 현재 표의 마지막 행에 서식 일괄 적용 — :meth:`header_row` 의 끝판. |
+| method | `header_row(self, bold: bool = True, bg: Optional[str] = None, text_color: Optional[str] = None) -> 'TableAccessor'` | 현재 표의 첫 행(header) 에 서식 일괄 적용 — shortcut. |
+| property | `height` | 테이블의 높이를 반환하거나 설정합니다. |
+| property | `height_rel_to` | 테이블의 높이 기준을 반환하거나 설정합니다. |
+| property | `hold_anchor_obj` | 테이블의 고정 앵커 개체 상태를 반환하거나 설정합니다. |
+| property | `horz_align` | 테이블의 수평 정렬 상태를 반환하거나 설정합니다. |
+| property | `horz_offset` | 테이블의 수평 오프셋을 반환하거나 설정합니다. |
+| property | `horz_rel_to` | 테이블의 수평 기준을 반환하거나 설정합니다. |
+| property | `layout_height` | 테이블의 레이아웃 높이를 반환하거나 설정합니다. |
+| property | `layout_width` | 테이블의 레이아웃 너비를 반환하거나 설정합니다. |
+| property | `lock` | 테이블의 잠금 상태를 반환하거나 설정합니다. |
+| property | `numbering_type` | 테이블의 번호 매기기 유형을 반환하거나 설정합니다. |
+| property | `outside_margin_bottom` | 테이블의 아래쪽 외부 여백을 반환하거나 설정합니다. |
+| property | `outside_margin_left` | 테이블의 왼쪽 외부 여백을 반환하거나 설정합니다. |
+| property | `outside_margin_right` | 테이블의 오른쪽 외부 여백을 반환하거나 설정합니다. |
+| property | `outside_margin_top` | 테이블의 위쪽 외부 여백을 반환하거나 설정합니다. |
+| property | `page_number` | 테이블의 페이지 번호를 반환하거나 설정합니다. |
+| property | `protect_size` | 테이블의 크기 보호 상태를 반환하거나 설정합니다. |
+| property | `text_flow` | 테이블의 텍스트 흐름 상태를 반환하거나 설정합니다. |
+| property | `text_wrap` | 테이블의 텍스트 줄바꿈 상태를 반환하거나 설정합니다. |
+| property | `treat_as_char` | 테이블을 문자로 간주할지 여부를 반환하거나 설정합니다. |
+| property | `vert_align` | 테이블의 수직 정렬 상태를 반환하거나 설정합니다. |
+| property | `vert_offset` | 테이블의 수직 오프셋을 반환하거나 설정합니다. |
+| property | `vert_rel_to` | 테이블의 수직 기준을 반환하거나 설정합니다. |
+| property | `width` | 테이블의 너비를 반환하거나 설정합니다. |
+| property | `width_rel_to` | 테이블의 너비 기준을 반환하거나 설정합니다. |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

@@ -1,0 +1,35 @@
+---
+title: "PageAccessor — 페이지 (`app.page`)"
+---
+
+## 한 줄 요약
+
+PageAccessor — 페이지 (`app.page`)
+
+## Import
+
+```python
+# app.page 로 자동 생성됨
+```
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| property | `bottom_margin` |  |
+| property | `footer` |  |
+| property | `gutter` |  |
+| property | `header` |  |
+| property | `inner_height` |  |
+| property | `inner_width` |  |
+| property | `left_margin` |  |
+| property | `papaer_height` |  |
+| property | `paper_height` |  |
+| property | `paper_width` |  |
+| property | `right_margin` |  |
+| property | `top_margin` |  |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

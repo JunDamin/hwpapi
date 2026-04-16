@@ -1,0 +1,136 @@
+---
+title: "App"
+---
+
+## 한 줄 요약
+
+`App` 클래스는 한컴오피스의 한/글 프로그램과 상호작용하기 위한 인터페이스를 제공합니다.
+
+## Import
+
+```python
+from hwpapi.core import App
+```
+
+## 개요
+
+이 클래스는 한/글 프로그램의 COM 객체와의 연동을 관리하고, 해당 객체에 대한 작업을 수행하는 메서드들을 포함합니다.
+
+Attributes
+----------
+engine : Engine, optional
+    사용할 엔진 객체입니다.
+is_visible : bool, optional
+    한/글 프로그램의 가시성을 설정합니다.
+dll_path : str, optional
+    사용할 DLL 파일의 경로입니다.
+
+Methods
+-------
+__init__(engine=None, is_visible=True, dll_path=None)
+    `App` 클래스의 인스턴스를 초기화합니다.
+api()
+    현재 사용 중인 엔진의 구현체를 반환합니다.
+__str__()
+    `App` 인스턴스의 문자열 표현을 반환합니다.
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| property | `api` | 현재 사용 중인 엔진의 구현체를 반환합니다. |
+| method | `batch_mode(self, hide: bool = True)` | **대량 처리 성능 부스터** — 화면 갱신/창 표시 억제. v0.0.16+. |
+| property | `charshape` | 현재 커서 위치의 문자 모양 (CharShape) — read/write property. |
+| method | `charshape_scope(self, **fmt)` | 블록 내부에서 입력된 텍스트에 CharShape 서식을 **스코프** 로 적용. |
+| method | `clear(self)` | 현재 활성 문서의 모든 내용을 삭제. |
+| method | `close(self)` | Closes the currently open document in the Hancom Office Hwp program. |
+| method | `copy(self)` | 선택 영역을 클립보드로 복사. |
+| method | `create_action(self, action_key: str)` | `_Action` 클래스의 인스턴스를 생성하고 반환합니다. |
+| method | `create_field(self, name: str, memo: str = '', direction: str = '')` | [**Deprecated v0.0.20**] 현재 커서 위치에 **누름틀(필드)** 을 생성. |
+| method | `create_parameterset(self, key: str)` |  |
+| property | `current_page` | 현재 커서가 위치한 페이지 번호 (1부터). |
+| method | `cut(self)` | 선택 영역을 잘라내기 (클립보드로 이동). |
+| method | `delete(self)` | 선택 영역 또는 커서 위치 글자 삭제. |
+| method | `delete_all_fields(self) -> int` | [**Deprecated v0.0.20**] 모든 필드 삭제. |
+| method | `delete_field(self, name: str) -> bool` | [**Deprecated v0.0.20**] 필드 삭제. |
+| method | `field_exists(self, name: str) -> bool` | [**Deprecated v0.0.20**] 필드 존재 확인. |
+| property | `field_names` | [**Deprecated v0.0.20**] 필드 이름 리스트. |
+| method | `field_names_internal(self) -> list` | Internal name list — 경고 없이 사용 (fields_dict, fields accessor 등 내부용). |
+| property | `fields` | 누름틀(필드) 컬렉션 — list-like + dict-like collection accessor. |
+| property | `fields_dict` | [**Deprecated v0.0.20**] ``{필드이름: 값}`` 딕셔너리. |
+| method | `find_text(self, text='', ignore_message=True, direction=0, match_case=None, all_word_forms=None, several_words=None, use_wild_cards=None, whole_word_only=None, replace_mode=None, ignore_find_string=None, ignore_replace_string=None, find_style='', replace_style='', find_jaso=None, find_regexp=None, find_type=True, facename=None, text_color=None, bold=None, charshape: hwpapi.parametersets.sets.primitives.CharShape = None)` | 문서에서 다양한 옵션을 사용해 특정 텍스트를 검색합니다. |
+| method | `get_charshape(self)` | Retrieves the character shape settings from the current application. |
+| method | `get_field(self, name: str) -> str` | [**Deprecated v0.0.20**] 필드 값 읽기. |
+| method | `get_filepath(self)` | 현재 열려있는 한컴오피스 Hwp 문서의 파일 경로를 검색합니다. |
+| method | `get_font_list(self)` | Retrieves the list of fonts that used in the documnents from the current application. |
+| method | `get_hwnd(self)` | Retrieves the window handle (HWND) of the active window in the Hancom Office Hwp program. |
+| method | `get_message_box_mode(self) -> int` | 현재 다이얼로그 모드 반환 (HWP `GetMessageBoxMode`). |
+| method | `get_parashape(self)` | Retrieves the paragraph shape settings from the current application. |
+| method | `get_selected_text(self)` | Hancom Office Hwp 문서에서 현재 선택된 영역의 텍스트를 가져옵니다. |
+| method | `get_text(self, spos=<ScanStartPosition.Line: 32>, epos=<ScanEndPosition.Line: 2>)` | 지정된 시작 및 끝 위치에 따라 문서에서 텍스트를 가져옵니다. |
+| method | `goto_page(self, page: int) -> bool` | 지정 페이지로 커서 이동 (1-indexed). |
+| method | `help(self) -> None` | 이 App 인스턴스에서 쓸 수 있는 **accessor 와 context manager** 를 |
+| method | `highlight(self, color='#FFFF00') -> bool` | 현재 선택 영역에 **형광펜** 효과 적용 (``shade_color`` 와 별개). |
+| method | `hwpunit_to_mm(self, hu: int) -> float` | HWPUNIT → 밀리미터. (1 mm ≈ 283 HWPUNIT) |
+| method | `hwpunit_to_point(self, hu: int) -> float` | HWPUNIT → 포인트. (1 pt = 100 HWPUNIT) |
+| method | `in_table(self) -> bool` | 현재 커서가 **표 안에 있는지** 판별. v0.0.23+. |
+| method | `insert_bookmark(self, name: str)` | 책갈피 삽입. Fluent — chain 가능. |
+| method | `insert_file(self, fpath, keep_charshape=False, keep_parashape=False, keep_section=False, keep_style=False)` | Inserts the contents of a specified file into the current document. |
+| method | `insert_heading(self, text: str, level: int = 1)` | 제목(heading) 삽입 — 굵게 + 큰 글씨로 포맷 후 줄바꿈. |
+| method | `insert_hyperlink(self, text: str, url: str)` | 하이퍼링크 삽입. Fluent — chain 가능. |
+| method | `insert_line_break(self)` | 줄 나누기 삽입 (문단 유지, 강제 줄바꿈). Fluent — chain 가능. |
+| method | `insert_page_break(self)` | 페이지 나누기 삽입. Fluent — chain 가능 (반환: ``self``). |
+| method | `insert_paragraph_break(self)` | 문단 나누기 삽입. Fluent — chain 가능 (반환: ``self``). |
+| method | `insert_picture(self, fpath, width=None, height=None, size_option=<SizeOption.RealSize: 0>, reverse=False, watermark=False, effect=<Effect.RealPicture: 0>)` | 지정된 크기와 효과 옵션으로 문서에 이미지를 삽입합니다. |
+| method | `insert_tab(self)` | 탭 문자 삽입. Fluent — chain 가능 (반환: ``self``). |
+| method | `insert_table(self, rows: int = None, cols: int = None, data=None, headers=None)` | 표 생성 — 빈 표, 데이터로 채워진 표, 또는 pandas DataFrame 에서. |
+| method | `insert_text(self, text: str, charshape: hwpapi.parametersets.sets.primitives.CharShape = None, **kwargs)` | Inserts text into the Hancom Office Hwp document with specified character shape settings. |
+| method | `mm_to_hwpunit(self, mm: float) -> int` | 밀리미터 → HWPUNIT. HWP 엔진의 ``MiliToHwpUnit`` 호출. |
+| method | `move_to_field(self, name: str, text: bool = True, front: bool = True, select: bool = False) -> bool` | [**Deprecated v0.0.20**] 지정 필드로 커서 이동. |
+| method | `new_document(self, is_tab: bool = True) -> 'Document'` | 새 빈 문서 추가 — :meth:`Documents.add` 의 편의 alias. |
+| method | `open(self, path: str)` | 제공된 파일 경로를 사용하여 한컴오피스 Hwp 프로그램에서 파일을 엽니다. |
+| property | `page_count` | 현재 문서의 페이지 수. |
+| property | `parashape` | 현재 커서 위치의 문단 모양 (ParaShape) — read/write property. |
+| method | `parashape_scope(self, **fmt)` | 블록 내부 문단에 ParaShape 서식을 **스코프** 로 적용. |
+| method | `paste(self)` | 클립보드 내용을 커서 위치에 붙여넣기. |
+| method | `point_to_hwpunit(self, pt: float) -> int` | 포인트 → HWPUNIT. HWP 엔진의 ``PointToHwpUnit`` 호출. |
+| method | `quit(self)` | Terminates the Hancom Office Hwp program instance associated with the `App`. |
+| method | `read_table(self, to: str = 'df', max_rows: int = 500, max_cols: int = 50)` | 커서가 들어있는 표를 파이썬 자료 구조로 추출. |
+| method | `redo(self)` | 되돌린 작업 다시 실행. ``Redo`` 액션 alias. |
+| method | `register_security_module(self, module_name: str = 'FilePathCheckerModuleExample', dll_path: str = None) -> bool` | 보안 모듈 (FilePathChecker) 명시적 등록. |
+| method | `reload(self, new_app=False, dll_path=None)` | 새로운 HWPFrame.HwpObject로 `App` 인스턴스를 다시 로드하고 가시성과 DLL 경로를 재설정합니다. |
+| method | `rename_field(self, old: str, new: str) -> bool` | [**Deprecated v0.0.20**] 필드 이름 변경. |
+| method | `replace_all(self, old_text='', new_text='', old_charshape=None, new_charshape=None, ignore_message=True, direction=None, match_case=None, all_word_forms=None, several_words=None, use_wild_cards=None, whole_word_only=None, auto_spell=None, replace_mode=None, ignore_find_string=None, ignore_replace_string=None, find_regexp=None, find_style=None, replace_style=None, find_jaso=None, find_reg_exp=None, find_type=None)` | 문서에서 특정 텍스트를 새 텍스트로 모두 교체합니다. |
+| method | `replace_brackets_with_fields(self, pattern: str = '\\{\\{(\\w+)\\}\\}', memo: str = '') -> list` | ``{{name}}`` 브래킷을 모두 HWP 필드로 변환. |
+| method | `rgb_color(self, r: int, g: int, b: int) -> int` | RGB 값을 HWP 내부 색상 정수 (BBGGRR) 로 변환. |
+| method | `save(self, path=None)` | Saves the current document in the Hancom Office Hwp program. |
+| method | `save_all_page_images(self, out_dir: str, prefix: str = 'page', format: str = 'png', dpi: int = 300) -> list` | 모든 페이지를 이미지로 저장 — 생성된 파일 경로 리스트 반환. |
+| method | `save_block(self, path: pathlib.Path)` | Saves a block of content in the Hancom Office Hwp program and returns the file path. |
+| method | `save_page_image(self, page: int, path: str, dpi: int = 100, depth: int = 8, format: int = -1) -> bool` | 지정 페이지를 이미지 파일로 저장. |
+| method | `scan(self, option=<MaskOption.All: 5>, selection=False, scan_spos=<ScanStartPosition.Current: 0>, scan_epos=<ScanEndPosition.Document: 7>, spara=None, spos=None, epara=None, epos=None, scan_direction=<ScanDirection.Forward: 0>)` |  |
+| method | `select_all(self)` | 문서 전체 선택. ``SelectAll`` 액션 alias. |
+| method | `select_text(self, option=<SelectionOption.Line: ('MoveLineBegin', 'MoveSelLineEnd')>)` | 지정된 옵션에 따라 문서에서 텍스트를 선택합니다. |
+| property | `selection` | 현재 선택된 텍스트 (property alias for :meth:`get_selected_text`). |
+| method | `set_cell_border(self, top=None, right=None, left=None, bottom=None, horizontal=None, vertical=None, top_width=<Thickness.NULL: None>, right_width=<Thickness.NULL: None>, left_width=<Thickness.NULL: None>, bottom_width=<Thickness.NULL: None>, horizontal_width=<Thickness.NULL: None>, vertical_width=<Thickness.NULL: None>, top_color=None, bottom_color=None, left_color=None, right_color=None, horizontal_color=None, vertical_color=None)` | Sets the border properties for cells in a table within a Hancom Office Hwp document. |
+| method | `set_cell_color(self, bg_color=None, hatch_color='#000000', hatch_style=6, alpha=None)` | Sets the background color and hatch style for cells in a Hancom Office Hwp document. |
+| method | `set_charshape(self, charshape: hwpapi.parametersets.sets.primitives.CharShape = None, **kwargs)` | Sets the character shape in the current paragraph of the Hancom Office Hwp application using the pro... |
+| method | `set_field(self, name: str, value) -> bool` | [**Deprecated v0.0.20**] 필드 값 주입. |
+| method | `set_message_box_mode(self, mode: int) -> int` | HWP 다이얼로그 처리 모드 지정 — 이전 모드값을 반환. |
+| method | `set_parashape(self, parashape: hwpapi.parametersets.sets.primitives.ParaShape = None, **kwargs)` | Sets the paragraph shape in the Hancom Office Hwp application using the provided `ParaShape`. |
+| method | `set_visible(self, is_visible=True, window_i=0)` | 한컴오피스 Hwp 프로그램 창의 가시성을 설정합니다. |
+| method | `setup_page(self, top=20, bottom=10, right=20, left=20, header=15, footer=5, gutter=0)` | Hancom Office Hwp 문서의 페이지 레이아웃을 설정합니다. |
+| method | `silenced(self, mode=1118481)` | 다이얼로그 자동응답 **context manager** (scoped MessageBox mode). |
+| property | `status` | 상태바 정보 — ``KeyIndicator()`` 반환값을 dict 로. |
+| method | `styled_text(self, text: str, **fmt)` | 포맷팅이 **그 텍스트에만** 적용되도록 삽입합니다. |
+| method | `suppress_errors(self)` | 에러/경고 dialog 를 모두 자동 ABORT 처리 + 예외 swallowing. |
+| property | `text` | 현재 활성 문서의 **전체 텍스트** (읽기/쓰기). |
+| method | `undo(self)` | 마지막 작업 되돌리기. ``Undo`` 액션 alias. |
+| method | `undo_group(self, description: str = '')` | **Undo 경계** — 블록 내부의 여러 편집을 사용자가 단일 Ctrl+Z 로 |
+| method | `use_document(self, doc_or_index)` | 지정한 문서를 **임시로 활성창** 으로 만들고, 블록 종료 시 원래 활성 |
+| property | `version` | HWP 어플리케이션 버전 문자열 (예: ``"12, 0, 1, 3335"``). |
+| property | `visible` | HWP 메인 창의 가시성 (property form of :meth:`set_visible`). |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

@@ -1,0 +1,52 @@
+---
+title: "ControlsAccessor — 모든 control (`app.controls`)"
+---
+
+## 한 줄 요약
+
+``app.controls`` — 문서 내 컨트롤 iterator.
+
+## Import
+
+```python
+# app.controls 로 자동 생성됨
+```
+
+## 개요
+
+Examples
+--------
+>>> len(app.controls)
+>>> for c in app.controls:
+...     print(c)
+
+>>> # 타입 코드로 필터
+>>> tables = [c for c in app.controls if c.ctrl_id.strip() == "tbl"]
+
+>>> # 편의 검색
+>>> tbl = app.controls.find(desc="표")
+>>> tbl.select()
+
+>>> # 현재 선택된 컨트롤
+>>> app.controls.selected
+
+>>> # 타입별 묶기
+>>> by_type = app.controls.by_ctrl_id()
+>>> by_type["tbl "]      # list of Control for tables
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `by_ctrl_id(self) -> 'dict'` | ``{ctrl_id: [Control, ...]}`` 그룹화. |
+| method | `find(self, ctrl_id: 'Optional[str]' = None, desc: 'Optional[str]' = None) -> 'Optional[Control]'` | 첫 매치되는 컨트롤 반환. |
+| method | `find_all(self, ctrl_id: 'Optional[str]' = None, desc: 'Optional[str]' = None) -> 'List[Control]'` | 조건에 맞는 모든 컨트롤. |
+| property | `head` | 첫 번째 컨트롤. |
+| property | `last` | 마지막 컨트롤. |
+| property | `selected` | 현재 선택된 컨트롤 (없으면 None). |
+| method | `unselect(self) -> 'bool'` | 현재 컨트롤 선택 해제. |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

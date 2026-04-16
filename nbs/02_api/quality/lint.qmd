@@ -1,0 +1,26 @@
+---
+title: "Linter / LintReport — 품질 체크 (`app.lint`)"
+---
+
+## 한 줄 요약
+
+문서 linter — ``app.lint`` 로 접근. 호출 형태: ``app.lint()``.
+
+## Import
+
+```python
+# app.lint() 로 자동 호출됨
+```
+
+## 개요
+
+__call__ 이 정의돼서 ``app.lint`` 자체가 호출 가능.
+
+## 메소드 / 속성
+
+_(public 메소드 없음)_
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

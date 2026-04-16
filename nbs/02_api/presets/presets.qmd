@@ -1,0 +1,38 @@
+---
+title: "Presets — 11개 꾸미기 프리셋 (`app.preset`)"
+---
+
+## 한 줄 요약
+
+문서 프리셋 accessor. ``app.preset`` 으로 접근.
+
+## Import
+
+```python
+# app.preset 로 자동 생성됨
+```
+
+## 개요
+
+v0.0.14 기준: 줄무늬 표 (striped_rows) 만 구현.
+이후 릴리즈에서 계속 확장 (DOCUMENT_PRESETS_PLAN.md 참고).
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `highlight_yellow(self, toggle: 'bool' = True) -> "'App'"` | **선택 영역 배경색 노랑** — 승승아빠 매크로 Alt+Shift+2 이식. |
+| method | `page_border(self, enable: 'bool' = True, style: 'str' = 'dashed') -> "'App'"` | **바탕쪽 테두리** — 편집 영역 확인용. 승승아빠 매크로 |
+| method | `page_numbers(self, position: 'str' = 'bottom-center', format: 'str' = '1 / N', header_filename: 'bool' = False) -> "'App'"` | 쪽번호 + (선택) 머리글에 파일명 삽입 — 승승아빠 매크로 |
+| method | `striped_rows(self, colors: 'Optional[List[str]]' = None, header_color: 'Optional[str]' = None, skip_header: 'bool' = True) -> "'App'"` | 현재 커서가 들어있는 표를 **줄무늬** 로 꾸밉니다 (zebra stripe). |
+| method | `subtitle_bar(self, text: 'str' = '', bg_color: 'str' = '#EEEEEE', font_size: 'int' = 1200) -> "'App'"` | 문서 **소제목 바** — 승승아빠 매크로 ``문서_소제목_바`` 이식. |
+| method | `summary_box(self, text: 'str' = '', variant: 'str' = 'rounded', bg_color: 'str' = '#F5F5F5') -> "'App'"` | **요약 박스** — 승승아빠 매크로 Alt+9 ``요약바`` 이식. 강조용 박스. |
+| method | `table_footer(self, color: 'str' = 'gray', text_color: 'str' = '#FFFFFF', bold: 'bool' = True, rows: 'int' = 1) -> "'App'"` | 현재 표의 **하단 ``rows`` 행을 바닥행** 으로 꾸밈. 사용법은 |
+| method | `table_header(self, color: 'str' = 'sky', text_color: 'str' = '#FFFFFF', bold: 'bool' = True, rows: 'int' = 1) -> "'App'"` | 현재 표의 **상단 ``rows`` 행을 제목행** 으로 꾸밈. |
+| method | `title_box(self, text: 'str' = '', subtitle: 'str' = '', width: 'str' = '168mm', height: 'str' = '22.6mm', bg_color: 'str' = '#EEEEEE', font_size: 'int' = 1400, title_color: 'str' = '#000000') -> "'App'"` | 문서 **타이틀 박스** 삽입 — 승승아빠 매크로 ``문서타이틀박스`` 이식. |
+| method | `toc(self, with_bookmarks: 'bool' = True, dot_leader: 'bool' = True, levels: 'int' = 3) -> "'App'"` | **목차(TOC) 자동 생성** — 승승아빠 매크로 ``책갈피_및_제목차례`` + |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

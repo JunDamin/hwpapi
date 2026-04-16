@@ -1,0 +1,27 @@
+---
+title: "Convert — 텍스트 변환 (`app.convert`)"
+---
+
+## 한 줄 요약
+
+텍스트 변환 accessor.
+
+## Import
+
+```python
+# app.convert 로 자동 생성됨
+```
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `number_to_korean(self, text: 'Optional[str]' = None) -> 'Optional[str]'` | 숫자 → 한글숫자 변환. 승승아빠 매크로 ``숫자를_한글숫자로`` 이식. |
+| method | `replace_font(self, old_font: 'str', new_font: 'str', replace_all: 'bool' = False) -> 'int'` | 문서에서 **특정 폰트만** 다른 폰트로 일괄 교체. |
+| method | `wrap_by_char(self) -> "'App'"` | **줄 나눔 글자 단위** (기본값). |
+| method | `wrap_by_word(self) -> "'App'"` | **줄 나눔 어절 단위** — 승승아빠 매크로 ``줄_나눔_어절_단어_순환`` 이식. |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

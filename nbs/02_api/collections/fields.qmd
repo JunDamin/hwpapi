@@ -1,0 +1,35 @@
+---
+title: "Fields — 누름틀 (`app.fields`)"
+---
+
+## 한 줄 요약
+
+누름틀(필드) 컬렉션 — list-like + dict-like + collection methods.
+
+## Import
+
+```python
+# app.fields 로 자동 생성됨
+```
+
+## 개요
+
+하위 호환을 위해 iterate 시 필드 이름 문자열을 yield.
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `add(self, name: 'str', *, memo: 'str' = '', direction: 'str' = '') -> 'Field'` | 현재 커서 위치에 새 필드 생성. |
+| method | `find(self, name: 'str') -> 'Optional[Field]'` | 이름으로 검색. 없으면 ``None``. |
+| method | `from_brackets(self, pattern: 'str' = '\\{\\{(\\w+)\\}\\}', memo: 'str' = '') -> 'List[str]'` | ``{{name}}`` 형태 브래킷을 모두 필드로 변환. 변환된 이름 반환. |
+| method | `remove(self, name: 'str') -> 'bool'` | 필드 삭제. 성공 시 True. |
+| method | `remove_all(self) -> 'int'` | 모든 필드 삭제, 삭제된 개수 반환. |
+| method | `rename(self, old: 'str', new: 'str') -> 'bool'` | 필드 이름 변경. |
+| method | `to_dict(self) -> 'dict'` | ``{name: value}`` 딕셔너리로 변환. |
+| method | `update(self, mapping=None, **kwargs) -> 'None'` | dict-style 일괄 업데이트. |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

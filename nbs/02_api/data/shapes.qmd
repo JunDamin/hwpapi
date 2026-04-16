@@ -1,0 +1,87 @@
+---
+title: "Data classes — Character/CharShape/Paragraph/ParaShape/PageShape"
+---
+
+## 한 줄 요약
+
+CharShape 클래스는 문자 모양을 다룹니다. CharShape는 폰트, 색상, 크기 및 스타일과 같이 문자에 적용된 스타일링 속성의 전체 세트를 나타냅니다.
+
+## Import
+
+```python
+from hwpapi.classes.shapes import (
+    Character, CharShape, Paragraph, ParaShape, PageShape,
+)
+```
+
+## 개요
+
+메서드
+-------
+__init__(char_pset=None, **kwargs):
+    CharShape 클래스의 새 인스턴스를 초기화합니다. 키워드 인수를 사용하여 다양한 속성의 초기 값을 설정할 수 있습니다.
+
+__str__():
+    CharShape 인스턴스의 모든 속성과 그들의 현재 값이 나열된 문자열을 반환합니다.
+
+__repr__():
+    __str__() 메서드와 같은 역할을 합니다.
+
+_set_font(attr_name, value, font_dict):
+    문자 모양의 폰트를 설정하기 위한 보조 메서드입니다.
+
+_get_font(attr_name):
+    문자 모양의 폰트를 가져오기 위한 보조 메서드입니다.
+
+@property 와 @<property_name>.setter 쌍들:
+    문자 모양의 다양한 속성에 대한 getter 및 setter 메서드를 정의합니다.
+
+todict():
+    CharShape 인스턴스를 딕셔너리으로 변환합니다.
+
+fromdict(values: dict):
+    값을 담고 있는 딕셔너리를 받아 CharShape 값을 채웁니다.
+
+get_from_pset(pset):
+    주어진 아래아 한글 파라미터셋에서 CharShape 값을 채웁니다.
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| property | `bold` |  |
+| property | `font` |  |
+| property | `fontsize` |  |
+| method | `fromdict(self, values: dict)` |  |
+| method | `get_from_pset(self, pset)` |  |
+| property | `hangul_font` |  |
+| property | `hanja_font` |  |
+| property | `italic` |  |
+| property | `japanese_font` |  |
+| property | `latin_font` |  |
+| property | `offset` |  |
+| property | `other_font` |  |
+| property | `out_line_type` |  |
+| property | `ratio` | 장평 |
+| property | `shade_color` |  |
+| property | `shadow_color` |  |
+| property | `shadow_offset_x` |  |
+| property | `shadow_offset_y` |  |
+| property | `shadow_type` |  |
+| property | `spacing` | 자간 |
+| property | `strike_out_color` |  |
+| property | `strike_out_type` |  |
+| property | `sub_script` |  |
+| property | `super_script` |  |
+| property | `symbol_font` |  |
+| property | `text_color` |  |
+| method | `todict(self)` |  |
+| property | `underline_color` |  |
+| property | `underline_shape` |  |
+| property | `underline_type` |  |
+| property | `user_font` |  |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

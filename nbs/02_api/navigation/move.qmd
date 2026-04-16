@@ -1,0 +1,78 @@
+---
+title: "MoveAccessor — 커서 이동 (`app.move`)"
+---
+
+## 한 줄 요약
+
+``app.move`` — 커서/캐럿 이동.
+
+## Import
+
+```python
+# app.move 로 자동 생성됨
+```
+
+## 개요
+
+**두 가지 접근 방식**:
+
+1. **Sub-accessor (권장, v0.0.9+)** — 의미 단위로 묶여 명확:
+   ``app.move.doc.top()``, ``app.move.line.end()``,
+   ``app.move.word.next()``, ``app.move.page.next()``,
+   ``app.move.cell.right()`` 등.
+
+2. **Flat 메소드 (v0.0.x 호환 유지)** — 기존 이름 그대로:
+   ``app.move.top_of_file()``, ``app.move.end_of_line()`` 등.
+
+See Also
+--------
+``app.move.doc``, ``.line``, ``.word``, ``.para``, ``.char``,
+``.page``, ``.cell``
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `bottom_of_cell(self)` | 현재 셀에서 열(column)의 끝으로 이동 |
+| method | `bottom_of_file(self)` | 문서의 끝으로 이동 |
+| method | `bottom_of_list(self)` | 현재 리스트의 끝으로 이동 |
+| method | `current_caret(self)` | 현재 캐럿이 위치한 곳으로 이동 |
+| method | `current_list(self, para, pos)` | 현재 리스트의 특정 위치.(para pos로 위치 지정) |
+| method | `down_of_cell(self)` | 현재 캐럿이 위치한 셀의 아래쪽으로 이동 |
+| method | `end_of_cell(self)` | 현재 셀에서 행(row)의 끝으로 이동 |
+| method | `end_of_line(self)` | 현재 위치한 줄의 끝으로 이동 |
+| method | `end_of_para(self)` | 현재 위치한 문단의 끝으로 이동 |
+| method | `end_of_word(self)` | 현재 위치한 단어의 끝으로 이동 |
+| method | `left_of_cell(self)` | 현재 캐럿이 위치한 셀의 왼쪽으로 이동 |
+| method | `main(self, para, pos)` | 루트 리스트의 특정 위치(para, pos로 위치 지정) |
+| method | `next_char(self)` | 한 글자 뒤로 이동 (현재 리스트만을 대상으로 동작) |
+| method | `next_line(self)` | 한 줄 아래로 이동 |
+| method | `next_para(self)` | 다음 문단의 시작으로 이동 |
+| method | `next_pos(self)` | 한 글자 뒤로 이동 |
+| method | `next_pos_ex(self)` | 한 글자 뒤로 이동 (머리말/꼬리말 포함) |
+| method | `next_word(self)` | 한 단어 뒤로 이동 |
+| method | `parent_list(self)` | 한 레벨 상위로 이동 |
+| method | `prev_char(self)` | 한 글자 앞으로 이동 (현재 리스트만을 대상으로 동작) |
+| method | `prev_line(self)` | 한 줄 위로 이동 |
+| method | `prev_para(self)` | 앞 문단의 끝으로 이동 |
+| method | `prev_pos(self)` | 한 글자 앞으로 이동 |
+| method | `prev_pos_ex(self)` | 한 글자 앞으로 이동 (머리말/꼬리말 포함) |
+| method | `prev_word(self)` | 한 단어 앞으로 이동 |
+| method | `right_of_cell(self)` | 현재 캐럿이 위치한 셀의 오른쪽으로 이동 |
+| method | `root_list(self)` | 루트 리스트로 이동 |
+| method | `scan_pos(self)` | GetText() 실행 후 위치로 이동 |
+| method | `scr_pos(self)` | screen 좌표로 위치를 설정 |
+| method | `start_of_cell(self)` | 현재 셀에서 행(row)의 시작으로 이동 |
+| method | `start_of_line(self)` | 현재 위치한 줄의 시작으로 이동 |
+| method | `start_of_para(self)` | 현재 위치한 문단의 시작으로 이동 |
+| method | `start_of_word(self)` | 현재 위치한 단어의 시작으로 이동 |
+| method | `top_level_list(self)` | 탑레벨 리스트로 이동 |
+| method | `top_of_cell(self)` | 현재 셀에서 열(column)의 시작으로 이동 |
+| method | `top_of_file(self)` | 문서의 시작으로 이동 |
+| method | `top_of_list(self)` | 현재 리스트의 시작으로 이동 |
+| method | `up_of_cell(self)` | 현재 캐럿이 위치한 셀의 위쪽으로 이동 |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

@@ -1,0 +1,52 @@
+---
+title: "StylesAccessor — 문단 스타일 (`app.styles`)"
+---
+
+## 한 줄 요약
+
+``app.styles`` — 문단 스타일 관리 접근자.
+
+## Import
+
+```python
+# app.styles 로 자동 생성됨
+```
+
+## 개요
+
+Examples
+--------
+>>> len(app.styles)                    # 스타일 개수
+>>> for s in app.styles:               # 순회
+...     print(s.index, s.name)
+>>> app.styles.names                   # 이름 리스트
+['바탕글', '본문', '개요 1', ...]
+
+>>> "바탕글" in app.styles              # 존재 확인
+True
+>>> s = app.styles["제목 1"]            # 이름으로 조회
+>>> s.apply()                          # 커서 문단에 적용
+
+>>> app.styles.apply("제목 1")          # 단축 — 이름으로 바로 적용
+>>> app.styles.current                 # 현재 문단의 스타일
+
+>>> app.styles.export("my_styles.sty")
+>>> app.styles.import_from("my_styles.sty")
+>>> app.styles.remove_unused()         # 사용 안 된 스타일 제거
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `apply(self, name_or_index) -> 'bool'` | 현재 커서 문단에 스타일 적용. |
+| property | `current` | 현재 커서 문단의 스타일. |
+| method | `delete(self, name_or_index, replace_with: 'Union[int, str]' = 0) -> 'bool'` | 스타일 삭제 — 기존에 해당 스타일이 적용된 부분은 ``replace_with`` 로 변경. |
+| method | `export(self, path: 'str') -> 'bool'` | 현재 문서의 스타일을 ``.sty`` 파일로 export. |
+| method | `import_from(self, path: 'str') -> 'bool'` | ``.sty`` 파일에서 스타일 가져오기. |
+| property | `names` | 모든 스타일 이름 리스트 (index 순). |
+| method | `remove_unused(self, replace_with: 'Union[int, str]' = 0) -> 'int'` | 문서에서 **사용되지 않은** 스타일 모두 삭제. 삭제된 개수 반환. |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

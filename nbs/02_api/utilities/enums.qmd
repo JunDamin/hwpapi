@@ -1,0 +1,195 @@
+---
+title: "enums — BorderType / HatchStyle / Color / 모든 MAP"
+---
+
+매직 넘버 (`BorderType=8`) 대신 사용자 친화 이름 (`"double"`) 으로 작업할
+수 있게 하는 모든 ENUM/MAP 모음.
+
+v0.0.25+ 신규: **BORDER_TYPE_MAP**, **HATCH_STYLE_MAP**, **CELL_APPLY_TO_MAP**,
+**DIAGONAL_FLAG_MAP**, **resolve_enum**, **Color.RED 등 16 클래스 상수**.
+
+## Import
+
+```python
+from hwpapi.parametersets import mappings as M
+from hwpapi.parametersets.properties import Color
+```
+
+## Quick Start
+
+```python
+# 표 테두리 — 매직 넘버 대신 이름으로
+app.set_cell_border(top="solid", bottom="double", left="dash")
+
+# 셀 빗금 패턴
+app.set_cell_color(hatch_style="diagonal_cross", bg_color="yellow")
+
+# Color 클래스 상수
+app.charshape = {"text_color": Color.RED}
+app.charshape = {"shade_color": Color.YELLOW}
+
+# 모두 동일한 결과
+app.charshape = {"text_color": "#FF0000"}
+app.charshape = {"text_color": "red"}
+app.charshape = {"text_color": Color.from_rgb(255, 0, 0)}
+```
+
+---
+
+## BORDER_TYPE_MAP — 16종 선 종류
+
+`BorderFill.BorderType*`, `set_cell_border` 의 `top/bottom/left/right` 인자.
+
+| 이름 | 값 | 모양 |
+|:---|---:|:---|
+| `none` | 0 | 선 없음 |
+| `solid` | 1 | 실선 (—) |
+| `dash` | 2 | 짧은 점선 (- - -) |
+| `dot` | 3 | 작은 점 (. . .) |
+| `dash_dot` | 4 | 1점쇄선 (-..-..-) |
+| `dash_dot_dot` | 5 | 2점쇄선 (-..-..-) |
+| `long_dash` | 6 | 긴 점선 (━━━) |
+| `circle` | 7 | 원형 점 |
+| `double` | 8 | 이중선 (=) |
+| `thick_thin` | 9 | 얇음+굵음 |
+| `thin_thick` | 10 | 굵음+얇음 |
+| `thin_thick_thin` | 11 | 얇음+굵음+얇음 |
+| `wave` | 12 | 물결 |
+| `double_wave` | 13 | 이중 물결 |
+| `thick_3d` | 14 | 두꺼운 3D |
+| `thick_3d_inset` | 15 | 두꺼운 3D inset |
+
+```python
+app.set_cell_border(top="double", bottom="wave")
+# 또는
+app.set_cell_border(top=8, bottom=12)   # 정수도 가능
+```
+
+---
+
+## HATCH_STYLE_MAP — 13종 빗금 패턴
+
+`set_cell_color` 의 `hatch_style`, `FillAttr.WinBrushFaceStyle`.
+
+| 이름 | 값 | 패턴 |
+|:---|---:|:---|
+| `none` | 0 | 채우기 없음 |
+| `horizontal` | 1 | 수평선 |
+| `vertical` | 2 | 수직선 |
+| `diagonal_down` | 3 | 우상향 사선 |
+| `diagonal_up` | 4 | 좌상향 사선 |
+| `cross` | 5 | 십자 |
+| `diagonal_cross` | 6 | X자 |
+| `dense_horizontal` | 7 | 조밀한 수평 |
+| `dense_vertical` | 8 | 조밀한 수직 |
+| `solid` | 9 | 단색 채움 |
+| `dense_diagonal_down` | 10 | 조밀한 우상향 |
+| `dense_diagonal_up` | 11 | 조밀한 좌상향 |
+| `dense_cross` | 12 | 조밀한 십자 |
+
+---
+
+## CELL_APPLY_TO_MAP — 셀 적용 범위
+
+| 이름 | 값 | 의미 |
+|:---|---:|:---|
+| `current` | 1 | 현재 셀만 |
+| `selected` | 2 | 선택된 셀들 |
+| `all` | 3 | 표 전체 |
+
+---
+
+## DIAGONAL_FLAG_MAP — 대각선 비트플래그
+
+`BorderFill.SlashFlag` / `CounterSlashFlag`.
+
+| 이름 | 값 | 의미 |
+|:---|---:|:---|
+| `none` | 0 | 없음 |
+| `bottom` | 1 | 하단 비트 |
+| `middle` | 2 | 중앙 비트 |
+| `top` | 4 | 상단 비트 |
+| `all` | 7 | bottom \| middle \| top |
+
+---
+
+## Color 클래스 상수 (16개)
+
+```python
+from hwpapi.parametersets.properties import Color
+
+Color.RED          # #FF0000
+Color.GREEN        # #00FF00
+Color.BLUE         # #0000FF
+Color.BLACK        # #000000
+Color.WHITE        # #FFFFFF
+Color.YELLOW       # #FFFF00
+Color.CYAN         # #00FFFF
+Color.MAGENTA      # #FF00FF
+Color.ORANGE       # #FFA500
+Color.PURPLE       # #800080
+Color.PINK         # #FFC0CB
+Color.BROWN        # #A52A2A
+Color.GRAY         # #808080
+Color.LIGHT_GRAY   # #D3D3D3
+Color.DARK_GRAY    # #404040
+Color.NAVY         # #000080
+```
+
+또는 string named-color (소문자):
+
+```python
+app.charshape = {"text_color": "yellow"}
+app.charshape = {"text_color": "navy"}
+```
+
+---
+
+## resolve_enum — 양방향 헬퍼
+
+```python
+from hwpapi.parametersets.mappings import BORDER_TYPE_MAP, resolve_enum
+
+resolve_enum(BORDER_TYPE_MAP, "solid")   # 1
+resolve_enum(BORDER_TYPE_MAP, 1)         # 1 (passthrough)
+resolve_enum(BORDER_TYPE_MAP, "DOUBLE")  # 8 (case-insensitive)
+resolve_enum(BORDER_TYPE_MAP, "xyz")     # ValueError 발생
+```
+
+---
+
+## 기타 MAP (35개) — `mappings.ALL_MAPPINGS`
+
+기존부터 정의되어 있던 35개 MAP:
+
+`DIRECTION_MAP`, `ALIGN_MAP`, `ALIGN_TYPE_MAP`, `FONTTYPE_MAP`,
+`TEXT_DIRECTION_MAP`, `TEXT_ALIGN_MAP`, `LINE_SPACING_TYPE_MAP`,
+`LINE_WRAP_MAP`, `TEXT_WRAP_MAP`, `TEXT_FLOW_MAP`, `SHADOW_TYPE_MAP`,
+`BACKGROUND_TYPE_MAP`, `GRADATION_TYPE_MAP`, `ROTATION_SETTING_MAP`,
+`PIC_EFFECT_MAP`, `SEARCH_DIRECTION_MAP`, `BORDER_TEXT_MAP`,
+`UNDERLINE_TYPE_MAP`, `OUTLINE_TYPE_MAP`, `STRIKEOUT_TYPE_MAP`,
+`USE_KERNING_MAP`, `DIAC_SYM_MARK_MAP`, `USE_FONT_SPACE_MAP`,
+`HEADING_TYPE_MAP`, `NUMBERING_TYPE_MAP`, `NUMBER_FORMAT_MAP`,
+`PAGE_BREAK_MAP`, ...
+
+전체 목록:
+
+```python
+from hwpapi.parametersets.mappings import ALL_MAPPINGS
+print(list(ALL_MAPPINGS.keys()))
+```
+
+각 MAP 의 키/값 조회:
+
+```python
+from hwpapi.parametersets import mappings as M
+print(M.UNDERLINE_TYPE_MAP)
+# {'none': 0, 'solid': 1, 'dash': 2, ...}
+```
+
+## 관련
+
+- [units — 단위 변환](units.qmd)
+- [TableAccessor (`app.table`)](../structure/table.qmd)
+- [App 클래스](../core/app.qmd)
+- [전체 API 매트릭스](../index.qmd)

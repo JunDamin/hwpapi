@@ -1,0 +1,57 @@
+---
+title: "Document / Documents"
+---
+
+## 한 줄 요약
+
+여러 HWP 문서 중 **하나** 를 감싼 핸들.
+
+## Import
+
+```python
+from hwpapi.core.document import Document, Documents
+```
+
+## 개요
+
+``app.documents[i]`` 또는 ``app.documents.active`` 로 얻을 수 있습니다.
+문서 단위의 파일 경로 조회, 저장, 닫기, 활성화 등을 제공합니다.
+
+Attributes
+----------
+raw : COM object
+    원시 ``IXHwpDocument`` COM 래퍼. 직접 속성 접근이 필요할 때 사용.
+
+Examples
+--------
+>>> doc = app.documents[0]
+>>> print(doc.path)          # 현재 문서 경로
+>>> print(doc.modified)      # 수정 여부
+>>> doc.save()               # 현재 문서만 저장
+>>> doc.activate()           # 이 문서를 활성창으로 전환
+>>> doc.close()              # 이 문서만 닫기
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `activate(self) -> "'Document'"` | 이 문서를 활성창으로 전환하고 self 반환. |
+| method | `clear(self) -> 'bool'` | 문서 내용 비우기 (새 문서처럼). |
+| method | `close(self, save: 'bool' = False) -> 'bool'` | 이 문서만 닫기. ``save=True`` 면 저장 후 닫기. |
+| property | `document_id` | HWP 내부 문서 ID. |
+| property | `edit_mode` | 편집 모드 (0=일반, 1=읽기 전용, ...). |
+| property | `format` | 문서 포맷 문자열 (HWP, HWPX, PDF, ...). |
+| property | `full_name` | 전체 경로 포함 파일 이름. 저장 안된 문서는 빈 문자열. |
+| property | `modified` | 마지막 저장 이후 수정 여부. |
+| property | `name` | 파일명 (경로 제외). 저장 안된 문서는 빈 문자열. |
+| property | `path` | 문서 폴더 경로. |
+| method | `redo(self) -> 'bool'` | 이 문서의 다시 실행. |
+| method | `save(self) -> 'bool'` | 현재 경로에 저장. 저장된 적 없으면 실패 (``save_as`` 사용). |
+| method | `save_as(self, path: 'str', format: 'str' = None) -> 'bool'` | 다른 이름/포맷으로 저장. |
+| property | `saved` | ``modified`` 의 반대 — 저장된 상태인지 여부. |
+| method | `undo(self) -> 'bool'` | 이 문서의 되돌리기. |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

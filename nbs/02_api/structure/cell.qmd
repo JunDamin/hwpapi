@@ -1,0 +1,51 @@
+---
+title: "CellAccessor — 표 셀 (`app.cell`)"
+---
+
+## 한 줄 요약
+
+셀의 속성을 접근하고 수정할 수 있는 클래스입니다.
+
+## Import
+
+```python
+# app.cell 로 자동 생성됨
+```
+
+## 개요
+
+이 클래스는 HWP 문서의 테이블 셀과 관련된 속성에 접근하고, 해당 속성을 읽거나 수정할 수 있도록 기능을 제공합니다. 
+셀의 너비와 높이를 포함한 다양한 속성을 다룰 수 있습니다.
+
+속성(Property)
+-------------
+width : float
+    셀의 너비를 밀리미터 단위로 반환하거나 설정합니다.
+height : float
+    셀의 높이를 밀리미터 단위로 반환하거나 설정합니다.
+
+메서드(Method)
+-------------
+_get_cell_property() -> dict
+    셀과 관련된 속성들을 딕셔너리 형태로 반환합니다.
+
+사용 예시
+--------
+>>> app = App()  # HWP API 객체
+>>> cell = CellAccessor(app)
+>>> print(cell.width)  # 셀의 현재 너비 출력
+>>> cell.width = 50  # 셀의 너비를 50mm로 설정
+>>> print(cell.height)  # 셀의 현재 높이 출력
+>>> cell.height = 20  # 셀의 높이를 20mm로 설정
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| property | `height` | 셀의 높이를 가져옵니다. |
+| property | `width` | 셀의 너비를 가져옵니다. |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

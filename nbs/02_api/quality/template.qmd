@@ -1,0 +1,35 @@
+---
+title: "Template — 문서 템플릿 (`app.template`)"
+---
+
+## 한 줄 요약
+
+문서 템플릿 저장/로드 — ``app.template`` 으로 접근.
+
+## Import
+
+```python
+# app.template 로 자동 생성됨
+```
+
+## 개요
+
+현재 문서의 주요 속성 (페이지 설정, 스타일, 기본 문자 모양) 을
+JSON 파일로 export 하고 다른 문서에 재적용.
+
+Usage::
+
+    app.template.save("company.json")
+    app2.template.apply("company.json")
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `apply(self, path: 'str') -> 'dict'` | JSON 템플릿 파일을 로드해 현재 문서에 적용. |
+| method | `save(self, path: 'str') -> 'dict'` | 현재 문서 상태를 JSON 으로 저장. 현재 저장 항목: |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

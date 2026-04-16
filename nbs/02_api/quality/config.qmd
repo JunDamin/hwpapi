@@ -1,0 +1,33 @@
+---
+title: "Config — App 선호도 (`app.config`)"
+---
+
+## 한 줄 요약
+
+App 기본 선호도 설정 — ``app.config``.
+
+## Import
+
+```python
+# app.config 로 자동 생성됨
+```
+
+## 개요
+
+v0.0.18 기준: in-memory dict. 향후 ``~/.hwpapirc`` 지원 예정.
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `apply_defaults(self) -> "'Config'"` | 설정된 기본값을 **현재 커서 위치 (또는 SelectAll)** 에 실제로 적용. |
+| method | `load(self, path: 'str' = '~/.hwpapirc') -> "'Config'"` | JSON 에서 로드. |
+| method | `reset(self) -> "'Config'"` |  |
+| method | `save(self, path: 'str' = '~/.hwpapirc') -> 'None'` | JSON 으로 디스크에 저장. |
+| method | `to_dict(self) -> 'dict'` |  |
+| method | `update(self, **kw) -> "'Config'"` |  |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

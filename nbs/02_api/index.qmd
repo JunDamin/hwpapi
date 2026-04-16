@@ -1,0 +1,65 @@
+---
+title: "API 레퍼런스"
+---
+
+hwpapi 의 모든 객체와 모듈을 도메인별로 정리한 페이지.
+
+각 카테고리 아래의 페이지를 클릭하면 해당 클래스의 모든 메소드/속성과
+한 줄 설명, 시그니처를 볼 수 있습니다.
+
+사이드바의 ‘API 레퍼런스’ 트리에서도 직접 접근 가능.
+
+## Collections
+
+- [Bookmarks — 책갈피 (`app.bookmarks`)](collections/bookmarks.qmd)
+- [ControlsAccessor — 모든 control (`app.controls`)](collections/controls.qmd)
+- [Fields — 누름틀 (`app.fields`)](collections/fields.qmd)
+- [Hyperlinks — 하이퍼링크 (`app.hyperlinks`)](collections/hyperlinks.qmd)
+- [Images — 이미지 (`app.images`)](collections/images.qmd)
+- [StylesAccessor — 문단 스타일 (`app.styles`)](collections/styles.qmd)
+
+## Core
+
+- [App](core/app.qmd)
+- [Document / Documents](core/document.qmd)
+- [Engine / Engines / Apps](core/engine.qmd)
+
+## Data
+
+- [Data classes — Character/CharShape/Paragraph/ParaShape/PageShape](data/shapes.qmd)
+
+## Debug
+
+- [Debug — 디버깅 도구 (`app.debug`)](debug/debug.qmd)
+
+## Navigation
+
+- [MoveAccessor — 커서 이동 (`app.move`)](navigation/move.qmd)
+- [Selection — 선택 제어 (`app.sel`)](navigation/selection.qmd)
+
+## Presets
+
+- [Presets — 11개 꾸미기 프리셋 (`app.preset`)](presets/presets.qmd)
+
+## Quality
+
+- [Config — App 선호도 (`app.config`)](quality/config.qmd)
+- [Linter / LintReport — 품질 체크 (`app.lint`)](quality/lint.qmd)
+- [Template — 문서 템플릿 (`app.template`)](quality/template.qmd)
+
+## Structure
+
+- [CellAccessor — 표 셀 (`app.cell`)](structure/cell.qmd)
+- [PageAccessor — 페이지 (`app.page`)](structure/page.qmd)
+- [TableAccessor — 표 구조/배치 서식 (`app.table`)](structure/table.qmd)
+
+## Transform
+
+- [Convert — 텍스트 변환 (`app.convert`)](transform/convert.qmd)
+- [View — 뷰포트 / zoom (`app.view`)](transform/view.qmd)
+
+## Utilities
+
+- [enums — BorderType / HatchStyle / Color 등](utilities/enums.qmd)
+- [functions — 헬퍼 함수 모음](utilities/functions.qmd)
+- [units — 단위 변환 (mm/cm/inch/pt ↔ HWPUNIT)](utilities/units.qmd)

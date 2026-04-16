@@ -1,0 +1,44 @@
+---
+title: "Selection — 선택 제어 (`app.sel`)"
+---
+
+## 한 줄 요약
+
+현재 선택 영역 제어.
+
+## Import
+
+```python
+# app.sel 로 자동 생성됨
+```
+
+## 개요
+
+모든 ``current_*`` 메소드는 선택 후 ``self`` 반환 → chain 가능.
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `clear(self) -> "'Selection'"` | 선택 해제. ``Cancel`` 액션. |
+| method | `compress(self, step: 'int' = 1) -> "'Selection'"` | 선택된 범위의 **자간 + 장평을 step 단위씩 축소**. |
+| method | `current_line(self) -> "'Selection'"` | 커서 위치의 **한 줄** 선택. ``MoveLineBegin`` + ``MoveSelLineEnd``. |
+| method | `current_paragraph(self) -> "'Selection'"` | 커서 위치의 **문단 전체** 선택. |
+| method | `current_sentence(self) -> "'Selection'"` | 커서 위치의 **문장** 선택 (한국어 기준). |
+| method | `current_word(self) -> "'Selection'"` | 커서 위치의 **단어** 선택. |
+| method | `expand(self, step: 'int' = 1) -> "'Selection'"` | 선택된 범위의 **자간 + 장평을 step 단위씩 확대**. |
+| method | `expand_char(self, n: 'int' = 1) -> "'Selection'"` | 선택 영역을 오른쪽으로 ``n`` 글자 확장 (또는 축소 시 음수). |
+| method | `expand_word(self, n: 'int' = 1) -> "'Selection'"` | 선택을 한 단어씩 확장. |
+| property | `is_empty` | 선택 영역이 없으면 True. |
+| property | `text` | 현재 선택된 텍스트 (없으면 빈 문자열). |
+| method | `to_document_begin(self) -> "'Selection'"` | 문서 시작까지 역방향 선택. |
+| method | `to_document_end(self) -> "'Selection'"` | 문서 끝까지 선택. |
+| method | `to_line_begin(self) -> "'Selection'"` | 현재 위치부터 줄 시작까지 역방향 선택. |
+| method | `to_line_end(self) -> "'Selection'"` | 현재 위치부터 줄 끝까지 선택. |
+| method | `to_paragraph_begin(self) -> "'Selection'"` | 현재 위치부터 문단 시작까지 역방향 선택. |
+| method | `to_paragraph_end(self) -> "'Selection'"` | 현재 위치부터 문단 끝까지 선택 확장. |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

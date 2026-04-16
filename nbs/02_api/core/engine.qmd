@@ -1,0 +1,50 @@
+---
+title: "Engine / Engines / Apps"
+---
+
+## 한 줄 요약
+
+한컴오피스 Hwp 객체를 캡슐화하는 Engine 클래스입니다.
+
+## Import
+
+```python
+from hwpapi.core.engine import Engine, Engines, Apps
+```
+
+## 개요
+
+이 클래스는 한컴오피스 Hwp 애플리케이션과 상호작용하는 인터페이스를 제공하며,
+Hwp 환경 내에서 작업과 동작을 용이하게 합니다.
+
+매개변수
+----------
+hwp_object : object, optional
+    Engine에 의해 캡슐화될 Hwp 객체. 제공되지 않은 경우,
+    "HWPFrame.HwpObject"를 사용하여 새로운 Hwp 객체를 생성합니다.
+
+속성
+----------
+impl : object
+    Hwp 객체의 구현체.
+
+메서드
+-------
+name()
+    Hwp 객체의 이름(CLSID)을 반환합니다.
+
+사용 예시
+--------
+>>> engine = Engine()
+>>> print(engine.name)
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| property | `name` | Hwp 객체의 이름(CLSID)을 반환합니다. |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

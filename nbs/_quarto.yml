@@ -6,6 +6,8 @@ project:
     - "index.qmd"
     - "01_tutorials/*.ipynb"
     - "02_api_reference.qmd"
+    - "02_api/index.qmd"
+    - "02_api/**/*.qmd"
 
 format:
   html:
@@ -116,8 +118,76 @@ website:
             file: 01_tutorials/13_debugging_tools.ipynb
       - section: "📖 API 레퍼런스"
         contents:
-          - text: "전체 API"
+          - text: "전체 매트릭스 (App + Actions + ParameterSets)"
             file: 02_api_reference.qmd
+          - text: "🆕 객체별 가이드"
+            file: 02_api/index.qmd
+          - section: "Core"
+            contents:
+              - text: "App"
+                file: 02_api/core/app.qmd
+              - text: "Engine / Engines / Apps"
+                file: 02_api/core/engine.qmd
+              - text: "Document / Documents"
+                file: 02_api/core/document.qmd
+          - section: "Navigation & Selection"
+            contents:
+              - text: "MoveAccessor (app.move)"
+                file: 02_api/navigation/move.qmd
+              - text: "Selection (app.sel)"
+                file: 02_api/navigation/selection.qmd
+          - section: "Collections"
+            contents:
+              - text: "Fields (app.fields)"
+                file: 02_api/collections/fields.qmd
+              - text: "Bookmarks (app.bookmarks)"
+                file: 02_api/collections/bookmarks.qmd
+              - text: "Hyperlinks (app.hyperlinks)"
+                file: 02_api/collections/hyperlinks.qmd
+              - text: "Images (app.images)"
+                file: 02_api/collections/images.qmd
+              - text: "Controls (app.controls)"
+                file: 02_api/collections/controls.qmd
+              - text: "Styles (app.styles)"
+                file: 02_api/collections/styles.qmd
+          - section: "Structure (표·셀·페이지)"
+            contents:
+              - text: "CellAccessor (app.cell)"
+                file: 02_api/structure/cell.qmd
+              - text: "TableAccessor (app.table)"
+                file: 02_api/structure/table.qmd
+              - text: "PageAccessor (app.page)"
+                file: 02_api/structure/page.qmd
+          - section: "Transform & View"
+            contents:
+              - text: "Convert (app.convert)"
+                file: 02_api/transform/convert.qmd
+              - text: "View (app.view)"
+                file: 02_api/transform/view.qmd
+          - section: "Quality & Templates"
+            contents:
+              - text: "Linter (app.lint)"
+                file: 02_api/quality/lint.qmd
+              - text: "Template (app.template)"
+                file: 02_api/quality/template.qmd
+              - text: "Config (app.config)"
+                file: 02_api/quality/config.qmd
+          - section: "Presets & Debug"
+            contents:
+              - text: "Presets (app.preset)"
+                file: 02_api/presets/presets.qmd
+              - text: "Debug (app.debug)"
+                file: 02_api/debug/debug.qmd
+          - section: "Data & Utilities"
+            contents:
+              - text: "Data classes (CharShape/ParaShape/...)"
+                file: 02_api/data/shapes.qmd
+              - text: "🆕 units — 단위 변환 (mm/cm/inch/pt)"
+                file: 02_api/utilities/units.qmd
+              - text: "🆕 enums — BorderType/HatchStyle/Color"
+                file: 02_api/utilities/enums.qmd
+              - text: "functions — 헬퍼"
+                file: 02_api/utilities/functions.qmd
       - section: "🔗 외부 링크"
         contents:
           - text: "GitHub 저장소"

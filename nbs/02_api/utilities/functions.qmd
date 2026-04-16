@@ -1,0 +1,60 @@
+---
+title: "functions — 헬퍼 함수 모음"
+---
+
+## 한 줄 요약
+
+functions — 헬퍼 함수 모음
+
+## Import
+
+```python
+from hwpapi import functions
+```
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `Dispatch(dispatch, userName=None, resultCLSID=None, typeinfo=None, clsctx=21)` | Creates a Dispatch based COM object. |
+| method | `Path(*args, **kwargs)` | PurePath subclass that can make system calls. |
+| method | `Tuple(*args, **kwargs)` | Deprecated alias to builtins.tuple. |
+| method | `Union(*args, **kwds)` | Union type; Union[X, Y] means either X or Y. |
+| method | `add_dll_to_registry(dll_path, key_path, value_name='FilePathCheckerModule')` | 레지스트리에 dll을 등록/업데이트합니다. |
+| method | `block_input(func)` | logger.debug(f"block_input called") |
+| method | `cell_addr(app)` | 현재 커서가 있는 셀의 주소 문자열 반환 (예: "A1", "B3"). 표 밖이면 None. |
+| method | `check_dll(dll_path=None)` | Register DLL module in Windows registry. |
+| method | `convert2int(_dict, value)` |  |
+| method | `convert_hwp_color_to_hex(color: int)` |  |
+| method | `convert_to_hwp_color(color)` |  |
+| method | `dispatch(app_name)` | 캐시가 충돌하는 문제를 해결하기 위해 실행합니다. 에러가 발생할 경우 기존 캐시를 삭제하고 다시 불러옵니다. |
+| method | `from_hwpunit(hwpunit_value: int, target_unit: str = 'mm') -> float` | Convert HWPUNIT to specified unit. |
+| method | `get_absolute_path(path)` | 파일 절대 경로를 반환합니다. |
+| method | `get_appdata_path()` | Get application data directory path for hwpapi. |
+| method | `get_charshape_pset(p)` |  |
+| method | `get_dll_path(package_name, dll_filename)` | 패키지에서 dll 경로를 확보합니다. |
+| method | `get_font_name(text)` |  |
+| method | `get_hwp_dll_path()` | Get path to HWP DLL, copying from bundle to appdata if needed. |
+| method | `get_hwp_objects()` |  |
+| method | `get_key(dict_, value)` | 딕셔너리에서 값를 찾아 키를 반환합니다. 반환할 값이 없으면 키에러와 함께 가능한 키를 알려줍니다. |
+| method | `get_logger(name: Optional[str] = None) -> logging.Logger` | 로거 인스턴스를 가져오는 편의 함수입니다. |
+| method | `get_parashape_pset(p)` |  |
+| method | `get_registry_value(key_path, value_name='FilePathCheckerModule')` | 레지스트리에 값이 있는지 확인해 봅니다. |
+| method | `get_rgb_tuple(color)` |  |
+| method | `get_value(dict_, key)` | 딕셔너리에서 키를 찾아 값을 반환합니다. 반환할 값이 없으면 키에러와 함께 가능한 키를 알려줍니다. |
+| method | `hex_to_rgb(hex_string)` |  |
+| method | `mili2unit(value)` | logger.debug(f"mili2unit called") |
+| method | `navigate_until(app, run_action: str, max_iters: int = 500) -> int` | 셀 주소가 변하지 않을 때까지 ``run_action`` 을 반복 실행. |
+| method | `parse_unit_string(value: Union[str, int, float], default_unit: str = 'mm') -> Tuple[float, str]` | Parse a value with optional unit suffix. |
+| method | `point2unit(value)` | logger.debug(f"point2unit called") |
+| method | `set_charshape_pset(charshape_pset, value_dict: dict)` | CharShape값을 입력하기 위한 함수입니다. |
+| method | `set_parashape_pset(parashape_pset, value_dict: dict)` |  |
+| method | `set_pset(p, value_dict: dict)` |  |
+| method | `to_hwpunit(value: Union[str, int, float], default_unit: str = 'mm') -> int` | Convert any unit to HWPUNIT. |
+| method | `unit2mili(value)` |  |
+| method | `unit2point(value)` |  |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

@@ -1,0 +1,30 @@
+---
+title: "Hyperlinks — 하이퍼링크 (`app.hyperlinks`)"
+---
+
+## 한 줄 요약
+
+하이퍼링크 컬렉션.
+
+## Import
+
+```python
+# app.hyperlinks 로 자동 생성됨
+```
+
+## 개요
+
+Examples
+--------
+>>> app.hyperlinks.add("Anthropic", "https://anthropic.com")
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `add(self, text: 'str', url: 'str') -> 'Hyperlink'` | 현재 커서 위치에 하이퍼링크 삽입. |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

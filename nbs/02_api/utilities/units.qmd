@@ -1,0 +1,89 @@
+---
+title: "units — 단위 변환 (mm/cm/inch/pt ↔ HWPUNIT)"
+---
+
+HWP 내부 단위는 **HWPUNIT** (283 HWPUNIT = 1mm, 100 HWPUNIT = 1pt). 이 모듈은
+친숙한 단위(mm/cm/in/pt) ↔ HWPUNIT 변환을 제공합니다.
+
+v0.0.23+ — 기존 `app.mm_to_hwpunit()` 등 instance method 대신 권장.
+이 module function 들은 **App 인스턴스 없이도 사용 가능**.
+
+## Import
+
+```python
+from hwpapi import units as U
+```
+
+## Quick Start
+
+```python
+hwp = U.mm(210)                 # 210 mm → 59430 HWPUNIT
+hwp = U.cm(21)                  # 21 cm → 59430
+hwp = U.inch(8.27)              # 8.27 in → 59544
+hwp = U.pt(12)                  # 12 pt → 1200
+
+mm_val = U.to_mm(59430)         # → 210.0
+pt_val = U.to_pt(1200)          # → 12.0
+
+# 문자열 입력도 지원
+hwp = U.parse("210mm")          # 59430
+hwp = U.parse("21cm")           # 59430
+hwp = U.parse("12pt")           # 1200
+hwp = U.parse(210)              # 59430 (bare int → mm)
+```
+
+## 함수 매트릭스
+
+| 함수 | 변환 | 예시 |
+|:---|:---|:---|
+| `U.mm(v)` | mm → HWPUNIT | `U.mm(210)` → 59430 |
+| `U.cm(v)` | cm → HWPUNIT | `U.cm(21)` → 59430 |
+| `U.inch(v)` | inch → HWPUNIT | `U.inch(8.27)` → 59544 |
+| `U.pt(v)` | pt → HWPUNIT | `U.pt(12)` → 1200 |
+| `U.to_mm(v)` | HWPUNIT → mm | `U.to_mm(59430)` → 210.0 |
+| `U.to_cm(v)` | HWPUNIT → cm | `U.to_cm(59430)` → 21.0 |
+| `U.to_inch(v)` | HWPUNIT → inch | `U.to_inch(7200)` → 1.0 |
+| `U.to_pt(v)` | HWPUNIT → pt | `U.to_pt(1200)` → 12.0 |
+| `U.parse(s)` | 문자열 → HWPUNIT | `U.parse("210mm")` → 59430 |
+
+## 변환표
+
+| 단위 | HWPUNIT |
+|:---:|---:|
+| 1 mm | 283 |
+| 1 cm | 2,830 |
+| 1 inch | 7,200 |
+| 1 pt | 100 |
+
+## 사용 예
+
+### 페이지 크기 (A4)
+
+```python
+from hwpapi.core import App
+from hwpapi import units as U
+
+app = App()
+# A4 = 210mm × 297mm
+app.page.width = U.mm(210)
+app.page.height = U.mm(297)
+```
+
+### 폰트 크기 (12pt)
+
+```python
+app.charshape = {"height": U.pt(12)}    # 12pt = 1200 HWPUNIT
+```
+
+### 테두리 굵기 (0.5mm)
+
+```python
+app.set_cell_border(top="solid", top_width=U.mm(0.5))
+```
+
+## 관련
+
+- [App 클래스](../core/app.qmd)
+- [PageAccessor (`app.page`)](../structure/page.qmd)
+- [enums — BorderType, HatchStyle, Color 상수](enums.qmd)
+- [전체 API 매트릭스](../index.qmd)

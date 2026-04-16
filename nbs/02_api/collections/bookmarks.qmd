@@ -1,0 +1,36 @@
+---
+title: "Bookmarks — 책갈피 (`app.bookmarks`)"
+---
+
+## 한 줄 요약
+
+책갈피 컬렉션. (HWP COM 의 InsertBookMark / DeleteBookMark / SelectBookMark / ExistBookMark)
+
+## Import
+
+```python
+# app.bookmarks 로 자동 생성됨
+```
+
+## 개요
+
+Examples
+--------
+>>> app.bookmarks.add("ch1")
+>>> "ch1" in app.bookmarks
+True
+>>> app.bookmarks.goto("ch1")
+>>> app.bookmarks.remove("ch1")
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `add(self, name: 'str') -> 'bool'` | 현재 커서 위치에 책갈피 생성. 성공 시 True. |
+| method | `goto(self, name: 'str') -> 'bool'` | 책갈피로 이동. |
+| method | `remove(self, name: 'str') -> 'bool'` | 책갈피 삭제. |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

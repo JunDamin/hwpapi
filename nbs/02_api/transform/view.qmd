@@ -1,0 +1,34 @@
+---
+title: "View — 뷰포트 / zoom (`app.view`)"
+---
+
+## 한 줄 요약
+
+뷰포트 제어 accessor.
+
+## Import
+
+```python
+# app.view 로 자동 생성됨
+```
+
+## 메소드 / 속성
+
+| 종류 | 시그니처 | 설명 |
+|:---|:---|:---|
+| method | `draft_mode(self) -> "'App'"` | 초안 모드 (빠른 렌더링). |
+| method | `exit_full_screen(self) -> "'App'"` | 전체 화면 해제 (토글). |
+| method | `full_screen(self) -> "'App'"` | 전체 화면 모드. |
+| method | `page_mode(self) -> "'App'"` | 편집 화면 모드 (기본). |
+| method | `scroll_to_cursor(self) -> "'App'"` | 현재 커서 위치가 화면에 보이도록 스크롤. |
+| method | `toggle_rulers(self) -> "'App'"` | 가로/세로 자 표시 토글. |
+| method | `zoom(self, percent: 'int') -> "'App'"` | 확대율을 지정 퍼센트로 설정. |
+| method | `zoom_actual(self) -> "'App'"` | 원본 크기 (100%). |
+| property | `zoom_current` | 현재 확대율 (%) — read-only. |
+| method | `zoom_fit_page(self) -> "'App'"` | 페이지 전체가 화면에 맞도록 확대율 조정. |
+| method | `zoom_fit_width(self) -> "'App'"` | 페이지 너비 맞춤. |
+
+## 관련
+
+- [전체 API 매트릭스](../index.qmd)
+- [App 클래스](../core/app.qmd)

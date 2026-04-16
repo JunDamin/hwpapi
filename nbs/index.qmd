@@ -52,15 +52,19 @@ app.set_charshape(
 :::
 
 ::: {.g-col-12 .g-col-md-6 .g-col-lg-3 .feature-card}
-### 📏 익숙한 단위
+### 📏 익숙한 단위 / Enum
 ```python
-page.width = "210mm"
-page.width = "21cm"
-
 from hwpapi import units as U
-hwp = U.mm(210)
+U.mm(210)              # 59430
+
+from hwpapi.parametersets.properties import Color
+Color.RED, Color.NAVY
+
+# 매직 넘버 대신 이름
+app.set_cell_border(top="double",
+                    bottom="wave")
 ```
-HWPUNIT 몰라도 OK. mm/cm/in/pt 자동 변환.
+👉 [units 가이드](02_api/utilities/units.qmd) · [enums 표](02_api/utilities/enums.qmd)
 :::
 
 ::: {.g-col-12 .g-col-md-6 .g-col-lg-3 .feature-card}
