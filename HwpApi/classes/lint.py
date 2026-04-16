@@ -372,6 +372,79 @@ class Config:
         self._data = dict(self.DEFAULTS)
         return self
 
+    def apply_defaults(self) -> "Config":
+        """
+        설정된 기본값을 **현재 커서 위치 (또는 SelectAll)** 에 실제로 적용.
+        v0.0.24+.
+
+        이전엔 ``app.config.default_font = "함초롬"`` 이 dict 저장만 하고
+        실제 charshape 변경에 영향을 주지 않는 no-op 였음. 이 메소드를
+        호출해야 실제로 반영됨.
+
+        적용되는 키:
+        - ``default_font`` → 7개 facename (hangul/latin/japanese/hanja/other/symbol/user) 동일 적용
+        - ``default_size`` → height (HWPUNIT, 100=1pt 단위 또는 직접 pt)
+        - ``default_line_spacing`` → ParaShape line_spacing
+
+        Returns
+        -------
+        Config
+            self — chainable.
+
+        Examples
+        --------
+        >>> app.config.default_font = "함초롬바탕"
+        >>> app.config.default_size = 1100   # 11pt (HWPUNIT)
+        >>> app.config.apply_defaults()      # 명시적 적용
+
+        Notes
+        -----
+        호출 전에 ``app.api.Run("SelectAll")`` 등으로 적용 범위를
+        지정할 수 있음. 선택 영역이 없으면 커서 위치 이후 입력에만 영향.
+        """
+        app = self._app
+
+        # CharShape 적용
+        font = self._data.get("default_font")
+        size = self._data.get("default_size")
+        if font or size:
+            cs_kw = {}
+            if font:
+                for key in ("facename_hangul", "facename_latin",
+                             "facename_japanese", "facename_hanja",
+                             "facename_other", "facename_symbol",
+                             "facename_user"):
+                    cs_kw[key] = font
+            if size:
+                cs_kw["height"] = int(size)
+            try:
+                app.set_charshape(**cs_kw)
+                app.logger.info(
+                    f"config.apply_defaults charshape: "
+                    f"font={font!r}, size={size}"
+                )
+            except Exception as e:
+                app.logger.warning(
+                    f"config.apply_defaults charshape: {type(e).__name__}: {e}",
+                    exc_info=True,
+                )
+
+        # ParaShape 적용
+        line_sp = self._data.get("default_line_spacing")
+        if line_sp:
+            try:
+                app.set_parashape(line_spacing=int(line_sp))
+                app.logger.info(
+                    f"config.apply_defaults parashape: line_spacing={line_sp}"
+                )
+            except Exception as e:
+                app.logger.warning(
+                    f"config.apply_defaults parashape: {type(e).__name__}: {e}",
+                    exc_info=True,
+                )
+
+        return self
+
     def save(self, path: str = "~/.hwpapirc") -> None:
         """JSON 으로 디스크에 저장."""
         import json

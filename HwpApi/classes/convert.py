@@ -148,9 +148,13 @@ class Convert:
             app.logger.debug(f"wrap_by_char: {e}")
         return app
 
-    def replace_font(self, old_font: str, new_font: str) -> int:
+    def replace_font(self, old_font: str, new_font: str,
+                      replace_all: bool = False) -> int:
         """
-        문서 전체에서 특정 폰트를 다른 폰트로 일괄 교체.
+        문서에서 **특정 폰트만** 다른 폰트로 일괄 교체.
+
+        v0.0.24 부터 ``old_font`` 인자가 실제로 사용됨 — 이전 버전은 문서
+        전체를 ``new_font`` 로 덮어쓰는 버그가 있었음.
 
         Parameters
         ----------
@@ -158,50 +162,110 @@ class Convert:
             바꿀 대상 폰트 이름 (예: ``"맑은 고딕"``).
         new_font : str
             새 폰트 이름 (예: ``"함초롬바탕"``).
+        replace_all : bool
+            True 이면 문서 전체를 ``new_font`` 로 덮어씀 (이전 버그 동작).
+            기본 False — ``old_font`` 와 일치하는 텍스트만 교체.
 
         Returns
         -------
         int
-            교체된 위치 개수 (근사).
+            교체된 텍스트 영역 개수.
 
         Examples
         --------
+        >>> # "맑은 고딕" 부분만 함초롬바탕으로
         >>> app.convert.replace_font("맑은 고딕", "함초롬바탕")
         42
 
+        >>> # 문서 전체를 함초롬바탕으로 (이전 버그 동작 — 명시적 opt-in)
+        >>> app.convert.replace_font(None, "함초롬바탕", replace_all=True)
+        1
+
         Notes
         -----
-        HWP 의 ``CharShapeFindNext`` + ``CharShapeChange`` 를 사용. 큰 문서에서는
-        ``batch_mode()`` 와 함께 쓰는 걸 권장.
+        Find/Replace 시 7개 facename 필드 (hangul/latin/japanese/other/symbol/
+        user/hanja) 모두를 한 번에 매칭하여 다국어 텍스트가 일괄 교체됨.
+        큰 문서는 ``with app.batch_mode():`` 와 함께 쓰는 걸 권장.
         """
         app = self._app
-        count = 0
-        try:
-            # Document 전체 선택 후 find/replace font
-            app.move.top_of_file()
-            # Approach: use AllReplace with CharShape matching
-            # 실제 HWP COM 에서는 font-only replace 가 까다로워 문서 전체에
-            # set_charshape 를 적용하는 naive fallback
-            app.api.Run("SelectAll")
+
+        # Mode B: 전체 덮어쓰기 (legacy 버그 호환)
+        if replace_all:
+            app.logger.info(f"replace_font(all): → {new_font}")
             try:
+                app.move.top_of_file()
+                app.api.Run("SelectAll")
                 app.set_charshape(facename_hangul=new_font,
                                    facename_latin=new_font,
                                    facename_japanese=new_font,
                                    facename_other=new_font,
                                    facename_symbol=new_font,
-                                   facename_user=new_font)
-                count = 1   # 정확 카운트 불가
-            except Exception:
-                # 폰트명 필드 이름이 버전마다 다름 — 보편 이름 시도
-                try:
-                    app.set_charshape(fontname=new_font)
-                    count = 1
-                except Exception:
-                    pass
-            app.api.Run("Cancel")
+                                   facename_user=new_font,
+                                   facename_hanja=new_font)
+                app.api.Run("Cancel")
+                return 1
+            except Exception as e:
+                app.logger.warning(f"replace_font(all): {type(e).__name__}: {e}",
+                                    exc_info=True)
+                return 0
+
+        # Mode A: 특정 폰트만 교체 — AllReplace + HFindReplace pset
+        if not old_font:
+            app.logger.warning("replace_font: old_font 가 비어있음 — replace_all=True 로 전체 교체하려면 명시 필요")
+            return 0
+
+        count = 0
+        try:
+            app.move.top_of_file()
+            hpset = app.api.HParameterSet.HFindReplace
+            app.api.HAction.GetDefault("AllReplace", hpset.HSet)
+
+            # 일치 조건: FindCharShape 의 facename 만 지정 → 다른 텍스트는 매칭 안 됨
+            # 빈 문자열 매칭으로 모든 텍스트 검색 + charshape filter
+            hpset.FindString = ""
+            hpset.ReplaceString = ""
+            hpset.IgnoreMessage = 1
+            hpset.MatchCase = 0
+            hpset.AllWordForms = 0
+            hpset.SeveralWords = 0
+            hpset.UseWildCards = 0
+            hpset.WholeWordOnly = 0
+            hpset.AutoSpell = 1
+            hpset.Direction = 2   # all directions
+
+            # Find side: old_font (7개 facename 모두 동일하게 매칭)
+            try:
+                fcs = hpset.FindCharShape
+                for attr in ("FaceNameHangul", "FaceNameLatin",
+                              "FaceNameJapanese", "FaceNameHanja",
+                              "FaceNameOther", "FaceNameSymbol",
+                              "FaceNameUser"):
+                    try:
+                        setattr(fcs, attr, old_font)
+                    except Exception as e:
+                        app.logger.debug(f"replace_font: cannot set Find.{attr}: {e}")
+            except Exception as e:
+                app.logger.debug(f"replace_font: FindCharShape access: {e}")
+
+            # Replace side: new_font (7개 모두)
+            try:
+                rcs = hpset.ReplaceCharShape
+                for attr in ("FaceNameHangul", "FaceNameLatin",
+                              "FaceNameJapanese", "FaceNameHanja",
+                              "FaceNameOther", "FaceNameSymbol",
+                              "FaceNameUser"):
+                    try:
+                        setattr(rcs, attr, new_font)
+                    except Exception as e:
+                        app.logger.debug(f"replace_font: cannot set Replace.{attr}: {e}")
+            except Exception as e:
+                app.logger.debug(f"replace_font: ReplaceCharShape access: {e}")
+
+            ok = app.api.HAction.Execute("AllReplace", hpset.HSet)
+            count = 1 if ok else 0   # HWP 는 정확 count 미반환
+            app.logger.info(f"replace_font: '{old_font}' → '{new_font}' (success={bool(ok)})")
         except Exception as e:
-            app.logger.warning(f"replace_font: {e}")
-        app.logger.info(f"replace_font: {old_font} → {new_font} (count≈{count})")
+            app.logger.warning(f"replace_font: {type(e).__name__}: {e}", exc_info=True)
         return count
 
     def __repr__(self) -> str:

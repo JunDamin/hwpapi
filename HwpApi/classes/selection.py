@@ -85,18 +85,27 @@ class Selection:
         """
         app = self._app
         self.clear()
-        # Primary: SelectWord action
+        # Primary: SelectWord action — Run() 가 None 반환해도 selection
+        # 길이로 성공 여부 확인.
         try:
-            if app.api.Run("SelectWord"):
-                return self
-        except Exception:
-            pass
+            app.api.Run("SelectWord")
+        except Exception as e:
+            app.logger.debug(
+                f"current_word SelectWord: {type(e).__name__}: {e}", exc_info=True,
+            )
+
+        # 선택 결과 검증 — selection text 가 있으면 성공
+        if self.text:
+            return self
+
         # Fallback: MoveWordBegin + MoveSelWordEnd
         try:
             app.api.Run("MoveWordBegin")
             app.api.Run("MoveSelWordEnd")
-        except Exception:
-            pass
+        except Exception as e:
+            app.logger.debug(
+                f"current_word fallback: {type(e).__name__}: {e}", exc_info=True,
+            )
         return self
 
     def current_line(self) -> "Selection":

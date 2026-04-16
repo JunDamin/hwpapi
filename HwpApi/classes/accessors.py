@@ -898,10 +898,9 @@ class TableAccessor:
             app.logger.warning("header_row: 커서가 표 안에 있지 않습니다.")
             return self
         try:
+            from hwpapi.functions import navigate_until
             app.api.Run("TableColBegin")
-            for _ in range(500):
-                if not app.api.Run("TableUpperCell"):
-                    break
+            navigate_until(app, "TableUpperCell")    # 맨 위로
             app.api.Run("TableCellBlock")
             app.api.Run("TableCellBlockRow")
             if bg:
@@ -915,11 +914,14 @@ class TableAccessor:
             if fmt:
                 try:
                     app.set_charshape(**fmt)
-                except Exception:
-                    pass
+                except Exception as e:
+                    app.logger.debug(
+                        f"header_row charshape: {type(e).__name__}: {e}",
+                        exc_info=True,
+                    )
             app.api.Run("Cancel")
         except Exception as e:
-            app.logger.debug(f"header_row: {e}")
+            app.logger.debug(f"header_row: {type(e).__name__}: {e}", exc_info=True)
         return self
 
     def footer_row(self, bold: bool = True, bg: Optional[str] = None,
@@ -930,12 +932,9 @@ class TableAccessor:
             app.logger.warning("footer_row: 커서가 표 안에 있지 않습니다.")
             return self
         try:
-            for _ in range(500):
-                if not app.api.Run("TableRightCell"):
-                    break
-            for _ in range(500):
-                if not app.api.Run("TableLowerCell"):
-                    break
+            from hwpapi.functions import navigate_until
+            navigate_until(app, "TableRightCell")    # 맨 우측 끝
+            navigate_until(app, "TableLowerCell")    # 맨 아래 끝
             app.api.Run("TableCellBlock")
             app.api.Run("TableCellBlockRow")
             if bg:
@@ -949,11 +948,14 @@ class TableAccessor:
             if fmt:
                 try:
                     app.set_charshape(**fmt)
-                except Exception:
-                    pass
+                except Exception as e:
+                    app.logger.debug(
+                        f"footer_row charshape: {type(e).__name__}: {e}",
+                        exc_info=True,
+                    )
             app.api.Run("Cancel")
         except Exception as e:
-            app.logger.debug(f"footer_row: {e}")
+            app.logger.debug(f"footer_row: {type(e).__name__}: {e}", exc_info=True)
         return self
 
     def current_row(self, bold: Optional[bool] = None, bg: Optional[str] = None,
@@ -1083,19 +1085,21 @@ class TableAccessor:
             app.logger.warning("clean_excel_paste: 커서가 표 안에 있지 않습니다.")
             return self
 
+        from hwpapi.functions import cell_addr, navigate_until
+
         # Step 1: 공백 정리 — Replace "  " (double space) 반복 제거 + trim
         try:
-            # Go to table top-left
             app.api.Run("TableColBegin")
-            for _ in range(500):
-                if not app.api.Run("TableUpperCell"):
-                    break
+            navigate_until(app, "TableUpperCell")    # 표 좌상단
 
-            # Visit every cell and strip blanks (safety bound: 10000 cells max)
-            done = False
+            # Visit every cell and strip blanks (cell_addr 변화로 진행 추적)
+            visited = set()
             for _ in range(10000):
-                if done:
+                cur = cell_addr(app)
+                if cur is None or cur in visited:
                     break
+                visited.add(cur)
+
                 # Select current cell content
                 app.api.Run("TableCellBlock")
                 app.api.Run("Cancel")
@@ -1111,25 +1115,29 @@ class TableAccessor:
                         pset.SetItem("Direction", 2)  # all
                         pset.SetItem("IgnoreMessage", 1)
                         find.Execute(pset)
-                    except Exception:
+                    except Exception as e:
+                        app.logger.debug(
+                            f"clean_excel_paste replace: {type(e).__name__}: {e}",
+                            exc_info=True,
+                        )
                         break
 
-                # Move to next cell
-                if not app.api.Run("TableRightCell"):
-                    done = True
+                # Move to next cell — cell_addr 변화 감지
+                prev = cell_addr(app)
+                app.api.Run("TableRightCell")
+                if cell_addr(app) == prev:
+                    break
         except Exception as e:
-            app.logger.debug(f"clean_excel_paste step1: {e}")
+            app.logger.debug(
+                f"clean_excel_paste step1: {type(e).__name__}: {e}", exc_info=True,
+            )
 
         # Step 2: 마지막 행이 완전히 비어있으면 삭제 (최대 5번 반복)
         try:
             for _ in range(5):
-                # 마지막 셀로 이동
-                for _ in range(500):
-                    if not app.api.Run("TableRightCell"):
-                        break
-                for _ in range(500):
-                    if not app.api.Run("TableLowerCell"):
-                        break
+                # 표 우하단으로 이동
+                navigate_until(app, "TableRightCell")
+                navigate_until(app, "TableLowerCell")
                 # 현재 행 선택
                 app.api.Run("TableCellBlock")
                 app.api.Run("TableCellBlockRow")
@@ -1141,15 +1149,15 @@ class TableAccessor:
                 else:
                     break
         except Exception as e:
-            app.logger.debug(f"clean_excel_paste step2: {e}")
+            app.logger.debug(
+                f"clean_excel_paste step2: {type(e).__name__}: {e}", exc_info=True,
+            )
 
         # Step 3: 마지막 열이 완전히 비어있으면 삭제 (최대 5번 반복)
         try:
             for _ in range(5):
                 # 맨 오른쪽 셀로
-                for _ in range(500):
-                    if not app.api.Run("TableRightCell"):
-                        break
+                navigate_until(app, "TableRightCell")
                 app.api.Run("TableCellBlock")
                 app.api.Run("TableCellBlockCol")
                 col_text = app.api.GetTextFile("TEXT", "saveblock") or ""
@@ -1159,7 +1167,9 @@ class TableAccessor:
                 else:
                     break
         except Exception as e:
-            app.logger.debug(f"clean_excel_paste step3: {e}")
+            app.logger.debug(
+                f"clean_excel_paste step3: {type(e).__name__}: {e}", exc_info=True,
+            )
 
         app.logger.info("clean_excel_paste: completed")
         return self

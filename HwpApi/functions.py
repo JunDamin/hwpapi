@@ -666,7 +666,7 @@ def from_hwpunit(hwpunit_value: int, target_unit: str = "mm") -> float:
 def block_input(func):
     """
     logger.debug(f"block_input called")
-    함수가 실행될 동안 다른 입력을 할 수 없게 하는 기능을 가진 데코레이터입니다. 
+    함수가 실행될 동안 다른 입력을 할 수 없게 하는 기능을 가진 데코레이터입니다.
     """
     logger.debug(f"Calling block_input")
     def wrapper(app, *args, **kwargs):
@@ -676,3 +676,66 @@ def block_input(func):
         app.api.EditMode = 1
         return result
     return wrapper
+
+
+# ════════════════════════════════════════════════════════════════════
+# v0.0.24+ — HWP cursor state helpers (Run() None 반환 회피)
+# ════════════════════════════════════════════════════════════════════
+
+def cell_addr(app):
+    """
+    현재 커서가 있는 셀의 주소 문자열 반환 (예: "A1", "B3"). 표 밖이면 None.
+
+    HWP 12 의 ``api.Run()`` 이 항상 None 반환하므로 ``while Run("...")``
+    패턴이 작동 안 함. 대신 KeyIndicator()[8] 의 "(B2): ..." prefix 를
+    파싱해서 위치 변화로 루프 진행 추적.
+    """
+    import re
+    try:
+        ki = app.api.KeyIndicator()
+        if ki and len(ki) >= 9:
+            status = str(ki[8])
+            m = re.match(r"^\(([A-Z]+\d+)\)", status)
+            if m:
+                return m.group(1)
+    except Exception:
+        pass
+    return None
+
+
+def navigate_until(app, run_action: str, max_iters: int = 500) -> int:
+    """
+    셀 주소가 변하지 않을 때까지 ``run_action`` 을 반복 실행.
+
+    ``while api.Run(...): pass`` 패턴 대체. Run() 이 None 반환해도 안전.
+
+    Parameters
+    ----------
+    app : App
+    run_action : str
+        반복 실행할 action 이름 (예: ``"TableUpperCell"``).
+    max_iters : int
+        안전 한계 (기본 500).
+
+    Returns
+    -------
+    int
+        실제 반복 횟수.
+
+    Examples
+    --------
+    >>> from hwpapi.functions import navigate_until
+    >>> navigate_until(app, "TableUpperCell")   # 맨 위 셀로
+    >>> navigate_until(app, "TableRightCell")    # 맨 우측 셀로
+    """
+    last = None
+    for i in range(max_iters):
+        cur = cell_addr(app)
+        if cur is None or cur == last:
+            return i
+        last = cur
+        try:
+            app.api.Run(run_action)
+        except Exception:
+            return i
+    return max_iters

@@ -629,21 +629,13 @@ def _exit_table(app) -> None:
 def _cell_addr(app) -> Optional[str]:
     """
     현재 커서가 있는 셀의 주소 문자열을 반환 (예: "A1", "B3").
-    표 밖이면 None.
 
-    KeyIndicator()[8] 에서 "(cell_addr): ..." 형태 prefix 를 추출.
+    .. note::
+        v0.0.24+ — ``hwpapi.functions.cell_addr`` 의 wrapper. 새 코드는
+        ``from hwpapi.functions import cell_addr`` 사용 권장.
     """
-    try:
-        ki = app.api.KeyIndicator()
-        if ki and len(ki) >= 9:
-            status = str(ki[8])
-            import re
-            m = re.match(r"^\(([A-Z]+\d+)\)", status)
-            if m:
-                return m.group(1)
-    except Exception:
-        pass
-    return None
+    from hwpapi.functions import cell_addr as _shared
+    return _shared(app)
 
 
 def _apply_cell_bg(app, hex_color: str) -> None:

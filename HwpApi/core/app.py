@@ -656,14 +656,16 @@ class App:
                     if self.in_table():
                         break
                     self.api.Run("MoveUp")
-                # Now inside table → navigate to first cell
+                # Now inside table → navigate to first cell using cell_addr tracking
                 if self.in_table():
-                    for _ in range(500):
-                        if not self.api.Run("TableUpperCell"):
-                            break
+                    from hwpapi.functions import navigate_until
+                    navigate_until(self, "TableUpperCell")
                     self.api.Run("TableColBegin")
-            except Exception:
-                pass
+            except Exception as e:
+                self.logger.debug(
+                    f"insert_table cursor recovery: {type(e).__name__}: {e}",
+                    exc_info=True,
+                )
         else:
             # No data — TableCreate leaves cursor at table beginning, but
             # sometimes not inside the first cell. Ensure we're in a cell
@@ -1997,110 +1999,11 @@ class App:
             ))
         return output
 
-    def charshape(self,
-        facename=None,
-        fonttype=None,
-        size=None,
-        ratio=None,
-        spacing=None,
-        offset=None,
-        bold=None,
-        italic=None,
-        small_caps=None,
-        emboss=None,
-        engrave=None,
-        superscript=None,
-        subscript=None,
-        underline_type=None,
-        underline_shape=None,
-        outline_type=None,
-        shadow_type=None,
-        text_color=None,
-        shade_color=None,
-        underline_color=None,
-        shadow_color=None,
-        shadow_offset_x=None,
-        shadow_offset_y=None,
-        strikeout_color=None,
-        strikeout_type=None,
-        strikeout_shape=None,
-        diac_sym_mark=None,
-        use_font_space=None,
-        use_kerning=None,
-        height=None,
-        border_fill=None):
-        """
-        .. deprecated:: 0.0.7
-           Use :meth:`set_charshape` directly — it accepts all the same
-           keyword arguments and applies the result immediately. For
-           scoped formatting that auto-reverts on exit, use
-           :meth:`styled_text` or :meth:`charshape_scope`.
+    # NOTE (v0.0.24+): App.charshape() builder method removed.
+    # 이전엔 deprecated method 였지만 같은 이름의 property (아래) 가
+    # method 를 덮어써서 호출 자체가 불가능했음. 정리.
+    # 신규 코드: app.set_charshape(**kwargs) 또는 app.charshape (property).
 
-           This method returns an **unbound** ``CharShape`` pset that
-           the caller must pass back to ``set_charshape`` — an extra
-           indirection that adds no value.
-
-        Examples
-        --------
-        >>> # ❌ Old (deprecated)
-        >>> cs = app.charshape(bold=True, italic=True)
-        >>> app.set_charshape(cs)
-
-        >>> # ✅ New
-        >>> app.set_charshape(bold=True, italic=True)
-        """
-        import warnings
-        warnings.warn(
-            "App.charshape() is deprecated and will be removed in v0.1.0. "
-            "Use App.set_charshape(**kwargs) directly — same arguments, "
-            "applied immediately. For scoped formatting, use styled_text() "
-            "or charshape_scope().",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-
-        logger = get_logger('core')
-        logger.debug(f"Calling charshape")
-
-        charshape_pset = self.create_parameterset("CharShape")
-        value_set = {
-            "facename": facename,
-            "fonttype": fonttype,
-            "size": size,
-            "ratio": ratio,
-            "spacing": spacing,
-            "offset": offset,
-            "bold": bold,
-            "italic": italic,
-            "small_caps": small_caps,
-            "emboss": emboss,
-            "engrave": engrave,
-            "superscript": superscript,
-            "subscript": subscript,
-            "underline_type": underline_type,
-            "underline_shape": underline_shape,
-            "outline_type": outline_type,
-            "shadow_type": shadow_type,
-            "text_color": text_color,
-            "shade_color": shade_color,
-            "underline_color": underline_color,
-            "shadow_color": shadow_color,
-            "shadow_offset_x": shadow_offset_x,
-            "shadow_offset_y": shadow_offset_y,
-            "strikeout_color": strikeout_color,
-            "strikeout_type": strikeout_type,
-            "strikeout_shape": strikeout_shape,
-            "diac_sym_mark": diac_sym_mark,
-            "use_font_space": use_font_space,
-            "use_kerning": use_kerning,
-            "height": height,
-            "border_fil": border_fill}
-        for key, value in value_set.items():
-            if not key:
-                continue
-            setattr(charshape_pset, key, value)
-
-        return charshape_pset
 
     @property
     def charshape(self):
@@ -2221,6 +2124,17 @@ class App:
         # charshape를 전달하면 반영해야 함
         if charshape:
             pset.update_from(charshape)
+
+        # v0.0.24+: 'facename' 또는 'fontname' 단일 인자 → 7개 facename
+        # 모두 fan-out (한글/영문/일본어/한자/기타/심볼/사용자)
+        font_alias = kwargs.pop("facename", None) or kwargs.pop("fontname", None)
+        if font_alias:
+            for key in ("facename_hangul", "facename_latin",
+                         "facename_japanese", "facename_hanja",
+                         "facename_other", "facename_symbol",
+                         "facename_user"):
+                # 사용자가 명시적으로 facename_hangul 등을 지정하면 그게 우선
+                kwargs.setdefault(key, font_alias)
 
         for key, value in kwargs.items():
             setattr(pset, key, value)
@@ -2961,11 +2875,29 @@ class App:
         if find_type is not None:
             pset.FindType = find_type
         if facename is not None:
-            pset.FindCharShape
-            pset.FindCharShape.FaceNameHangul = facename
+            # v0.0.24+: 7개 facename 모두 fan-out — 다국어 텍스트도 매칭
             from hwpapi.constants import korean_fonts, english_fonts
             fonts = set(korean_fonts + english_fonts)
-            pset.FindCharShape.FontTypeHangul = 1 if facename not in fonts else 2
+            font_type = 1 if facename not in fonts else 2
+            for attr in ("FaceNameHangul", "FaceNameLatin",
+                          "FaceNameJapanese", "FaceNameHanja",
+                          "FaceNameOther", "FaceNameSymbol",
+                          "FaceNameUser"):
+                try:
+                    setattr(pset.FindCharShape, attr, facename)
+                except Exception as e:
+                    self.logger.debug(
+                        f"find_text Find.{attr}: {type(e).__name__}: {e}",
+                        exc_info=True,
+                    )
+            for attr in ("FontTypeHangul", "FontTypeLatin",
+                          "FontTypeJapanese", "FontTypeHanja",
+                          "FontTypeOther", "FontTypeSymbol",
+                          "FontTypeUser"):
+                try:
+                    setattr(pset.FindCharShape, attr, font_type)
+                except Exception:
+                    pass
         if text_color is not None:
             pset.FindCharShape.TextColor = text_color
         if bold is not None:

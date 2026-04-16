@@ -62,19 +62,30 @@ class View:
         """
         app = self._app
         percent = max(10, min(500, int(percent)))
+
+        # v0.0.24+: 이전엔 "PictureScale" 액션 (그림 크기 조절용 — 잘못된
+        # 액션) 을 호출했음. 실제 zoom 은 ZoomRate property 직접 설정.
         try:
-            act = app.api.CreateAction("PictureScale")
-            pset = act.CreateSet()
-            act.GetDefault(pset)
-            pset.SetItem("Zoom", percent)
-            act.Execute(pset)
-        except Exception:
-            # Fallback: try HwpZoom
+            doc_info = app.api.XHwpDocuments.Active_XHwpDocument.XHwpDocumentInfo
+            doc_info.ZoomRate = percent
+            app.logger.info(f"view.zoom: {percent}%")
+        except Exception as e:
+            app.logger.debug(
+                f"view.zoom XHwpDocumentInfo.ZoomRate: {type(e).__name__}: {e}",
+                exc_info=True,
+            )
+            # Fallback — try HAction "ScreenZoom" (HWP 일부 버전)
             try:
-                doc_info = app.api.XHwpDocuments.Active_XHwpDocument.XHwpDocumentInfo
-                doc_info.ZoomRate = percent
-            except Exception as e:
-                app.logger.debug(f"zoom: {e}")
+                hpset = app.api.HParameterSet.HZoom
+                app.api.HAction.GetDefault("ScreenZoom", hpset.HSet)
+                hpset.HSet.SetItem("ZoomFactor", percent)
+                app.api.HAction.Execute("ScreenZoom", hpset.HSet)
+                app.logger.info(f"view.zoom (ScreenZoom fallback): {percent}%")
+            except Exception as e2:
+                app.logger.warning(
+                    f"view.zoom failed: {type(e2).__name__}: {e2}",
+                    exc_info=True,
+                )
         return app
 
     def zoom_fit_page(self) -> "App":

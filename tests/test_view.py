@@ -10,36 +10,29 @@ def test_view_zoom_default():
     app = MagicMock()
     app.logger = MagicMock()
     View(app).zoom(150)
-    # PictureScale CreateAction attempted
-    app.api.CreateAction.assert_called_with("PictureScale")
+    # v0.0.24+: ZoomRate property 직접 설정 (PictureScale 액션 아님)
+    assert app.api.XHwpDocuments.Active_XHwpDocument.XHwpDocumentInfo.ZoomRate == 150
 
 
 def test_view_zoom_clamps_low():
     app = MagicMock()
     app.logger = MagicMock()
     View(app).zoom(5)   # below 10 → clamped to 10
-    pset = app.api.CreateAction.return_value.CreateSet.return_value
-    # Item calls should include Zoom=10
-    calls = [c.args for c in pset.SetItem.call_args_list if c.args]
-    assert ("Zoom", 10) in calls
+    assert app.api.XHwpDocuments.Active_XHwpDocument.XHwpDocumentInfo.ZoomRate == 10
 
 
 def test_view_zoom_clamps_high():
     app = MagicMock()
     app.logger = MagicMock()
-    View(app).zoom(1000)
-    pset = app.api.CreateAction.return_value.CreateSet.return_value
-    calls = [c.args for c in pset.SetItem.call_args_list if c.args]
-    assert ("Zoom", 500) in calls
+    View(app).zoom(1000)   # above 500 → clamped to 500
+    assert app.api.XHwpDocuments.Active_XHwpDocument.XHwpDocumentInfo.ZoomRate == 500
 
 
 def test_view_zoom_actual():
     app = MagicMock()
     app.logger = MagicMock()
     View(app).zoom_actual()
-    pset = app.api.CreateAction.return_value.CreateSet.return_value
-    calls = [c.args for c in pset.SetItem.call_args_list if c.args]
-    assert ("Zoom", 100) in calls
+    assert app.api.XHwpDocuments.Active_XHwpDocument.XHwpDocumentInfo.ZoomRate == 100
 
 
 def test_view_zoom_fit_page():

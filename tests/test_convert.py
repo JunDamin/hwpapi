@@ -49,11 +49,32 @@ def test_wrap_by_char_creates_action():
     app.api.CreateAction.assert_called_with("ParagraphShape")
 
 
-def test_replace_font_selects_all_and_sets_charshape():
+def test_replace_font_targets_old_font_only():
+    """v0.0.24+: replace_font 가 old_font 만 매칭해서 교체."""
     app = MagicMock()
     app.logger = MagicMock()
     Convert(app).replace_font("맑은 고딕", "함초롬바탕")
+    # AllReplace 액션 + HFindReplace pset 사용
+    app.api.HAction.GetDefault.assert_any_call("AllReplace", app.api.HParameterSet.HFindReplace.HSet)
+    app.api.HAction.Execute.assert_any_call("AllReplace", app.api.HParameterSet.HFindReplace.HSet)
+
+
+def test_replace_font_with_replace_all_legacy():
+    """replace_all=True 일 때만 SelectAll → 전체 덮어쓰기."""
+    app = MagicMock()
+    app.logger = MagicMock()
+    Convert(app).replace_font("any", "함초롬바탕", replace_all=True)
     calls = [c.args[0] for c in app.api.Run.call_args_list if c.args]
     assert "SelectAll" in calls
+    app.set_charshape.assert_called()
+
+
+def test_replace_font_empty_old_warns():
+    """빈 old_font 는 경고 + 0 반환."""
+    app = MagicMock()
+    app.logger = MagicMock()
+    result = Convert(app).replace_font("", "함초롬바탕")
+    assert result == 0
+    app.logger.warning.assert_called()
 
 

@@ -8,6 +8,67 @@
 
 *(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
 
+## [0.0.24] — 2026-04-15 — v1.0 Phase 1: P0/P1 버그 fix
+
+v1.0 release 전 분명히 깨진 5개 P0 + P1 버그 수정. 사용자 지적
+("폰트 같은 건 잘 모르겠다") 가 정확히 깨진 부분.
+
+### Fixed (P0)
+
+**P0-1: `app.convert.replace_font(old, new)` 가 `old` 인자를 무시**
+([`hwpapi/classes/convert.py`](hwpapi/classes/convert.py))
+- 이전: SelectAll → set_charshape(facename_*=new) — `old` 무시, 문서 전체 덮어씀
+- 이후: HFindReplace pset 의 FindCharShape/ReplaceCharShape facename 7개
+  설정 + AllReplace 액션 — `old` 폰트 영역만 정확히 교체
+- legacy 동작은 `replace_all=True` 로 명시적 opt-in
+
+**P0-2: `app.config.default_font` no-op**
+([`hwpapi/classes/lint.py`](hwpapi/classes/lint.py))
+- 이전: dict 저장만, 어디서도 적용 안 됨
+- 이후: `app.config.apply_defaults()` 메소드 추가 — 명시 호출 시 charshape
+  + parashape 에 실제 적용 (font 7개 facename fan-out + size + line_spacing)
+
+**P0-3: `App.charshape()` method vs `charshape` property 이름 충돌**
+([`hwpapi/core/app.py`](hwpapi/core/app.py))
+- deprecated method 가 property 에 의해 완전히 shadowed — 호출 불가
+- 메소드 완전 제거, property 만 유지
+
+**P0-4: `app.api.Run()` None 반환 패턴 11곳**
+([`hwpapi/classes/accessors.py`](hwpapi/classes/accessors.py),
+[`hwpapi/core/app.py`](hwpapi/core/app.py))
+- HWP 12 의 Run() 이 항상 None 반환 — `if not Run(...): break` 즉시 탈출
+- `hwpapi.functions.cell_addr(app)` + `navigate_until(app, action)` 신규
+  공유 헬퍼 — KeyIndicator()[8] 의 셀 주소로 진행 추적
+- TableAccessor.header_row/footer_row/clean_excel_paste, App.insert_table
+  cursor 복귀, Selection.current_word 모두 fix
+
+**P0-5: `app.view.zoom()` 의 `PictureScale` 액션 잘못됨**
+([`hwpapi/classes/view.py`](hwpapi/classes/view.py))
+- 이전: `CreateAction("PictureScale")` — 그림 크기 조절용 액션 (zoom 아님)
+- 이후: `XHwpDocumentInfo.ZoomRate` property 직접 설정. fallback 으로
+  `HAction.Execute("ScreenZoom", HZoom)`
+
+### Fixed (P1)
+
+**P1: `set_charshape(facename=...)` / `find_text(facename=...)` 다국어 fan-out**
+- 이전: FaceNameHangul 만 설정 — 영문/일본어 텍스트 매칭 실패
+- 이후: 7개 facename (Hangul/Latin/Japanese/Hanja/Other/Symbol/User) 모두에
+  자동 fan-out. 사용자가 `facename_hangul` 등을 명시하면 그 값이 우선
+
+### Added
+
+- **`hwpapi.functions.cell_addr(app)`** — 현재 셀 주소 ("A1" 등) 반환
+  ([`hwpapi/functions.py`](hwpapi/functions.py))
+- **`hwpapi.functions.navigate_until(app, action, max_iters)`** —
+  cell_addr 변화로 루프 종료 감지 헬퍼
+
+### Tests
+
+- `tests/test_convert.py` — replace_font 가 AllReplace 사용 + replace_all
+  legacy + empty old 검증 (3개 신규)
+- `tests/test_view.py` — zoom 이 ZoomRate property 설정 확인 (4개 수정)
+- 전체 1374/1374 통과
+
 ## [0.0.22] — 2026-04-15 — 튜토리얼 강화 · 4개 신규 튜토리얼 추가
 
 v0.0.14~21 의 18개 accessor 와 30+ 프리셋이 튜토리얼에 반영이 안 돼 있던
