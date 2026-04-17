@@ -6,7 +6,101 @@
 
 ## [Unreleased]
 
-*(준비 중인 변경사항 없음 — 다음 릴리즈 예정)*
+*(v1.0 이후 변경사항은 여기에 기록됩니다)*
+
+## [1.0.0] — 2026-04-15 — 🎉 Production / Stable release
+
+v0.0.11 부터 v0.0.26 까지 16개의 마이너 릴리즈를 거쳐 도달한 **v1.0 Stable**.
+주요 API 는 안정화되었으며, 버그/매직넘버/문서 블로커가 모두 해결되었습니다.
+
+### 🎯 v1.0 성취
+
+- **18개 accessor** (move, sel, documents, fields, bookmarks, hyperlinks, images,
+  styles, controls, cell, table, page, convert, view, lint, template, config,
+  preset, debug) 로 도메인별 API 그룹핑
+- **8개 context manager** (silenced, suppress_errors, batch_mode, undo_group,
+  charshape_scope, parashape_scope, use_document, debug.trace)
+- **11개 preset** (striped_rows, title_box, subtitle_bar, summary_box,
+  table_header, table_footer, toc, page_numbers, page_border, highlight_yellow)
+- **ENUM 시스템** — BORDER_TYPE_MAP, HATCH_STYLE_MAP, CELL_APPLY_TO_MAP,
+  DIAGONAL_FLAG_MAP + Color 클래스 상수 16개
+- **`hwpapi.units`** 모듈 — mm/cm/inch/pt ↔ HWPUNIT 변환
+- **25개 객체별 API 문서** (`nbs/02_api/` 디렉토리)
+- **13개 튜토리얼** — 9개 사용 사례 + 4개 신규 (Accessors, Presets Gallery,
+  Batch Workflow, Debug Tools)
+- **1388/1388 단위 테스트 통과**
+
+### Added (v0.0.26 이후)
+
+- `hwpapi.functions.cell_addr(app)` / `navigate_until(app, action)` —
+  HWP 12 의 `Run()` None 반환 회피용 공유 헬퍼
+- `Config.apply_defaults()` — `default_font` / `default_size` 실제 적용
+  메소드 (이전엔 dict 저장만)
+- `Color.RED`, `Color.BLUE`, ..., `Color.NAVY` — 16 색상 클래스 상수
+- `resolve_enum(map, value)` — 문자열/정수 양방향 helper
+- `hwpapi.units` 모듈 — App 인스턴스 없이도 호출 가능한 단위 변환
+
+### Changed
+
+- **`version = 1.0.0`** + `Development Status :: 5 - Production/Stable`
+- `requires-python = ">=3.9"` (이전 3.7 — EOL)
+- `[project.optional-dependencies]` 추가 — `dev`, `test`, `docs`
+- `set_charshape(facename=...)` — 단일 인자가 7개 facename 으로 자동 fan-out
+- `find_text(facename=...)` — 다국어 fan-out
+- `set_cell_border(top="solid", bottom="double")` — 문자열 enum 지원
+- `set_cell_color(hatch_style="diagonal_cross")` — 문자열 지원
+
+### Fixed
+
+- **`replace_font(old, new)` 가 `old` 를 무시하던 버그** — HFindReplace pset
+  으로 재작성, `old` 폰트만 정확히 교체 (`replace_all=True` 로 legacy 동작 opt-in)
+- **`app.config.default_font` no-op** — `apply_defaults()` 메소드 추가
+- **`App.charshape()` method vs `charshape` property 이름 충돌** — method 완전 제거
+- **`api.Run()` None 반환 11곳** — cell_addr 추적 기반으로 전환
+- **`app.view.zoom()` 의 `PictureScale` 액션** — `ZoomRate` property 로 교체
+- **CellBorderFill 의 FillAttr 경로** — `SelCellsBorderFill.FillAttr` 로 수정
+- **`_apply_cell_bg` 가 작동 안 하던 버그** — HParameterSet chain 정확한 경로
+
+### Deprecated (v1.1 에서 제거 예정)
+
+**Field 관련 10개** — `app.fields` accessor 로 대체:
+
+| 레거시 | 신규 |
+|:---|:---|
+| `app.create_field(name)` | `app.fields.add(name)` |
+| `app.set_field(n, v)` | `app.fields[n] = v` |
+| `app.get_field(n)` | `app.fields[n].value` |
+| `app.field_exists(n)` | `n in app.fields` |
+| `app.move_to_field(n)` | `app.fields[n].goto()` |
+| `app.delete_field(n)` | `app.fields.remove(n)` |
+| `app.delete_all_fields()` | `app.fields.remove_all()` |
+| `app.rename_field(o, n)` | `app.fields.rename(o, n)` |
+| `app.field_names` | `list(app.fields)` |
+| `app.fields_dict` | `app.fields.to_dict()` |
+
+**Soft deprecation 7개** (docstring 안내만):
+- `app.insert_bookmark` → `app.bookmarks.add`
+- `app.insert_hyperlink` → `app.hyperlinks.add`
+- `app.replace_brackets_with_fields` → `app.fields.from_brackets`
+- `app.get_charshape` / `app.set_charshape` → `app.charshape` property
+- `app.get_parashape` / `app.set_parashape` → `app.parashape` property
+
+**마이그레이션 가이드**: [`docs/MIGRATION_v1.md`](docs/MIGRATION_v1.md)
+
+### Removed
+
+- `App.charshape()` deprecated builder method (property 와 이름 충돌, v0.0.7 부터 호출 불가였음)
+
+### v1.1 로드맵 (예정)
+
+- legacy field method 10개 완전 제거
+- App 클래스 분할 (103 methods → 5 mixins in `core/ops/`)
+- `HwpError` 예외 계열 (HwpFieldNotFound, HwpFileLocked 등)
+- `python -m hwpapi.migrate <file.py>` AST 자동 변환 도구
+- Context manager 명명 통일 (`using_X` 패턴)
+- mypy + ruff + pre-commit
+
+---
 
 ## [0.0.26] — 2026-04-15 — v1.0 Phase 4: 객체별 API 문서 페이지
 

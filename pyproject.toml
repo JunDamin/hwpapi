@@ -4,33 +4,55 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hwpapi"
-version = "0.0.26"
-description = "Python wrapper for HWPFrame.HwpObject using win32com"
-requires-python = ">=3.7"
+version = "1.0.0"
+description = "Pythonic wrapper for 한컴 오피스(HWP) automation via win32com — 18 accessors, 11 presets, 8 context managers"
+requires-python = ">=3.9"
 license = "MIT"
 authors = [
     {name = "JunDamin", email = "freedomgod@gmail.com"},
 ]
-keywords = ["hwp", "hancom", "python", "win32com"]
+keywords = ["hwp", "hancom", "korean-word-processor", "python", "win32com", "automation", "office"]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Natural Language :: Korean",
     "Natural Language :: English",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
+    "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Office Suites",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Markup",
 ]
 dependencies = [
     "pywin32",
 ]
 readme = "README.md"
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.1",
+    "PyMuPDF>=1.23",
+    "pandas",
+]
+test = [
+    "pytest>=7.0",
+    "PyMuPDF>=1.23",
+]
+docs = [
+    "matplotlib",    # tutorial illustrations
+]
+
 [project.urls]
-Homepage = "https://github.com/JunDamin/hwpapi"
+Homepage = "https://JunDamin.github.io/hwpapi"
 Repository = "https://github.com/JunDamin/hwpapi"
+Documentation = "https://JunDamin.github.io/hwpapi"
+Issues = "https://github.com/JunDamin/hwpapi/issues"
+Changelog = "https://github.com/JunDamin/hwpapi/blob/main/CHANGELOG.md"
 
 [project.entry-points.pyinstaller40]
 "hook-dirs" = "hwpapi._pyinstaller:get_hook_dirs"

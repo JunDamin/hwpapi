@@ -1,8 +1,17 @@
 # hwpapi
 
+[![PyPI](https://img.shields.io/pypi/v/hwpapi.svg)](https://pypi.org/project/hwpapi/)
+[![Python](https://img.shields.io/pypi/pyversions/hwpapi.svg)](https://pypi.org/project/hwpapi/)
+[![License](https://img.shields.io/pypi/l/hwpapi.svg)](https://github.com/JunDamin/hwpapi/blob/main/LICENSE)
+[![Docs](https://img.shields.io/badge/docs-JunDamin.github.io-2780E3)](https://JunDamin.github.io/hwpapi)
+[![Status](https://img.shields.io/badge/status-stable%20(v1.0)-success)](https://github.com/JunDamin/hwpapi)
+
 **한글(HWP) 자동화를 위한 Pythonic 라이브러리.** win32com의 복잡한 COM API를
 깔끔한 파이썬 인터페이스로 감싸서, 단순 반복 문서 작업을 간결하게 자동화할 수
 있도록 도와줍니다.
+
+> 🎉 **v1.0 Stable Release** — 18개 accessor, 11개 preset, 8개 context manager,
+> 1,388개 테스트 통과, 25개 객체별 API 문서 완비. [Migration guide](docs/MIGRATION_v1.md)
 
 > 설계 철학은 [xlwings](https://www.xlwings.org/)에서 영감을 받았습니다.
 > 자주 쓰는 기능은 메서드로 정리하고, 부족한 부분은 `app.api`로 원시 COM 접근을

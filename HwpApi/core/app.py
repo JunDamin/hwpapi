@@ -1619,21 +1619,24 @@ class App:
             except ImportError:
                 return []
 
-        # 전체 셀을 `TableRightCell` 로 순회하면서 GetCellAddr 로 (row, col)
-        # 측정. 돌아가거나 이전 셀과 같으면 종료.
+        # v0.0.24+ — 공유 `hwpapi.functions.cell_addr` 사용 (KeyIndicator 파싱).
+        # 이전 nested _cell_addr 는 self.api.GetCellAddr() 사용했는데 HWP 12 에서
+        # 이 method 가 없어 항상 실패 → (None, None) 반환 → 루프 조기 탈출.
         import re
+        from hwpapi.functions import cell_addr as _cell_addr_str
+
         def _cell_addr():
-            try:
-                addr = self.api.GetCellAddr() or ""
-                m = re.match(r"([A-Z]+)(\d+)", str(addr))
-                if m:
-                    col_letters, row_num = m.groups()
-                    col = 0
-                    for ch in col_letters:
-                        col = col * 26 + (ord(ch) - ord("A") + 1)
-                    return int(row_num) - 1, col - 1
-            except Exception:
-                pass
+            """(row, col) 튜플 반환 — 표 밖이면 (None, None)."""
+            addr = _cell_addr_str(self)
+            if not addr:
+                return None, None
+            m = re.match(r"([A-Z]+)(\d+)", addr)
+            if m:
+                col_letters, row_num = m.groups()
+                col = 0
+                for ch in col_letters:
+                    col = col * 26 + (ord(ch) - ord("A") + 1)
+                return int(row_num) - 1, col - 1
             return None, None
 
         cell_dict = {}  # {(row, col): text}
