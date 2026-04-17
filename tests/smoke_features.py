@@ -398,12 +398,127 @@ def feature_18_hyperlink(app):
         assert len(attrs) >= 1, "InsertHyperlink pset is empty"
 
 
+# ── v1.0 신규 시나리오 (F19~F26) — 미검증 8개 영역 실제 HWP 검증 ──
+
+
+def feature_19_styles(app):
+    """app.styles — 문단 스타일 accessor 검증."""
+    with Scenario("F19. Styles accessor") as s:
+        clear_doc(app)
+        # 스타일 컬렉션 조회
+        names = [st.name for st in app.styles]
+        s.log(f"styles count: {len(names)}, sample: {names[:5]}")
+        assert len(names) > 0, "styles 가 비어있음"
+        # 기본 스타일들 포함 확인 (HWP 기본: 바탕글, 본문)
+        has_body = any("바탕" in n or "본문" in n for n in names)
+        assert has_body, "바탕글/본문 스타일 없음"
+
+
+def feature_20_controls_find(app):
+    """app.controls — 문서 내 control 순회."""
+    with Scenario("F20. Controls find") as s:
+        clear_doc(app)
+        # 표 1개 삽입 — control 로 잡히는지 확인
+        app.insert_table(rows=2, cols=2)
+        # controls iteration
+        ctrls = list(app.controls)
+        s.log(f"controls after table insert: {len(ctrls)}")
+        assert len(ctrls) >= 1, "insert_table 후 control 0개 — iteration 실패"
+
+
+def feature_21_images_empty(app):
+    """app.images — 이미지 없을 때 빈 iteration 검증."""
+    with Scenario("F21. Images accessor empty") as s:
+        clear_doc(app)
+        imgs = list(app.images)
+        s.log(f"images (expected 0): {len(imgs)}")
+        assert len(imgs) == 0, f"이미지 없는 문서에서 {len(imgs)}개 감지됨"
+
+
+def feature_22_convert_wrap(app):
+    """app.convert.wrap_by_word / wrap_by_char — ParagraphShape 액션."""
+    with Scenario("F22. Convert wrap modes") as s:
+        clear_doc(app)
+        app.insert_text("줄 나눔 테스트")
+        # 호출 성공 자체를 검증
+        app.convert.wrap_by_word()
+        app.convert.wrap_by_char()
+        s.log("wrap_by_word + wrap_by_char 호출 완료 (예외 없음)")
+
+
+def feature_23_preset_page_border(app):
+    """app.preset.page_border — 바탕쪽 테두리 토글."""
+    with Scenario("F23. Preset page_border") as s:
+        clear_doc(app)
+        app.insert_text("page_border 테스트")
+        # enable=True 호출 — 에러 안 나면 OK
+        app.preset.page_border(enable=True)
+        app.preset.page_border(enable=False)
+        s.log("page_border toggle 완료")
+
+
+def feature_24_template_roundtrip(app):
+    """app.template.save → apply — JSON 왕복."""
+    import json, os, tempfile
+    with Scenario("F24. Template roundtrip") as s:
+        clear_doc(app)
+        app.set_charshape(bold=True, text_color="#FF0000", height=1300)
+        tmp = tempfile.NamedTemporaryFile(suffix=".json", delete=False).name
+        data = app.template.save(tmp)
+        s.log(f"saved template keys: {list(data.keys())}")
+        assert "charshape" in data
+        assert os.path.exists(tmp)
+        # 다시 적용 가능한지
+        clear_doc(app)
+        restored = app.template.apply(tmp)
+        s.log(f"applied template — charshape keys: {list(restored.get('charshape', {}).keys())}")
+        os.remove(tmp)
+
+
+def feature_25_lint_detect(app):
+    """app.lint() — 품질 문제 감지 정확성."""
+    with Scenario("F25. Lint detects known issues") as s:
+        clear_doc(app)
+        # 긴 문장 + 빈 문단 + 이중 공백 삽입
+        app.insert_text("정상 문장입니다.\n")
+        # 긴 문장 — 종결부 없이 50자 이상 (기본 threshold=80 이므로 threshold=50 사용)
+        app.insert_text("이 문장은 매우 매우 매우 매우 매우 매우 매우 매우 매우 길고 길어서 린트가 감지해야 하는 아주 긴 문장의 예시입니다.\n")
+        app.insert_text("\n\n")
+        app.insert_text("이 문장에는  이중  공백이  있습니다.\n")
+        # 낮은 threshold — 우리가 넣은 문장이 확실히 긴 문장으로 잡히게
+        report = app.lint(long_sentence_threshold=50)
+        s.log(f"lint: issue_count={report.issue_count}, long_sentences={len(report.long_sentences)}, double_spaces={len(report.double_spaces)}, empty_paragraphs={len(report.empty_paragraphs)}")
+        assert report.has_issues, "lint 가 문제를 감지하지 못함"
+        # 긴 문장 OR 이중 공백 OR 빈 문단 중 하나는 감지되어야
+        total_detected = (len(report.long_sentences)
+                          + len(report.double_spaces)
+                          + len(report.empty_paragraphs))
+        assert total_detected >= 2, f"2종 이상 문제 감지 기대했는데 {total_detected}개"
+
+
+def feature_26_debug_tools(app):
+    """app.debug.state() / timing() — 디버깅 도구."""
+    with Scenario("F26. Debug tools") as s:
+        clear_doc(app)
+        app.insert_text("debug 테스트")
+        # state() 는 dict 반환해야
+        state = app.debug.state()
+        s.log(f"state keys: {list(state.keys())[:5]}")
+        assert "cursor" in state
+        assert "page" in state
+        # timing — 함수 호출 시간 측정
+        r = app.debug.timing(app.insert_text, "timing 테스트")
+        s.log(f"timing: success={r['success']}, elapsed_ms={r['elapsed_ms']:.2f}")
+        assert r["success"]
+        assert isinstance(r["elapsed_ms"], (int, float))
+
+
 # ── Main ────────────────────────────────────────────────────────────────
 
 
 def main():
     print("═══════════════════════════════════════════════════")
-    print(" hwpapi FEATURE smoke tests (18 scenarios)")
+    print(" hwpapi FEATURE smoke tests (26 scenarios — 18 legacy + 8 v1.0)")
     print("═══════════════════════════════════════════════════\n")
 
     app = App(is_visible=True)
@@ -436,6 +551,15 @@ def main():
         lambda: feature_16_insert_page_number(app),
         lambda: feature_17_bookmark(app),
         lambda: feature_18_hyperlink(app),
+        # v1.0 신규 8개 — 이전 미검증 영역
+        lambda: feature_19_styles(app),
+        lambda: feature_20_controls_find(app),
+        lambda: feature_21_images_empty(app),
+        lambda: feature_22_convert_wrap(app),
+        lambda: feature_23_preset_page_border(app),
+        lambda: feature_24_template_roundtrip(app),
+        lambda: feature_25_lint_detect(app),
+        lambda: feature_26_debug_tools(app),
     ]
 
     passed = 0
