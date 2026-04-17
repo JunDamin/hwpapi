@@ -815,8 +815,22 @@ class App:
             pset = self.api.HParameterSet.HMarkpenShape
             self.api.HAction.GetDefault("MarkPenShape", pset.HSet)
             pset.Color = col.raw if col.raw is not None else 0
-            return bool(self.api.HAction.Execute("MarkPenShape", pset.HSet))
-        except Exception:
+            result = bool(self.api.HAction.Execute("MarkPenShape", pset.HSet))
+
+            # IMPORTANT: 형광펜을 켠 뒤 반드시 끄기 — 커서 모드에 남아
+            # 이후 입력되는 텍스트에 형광펜이 번지는 것을 방지.
+            # (사용자 요청: "하이라이트 넣으면 반드시 끝까지 꺼줘")
+            try:
+                self.api.Run("Cancel")  # 선택 해제 → cursor-only 상태
+                off_pset = self.api.HParameterSet.HMarkpenShape
+                self.api.HAction.GetDefault("MarkPenShape", off_pset.HSet)
+                off_pset.Color = 0  # 0 = 형광펜 없음
+                self.api.HAction.Execute("MarkPenShape", off_pset.HSet)
+            except Exception as e:
+                self.logger.debug(f"highlight: off-reset failed: {e}")
+            return result
+        except Exception as e:
+            self.logger.debug(f"highlight: {e}")
             return False
 
     @property

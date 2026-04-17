@@ -552,6 +552,13 @@ class Presets:
                 app.set_charshape(shade_color=None)
             else:
                 app.set_charshape(shade_color="#FFFF00")
+                # 형광펜은 반드시 끄기 — 선택 해제 후 cursor shade_color 복원.
+                # (bleed 방지: 이후 입력 텍스트에 노란 배경이 붙는 것 방지)
+                try:
+                    app.api.Run("Cancel")
+                    app.set_charshape(shade_color=None)
+                except Exception as e2:
+                    app.logger.debug(f"highlight_yellow: off-reset failed: {e2}")
         except Exception as e:
             app.logger.debug(f"highlight_yellow: {e}")
         return app
