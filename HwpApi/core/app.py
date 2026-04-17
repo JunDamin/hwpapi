@@ -817,14 +817,15 @@ class App:
             pset.Color = col.raw if col.raw is not None else 0
             result = bool(self.api.HAction.Execute("MarkPenShape", pset.HSet))
 
-            # IMPORTANT: 형광펜을 켠 뒤 반드시 끄기 — 커서 모드에 남아
-            # 이후 입력되는 텍스트에 형광펜이 번지는 것을 방지.
-            # (사용자 요청: "하이라이트 넣으면 반드시 끝까지 꺼줘")
+            # 형광펜을 끄기 위해 선택 해제 후 Color=0xFFFFFFFF (HWP's "no markpen")
+            # 을 cursor-only 에 적용. HWP 내부 cursor-state 유지 특성 때문에
+            # 완벽하지 않을 수 있으므로 bleed-safe 하이라이트는
+            # ``app.styled_text("text", shade_color="#FFFF00")`` 권장.
             try:
-                self.api.Run("Cancel")  # 선택 해제 → cursor-only 상태
+                self.api.Run("Cancel")
                 off_pset = self.api.HParameterSet.HMarkpenShape
                 self.api.HAction.GetDefault("MarkPenShape", off_pset.HSet)
-                off_pset.Color = 0  # 0 = 형광펜 없음
+                off_pset.Color = 0xFFFFFFFF
                 self.api.HAction.Execute("MarkPenShape", off_pset.HSet)
             except Exception as e:
                 self.logger.debug(f"highlight: off-reset failed: {e}")
