@@ -192,10 +192,11 @@ def test_highlight_yellow_applies_shade():
     cs.shade_color = None
     app.charshape = cs
     Presets(app).highlight_yellow()
-    # set_charshape should have been called with shade_color
+    # set_charshape should have been called with shade_color="#FFFF00"
+    # (then reset to None afterward to prevent bleed — check any call)
     app.set_charshape.assert_called()
-    call_kwargs = app.set_charshape.call_args.kwargs
-    assert call_kwargs.get("shade_color") == "#FFFF00"
+    applied = [c.kwargs.get("shade_color") for c in app.set_charshape.call_args_list]
+    assert "#FFFF00" in applied, f"expected '#FFFF00' in {applied}"
 
 
 def test_highlight_yellow_toggles_off_when_yellow():
