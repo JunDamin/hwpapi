@@ -6,8 +6,8 @@ Direct access to the raw building blocks:
 - `hwpapi.low.parametersets` — ParameterSet classes (CharShape, ParaShape, ...)
 - `hwpapi.low.engine` — Engine / Engines / Apps
 
-High-level users should prefer `hwpapi.App`; this module is kept
-for power users who need to drop down to raw HWP automation calls.
+High-level users should prefer `hwpapi.App` (Phase 2+); this namespace
+is the escape hatch for dropping down to raw HWP automation calls.
 """
 
 from . import actions, engine, parametersets

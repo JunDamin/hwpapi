@@ -31,7 +31,7 @@ Branch: `v1.x` mirrors this state; `v2-redesign` is the working branch.
 |---|---|
 | `pytest --collect-only` items | **5,953** |
 | Collection wall-clock | 17.40 s |
-| Pass/fail baseline | See test_suite_baseline.txt once run completes |
+| Non-HWP tests passing | 1,388 (verified post-Phase 1 relocation) |
 
 ### HWP-dependent layer
 
