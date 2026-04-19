@@ -1,107 +1,36 @@
 """
-:mod:`hwpapi.document` — Phase 2 ``Document`` facade (scaffold).
+:mod:`hwpapi.document` — Phase 3 ``Document`` facade.
 
 ``Document`` is the **primary v2 surface** for per-document operations.
 Obtained via :attr:`hwpapi.App.doc`.
 
-Phase 2 scope
--------------
-The v2 slim :class:`hwpapi.App` no longer carries document-level
-state (see ``docs/design/app-member-audit.md`` §1.2–§1.4). That
-state lands on :class:`Document` and its collection/element helpers
-in later phases:
+Phase 3 wires each ``@cached_property`` to a real
+:mod:`hwpapi.collections` class. The engine is the single source of
+truth — :class:`Document` never owns its own COM handle.
 
-- **Phase 3** (PRD P3-00x) — populate collection properties
-  (``fields``, ``bookmarks``, ``hyperlinks``, ``images``, ``styles``,
-  ``tables``, ``paragraphs``).
-- **Phase 4** (PRD P4-00x) — populate element helpers
-  (``cursor``, ``selection``, ``page`` …) and the rich method surface
-  listed under ``move_to_Document`` in the audit.
-
-For now :class:`Document` is a **thin scaffold** that holds a
-reference to the owning :class:`App` and exposes seven lazy
-collection-shaped placeholders so downstream code can introspect the
-contract without crashing. The placeholders intentionally iterate
-empty and ``len == 0`` so callers discover the "not yet implemented"
-state the moment they try to use one.
-
-The engine is the single source of truth — :class:`Document` never
-owns its own COM handle.
-
-Canonical usage (Phase 3 onward)::
+Canonical usage::
 
     app = App()
-    doc = app.doc                   # cached Document
-    doc.fields['name'] = '홍길동'    # collection lookup (Phase 3)
-    doc.select_all()                # document action (Phase 4)
+    doc = app.doc                      # cached Document
+    doc.fields['name'] = '홍길동'       # FieldCollection
+    for bookmark in doc.bookmarks: ...
 """
 from __future__ import annotations
 
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from hwpapi.core.app import App
+    from hwpapi.collections.bookmarks import BookmarkCollection
+    from hwpapi.collections.fields import FieldCollection
+    from hwpapi.collections.hyperlinks import HyperlinkCollection
+    from hwpapi.collections.images import ImageCollection
+    from hwpapi.collections.paragraphs import ParagraphCollection
+    from hwpapi.collections.styles import StyleCollection
+    from hwpapi.collections.tables import TableCollection
 
 __all__ = ["Document"]
-
-
-class _PlaceholderCollection:
-    """
-    Minimal stand-in for collections that have no v2 implementation yet.
-
-    Returned by every :class:`Document` collection property during
-    Phase 2. Phase 3 replaces each placeholder with the real
-    :mod:`hwpapi.collections` object.
-
-    The placeholder is a **usable empty collection**, not a broken
-    one. It exposes ``len(...) == 0`` and iterates empty so test-suite
-    introspection works. Any ``__getitem__``/``__setitem__``/
-    ``__delitem__`` call raises :class:`LookupError` with a pointer
-    to the Phase 3 story.
-    """
-
-    __slots__ = ("_name", "_doc")
-
-    def __init__(self, name: str, doc: "Document") -> None:
-        self._name = name
-        self._doc = doc
-
-    def __repr__(self) -> str:
-        return (
-            f"<{self._name} collection — Phase 3 implementation pending "
-            f"(placeholder on {self._doc!r})>"
-        )
-
-    def __len__(self) -> int:
-        return 0
-
-    def __iter__(self):
-        return iter(())
-
-    def __bool__(self) -> bool:
-        # Truthy so `if doc.fields:` reflects "collection exists", not
-        # "collection is non-empty". Matches Python container idiom
-        # once the real class arrives.
-        return True
-
-    def _not_yet(self):
-        raise LookupError(
-            f"{self._name}: Phase 3 not implemented yet. "
-            f"See PRD story P3-00x and hwpapi/collections/."
-        )
-
-    def __getitem__(self, key):
-        self._not_yet()
-
-    def __setitem__(self, key, value):
-        self._not_yet()
-
-    def __delitem__(self, key):
-        self._not_yet()
-
-    def __contains__(self, key) -> bool:
-        return False
 
 
 class Document:
@@ -120,7 +49,7 @@ class Document:
     --------
     >>> app = App()
     >>> doc = app.doc              # same instance on every access
-    >>> len(doc.fields)            # empty placeholder until Phase 3
+    >>> len(doc.fields)            # number of 누름틀 fields
     0
     """
 
@@ -133,46 +62,53 @@ class Document:
         self._app = app
 
     # ------------------------------------------------------------------
-    # Collection properties (Phase 3 target — placeholders for now).
+    # Collection properties (Phase 3 — wired to hwpapi.collections.*).
     # ------------------------------------------------------------------
 
     @cached_property
-    def fields(self) -> Any:
-        """Field collection (누름틀). Phase 3 placeholder."""
-        return _PlaceholderCollection("fields", self)
+    def fields(self) -> "FieldCollection":
+        """Field collection (누름틀)."""
+        from hwpapi.collections.fields import FieldCollection
+        return FieldCollection(self._app)
 
     @cached_property
-    def bookmarks(self) -> Any:
-        """Bookmark collection (책갈피). Phase 3 placeholder."""
-        return _PlaceholderCollection("bookmarks", self)
+    def bookmarks(self) -> "BookmarkCollection":
+        """Bookmark collection (책갈피)."""
+        from hwpapi.collections.bookmarks import BookmarkCollection
+        return BookmarkCollection(self._app)
 
     @cached_property
-    def hyperlinks(self) -> Any:
-        """Hyperlink collection. Phase 3 placeholder."""
-        return _PlaceholderCollection("hyperlinks", self)
+    def hyperlinks(self) -> "HyperlinkCollection":
+        """Hyperlink collection."""
+        from hwpapi.collections.hyperlinks import HyperlinkCollection
+        return HyperlinkCollection(self._app)
 
     @cached_property
-    def images(self) -> Any:
-        """Image collection. Phase 3 placeholder."""
-        return _PlaceholderCollection("images", self)
+    def images(self) -> "ImageCollection":
+        """Image collection."""
+        from hwpapi.collections.images import ImageCollection
+        return ImageCollection(self._app)
 
     @cached_property
-    def styles(self) -> Any:
-        """Paragraph-style collection. Phase 3 placeholder."""
-        return _PlaceholderCollection("styles", self)
+    def styles(self) -> "StyleCollection":
+        """Paragraph-style collection (minimal, see module docstring)."""
+        from hwpapi.collections.styles import StyleCollection
+        return StyleCollection(self._app)
 
     @cached_property
-    def paragraphs(self) -> Any:
-        """Paragraph collection. Phase 3 placeholder."""
-        return _PlaceholderCollection("paragraphs", self)
+    def paragraphs(self) -> "ParagraphCollection":
+        """Paragraph collection (ordinal access)."""
+        from hwpapi.collections.paragraphs import ParagraphCollection
+        return ParagraphCollection(self._app)
 
     @cached_property
-    def tables(self) -> Any:
-        """Table collection. Phase 3 placeholder."""
-        return _PlaceholderCollection("tables", self)
+    def tables(self) -> "TableCollection":
+        """Table collection."""
+        from hwpapi.collections.tables import TableCollection
+        return TableCollection(self._app)
 
     # ------------------------------------------------------------------
-    # Access to the underlying App (escape hatch for Phase 3/4 impls).
+    # Access to the underlying App (escape hatch for collections/elements).
     # ------------------------------------------------------------------
 
     @property
