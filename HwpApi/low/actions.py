@@ -1,8 +1,8 @@
 __all__ = []
 
-from .logging import get_logger
+from hwpapi.logging import get_logger
 
-import hwpapi.parametersets as parametersets
+import hwpapi.low.parametersets as parametersets
 
 
 # preset action data <Action key>: [<parameter key>, <description>]

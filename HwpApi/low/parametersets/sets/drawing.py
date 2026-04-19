@@ -9,12 +9,12 @@ layout, flow, margins, and references to nested Draw* psets (via string
 descriptors, not Python imports).
 """
 from __future__ import annotations
-from hwpapi.parametersets import (
+from hwpapi.low.parametersets import (
     ParameterSet, PropertyDescriptor, IntProperty, BoolProperty, StringProperty,
     ColorProperty, UnitProperty, MappedProperty, TypedProperty, NestedProperty,
     ArrayProperty, ListProperty,
 )
-from hwpapi.parametersets.mappings import (
+from hwpapi.low.parametersets.mappings import (
     FONTTYPE_MAP, ROTATION_SETTING_MAP, SHADOW_TYPE_MAP,
 )
 

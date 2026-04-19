@@ -8,7 +8,7 @@ Covers file I/O and printing:
 - Preference, Presentation, EngineProperties
 """
 from __future__ import annotations
-from hwpapi.parametersets import (
+from hwpapi.low.parametersets import (
     ParameterSet, PropertyDescriptor, IntProperty, BoolProperty, StringProperty,
     ColorProperty, UnitProperty, MappedProperty, TypedProperty, NestedProperty,
     ArrayProperty, ListProperty,

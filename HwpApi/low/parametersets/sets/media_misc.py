@@ -13,7 +13,7 @@ Grab-bag of specialized psets:
 - ScriptMacro, KeyMacro, UserQCommandFile
 """
 from __future__ import annotations
-from hwpapi.parametersets import (
+from hwpapi.low.parametersets import (
     ParameterSet, PropertyDescriptor, IntProperty, BoolProperty, StringProperty,
     ColorProperty, UnitProperty, MappedProperty, TypedProperty, NestedProperty,
     ArrayProperty, ListProperty,

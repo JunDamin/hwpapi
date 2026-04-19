@@ -60,9 +60,9 @@ def _warn_legacy(old: str, new: str, stacklevel: int = 2) -> None:
         stacklevel=stacklevel + 1,
     )
 
-from hwpapi.actions import _Action, _Actions
-from hwpapi.parametersets import ParaShape
-import hwpapi.parametersets as parametersets
+from hwpapi.low.actions import _Action, _Actions
+from hwpapi.low.parametersets import ParaShape
+import hwpapi.low.parametersets as parametersets
 from hwpapi.classes import (
     MoveAccessor, CellAccessor, TableAccessor, PageAccessor,
     StylesAccessor, ControlsAccessor,
@@ -75,7 +75,7 @@ from hwpapi.classes.convert import Convert
 from hwpapi.classes.view import View
 from hwpapi.classes.lint import Linter, Template, Config
 from hwpapi.presets import Presets
-from .engine import Engine, Engines, Apps
+from hwpapi.low.engine import Engine, Engines, Apps
 from hwpapi.functions import (
     check_dll,
     get_hwp_objects,
@@ -804,7 +804,7 @@ class App:
         """
         # HAction 경로로 호출 (pset 접근이 action.CreateSet 보다 정확)
         try:
-            from hwpapi.parametersets import Color
+            from hwpapi.low.parametersets import Color
             if isinstance(color, tuple) and len(color) == 3:
                 col = Color.from_rgb(*color)
             elif isinstance(color, Color):
@@ -998,7 +998,7 @@ class App:
         65280
 
         >>> # Or type-safe Color wrapper
-        >>> from hwpapi.parametersets import Color
+        >>> from hwpapi.low.parametersets import Color
         >>> Color.from_rgb(255, 0, 0)   # Color('#ff0000')
 
         See Also
@@ -3133,7 +3133,7 @@ class App:
         The function relies on the `self.actions.CellFill` action to set the border properties. The `Thickness` Enum provides predefined thickness levels for the borders. The color parameters should be provided in hex format.
         """
         # v0.0.25+: 문자열 enum 입력 지원 ("solid", "double" 등)
-        from hwpapi.parametersets.mappings import BORDER_TYPE_MAP, resolve_enum
+        from hwpapi.low.parametersets.mappings import BORDER_TYPE_MAP, resolve_enum
 
         def _bt(v):
             return resolve_enum(BORDER_TYPE_MAP, v) if v is not None else None
@@ -3227,7 +3227,7 @@ class App:
         logger.debug(f"Calling set_cell_color")
 
         # v0.0.25+: hatch_style 가 문자열이면 HATCH_STYLE_MAP 으로 해석
-        from hwpapi.parametersets.mappings import HATCH_STYLE_MAP, resolve_enum
+        from hwpapi.low.parametersets.mappings import HATCH_STYLE_MAP, resolve_enum
         hatch_style = resolve_enum(HATCH_STYLE_MAP, hatch_style)
 
         fill_type = windows_brush = None

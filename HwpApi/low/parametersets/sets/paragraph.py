@@ -7,12 +7,12 @@ Paragraph-level ParameterSet classes (4 classes).
 - ListParaPos: List paragraph positioning
 """
 from __future__ import annotations
-from hwpapi.parametersets import (
+from hwpapi.low.parametersets import (
     ParameterSet, PropertyDescriptor, IntProperty, BoolProperty, StringProperty,
     ColorProperty, UnitProperty, MappedProperty, TypedProperty, NestedProperty,
     ArrayProperty, ListProperty,
 )
-from hwpapi.parametersets.mappings import (
+from hwpapi.low.parametersets.mappings import (
     LINE_WRAP_MAP, TEXT_DIRECTION_MAP, VERT_ALIGN_MAP,
 )
 

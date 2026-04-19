@@ -9,7 +9,7 @@ Covers character manipulation operations:
 - TextCtrl, AddHanjaWord
 """
 from __future__ import annotations
-from hwpapi.parametersets import (
+from hwpapi.low.parametersets import (
     ParameterSet, PropertyDescriptor, IntProperty, BoolProperty, StringProperty,
     ColorProperty, UnitProperty, MappedProperty, TypedProperty, NestedProperty,
     ArrayProperty, ListProperty,

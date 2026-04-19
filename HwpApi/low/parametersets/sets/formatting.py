@@ -8,7 +8,7 @@ Style / border / formatting ParameterSet classes (3 classes).
 Note: ``BorderFill`` and ``Style`` are in ``primitives.py`` (used widely).
 """
 from __future__ import annotations
-from hwpapi.parametersets import (
+from hwpapi.low.parametersets import (
     ParameterSet, PropertyDescriptor, IntProperty, BoolProperty, StringProperty,
     ColorProperty, UnitProperty, MappedProperty, TypedProperty, NestedProperty,
     ArrayProperty, ListProperty,

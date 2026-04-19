@@ -9,13 +9,13 @@ Covers find/replace and editing operations:
 - SaveFootnote, RevisionDef
 """
 from __future__ import annotations
-from hwpapi.parametersets import (
+from hwpapi.low.parametersets import (
     ParameterSet, PropertyDescriptor, IntProperty, BoolProperty, StringProperty,
     ColorProperty, UnitProperty, MappedProperty, TypedProperty, NestedProperty,
     ArrayProperty, ListProperty,
 )
 # Python-level dependency: FindReplace references CharShape/ParaShape via NestedProperty
-from hwpapi.parametersets.sets.primitives import CharShape, ParaShape
+from hwpapi.low.parametersets.sets.primitives import CharShape, ParaShape
 
 
 class FindReplace(ParameterSet):

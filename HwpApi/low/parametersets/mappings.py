@@ -9,7 +9,7 @@ All mappings in this module are public and exported via ``__all__`` of the
 parent ``hwpapi.parametersets`` package.
 
 Usage:
-    >>> from hwpapi.parametersets import DIRECTION_MAP, ALIGN_MAP
+    >>> from hwpapi.low.parametersets import DIRECTION_MAP, ALIGN_MAP
     >>> DIRECTION_MAP["left"]
     0
     >>> ALL_MAPPINGS["align"]

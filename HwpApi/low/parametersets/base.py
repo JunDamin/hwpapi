@@ -50,7 +50,7 @@ def _snake_to_pascal(name: str) -> str:
 
 # PARAMETERSET_REGISTRY is shared with __init__.py via import
 # It's populated by ParameterSetMeta.__new__ as each subclass is defined.
-from hwpapi.parametersets import PARAMETERSET_REGISTRY
+from hwpapi.low.parametersets import PARAMETERSET_REGISTRY
 
 
 class ParameterSetMeta(type):

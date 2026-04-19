@@ -18,9 +18,9 @@ import sys
 import warnings
 from hwpapi.logging import get_logger
 
-from hwpapi.actions import _Action, _Actions
-from hwpapi.parametersets import ParaShape
-import hwpapi.parametersets as parametersets
+from hwpapi.low.actions import _Action, _Actions
+from hwpapi.low.parametersets import ParaShape
+import hwpapi.low.parametersets as parametersets
 from hwpapi.classes import MoveAccessor, CellAccessor, TableAccessor, PageAccessor
 from hwpapi.functions import (
     check_dll,
