@@ -347,6 +347,29 @@ class App:
         """
         return self.engine.impl
 
+    @property
+    def doc(self):
+        """
+        The primary v2 per-document facade.
+
+        Returns the cached :class:`hwpapi.document.Document` bound to
+        this :class:`App`. Same instance on every access.
+
+        Examples
+        --------
+        >>> app = App()
+        >>> app.doc.text              # full document text
+        >>> app.doc.fields['name']    # FieldCollection lookup
+        >>> app.doc.select_all()
+        """
+        cached = getattr(self, "_doc_cache", None)
+        if cached is None:
+            # Imported lazily to avoid a circular import at module load.
+            from hwpapi.document import Document as _DocumentV2
+            cached = _DocumentV2(self)
+            self._doc_cache = cached
+        return cached
+
     def __str__(self):
         """
         `App` 인스턴스의 문자열 표현 — 파일 경로 포함.

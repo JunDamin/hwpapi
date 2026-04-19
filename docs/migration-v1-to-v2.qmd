@@ -1,0 +1,389 @@
+---
+title: "Migrating from hwpapi v1.x to v2.0"
+date: 2026-04-19
+---
+
+# Overview
+
+hwpapi v2.0 redesigns the public API around a dual-layer model: a slim `App`
+facade (≤ 15 public members) that handles lifecycle only, and a `Document`
+object (`app.doc`) that owns everything scoped to an open document. Collections
+(`fields`, `bookmarks`, `images`, etc.) become first-class dict-like objects
+under `Document`. Element-level state (character formatting, paragraph
+formatting, table cells) moves to `Run`, `Paragraph`, and `Cell` objects
+exposed through `hwpapi.elements`. The v1 `App` class carried 106 public
+members representing two years of accretion; v2 cuts that to 14, with every
+removed symbol having a documented landing point or an explicit deletion
+rationale.
+
+# Compatibility Policy
+
+hwpapi 2.0 is a **clean-cut break**. There is **no deprecation shim**.
+
+- v1 code that calls removed `App` members raises `AttributeError`.
+- No runtime warnings. No compatibility layer. No import-level aliases.
+- Reason: The v1 `App` surface reached 106 public members (244 public symbols
+  package-wide), with document state, element state, collection accessors,
+  unit-conversion utilities, and lifecycle methods all mixed onto a single
+  class. Introducing a shim would require keeping that entire surface
+  importable, defeating the slim-facade goal and making it impossible to
+  distinguish "App lifecycle" from "Document operation" at the type level.
+  A clean break is cheaper for every user than a perpetual compat layer.
+- v1.x users who cannot migrate immediately should pin `hwpapi==1.*` — that
+  line is frozen on the `v1.x` branch and tagged `v1.0.0`.
+
+# The new shape (v2)
+
+```
+hwpapi.App
+├── open(path)          # open a .hwp / .hwpx file
+├── new()               # create a new blank document
+├── close()             # close the active document
+├── save()              # save in place
+├── save_as(path)       # save to a new path
+├── reload()            # rebind to an existing COM engine
+├── quit()              # tear down the COM engine process
+├── visible (property)  # window visibility — bool r/w
+├── doc  ──────────────────────────────── hwpapi.Document
+│   ├── .text                  # full document text (r/w property)
+│   ├── .page_count            # total pages
+│   ├── .current_page          # cursor page number
+│   ├── .get_filepath()        # path of the open file
+│   ├── .get_hwnd()            # window handle
+│   ├── .select_all()
+│   ├── .selection             # selected text (alias)
+│   ├── .get_selected_text()
+│   ├── .get_text()
+│   ├── .insert_text(s)
+│   ├── .insert_line_break()
+│   ├── .insert_page_break()
+│   ├── .insert_paragraph_break()
+│   ├── .insert_tab()
+│   ├── .insert_heading(level, text)
+│   ├── .insert_file(path)
+│   ├── .insert_picture(path)
+│   ├── .highlight(color)
+│   ├── .copy() / .cut() / .paste()
+│   ├── .delete()
+│   ├── .clear()
+│   ├── .undo() / .redo()
+│   ├── .find_text(query)
+│   ├── .replace_all(find, replace)
+│   ├── .select_text(start, end)
+│   ├── .read_table()
+│   ├── .create_field(name, direction)
+│   ├── .scan(...)             # paragraph/line scanner context manager
+│   ├── .cursor
+│   │   ├── .goto_page(n)
+│   │   ├── .move_to_field(name)
+│   │   ├── .in_table()
+│   │   ├── .get_charshape()
+│   │   └── .get_parashape()
+│   ├── .page
+│   │   └── .setup(...)        # page layout configuration
+│   ├── .fields   → FieldCollection
+│   ├── .bookmarks → BookmarkCollection
+│   ├── .hyperlinks → HyperlinkCollection
+│   ├── .images   → ImageCollection
+│   ├── .styles   → StyleCollection
+│   ├── .controls → ControlCollection
+│   └── .tables   → TableCollection (Phase 3)
+├── engine              # Engine escape hatch (prefer hwpapi.low.*)
+└── api                 # raw COM handle escape hatch
+```
+
+Context managers that were App methods in v1 are now module-level functions:
+
+```
+hwpapi.context.scopes
+├── charshape_scope(...)   # was app.charshape_scope()
+├── parashape_scope(...)   # was app.parashape_scope()
+├── styled_text(...)       # was app.styled_text()
+├── batch_mode(app)        # was app.batch_mode()
+├── silenced(app)          # was app.silenced()
+├── suppress_errors(app)   # was app.suppress_errors()
+└── undo_group(app)        # was app.undo_group()
+```
+
+# 1:1 migration table
+
+Rows are grouped by destination. Every non-`keep_in_App` member from the
+audit appears exactly once.
+
+## Renamed — stays on App
+
+| v1 call | v2 equivalent | Notes |
+|---|---|---|
+| `app.new_document()` | `App.new()` | Classmethod; name aligned with `open`/`close`/`save` |
+| `app.save_block(path)` | `app.save_as(path, *, as_block=False)` | Signature extended; `save_block` name was misleading |
+| `app.set_visible(flag)` | `app.visible = flag` | Property assignment replaces the method |
+
+## Moved to `app.doc` (Document)
+
+| v1 call | v2 equivalent | Notes |
+|---|---|---|
+| `app.clear()` | `app.doc.clear()` | |
+| `app.copy()` | `app.doc.copy()` | |
+| `app.create_field(name, dir)` | `app.doc.create_field(name, dir)` | Complements `app.doc.fields` |
+| `app.current_page` | `app.doc.current_page` | |
+| `app.cut()` | `app.doc.cut()` | |
+| `app.delete()` | `app.doc.delete()` | |
+| `app.find_text(query)` | `app.doc.find_text(query)` | |
+| `app.get_charshape()` | `app.doc.cursor.get_charshape()` | |
+| `app.get_filepath()` | `app.doc.get_filepath()` | |
+| `app.get_hwnd()` | `app.doc.get_hwnd()` | |
+| `app.get_parashape()` | `app.doc.cursor.get_parashape()` | |
+| `app.get_selected_text()` | `app.doc.get_selected_text()` | |
+| `app.get_text()` | `app.doc.get_text()` | |
+| `app.goto_page(n)` | `app.doc.cursor.goto_page(n)` | |
+| `app.highlight(color)` | `app.doc.highlight(color)` | |
+| `app.in_table()` | `app.doc.cursor.in_table()` | |
+| `app.insert_file(path)` | `app.doc.insert_file(path)` | |
+| `app.insert_heading(level, text)` | `app.doc.insert_heading(level, text)` | |
+| `app.insert_line_break()` | `app.doc.insert_line_break()` | |
+| `app.insert_page_break()` | `app.doc.insert_page_break()` | |
+| `app.insert_paragraph_break()` | `app.doc.insert_paragraph_break()` | |
+| `app.insert_picture(path)` | `app.doc.insert_picture(path)` | |
+| `app.insert_tab()` | `app.doc.insert_tab()` | |
+| `app.insert_text(s)` | `app.doc.insert_text(s)` | |
+| `app.move_to_field(name)` | `app.doc.cursor.move_to_field(name)` | |
+| `app.page_count` | `app.doc.page_count` | |
+| `app.paste()` | `app.doc.paste()` | |
+| `app.read_table()` | `app.doc.read_table()` | |
+| `app.redo()` | `app.doc.redo()` | |
+| `app.replace_all(find, replace)` | `app.doc.replace_all(find, replace)` | |
+| `app.scan(...)` | `app.doc.scan(...)` | Context manager; same interface |
+| `app.select_all()` | `app.doc.select_all()` | |
+| `app.select_text(start, end)` | `app.doc.select_text(start, end)` | |
+| `app.selection` | `app.doc.selection` | |
+| `app.setup_page(...)` | `app.doc.page.setup(...)` | |
+| `app.text` | `app.doc.text` | r/w property; `app.text` is gone |
+| `app.undo()` | `app.doc.undo()` | |
+
+## Moved to Collections (via `app.doc.*`)
+
+| v1 call | v2 equivalent | Notes |
+|---|---|---|
+| `app.bookmarks` | `app.doc.bookmarks` | `BookmarkCollection` — dict-like |
+| `app.controls` | `app.doc.controls` | `ControlCollection` — iterable |
+| `app.delete_all_fields()` | `app.doc.fields.clear()` | |
+| `app.delete_field(name)` | `del app.doc.fields[name]` | |
+| `app.field_exists(name)` | `name in app.doc.fields` | |
+| `app.field_names` | `app.doc.fields.names()` | |
+| `app.fields` | `app.doc.fields` | `FieldCollection` — dict-like |
+| `app.hyperlinks` | `app.doc.hyperlinks` | `HyperlinkCollection` — dict-like |
+| `app.images` | `app.doc.images` | `ImageCollection` — dict-like |
+| `app.rename_field(old, new)` | `app.doc.fields.rename(old, new)` | |
+| `app.styles` | `app.doc.styles` | `StyleCollection` — dict-like |
+
+## Moved to Elements
+
+| v1 call | v2 equivalent | Notes |
+|---|---|---|
+| `app.cell` | `app.doc.tables[i].cell(r, c)` | `Cell` element |
+| `app.charshape` | `run.charshape` | Property on `Run` element |
+| `app.charshape_scope(...)` | `hwpapi.context.scopes.charshape_scope(...)` | Module-level context manager |
+| `app.insert_bookmark(name)` | `app.doc.bookmarks.add(name)` | |
+| `app.insert_hyperlink(url)` | `app.doc.hyperlinks.add(url)` | |
+| `app.insert_table(rows, cols)` | `app.doc.tables.add(rows, cols)` | Phase 3 target |
+| `app.parashape` | `paragraph.parashape` | Property on `Paragraph` element |
+| `app.parashape_scope(...)` | `hwpapi.context.scopes.parashape_scope(...)` | Module-level context manager |
+| `app.set_cell_border(...)` | `cell.border = ...` | `Cell.border` setter |
+| `app.set_cell_color(...)` | `cell.fill = ...` | `Cell.fill` setter |
+| `app.set_charshape(...)` | `run.charshape = CharShape(...)` | Element-level assignment |
+| `app.set_parashape(...)` | `paragraph.parashape = ParaShape(...)` | Element-level assignment |
+| `app.styled_text(...)` | `hwpapi.context.scopes.styled_text(...)` | Module-level context manager |
+| `app.table` | `app.doc.tables[i]` | `Table` element via collection |
+
+## Moved to `hwpapi.low`
+
+| v1 call | v2 equivalent | Notes |
+|---|---|---|
+| `app.actions` | `hwpapi.low.actions` or `app.engine.actions` | Still reachable; low-layer namespace |
+| `app.create_action(name)` | `hwpapi.low.actions._Action(name)` | Raw action factory |
+| `app.create_parameterset(...)` | `hwpapi.low.parametersets` factory | Raw parameterset factory |
+| `app.parameters` | `hwpapi.low.parametersets` | `HParameterSet` alias |
+
+## Deleted — no direct replacement
+
+These members are removed from the public surface. Where a successor exists it
+is noted; otherwise raw COM access via `app.api` or `app.engine` is the escape
+hatch.
+
+| v1 member | Rationale | Successor / escape hatch |
+|---|---|---|
+| `app._ACCESSOR_MAP` | Discovery metadata — superseded by Quarto reference site + IDE tab completion | — |
+| `app._CONTEXT_MANAGERS` | Same as `_ACCESSOR_MAP` | — |
+| `app.__repr__` / `app.__str__` | Replaced by minimal `__repr__` in the slim class | — |
+| `app.batch_mode()` | Context manager moves to module level | `hwpapi.context.scopes.batch_mode(app)` |
+| `app.config` | Preferences accessor dropped from App | — (resurfaces if needed in future release) |
+| `app.convert` | Accessor cluster dissolved | utility functions in `hwpapi.io` |
+| `app.debug` | Debug cluster | `hwpapi.debug` module |
+| `app.documents` | Multi-doc collection deferred to v2.1 | — (use `app.doc` for active document) |
+| `app.field_names_internal()` | Internal leak; replaced by collection | `app.doc.fields.names()` |
+| `app.fields_dict` | Duplicate of `dict(app.doc.fields)` | `dict(app.doc.fields)` |
+| `app.get_field(name)` | Duplicate of `FieldCollection.__getitem__` | `app.doc.fields[name]` |
+| `app.get_font_list()` | Utility method | `hwpapi.fonts.list_used()` (if retained) |
+| `app.get_message_box_mode()` | Low-level dialog config | `app.engine` / `hwpapi.low.engine` |
+| `app.help()` | Discovery replaced by Quarto site | — |
+| `app.hwpunit_to_mm(v)` | Duplicate of module-level function | `hwpapi.units.hwpunit_to_mm(v)` |
+| `app.hwpunit_to_point(v)` | Duplicate of module-level function | `hwpapi.units.hwpunit_to_point(v)` |
+| `app.lint` | Lint cluster | `hwpapi.lint` module |
+| `app.logger` | Internal attribute; should not be public | — |
+| `app.mm_to_hwpunit(v)` | Duplicate of module-level function | `hwpapi.units.mm_to_hwpunit(v)` |
+| `app.move` | `MoveAccessor` collapses into `Document.cursor` | `app.doc.cursor` |
+| `app.page` | `PageAccessor` collapses into `Document.page` | `app.doc.page` |
+| `app.point_to_hwpunit(v)` | Duplicate of module-level function | `hwpapi.units.point_to_hwpunit(v)` |
+| `app.preset` | Presets layer is a sibling package | `hwpapi.presets` (separate package) |
+| `app.register_security_module(path)` | Init-time config | `hwpapi.low.engine` setup |
+| `app.replace_brackets_with_fields()` | Mail-merge macro helper | `hwpapi.recipes` or `FieldCollection.from_brackets()` (Phase 3) |
+| `app.rgb_color(r, g, b)` | Duplicate of module-level function | `hwpapi.units.rgb_color(r, g, b)` |
+| `app.save_all_page_images(...)` | Export helper | `hwpapi.io.export.pages_to_images(app, ...)` |
+| `app.save_page_image(...)` | Export helper | `hwpapi.io.export.page_to_image(app, ...)` |
+| `app.sel` | Selection accessor | `app.doc.selection` |
+| `app.set_field(name, value)` | Duplicate of `FieldCollection.__setitem__` | `app.doc.fields[name] = value` |
+| `app.set_message_box_mode(mode)` | Pairs with deleted getter | `hwpapi.low.engine` |
+| `app.set_visible(flag)` | Explicit duplicate of `visible` property — deleted per plan 2.4 | `app.visible = flag` |
+| `app.silenced()` | Context manager moves to module level | `hwpapi.context.scopes.silenced(app)` |
+| `app.status` | Discovery aid — superseded by Quarto reference | — |
+| `app.suppress_errors()` | Context manager moves to module level | `hwpapi.context.scopes.suppress_errors(app)` |
+| `app.template` | Template cluster | `hwpapi.templates` module |
+| `app.undo_group()` | Context manager moves to module level | `hwpapi.context.scopes.undo_group(app)` |
+| `app.use_document()` | Multi-doc switch deferred to v2.1 | — |
+| `app.version` | Engine / document property | `app.engine.version` or `app.doc.version` |
+| `app.view` | View accessor | dedicated module (TBD) |
+
+# Examples
+
+## Example 1 — Open a file, insert text, save
+
+```python
+# v1.x
+from hwpapi import App
+app = App()
+app.open("report.hwp")
+app.insert_text("Hello, world.")
+app.save()
+app.quit()
+
+# v2.0
+from hwpapi import App
+app = App()
+app.open("report.hwp")
+app.doc.insert_text("Hello, world.")
+app.save()
+app.quit()
+```
+
+Context-manager form (both versions support it):
+
+```python
+# v2.0 — preferred for scripts
+from hwpapi import App
+with App() as app:
+    app.open("report.hwp")
+    app.doc.insert_text("Hello, world.")
+    app.save()
+# app.close() called automatically on exit
+```
+
+## Example 2 — Field operations
+
+```python
+# v1.x
+names = app.field_names                     # list
+app.create_field("author", "direction")
+exists = app.field_exists("author")
+app.delete_field("author")
+app.delete_all_fields()
+
+# v2.0
+names = app.doc.fields.names()              # FieldCollection method
+app.doc.create_field("author", "direction") # or app.doc.fields.add("author", "direction")
+exists = "author" in app.doc.fields         # __contains__
+del app.doc.fields["author"]                # __delitem__
+app.doc.fields.clear()                      # replaces delete_all_fields()
+```
+
+## Example 3 — Character formatting
+
+```python
+# v1.x
+app.set_charshape(bold=True, size=12)
+
+with app.charshape_scope(bold=True):
+    app.insert_text("bold text")
+
+# v2.0 — element-based assignment
+from hwpapi.parametersets import CharShape
+
+run = app.doc.cursor.run
+run.charshape = CharShape(bold=True, size=12)
+
+# Context-manager form — now a module-level function
+from hwpapi.context.scopes import charshape_scope
+
+with charshape_scope(bold=True):
+    app.doc.insert_text("bold text")
+```
+
+## Example 4 — Unit conversions (deleted from App)
+
+```python
+# v1.x
+mm_value = app.hwpunit_to_mm(59430)
+pt_value = app.hwpunit_to_point(1200)
+hwp = app.mm_to_hwpunit(210)
+
+# v2.0 — use hwpapi.units directly
+from hwpapi.units import hwpunit_to_mm, hwpunit_to_point, mm_to_hwpunit
+
+mm_value = hwpunit_to_mm(59430)     # 210.0
+pt_value = hwpunit_to_point(1200)   # 12.0
+hwp = mm_to_hwpunit(210)            # 59430
+```
+
+# FAQ
+
+**"My script uses `app.bookmarks['x']`. Does this still work?"**
+Yes, via `app.doc.bookmarks['x']` in v2. The dict-like interface is preserved
+and extended (Phase 3).
+
+**"What happened to `app.charshape()`?"**
+Removed. Character-level formatting now lives on `Run` elements; see Example 3.
+The context-manager form (`charshape_scope`) moves to `hwpapi.context.scopes`.
+
+**"I need `app.api` (raw COM handle)."**
+Still available as `app.api` — it is an explicit escape hatch. For most cases,
+prefer `hwpapi.low.*` which provides a more structured interface.
+
+**"How do I disable output for batch scripts?"**
+`app.visible = False` — the `set_visible()` method was removed; use the
+property directly.
+
+**"I relied on `app.silenced()` / `app.suppress_errors()` / `app.undo_group()`."**
+These context managers survive as module-level functions:
+`from hwpapi.context.scopes import silenced, suppress_errors, undo_group`.
+Pass `app` as the first argument.
+
+**"What about multi-document workflows (`app.documents`, `app.use_document()`)?"**
+Multi-document collection is deferred to v2.1 (plan section 12). In v2.0
+`app.doc` always refers to the active document. Pin to `hwpapi==1.*` if you
+need multi-doc now.
+
+**"The `save_block` signature changed — what is the new signature?"**
+`save_as(path: str | Path, *, as_block: bool = False)`. The `as_block`
+keyword argument preserves the original behaviour when set to `True`.
+
+**"I used `app.replace_brackets_with_fields()` for mail merge."**
+That helper is removed from `App`. It will resurface as
+`FieldCollection.from_brackets(text)` or in a `hwpapi.recipes` module in
+Phase 3. For now, call `app.api` and use the raw action directly, or copy the
+v1 implementation into your own code.
+
+# See also
+
+- [Phase 1 release notes](./releases/v1.0.md) (frozen v1 snapshot)
+- [hwpapi.low reference](./reference/low.md) (escape hatch documentation)
+- Plan of record: `.omc/plans/hwpapi_v2_redesign.md`
+- Audit source: `docs/design/app-member-audit.md`
