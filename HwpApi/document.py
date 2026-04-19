@@ -1,44 +1,39 @@
 """
-:mod:`hwpapi.document` — Phase 2 ``Document`` facade.
+:mod:`hwpapi.document` — Phase 2 ``Document`` facade (scaffold).
 
-``Document`` is the **primary v2 surface** for per-document operations:
-text read/write, selection, clipboard, undo/redo, find-replace, page
-navigation, and the seven collection accessors (``paragraphs``,
-``tables``, ``fields``, ``bookmarks``, ``hyperlinks``, ``images``,
-``styles``).
+``Document`` is the **primary v2 surface** for per-document operations.
+Obtained via :attr:`hwpapi.App.doc`.
 
-Canonical usage::
+Phase 2 scope
+-------------
+The v2 slim :class:`hwpapi.App` no longer carries document-level
+state (see ``docs/design/app-member-audit.md`` §1.2–§1.4). That
+state lands on :class:`Document` and its collection/element helpers
+in later phases:
+
+- **Phase 3** (PRD P3-00x) — populate collection properties
+  (``fields``, ``bookmarks``, ``hyperlinks``, ``images``, ``styles``,
+  ``tables``, ``paragraphs``).
+- **Phase 4** (PRD P4-00x) — populate element helpers
+  (``cursor``, ``selection``, ``page`` …) and the rich method surface
+  listed under ``move_to_Document`` in the audit.
+
+For now :class:`Document` is a **thin scaffold** that holds a
+reference to the owning :class:`App` and exposes seven lazy
+collection-shaped placeholders so downstream code can introspect the
+contract without crashing. The placeholders intentionally iterate
+empty and ``len == 0`` so callers discover the "not yet implemented"
+state the moment they try to use one.
+
+The engine is the single source of truth — :class:`Document` never
+owns its own COM handle.
+
+Canonical usage (Phase 3 onward)::
 
     app = App()
-    app.doc.text              # full-document text
-    app.doc.fields['name']    # FieldCollection lookup
-    app.doc.select_all()
-    app.doc.insert_text('…')
-
-Phase 2 intentionally keeps this class a **thin facade**: every method
-and collection property delegates to the backing :class:`App` or to
-existing domain wrappers (``app.fields``, ``app.bookmarks`` …).
-Dedicated :mod:`hwpapi.collections` classes land in Phase 3 (PRD
-P3-00x). When that lands, ``Document`` becomes the implementation site
-and the corresponding ``App`` methods are removed (PRD P2-002).
-
-Design notes
-------------
-- ``Document`` holds a **reference** to the owning :class:`App`; it does
-  not own its own COM handle. The engine is the single source of truth.
-- All seven collection properties are lazy: the wrapper object is built
-  on first access and cached via :func:`functools.cached_property`
-  (same instance on repeated access).
-- Delegated methods forward ``*args, **kwargs`` verbatim so behaviour
-  matches v1 during Phase 2. The methods on ``App`` are the current
-  implementation; once they are removed, the delegates here will be
-  promoted to real implementations.
-
-See also
---------
-- ``docs/design/app-member-audit.md`` — classifies 35 ``App`` members
-  as ``move_to_Document`` (this file's eventual home).
-- ``docs/design/hwpapi_v2_redesign.md`` — Phase 2 redesign plan.
+    doc = app.doc                   # cached Document
+    doc.fields['name'] = '홍길동'    # collection lookup (Phase 3)
+    doc.select_all()                # document action (Phase 4)
 """
 from __future__ import annotations
 
@@ -53,15 +48,17 @@ __all__ = ["Document"]
 
 class _PlaceholderCollection:
     """
-    Minimal stand-in for collections that have no v1 wrapper yet.
+    Minimal stand-in for collections that have no v2 implementation yet.
 
-    Returned by :attr:`Document.paragraphs` and :attr:`Document.tables`
-    during Phase 2. Phase 3 (PRD P3-00x) replaces this with a real
-    :class:`ParagraphCollection` / :class:`TableCollection`.
+    Returned by every :class:`Document` collection property during
+    Phase 2. Phase 3 replaces each placeholder with the real
+    :mod:`hwpapi.collections` object.
 
-    The object is intentionally minimal — it is a usable placeholder,
-    not a broken one. It exposes ``len(...)`` == 0 and iterates empty
-    so early callers can introspect the shape without crashing.
+    The placeholder is a **usable empty collection**, not a broken
+    one. It exposes ``len(...) == 0`` and iterates empty so test-suite
+    introspection works. Any ``__getitem__``/``__setitem__``/
+    ``__delitem__`` call raises :class:`LookupError` with a pointer
+    to the Phase 3 story.
     """
 
     __slots__ = ("_name", "_doc")
@@ -72,8 +69,8 @@ class _PlaceholderCollection:
 
     def __repr__(self) -> str:
         return (
-            f"<{self._name} collection — full Phase 3 implementation "
-            f"pending (placeholder on {self._doc!r})>"
+            f"<{self._name} collection — Phase 3 implementation pending "
+            f"(placeholder on {self._doc!r})>"
         )
 
     def __len__(self) -> int:
@@ -83,181 +80,105 @@ class _PlaceholderCollection:
         return iter(())
 
     def __bool__(self) -> bool:
-        # Truthy placeholder — distinguishes "property returns something"
-        # from "property returned None". Real collections will override.
+        # Truthy so `if doc.fields:` reflects "collection exists", not
+        # "collection is non-empty". Matches Python container idiom
+        # once the real class arrives.
         return True
+
+    def _not_yet(self):
+        raise LookupError(
+            f"{self._name}: Phase 3 not implemented yet. "
+            f"See PRD story P3-00x and hwpapi/collections/."
+        )
+
+    def __getitem__(self, key):
+        self._not_yet()
+
+    def __setitem__(self, key, value):
+        self._not_yet()
+
+    def __delitem__(self, key):
+        self._not_yet()
+
+    def __contains__(self, key) -> bool:
+        return False
 
 
 class Document:
     """
-    Per-document facade for HWP operations.
+    Per-document façade for HWP operations.
 
-    Obtained via :attr:`App.doc`. Document is a **thin proxy** around
-    the owning :class:`App` during Phase 2; see module docstring for
-    migration notes.
+    Obtained via :attr:`hwpapi.App.doc`. Holds a reference to the
+    owning :class:`App`; does **not** own a COM handle.
 
     Parameters
     ----------
-    app : App
-        The owning :class:`hwpapi.core.app.App` instance. ``Document``
-        keeps a reference but does not own a COM handle.
+    app : hwpapi.App
+        The owning :class:`~hwpapi.core.app.App` instance.
 
     Examples
     --------
     >>> app = App()
     >>> doc = app.doc              # same instance on every access
-    >>> doc.text                    # full-document text (delegates)
-    >>> doc.fields['name'] = '홍길동'
-    >>> doc.select_all()
-    >>> doc.find_text('foo')
+    >>> len(doc.fields)            # empty placeholder until Phase 3
+    0
     """
+
+    __slots__ = (
+        "_app",
+        "__dict__",  # cached_property needs a real __dict__
+    )
 
     def __init__(self, app: "App") -> None:
         self._app = app
 
     # ------------------------------------------------------------------
-    # Collection properties — lazy, cached, same instance every access.
+    # Collection properties (Phase 3 target — placeholders for now).
     # ------------------------------------------------------------------
 
     @cached_property
     def fields(self) -> Any:
-        """Fields collection (누름틀). Delegates to ``app.fields``."""
-        return self._app.fields
+        """Field collection (누름틀). Phase 3 placeholder."""
+        return _PlaceholderCollection("fields", self)
 
     @cached_property
     def bookmarks(self) -> Any:
-        """Bookmark collection (책갈피). Delegates to ``app.bookmarks``."""
-        return self._app.bookmarks
+        """Bookmark collection (책갈피). Phase 3 placeholder."""
+        return _PlaceholderCollection("bookmarks", self)
 
     @cached_property
     def hyperlinks(self) -> Any:
-        """Hyperlink collection. Delegates to ``app.hyperlinks``."""
-        return self._app.hyperlinks
+        """Hyperlink collection. Phase 3 placeholder."""
+        return _PlaceholderCollection("hyperlinks", self)
 
     @cached_property
     def images(self) -> Any:
-        """Image collection. Delegates to ``app.images``."""
-        return self._app.images
+        """Image collection. Phase 3 placeholder."""
+        return _PlaceholderCollection("images", self)
 
     @cached_property
     def styles(self) -> Any:
-        """Paragraph-style collection. Delegates to ``app.styles``."""
-        return self._app.styles
+        """Paragraph-style collection. Phase 3 placeholder."""
+        return _PlaceholderCollection("styles", self)
 
     @cached_property
     def paragraphs(self) -> Any:
-        """
-        Paragraph collection.
-
-        Phase 2 placeholder: real :class:`ParagraphCollection` lands
-        in Phase 3. Returns a minimal usable object (see
-        :class:`_PlaceholderCollection`).
-        """
+        """Paragraph collection. Phase 3 placeholder."""
         return _PlaceholderCollection("paragraphs", self)
 
     @cached_property
     def tables(self) -> Any:
-        """
-        Table collection.
-
-        Phase 2 placeholder: real :class:`TableCollection` lands in
-        Phase 3. Returns a minimal usable object (see
-        :class:`_PlaceholderCollection`).
-        """
+        """Table collection. Phase 3 placeholder."""
         return _PlaceholderCollection("tables", self)
 
     # ------------------------------------------------------------------
-    # Document-level property delegates.
+    # Access to the underlying App (escape hatch for Phase 3/4 impls).
     # ------------------------------------------------------------------
 
     @property
-    def text(self) -> str:
-        """Full document text. Delegates to ``app.text``."""
-        return self._app.text
-
-    @text.setter
-    def text(self, value: str) -> None:
-        self._app.text = value
-
-    @property
-    def page_count(self) -> int:
-        """Total page count. Delegates to ``app.page_count``."""
-        return self._app.page_count
-
-    @property
-    def current_page(self) -> int:
-        """Cursor-relative page number. Delegates to ``app.current_page``."""
-        return self._app.current_page
-
-    @property
-    def selection(self) -> str:
-        """Current selection text. Delegates to ``app.selection``."""
-        return self._app.selection
-
-    # ------------------------------------------------------------------
-    # High-value method delegates.
-    #
-    # Each forwards verbatim to the App method of the same name.
-    # Phase 2: behaviour is identical to v1.
-    # Phase 3+: the App methods are removed (PRD P2-002) and these
-    # become the implementation site.
-    # ------------------------------------------------------------------
-
-    def select_all(self, *args, **kwargs):
-        """Select the entire document. Delegates to ``app.select_all``."""
-        return self._app.select_all(*args, **kwargs)
-
-    def get_text(self, *args, **kwargs):
-        """Read text from the document. Delegates to ``app.get_text``."""
-        return self._app.get_text(*args, **kwargs)
-
-    def insert_text(self, *args, **kwargs):
-        """Insert text at cursor. Delegates to ``app.insert_text``."""
-        return self._app.insert_text(*args, **kwargs)
-
-    def undo(self, *args, **kwargs):
-        """Undo. Delegates to ``app.undo``."""
-        return self._app.undo(*args, **kwargs)
-
-    def redo(self, *args, **kwargs):
-        """Redo. Delegates to ``app.redo``."""
-        return self._app.redo(*args, **kwargs)
-
-    def copy(self, *args, **kwargs):
-        """Clipboard copy. Delegates to ``app.copy``."""
-        return self._app.copy(*args, **kwargs)
-
-    def cut(self, *args, **kwargs):
-        """Clipboard cut. Delegates to ``app.cut``."""
-        return self._app.cut(*args, **kwargs)
-
-    def paste(self, *args, **kwargs):
-        """Clipboard paste. Delegates to ``app.paste``."""
-        return self._app.paste(*args, **kwargs)
-
-    def delete(self, *args, **kwargs):
-        """Delete current selection. Delegates to ``app.delete``."""
-        return self._app.delete(*args, **kwargs)
-
-    def find_text(self, *args, **kwargs):
-        """Find text in document. Delegates to ``app.find_text``."""
-        return self._app.find_text(*args, **kwargs)
-
-    def replace_all(self, *args, **kwargs):
-        """Document-wide find/replace. Delegates to ``app.replace_all``."""
-        return self._app.replace_all(*args, **kwargs)
-
-    def insert_line_break(self, *args, **kwargs):
-        """Insert line break. Delegates to ``app.insert_line_break``."""
-        return self._app.insert_line_break(*args, **kwargs)
-
-    def insert_page_break(self, *args, **kwargs):
-        """Insert page break. Delegates to ``app.insert_page_break``."""
-        return self._app.insert_page_break(*args, **kwargs)
-
-    # ------------------------------------------------------------------
-    # Introspection
-    # ------------------------------------------------------------------
+    def app(self) -> "App":
+        """The owning :class:`App` — escape hatch."""
+        return self._app
 
     def __repr__(self) -> str:
         return f"<Document app={self._app!r}>"
