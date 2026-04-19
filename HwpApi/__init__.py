@@ -1,11 +1,25 @@
-__version__ = "0.0.2.5"
+"""
+hwpapi — Pythonic automation for HWP (한컴 오피스) via win32com.
 
-# Import main modules
-from .core import *
-from .low.actions import *
-from .functions import *
-from .low.parametersets import *
+Public surface is intentionally tiny. Everything else lives in submodules:
 
-# v2 Document facade — primary per-document surface (Phase 2+).
-# See: docs/design/app-member-audit.md, hwpapi/document.py
-from .document import Document as Document  # noqa: F401  (re-export)
+- :class:`hwpapi.App`           — slim application facade
+- :class:`hwpapi.Document`      — per-document facade (via ``app.doc``)
+- :mod:`hwpapi.collections`     — fields, bookmarks, hyperlinks, images,
+                                  paragraphs, styles, tables
+- :mod:`hwpapi.context`         — charshape_scope, parashape_scope, styled_text
+- :mod:`hwpapi.io`              — open_file, new_document, export_*
+- :mod:`hwpapi.errors`          — HwpApiError hierarchy + wrap_com_error
+- :mod:`hwpapi.units`           — mm/cm/inch/pt ↔ HWPUNIT helpers
+- :mod:`hwpapi.low`             — raw actions / parametersets / engine (escape hatch)
+
+See https://JunDamin.github.io/hwpapi for the full documentation site.
+"""
+from __future__ import annotations
+
+__version__ = "2.0.0"
+
+from .core.app import App
+from .document import Document
+
+__all__ = ["App", "Document", "__version__"]

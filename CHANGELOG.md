@@ -6,7 +6,80 @@
 
 ## [Unreleased]
 
-*(v1.0 이후 변경사항은 여기에 기록됩니다)*
+## [2.0.0] — 2026-04-19 — 🚀 Major redesign (dual-layer API + Quarto docs)
+
+v1.0 이후 약 4일간 진행한 **전면 재설계**. public API break 을 허용한 클린컷
+릴리즈로, 구조/퍼사드/문서 파이프라인을 한꺼번에 갈아엎었습니다.
+
+### 🎯 핵심 변경
+
+- **이중 레이어 API**
+  - 고수준: `hwpapi.App` (슬림 퍼사드) + `app.doc` (Document 모듈)
+  - 저수준: `hwpapi.low.*` — `actions`, `parametersets`, `engine` 이 공식 escape hatch
+  - 같은 작업에 두 개의 공식 진입점을 남기지 않음 (Principle #1)
+- **Collection 일관성** — `Protocol[T]` 기반 공통 인터페이스
+  - `app.doc.fields / bookmarks / hyperlinks / images / paragraphs / styles / tables`
+  - 모두 dict-like + iterable + filterable 로 동일 멘탈 모델
+- **Element value objects** — `Paragraph`, `Run`, `Table`, `Cell` 경량 객체
+  (`.style`, `.charshape`, `.parashape`, `.runs`, `.cell(r, c).text`, ...)
+- **Context / IO / Errors 모듈 신설**
+  - `hwpapi.context.{charshape_scope, parashape_scope, styled_text}`
+  - `hwpapi.io.{open_file, new_document, export_pdf, export_image, export_text}`
+  - `hwpapi.errors` — 4단계 예외 계층 + `wrap_com_error()` 컨텍스트 매니저
+- **Quarto 단일 문서 사이트** — `docs/` 43페이지, quartodoc 기반 자동 API 레퍼런스
+  - Home / Getting Started / Guide / Recipes / Reference / Design 6-섹션
+  - 사이트 IA == import tree 1:1 매핑 (Principle #5)
+
+### Removed (Breaking)
+
+- `hwpapi/classes/` 전체 삭제 (~4,924 LOC) — accessors/controls/convert/debug/
+  fields/images/lint/selection/shapes/styles/view 모두 제거
+- `App` public 멤버 82 → ~12 로 축소 (v1 accessor/preset/template/config/... 전면 제거)
+- `app.charshape = {...}` 프로퍼티 → `charshape_scope(app, **fmt)` 컨텍스트로 이전
+- `app.preset.*`, `app.template.*`, `app.config.*`, `app.lint()`, `app.view.*`,
+  `app.debug.*`, `app.convert.*`, `app.sel.*`, `app.move.*`, `app.table.*`,
+  `app.cell.*`, `app.page.*` — 모두 제거 (필요 시 Recipes 에서 재조립)
+- `hwpapi.parametersets` (top-level) → `hwpapi.low.parametersets` 로 이동
+- `hwpapi/actions.py` → `hwpapi/low/actions.py`
+- `hwpapi/core/engine.py` → `hwpapi/low/engine.py`
+- `nbs/` nbdev 기반 문서 파이프라인 폐기 (아카이브)
+- `docs/*.md` (v1 계획 문서 10개) → `docs/archive/` 이동
+
+### Added
+
+- `hwpapi/collections/` 패키지 — fields, bookmarks, hyperlinks, images,
+  paragraphs, styles, tables (각 Collection + Element value object)
+- `hwpapi/document.py` — `Document` 퍼사드 (cached_property 로 lazy-wire)
+- `hwpapi/low/` — raw actions / parametersets / engine escape hatch
+- `hwpapi/errors.py` — `HwpApiError`, `ConnectionError`, `ActionFailedError`,
+  `InvalidArgumentError`, `FileIOError` + `wrap_com_error()`
+- `hwpapi/context/scopes.py` — `charshape_scope`, `parashape_scope`, `styled_text`
+- `hwpapi/io/` — `open_file`, `new_document`, `export_pdf`, `export_image`, `export_text`
+- `docs/` Quarto 사이트 (43 페이지, 0 warnings) — getting-started / guide /
+  recipes / reference / design / adr
+- `.github/workflows/deploy-docs.yaml` — GitHub Pages 자동 배포
+- `tests/conftest.py` — `SetMessageBoxMode(0x111111)` 로 HWP 다이얼로그 전부 자동 Yes
+- v1→v2 Migration guide (80+ 매핑 행)
+
+### Fixed / Hardened
+
+- pytest 전체 세션에서 HWP 다이얼로그가 더 이상 블로킹하지 않음
+- griffe 2.x API drift 대응 — `griffe<1.0` 핀 (`[project.optional-dependencies].docs`)
+- 순환 import 제거 (`low/engine.py` 의 dead `from hwpapi.classes import ...` 제거)
+
+### Tests
+
+- 단위 테스트: 1,388 (v1.0) → 1,373 (v2.0, -15: v1 classes/ 테스트 사라짐, +30 새
+  Element 테스트, +29 새 context/io/errors 테스트). 전체 녹색.
+
+### Migration
+
+클린컷이므로 코드 변경 필수입니다.
+
+- 빠른 점검: `https://JunDamin.github.io/hwpapi/getting-started/migration-v1-to-v2.html`
+- v1 에 머무르려면 `pip install "hwpapi<2"` 또는 `git checkout v1.x`.
+
+---
 
 ## [1.0.0] — 2026-04-15 — 🎉 Production / Stable release
 
