@@ -1,0 +1,73 @@
+# fields
+
+Field (누름틀) collection.
+
+# fields.FieldCollection { #hwpapi.collections.fields.FieldCollection }
+
+```python
+collections.fields.FieldCollection(app)
+```
+
+``doc.fields`` — collection of HWP fields (누름틀).
+
+Iterates as :class:`Field` value objects (not bare strings, unlike
+the v1 list-compat surface). Dict-like subscript by name; numeric
+subscript gives the nth :class:`Field` in document order.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [filter](#hwpapi.collections.fields.FieldCollection.filter) | Return the subset of fields for which ``predicate`` is truthy. |
+| [find](#hwpapi.collections.fields.FieldCollection.find) | Return the :class:`Field` with ``name`` or ``None``. |
+| [get](#hwpapi.collections.fields.FieldCollection.get) | Return a field's current value, or ``default`` if missing. |
+| [names](#hwpapi.collections.fields.FieldCollection.names) | All field names, document order, deduplicated. |
+| [update](#hwpapi.collections.fields.FieldCollection.update) | Dict-style batch assignment. |
+
+### filter { #hwpapi.collections.fields.FieldCollection.filter }
+
+```python
+collections.fields.FieldCollection.filter(predicate)
+```
+
+Return the subset of fields for which ``predicate`` is truthy.
+
+### find { #hwpapi.collections.fields.FieldCollection.find }
+
+```python
+collections.fields.FieldCollection.find(name)
+```
+
+Return the :class:`Field` with ``name`` or ``None``.
+
+### get { #hwpapi.collections.fields.FieldCollection.get }
+
+```python
+collections.fields.FieldCollection.get(name, default='')
+```
+
+Return a field's current value, or ``default`` if missing.
+
+### names { #hwpapi.collections.fields.FieldCollection.names }
+
+```python
+collections.fields.FieldCollection.names()
+```
+
+All field names, document order, deduplicated.
+
+### update { #hwpapi.collections.fields.FieldCollection.update }
+
+```python
+collections.fields.FieldCollection.update(mapping=None, **kwargs)
+```
+
+Dict-style batch assignment.
+
+# fields.Field { #hwpapi.collections.fields.Field }
+
+```python
+collections.fields.Field(app, name)
+```
+
+Value object for a single HWP field (누름틀).

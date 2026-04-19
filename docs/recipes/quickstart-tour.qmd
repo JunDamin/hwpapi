@@ -1,0 +1,65 @@
+---
+title: "Quickstart tour"
+subtitle: "The seven moves every hwpapi script uses"
+---
+
+Run the shortest useful script: open/new, insert text, format, find,
+save. Ported from `examples/quickstart.py` to the v2 surface.
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.context import charshape_scope
+from hwpapi import units as U
+
+
+def main():
+    with App(is_visible=True) as app:
+        app.new()
+
+        # 1. Insert text
+        app.doc.insert_text("hwpapi 테스트 문서\n\n")
+        app.doc.insert_text("이 문서는 hwpapi로 자동 생성되었습니다.\n")
+
+        # 2. Format: jump to top, select first line, apply heading style
+        app.doc.cursor.goto_page(1)
+        app.doc.select_text(0, len("hwpapi 테스트 문서"))
+
+        with charshape_scope(app, bold=True, size=U.pt(18)):
+            app.doc.insert_text("hwpapi 테스트 문서")
+
+        # 3. Navigate and insert more
+        app.doc.cursor.goto_end()
+        app.doc.insert_text("\n")
+        for i in range(3):
+            app.doc.insert_text(f"• 항목 {i + 1}\n")
+
+        # 4. Find / Replace
+        count = app.doc.replace_all("항목", "list item")
+        print(f"Replaced {count} occurrences")
+
+        # 5. Action introspection (no COM calls beyond a listing)
+        actions = app.actions
+        print(f"\nAvailable actions: {len(actions.list_actions())}")
+
+        # 6. Raw COM access (escape hatch)
+        print(f"\nRaw HWP COM: {app.api.CLSID}")
+
+        # 7. Save
+        app.save_as("quickstart-output.hwp")
+
+
+if __name__ == "__main__":
+    main()
+```
+
+# What changed from v1
+
+| v1 | v2 |
+|---|---|
+| `app.insert_text(...)` | `app.doc.insert_text(...)` |
+| `app.move.top_of_file()` | `app.doc.cursor.goto_page(1)` |
+| `app.select_text()` | `app.doc.select_text(...)` |
+| `app.set_charshape(bold=True, height=1800)` | `charshape_scope(app, bold=True, size=U.pt(18))` |
+| `app.replace_all(...)` | `app.doc.replace_all(...)` |
+| `app.api.CLSID` | `app.api.CLSID` (unchanged — `api` is still on App) |

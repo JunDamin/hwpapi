@@ -1,0 +1,78 @@
+# paragraphs
+
+Paragraph collection with Run element.
+
+# paragraphs.ParagraphCollection { #hwpapi.collections.paragraphs.ParagraphCollection }
+
+```python
+collections.paragraphs.ParagraphCollection(app)
+```
+
+``doc.paragraphs`` — ordinal-access paragraph collection.
+
+Iteration uses ``Section(0).Paragraph(i)`` on the active HWP
+document. When the underlying handle can't enumerate (e.g. no
+document open), the collection behaves as empty.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [names](#hwpapi.collections.paragraphs.ParagraphCollection.names) | Ordinal strings — paragraphs have no intrinsic names. |
+
+### names { #hwpapi.collections.paragraphs.ParagraphCollection.names }
+
+```python
+collections.paragraphs.ParagraphCollection.names()
+```
+
+Ordinal strings — paragraphs have no intrinsic names.
+
+# paragraphs.Paragraph { #hwpapi.collections.paragraphs.Paragraph }
+
+```python
+collections.paragraphs.Paragraph(app, index, raw=None)
+```
+
+Value object for a single paragraph (ordinal only).
+
+## Attributes
+
+| Name | Description |
+| --- | --- |
+| [charshape](#hwpapi.collections.paragraphs.Paragraph.charshape) | :class:`~hwpapi.low.parametersets.CharShape` snapshot for this |
+| [parashape](#hwpapi.collections.paragraphs.Paragraph.parashape) | :class:`~hwpapi.low.parametersets.ParaShape` snapshot for this |
+| [runs](#hwpapi.collections.paragraphs.Paragraph.runs) | Runs covering this paragraph. Phase 4 returns a single-element |
+| [style](#hwpapi.collections.paragraphs.Paragraph.style) | Paragraph style name (e.g. "바탕글"). Empty string on failure. |
+| [text](#hwpapi.collections.paragraphs.Paragraph.text) | Paragraph text. Returns ``""`` when the backend cannot resolve it. |
+
+# paragraphs.Run { #hwpapi.collections.paragraphs.Run }
+
+```python
+collections.paragraphs.Run(paragraph, start=0, end=-1)
+```
+
+A run — contiguous slice of a :class:`Paragraph` sharing a
+:class:`~hwpapi.low.parametersets.CharShape`.
+
+Phase 4 ships a single-run stub covering the whole paragraph; a
+future phase can split on CharShape boundaries by walking the
+characters.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name       | Type      | Description                                                                                                        | Default    |
+|------------|-----------|--------------------------------------------------------------------------------------------------------------------|------------|
+| paragraph  | Paragraph | Owning paragraph value object.                                                                                     | _required_ |
+| start      | int       | Character offsets into :attr:`Paragraph.text` (Python slice semantics). ``end == -1`` means "to end of paragraph". | `0`        |
+| end        | int       | Character offsets into :attr:`Paragraph.text` (Python slice semantics). ``end == -1`` means "to end of paragraph". | `0`        |
+| Attributes |           |                                                                                                                    | _required_ |
+| not        |           |                                                                                                                    | _required_ |
+
+## Attributes
+
+| Name | Description |
+| --- | --- |
+| [charshape](#hwpapi.collections.paragraphs.Run.charshape) | Best-effort :class:`CharShape` — currently the paragraph's. |
+| [paragraph](#hwpapi.collections.paragraphs.Run.paragraph) | The :class:`Paragraph` this run belongs to. |
+| [text](#hwpapi.collections.paragraphs.Run.text) | Substring of the paragraph text covered by this run. |

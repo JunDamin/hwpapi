@@ -1,0 +1,155 @@
+---
+title: "Elements"
+subtitle: "Value objects for paragraphs, runs, tables, and cells"
+---
+
+# What's an "element"?
+
+Elements are the lightweight objects you get when you subscript a
+collection. They wrap one item of the document — a paragraph, a run,
+a table cell — and expose Pythonic attributes for the properties you
+care about.
+
+Two rules:
+
+1. **Construction is free.** An element wraps a reference to the
+   owning `App` + some coordinates (index, name, row/col). It does
+   not touch COM until you read an attribute.
+2. **Reads are live.** Every property getter hits HWP at call time
+   — there is no caching. If you assign `p.text = "…"` on paragraph
+   0 and then read `p.text` again, you get the new value. If the
+   document changed underneath you (user undo, concurrent script),
+   you see the current state.
+
+# The element catalogue
+
+| Type | Comes from | Key properties |
+|---|---|---|
+| [`Paragraph`](../reference/collections/paragraphs.qmd) | `app.doc.paragraphs[i]` | `.text`, `.style`, `.charshape`, `.parashape`, `.runs` |
+| [`Run`](../reference/collections/paragraphs.qmd) | `paragraph.runs[j]` | `.text`, `.charshape`, `.start`, `.end` |
+| [`Table`](../reference/collections/tables.qmd) | `app.doc.tables[k]` | `.rows`, `.cols`, `.name`, `.cell(r, c)` |
+| [`Cell`](../reference/collections/tables.qmd) | `table.cell(r, c)` | `.text`, `.row`, `.col`, `.border`, `.fill` |
+| [`Field`](../reference/collections/fields.qmd) | `app.doc.fields[n]` | `.name`, `.value`, `.goto()` |
+| [`Bookmark`](../reference/collections/bookmarks.qmd) | `app.doc.bookmarks[n]` | `.name`, `.goto()` |
+
+# Paragraphs and runs
+
+A `Paragraph` is one block of text separated by HWP's paragraph
+separator. Its `runs` are contiguous slices sharing one CharShape —
+so "**bold** and italic" is two runs on one paragraph.
+
+```{python}
+#| eval: false
+p = app.doc.paragraphs[0]
+
+p.text                  # → str (whole paragraph)
+p.style                 # → str (HWP style name)
+p.charshape             # → CharShape (see below)
+p.parashape             # → ParaShape
+
+for r in p.runs:
+    print(r.text, r.charshape.bold)
+```
+
+## Setting a shape
+
+Assigning to `.charshape` or `.parashape` applies formatting to the
+whole paragraph (or run):
+
+```{python}
+#| eval: false
+from hwpapi.low.parametersets import CharShape, ParaShape
+
+p = app.doc.paragraphs[0]
+
+# Replace charshape wholesale
+p.charshape = CharShape(Bold=True, Height=1400, TextColor="#C0392B")
+
+# Or set one field at a time (reads current, edits, writes back)
+current = p.charshape
+current.Italic = True
+p.charshape = current
+```
+
+This is the successor to the v1 `app.set_charshape(...)` method —
+see the [migration guide](../getting-started/migration-v1-to-v2.qmd).
+
+## Iterating selectively
+
+`ParagraphCollection` supports `.filter(predicate)`:
+
+```{python}
+#| eval: false
+headings = app.doc.paragraphs.filter(lambda p: p.style.startswith("제목"))
+for h in headings:
+    print(h.text)
+```
+
+# Tables and cells
+
+A `Table` element exposes row/column geometry; a `Cell` element is
+addressed by (row, col):
+
+```{python}
+#| eval: false
+tbl = app.doc.tables[0]
+
+tbl.rows, tbl.cols
+tbl.name
+
+c = tbl.cell(0, 0)
+c.text = "Header"
+c.fill = "#F5F5F5"
+c.border = {"top": "thick", "bottom": "thick"}
+```
+
+# Value vs. reference semantics
+
+Elements are always **references** to document state, never snapshots:
+
+```{python}
+#| eval: false
+p = app.doc.paragraphs[0]
+p.text                     # "hello"
+
+app.doc.paragraphs[0]      # → different Paragraph instance …
+app.doc.paragraphs[0].text # … but same text, because both point at para 0
+```
+
+If you need a snapshot — for diff-and-restore patterns — copy the
+attributes you care about into a dataclass or dict.
+
+# Not a dataclass
+
+The v1 codebase had an *additional* representation: `@dataclass Paragraph`
+/ `@dataclass CharShape` / `@dataclass PageShape` classes next to the
+ParameterSet classes. v2 deletes the dataclass layer and exposes a
+single Paragraph-as-reference design. If you were using the v1
+dataclass for round-tripping, replace:
+
+```python
+# v1
+from hwpapi.classes.shapes import Paragraph as ParaDC
+snap = ParaDC(text=p.text, style=p.style, ...)
+# ... edit ...
+p.text = snap.text
+```
+
+with a plain dict:
+
+```python
+# v2
+snap = {"text": p.text, "style": p.style}
+# ... edit ...
+p.text = snap["text"]
+```
+
+The element surface is deliberately small — add your own helpers as
+needed.
+
+# See also
+
+- [Collections](collections.qmd) — where elements come from
+- [Context scopes](context-scopes.qmd) — `charshape_scope` for
+  block-level formatting without touching individual paragraphs
+- [Reference: ParagraphCollection](../reference/collections/paragraphs.qmd)

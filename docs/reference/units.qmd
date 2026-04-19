@@ -1,0 +1,90 @@
+# units
+
+Unit conversion module.
+
+# units.mm { #hwpapi.units.mm }
+
+```python
+units.mm(value)
+```
+
+mm → HWPUNIT (283 HWPUNIT = 1mm).
+
+# units.cm { #hwpapi.units.cm }
+
+```python
+units.cm(value)
+```
+
+cm → HWPUNIT (2834 HWPUNIT ≈ 1cm).
+
+# units.inch { #hwpapi.units.inch }
+
+```python
+units.inch(value)
+```
+
+inch → HWPUNIT (7200 HWPUNIT = 1in).
+
+# units.pt { #hwpapi.units.pt }
+
+```python
+units.pt(value)
+```
+
+point → HWPUNIT (100 HWPUNIT = 1pt).
+
+# units.to_mm { #hwpapi.units.to_mm }
+
+```python
+units.to_mm(hwpunit_value)
+```
+
+HWPUNIT → mm.
+
+# units.to_cm { #hwpapi.units.to_cm }
+
+```python
+units.to_cm(hwpunit_value)
+```
+
+HWPUNIT → cm.
+
+# units.to_inch { #hwpapi.units.to_inch }
+
+```python
+units.to_inch(hwpunit_value)
+```
+
+HWPUNIT → inch.
+
+# units.to_pt { #hwpapi.units.to_pt }
+
+```python
+units.to_pt(hwpunit_value)
+```
+
+HWPUNIT → point.
+
+# units.parse { #hwpapi.units.parse }
+
+```python
+units.parse(value)
+```
+
+문자열/숫자 → HWPUNIT.
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> parse("210mm")   # 283 * 210 ≈ 59544
+59430
+>>> parse("21cm")
+59430
+>>> parse("8.27in")  # 7200 * 8.27
+59544
+>>> parse("12pt")    # 100 * 12
+1200
+>>> parse(210)       # int → assumed mm
+59430
+```

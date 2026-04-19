@@ -1,0 +1,128 @@
+---
+title: "Architecture"
+subtitle: "The v2 import tree at a glance"
+---
+
+# Import tree
+
+```
+hwpapi
+├── App                  # core.app.App   — slim facade (≤15 public members)
+├── Document             # document.Document — per-document surface (app.doc)
+├── collections/         # dict-like aggregations under app.doc.*
+│   ├── Collection       # Protocol: __getitem__, __iter__, __len__,
+│   │                    #            __contains__, names, filter
+│   ├── fields           # FieldCollection + Field
+│   ├── bookmarks        # BookmarkCollection + Bookmark
+│   ├── hyperlinks
+│   ├── images
+│   ├── paragraphs       # ParagraphCollection + Paragraph + Run
+│   ├── styles
+│   └── tables           # TableCollection + Table + Cell
+├── context/
+│   └── scopes           # charshape_scope, parashape_scope, styled_text
+├── io/
+│   ├── open             # open_file, new_document
+│   └── export           # export_pdf, export_image, export_text
+├── errors               # HwpApiError hierarchy + wrap_com_error
+├── units                # mm, cm, inch, pt, parse, to_mm, ...
+├── logging              # get_logger, HWPAPI_LOG_LEVEL
+└── low/                 # escape hatch
+    ├── actions          # _Actions, _Action (900+ action wrappers)
+    ├── engine           # Engine, Engines, Apps
+    └── parametersets    # ParameterSet classes (CharShape, ParaShape, ...)
+```
+
+# The two-layer model
+
+hwpapi v2 is a **layered** API, not a *levelled* one. Both layers are
+first-class:
+
+- **High layer** (`hwpapi.App` → `app.doc.*`) — the default surface.
+  Opinionated, collection-oriented, one way to do each thing.
+- **Low layer** (`hwpapi.low.*`) — the raw action + ParameterSet +
+  engine primitives. Officially supported. The high layer is
+  implemented *on top of* the low layer, not alongside it.
+
+See [ADR-001](adr/adr-001-v2-redesign.qmd) for the full rationale.
+
+# The Collection protocol
+
+Every dict-like aggregation under `app.doc.*` implements
+`hwpapi.collections.Collection`:
+
+```python
+from typing import Callable, Iterator, Protocol, runtime_checkable
+
+@runtime_checkable
+class Collection(Protocol):
+    def __getitem__(self, key): ...
+    def __iter__(self) -> Iterator: ...
+    def __len__(self) -> int: ...
+    def __contains__(self, key) -> bool: ...
+    def names(self) -> list[str]: ...
+    def filter(self, predicate: Callable[..., bool]) -> list: ...
+```
+
+This is a *structural* contract, not a nominal one — the collection
+classes do not inherit from `Collection`. Runtime checks use
+`isinstance(coll, Collection)` thanks to `@runtime_checkable`.
+
+Collections that support mutation add `__setitem__`, `__delitem__`,
+and `clear()`. That set is **not** part of the Protocol, because some
+collections are read-only (e.g. `paragraphs` — you can't delete a
+paragraph by index without affecting surrounding ones).
+
+# The element value-object pattern
+
+Subscripting a collection returns a lightweight element — a
+reference object that carries `(app, identifier)` and looks up the
+underlying state lazily. Elements:
+
+- are cheap to construct (no COM calls)
+- hit COM at property-read time
+- never cache (reading twice hits COM twice)
+
+Why not dataclasses? Because HWP state can change under you (user
+undo, concurrent script) and caching a snapshot would lie. When you
+want a snapshot, take one explicitly (e.g. `pset.clone()` on a
+ParameterSet, or a plain dict for element state).
+
+# Ownership and lifecycle
+
+```
+App
+ └── Engine              (via app.engine)
+      └── HwpObject      (raw COM; via app.api or app.engine.impl)
+ └── Document            (via app.doc; cached_property)
+      └── Collections    (per-collection, via cached_property)
+```
+
+- `App` owns the `Engine`.
+- `Document` does **not** own a COM handle. It holds a reference to
+  its owning `App` and fetches `app.engine.impl` at the point of use.
+- Collections similarly reach into `self._app.engine.impl` on every
+  call — they are stateless wrappers over HWP's live state.
+
+This means: once `app.close()` runs, reading from the cached
+`Document` or any cached collection will raise — the indirection
+through `app.engine.impl` surfaces the invalidation.
+
+# The facade boundary
+
+The v2 facade (`App` + `Document` + collections + context + io +
+errors + units) is intentionally small. The test of "what belongs on
+the facade" is:
+
+> Does removing this symbol break the one-screen `dir(App)` guarantee,
+> or does it trade a clear high-level affordance for a low-level call?
+
+If the answer is "break the guarantee" or "trade a clear affordance",
+it stays. Everything else goes to `hwpapi.low` or a sibling package.
+
+# Related documents
+
+- [ADR-001: two-layer API](adr/adr-001-v2-redesign.qmd)
+- [ADR-002: Quarto single-pipeline docs](adr/adr-002-quarto-docs.qmd)
+- [`docs/design/app-member-audit.md`](../design/app-member-audit.md) — disposition of the original 82 `App` members
+- [`docs/design/app-public-v2.txt`](../design/app-public-v2.txt) — the final `dir(App)` snapshot

@@ -1,0 +1,46 @@
+# hyperlinks
+
+Hyperlink collection.
+
+# hyperlinks.HyperlinkCollection { #hwpapi.collections.hyperlinks.HyperlinkCollection }
+
+```python
+collections.hyperlinks.HyperlinkCollection(app)
+```
+
+``doc.hyperlinks`` — collection of hyperlink controls.
+
+Iteration yields :class:`Hyperlink` value objects extracted from the
+``HeadCtrl`` chain. Named subscript matches on link ``text``; ordinal
+subscript returns the nth link in document order.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [add](#hwpapi.collections.hyperlinks.HyperlinkCollection.add) | Insert a hyperlink at the current cursor position. |
+| [names](#hwpapi.collections.hyperlinks.HyperlinkCollection.names) | Link-display-text values, document order. |
+
+### add { #hwpapi.collections.hyperlinks.HyperlinkCollection.add }
+
+```python
+collections.hyperlinks.HyperlinkCollection.add(text, url)
+```
+
+Insert a hyperlink at the current cursor position.
+
+### names { #hwpapi.collections.hyperlinks.HyperlinkCollection.names }
+
+```python
+collections.hyperlinks.HyperlinkCollection.names()
+```
+
+Link-display-text values, document order.
+
+# hyperlinks.Hyperlink { #hwpapi.collections.hyperlinks.Hyperlink }
+
+```python
+collections.hyperlinks.Hyperlink(text, url)
+```
+
+Value object for a single hyperlink.

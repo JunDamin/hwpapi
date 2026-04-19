@@ -1,0 +1,172 @@
+---
+title: "Quickstart"
+subtitle: "Your first hwpapi script in under five minutes"
+---
+
+This page walks through the smallest useful hwpapi workflow: open a
+document, change some text, inspect a collection, save to PDF. Every
+code block below is marked `eval: false` because it drives the HWP COM
+server — run the snippets against your own HWP install.
+
+# 1. Connect to HWP
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+app = App()             # launches HWP if needed, reuses if already running
+print(app)              # repr — shows engine id and visible state
+```
+
+Pass `is_visible=False` to keep the HWP window hidden (useful for
+server scripts):
+
+```{python}
+#| eval: false
+app = App(is_visible=False)
+```
+
+The context-manager form calls `close()` and `quit()` on your behalf:
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.new()
+    app.doc.insert_text("Hello from hwpapi\n")
+    app.save_as("hello.hwp")
+```
+
+# 2. Open or create a document
+
+```{python}
+#| eval: false
+app.open("report.hwp")                 # open an existing file
+app.new()                              # create a blank document
+app.save()                             # save in place
+app.save_as("report_final.hwp")        # save as a new file
+app.save_as("report.pdf")              # format is inferred from extension
+app.close()                            # close the active document
+app.quit()                             # tear down the COM engine
+```
+
+# 3. Work with text via `app.doc`
+
+Everything document-scoped lives under `app.doc` (a
+[`Document`](../reference/Document.qmd) instance):
+
+```{python}
+#| eval: false
+# Full document text
+print(app.doc.text)
+
+# Replace entire text in place
+app.doc.text = "Entirely new content."
+
+# Insert at cursor
+app.doc.insert_text("Inserted line\n")
+
+# Navigate
+app.doc.cursor.goto_page(3)
+app.doc.cursor.in_table()              # → bool
+
+# Copy / cut / paste / select / delete
+app.doc.select_all()
+selected = app.doc.get_selected_text()
+```
+
+# 4. Collections are dict-like
+
+Every collection under `app.doc.*` supports `[]`, `in`, `for`, `len`,
+`names()`, `filter(...)`:
+
+```{python}
+#| eval: false
+# Fields (누름틀) — read and write by name
+names = app.doc.fields.names()         # → list[str]
+for name in names:
+    print(name, "=", app.doc.fields[name].value)
+
+app.doc.fields["author"] = "홍길동"
+"author" in app.doc.fields             # → True
+del app.doc.fields["author"]           # remove one
+app.doc.fields.clear()                 # remove all
+
+# Bookmarks
+app.doc.bookmarks.add("chapter-1")
+for bm in app.doc.bookmarks:
+    print(bm.name)
+
+# Tables (Phase 3 target)
+tbl = app.doc.tables[0]                # first table
+tbl.cell(1, 1).text = "Q1"
+```
+
+# 5. Formatting via context scopes
+
+The v1 `app.set_charshape(...)` / `app.charshape_scope(...)` methods
+are gone — use the module-level scopes:
+
+```{python}
+#| eval: false
+from hwpapi.context import charshape_scope, parashape_scope, styled_text
+
+# Block — several operations share one style, then restore.
+with charshape_scope(app, bold=True, size=14, color="#C0392B"):
+    app.doc.insert_text("Heading\n")
+    app.doc.insert_text("Still bold red\n")
+# ← cursor style restored here
+
+# Paragraph-level — alignment and line spacing.
+with parashape_scope(app, align="center", line_spacing=180):
+    app.doc.insert_text("Centered, 180% line spacing\n")
+
+# One-shot — insert a styled phrase inline.
+styled_text(app, "urgent", bold=True, color="#E74C3C")
+```
+
+# 6. Friendly units
+
+```{python}
+from hwpapi import units as U
+
+U.mm(210)       # → HWPUNIT
+U.pt(12)        # → HWPUNIT
+U.inch(8.27)    # → HWPUNIT (approx 210mm)
+
+U.to_mm(59430)  # → ~210.0
+U.to_pt(1200)   # → 12.0
+
+U.parse("210mm")
+U.parse("12pt")
+U.parse("8.27in")
+```
+
+# 7. Escape hatch
+
+When the facade doesn't expose what you need, drop into
+[`hwpapi.low`](../guide/low-level-escape-hatch.qmd):
+
+```{python}
+#| eval: false
+from hwpapi.low import actions, parametersets
+
+# Raw action by name
+charshape = actions._Action("CharShape")
+charshape.pset.Bold = True
+charshape.pset.Height = 1400           # 14pt in HWPUNIT (100/pt)
+charshape.run()
+
+# ParameterSet class catalogue
+list(parametersets.__dict__.keys())[:5]
+```
+
+You can also reach the raw COM handle via `app.api` and the engine via
+`app.engine`.
+
+# Next steps
+
+- Need to convert a v1 script? → [Migration guide](migration-v1-to-v2.qmd)
+- Want more worked examples? → [Recipes](../recipes/index.qmd)
+- Looking for a specific class? → [Reference](../reference/index.qmd)

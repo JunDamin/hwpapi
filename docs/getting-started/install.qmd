@@ -1,0 +1,106 @@
+---
+title: "Install"
+subtitle: "Setting up hwpapi on Windows"
+---
+
+# Requirements
+
+hwpapi drives HWP (한컴오피스 한글) over its Windows COM automation
+surface. That means:
+
+- **OS**: Windows 10 or newer.
+- **HWP**: 한글 2018 / 2020 / 2022 / 2024 (Hancom Office). A
+  non-viewer installation is required — the Viewer edition does not
+  expose the automation server.
+- **Python**: 3.9 or newer.
+- **pywin32**: installed automatically via `pip install hwpapi`.
+
+macOS / Linux are not supported because HWP's COM server is Windows-only.
+You can still run hwpapi's unit tests on Linux — they stub the COM layer
+— but anything that touches a live HWP instance must run on Windows.
+
+# Install from PyPI
+
+```bash
+pip install hwpapi
+```
+
+This pulls `hwpapi` plus `pywin32`. Confirm the install:
+
+```{python}
+import hwpapi
+print(hwpapi.__version__)
+```
+
+# Install from source
+
+```bash
+git clone https://github.com/JunDamin/hwpapi.git
+cd hwpapi
+pip install -e .
+```
+
+For building the documentation site (this site) locally, add the
+`docs` extra:
+
+```bash
+pip install -e ".[docs]"
+# Or, explicitly:
+pip install quartodoc griffe jupyter
+```
+
+The `docs` extra pulls in `quartodoc` (for auto-generated API pages)
+and `griffe` (the Python AST backend quartodoc uses).
+
+# The FilePathCheckerModuleExample DLL
+
+HWP ships a small DLL named `FilePathCheckerModuleExample.dll` that
+suppresses the "is this file safe to open?" dialog when you call
+`App.open(path)`. hwpapi auto-discovers it via `check_dll()` — if
+you're seeing an OS dialog pop up each time you open a file, install
+that module from your HWP installer or point hwpapi at it
+explicitly:
+
+```{python}
+#| eval: false
+from hwpapi import App
+app = App(dll_path="C:/hwpapi/FilePathCheckerModuleExample.dll")
+```
+
+# Verify the install
+
+The smoke test — launches HWP, opens a blank document, checks the
+version, and closes cleanly:
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.new()
+    print("HWP version:", app.engine.version)
+    print("Document text:", repr(app.doc.text))
+```
+
+If this prints the HWP version and `''` for text, you are good to go.
+
+Head to the [Quickstart](quickstart.qmd).
+
+# Troubleshooting
+
+**`ModuleNotFoundError: No module named 'win32com'`** — pywin32 didn't
+install correctly. Run `pip install --force-reinstall pywin32` and then
+`python Scripts\pywin32_postinstall.py -install` (as admin).
+
+**HWP pops up a security dialog every time you open a file** — the
+`FilePathCheckerModuleExample.dll` isn't registered. Pass `dll_path=`
+explicitly as shown above, or copy the DLL into the hwpapi install
+directory.
+
+**`ConnectionError: can't dispatch HwpObject`** — HWP isn't installed,
+or you're running from the Viewer edition, or COM registration is
+corrupted. Reinstall HWP and try again.
+
+**Ruby/Tk errors inside HWP on exit** — call `app.close()` before
+`app.quit()` or use the context manager form (`with App() as app:`)
+which does it for you.

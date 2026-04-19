@@ -1,0 +1,109 @@
+---
+title: "Bulk edit"
+subtitle: "Format N paragraphs / replace across M files"
+---
+
+Ported from `nbs/01_tutorials/05_usecase_bulk_edit.ipynb`.
+
+# 1. Apply a style to every heading paragraph
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.low.parametersets import CharShape
+
+with App() as app:
+    app.open("document.hwp")
+
+    headings = app.doc.paragraphs.filter(lambda p: p.style.startswith("제목"))
+    print(f"Found {len(headings)} headings")
+
+    shape = CharShape(Bold=True, TextColor="#1F4E79")
+    for h in headings:
+        h.charshape = shape
+
+    app.save()
+```
+
+# 2. Replace a phrase across every `.hwp` in a folder
+
+```{python}
+#| eval: false
+from pathlib import Path
+from hwpapi import App
+
+
+def replace_across(folder: Path, find: str, replace: str):
+    with App(is_visible=False) as app:
+        for hwp in sorted(folder.glob("*.hwp")):
+            app.open(str(hwp))
+            count = app.doc.replace_all(find, replace)
+            if count:
+                app.save()
+                print(f"{hwp.name}: {count} replacements")
+            app.close()
+
+
+replace_across(Path("reports"), "FY2025", "FY2026")
+```
+
+# 3. Batch-apply a charshape with undo grouping
+
+HWP's undo stack is per-document; wrapping a loop in an undo-group
+lets the user press Ctrl+Z once to revert the whole batch:
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.context import charshape_scope
+
+with App() as app:
+    app.open("document.hwp")
+
+    # Every sub-edit collapses into a single undo entry
+    with app.doc.scan() as scope:
+        for p in app.doc.paragraphs:
+            if "DRAFT" in p.text:
+                with charshape_scope(app, color="#E74C3C", bold=True):
+                    app.doc.select_text(p.start, p.end)
+                    # re-apply the scope's shape to the selection
+                    app.actions.CharShape.run()
+
+    app.save()
+```
+
+# 4. Aggregate statistics
+
+```{python}
+#| eval: false
+from collections import Counter
+from hwpapi import App
+
+with App() as app:
+    app.open("document.hwp")
+
+    styles = Counter(p.style for p in app.doc.paragraphs)
+    print("Most common styles:")
+    for style, n in styles.most_common(10):
+        print(f"  {n:5d}  {style}")
+
+    word_count = sum(len(p.text.split()) for p in app.doc.paragraphs)
+    print(f"\nTotal words: {word_count}")
+```
+
+# Performance tips
+
+- **Hide HWP** — `App(is_visible=False)` avoids window-flash overhead.
+- **Iterate, don't index** — `for p in app.doc.paragraphs` is cheaper
+  than `for i in range(len(app.doc.paragraphs)): app.doc.paragraphs[i]`
+  because the collection can stream without re-resolving.
+- **Batch saves** — save once per file, not per paragraph.
+- **Read-only vs. write** — reading 10 k paragraphs is ~1 s; writing
+  10 k paragraphs is 10× that. Filter first, then write only what
+  changed.
+
+# See also
+
+- [Recipe: batch-format](charshape-formatting.qmd) — formatting a
+  smaller scope
+- [Reference: ParagraphCollection](../reference/collections/paragraphs.qmd)

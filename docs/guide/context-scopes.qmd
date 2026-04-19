@@ -1,0 +1,140 @@
+---
+title: "Context scopes"
+subtitle: "charshape_scope, parashape_scope, styled_text"
+---
+
+# Why scopes?
+
+Three recurring patterns in HWP scripting:
+
+1. "Insert a few lines that all share one style, then continue with
+   the original cursor style."
+2. "Change a paragraph-level property (alignment, line spacing) for
+   the next block, then restore."
+3. "Drop in a single styled phrase inline."
+
+v1 handled these as `App.charshape_scope(...)`, `App.parashape_scope(...)`
+and `App.styled_text(...)`. v2 lifts all three out of `App` — they live
+at module level so they work uniformly against any `App` instance:
+
+```python
+from hwpapi.context import charshape_scope, parashape_scope, styled_text
+```
+
+# The decision tree
+
+```
+Single line with a tweak?                 → styled_text(app, "…", …)
+Multiple ops sharing char format?         → with charshape_scope(app, …):
+Paragraph alignment/line-spacing block?   → with parashape_scope(app, …):
+```
+
+# `charshape_scope` — block-level char formatting
+
+```{python}
+#| eval: false
+from hwpapi.context import charshape_scope
+
+with charshape_scope(app, bold=True, size=14, color="#C0392B"):
+    app.doc.insert_text("Heading\n")
+    app.doc.insert_text("Still bold red\n")
+# cursor style restored
+```
+
+Accepted friendly keys (alias → HWP CharShape key):
+
+| Friendly | HWP property |
+|---|---|
+| `bold` | `Bold` |
+| `italic` | `Italic` |
+| `underline` | `UnderlineType` |
+| `size`, `height` | `Height` (HWPUNIT, 100/pt) |
+| `color`, `text_color` | `TextColor` |
+| `shade_color` | `ShadeColor` |
+| `face`, `face_name`, `font` | `FaceNameHangul` |
+
+Any key not in the alias map is passed through unchanged — so
+`charshape_scope(app, Height=1200)` works for advanced users.
+
+The scope **snapshots** the cursor's current shape on enter (reading
+back the keys you're about to override), applies your overrides, and
+restores the snapshot on exit — even if the block raised.
+
+# `parashape_scope` — block-level paragraph formatting
+
+```{python}
+#| eval: false
+from hwpapi.context import parashape_scope
+
+with parashape_scope(app, align="center", line_spacing=180):
+    app.doc.insert_text("Centered paragraph\n")
+    app.doc.insert_text("Also centered, 180% leading\n")
+```
+
+Friendly keys:
+
+| Friendly | HWP property |
+|---|---|
+| `align`, `alignment` | `AlignType` |
+| `line_spacing` | `LineSpacing` |
+| `left_margin` | `LeftMargin` |
+| `right_margin` | `RightMargin` |
+| `indentation` | `Indentation` |
+| `prev_spacing` | `PrevSpacing` |
+| `next_spacing` | `NextSpacing` |
+
+For `align`, you can pass the string (`"left"`, `"center"`, `"right"`,
+`"justify"`, `"distribute"`) or the numeric code (`0`–`4`).
+
+# `styled_text` — one-shot inline insertion
+
+```{python}
+#| eval: false
+from hwpapi.context import styled_text
+
+app.doc.insert_text("This word is ")
+styled_text(app, "urgent", bold=True, color="#E74C3C")
+app.doc.insert_text(" and the rest is normal.\n")
+```
+
+Internally `styled_text` opens a `charshape_scope`, calls
+`InsertText` once, and lets the scope's `__exit__` restore. It's a
+plain function (not a context manager) so the closing restore is
+implicit.
+
+# Why not methods on `App`?
+
+Two reasons.
+
+1. **Composability.** You can drive scopes against a subset of a
+   script that only has a document handle, or across multiple
+   helpers that all receive `app`. Module-level functions keep the
+   dependency explicit.
+2. **Slim facade.** The v2 `App` commits to ≤15 public members. Each
+   scope was one of those 82 v1 `App` members — lifting them out was
+   mandatory, not stylistic.
+
+# Exception safety
+
+All three scopes use `contextlib.contextmanager` and wrap the body in
+`try/finally`. If your block raises, the cursor's shape is still
+restored before the exception propagates.
+
+```{python}
+#| eval: false
+try:
+    with charshape_scope(app, bold=True):
+        app.doc.insert_text("this works\n")
+        raise RuntimeError("boom")
+except RuntimeError:
+    pass
+# cursor is back to its pre-block style
+```
+
+# See also
+
+- [Reference: context.scopes](../reference/context/scopes.qmd)
+- [Elements](elements.qmd) — element-level formatting (alternative
+  when you have a specific paragraph/run handle)
+- [Migration guide](../getting-started/migration-v1-to-v2.qmd) — v1
+  `App.charshape_scope` → v2 `hwpapi.context.charshape_scope`

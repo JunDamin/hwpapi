@@ -1,0 +1,111 @@
+---
+title: "Fill form fields"
+subtitle: "Bulk-fill 누름틀 fields from a dict or CSV"
+---
+
+Fields (누름틀) are the cleanest way to build a template-driven
+document workflow. Every field has a stable name; you fill it by
+dict-assignment.
+
+# 1. The fundamentals
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.open("template.hwp")
+
+    # How many fields? What are they called?
+    print(len(app.doc.fields), "fields:")
+    for name in app.doc.fields.names():
+        print(" ", name, "=", app.doc.fields[name].value)
+
+    # Write one
+    app.doc.fields["author"] = "홍길동"
+
+    # Check existence
+    assert "author" in app.doc.fields
+
+    # Read back
+    print(app.doc.fields["author"].value)
+```
+
+# 2. Bulk-fill from a dict
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+data = {
+    "title": "2026 Q1 Report",
+    "author": "홍길동",
+    "date": "2026-04-19",
+    "department": "R&D",
+}
+
+with App() as app:
+    app.open("template.hwp")
+
+    for name, value in data.items():
+        if name in app.doc.fields:
+            app.doc.fields[name] = value
+        else:
+            print(f"[warn] template has no field named {name!r}")
+
+    app.save_as("reports/2026-q1.hwp")
+```
+
+# 3. Bulk-fill from a CSV
+
+```{python}
+#| eval: false
+import csv
+from pathlib import Path
+from hwpapi import App
+
+with App() as app:
+    app.open("template.hwp")
+
+    with open("employees.csv", newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            for name, value in row.items():
+                if name in app.doc.fields:
+                    app.doc.fields[name] = value
+
+            out = Path("out") / f"report-{row['id']}.hwp"
+            out.parent.mkdir(parents=True, exist_ok=True)
+            app.save_as(str(out))
+            print("wrote", out)
+```
+
+# 4. Navigate to a field
+
+```{python}
+#| eval: false
+# Move the cursor to a field (useful when you want to insert around it)
+app.doc.fields["author"].goto()
+
+# Then insert, format, etc.
+app.doc.insert_text("  (작성자)")
+```
+
+# 5. Clear or delete fields
+
+```{python}
+#| eval: false
+# Remove one
+del app.doc.fields["author"]
+
+# Remove all
+app.doc.fields.clear()
+
+# Rename (preserves value)
+app.doc.fields.rename("old", "new")
+```
+
+# See also
+
+- [Reference: collections/fields](../reference/collections/fields.qmd)
+- [Migration: field helpers](../getting-started/migration-v1-to-v2.qmd)

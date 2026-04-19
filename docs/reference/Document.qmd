@@ -1,0 +1,42 @@
+# Document
+
+Per-document facade — text, cursor, collections.
+
+# Document { #hwpapi.document.Document }
+
+```python
+document.Document(app)
+```
+
+Per-document façade for HWP operations.
+
+Obtained via :attr:`hwpapi.App.doc`. Holds a reference to the
+owning :class:`App`; does **not** own a COM handle.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type       | Description                                        | Default    |
+|--------|------------|----------------------------------------------------|------------|
+| app    | hwpapi.App | The owning :class:`~hwpapi.core.app.App` instance. | _required_ |
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> app = App()
+>>> doc = app.doc              # same instance on every access
+>>> len(doc.fields)            # number of 누름틀 fields
+0
+```
+
+## Attributes
+
+| Name | Description |
+| --- | --- |
+| [app](#hwpapi.document.Document.app) | The owning :class:`App` — escape hatch. |
+| [bookmarks](#hwpapi.document.Document.bookmarks) | Bookmark collection (책갈피). |
+| [fields](#hwpapi.document.Document.fields) | Field collection (누름틀). |
+| [hyperlinks](#hwpapi.document.Document.hyperlinks) | Hyperlink collection. |
+| [images](#hwpapi.document.Document.images) | Image collection. |
+| [paragraphs](#hwpapi.document.Document.paragraphs) | Paragraph collection (ordinal access). |
+| [styles](#hwpapi.document.Document.styles) | Paragraph-style collection (minimal, see module docstring). |
+| [tables](#hwpapi.document.Document.tables) | Table collection. |

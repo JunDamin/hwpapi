@@ -1,0 +1,77 @@
+# tables
+
+Table collection with Table/Cell elements.
+
+# tables.TableCollection { #hwpapi.collections.tables.TableCollection }
+
+```python
+collections.tables.TableCollection(app)
+```
+
+``doc.tables`` — tables in document order.
+
+# tables.Table { #hwpapi.collections.tables.Table }
+
+```python
+collections.tables.Table(app, ctrl, index)
+```
+
+Value object for a single table control.
+
+## Attributes
+
+| Name | Description |
+| --- | --- |
+| [caption](#hwpapi.collections.tables.Table.caption) | Caption text, or an empty string if the table has none. |
+| [cols](#hwpapi.collections.tables.Table.cols) | Number of columns in the table (0 if unknown). |
+| [name](#hwpapi.collections.tables.Table.name) | Best-effort display name — caption when present, else ordinal. |
+| [rows](#hwpapi.collections.tables.Table.rows) | Number of rows in the table (0 if unknown). |
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [cell](#hwpapi.collections.tables.Table.cell) | Return a :class:`Cell` for ``(row, col)`` (0-indexed). |
+
+### cell { #hwpapi.collections.tables.Table.cell }
+
+```python
+collections.tables.Table.cell(row, col)
+```
+
+Return a :class:`Cell` for ``(row, col)`` (0-indexed).
+
+# tables.Cell { #hwpapi.collections.tables.Cell }
+
+```python
+collections.tables.Cell(app, table, row, col)
+```
+
+Value object for a single table cell.
+
+Phase 4 surface: ``.text``, ``.address`` (A1-style), ``.select()``.
+Does not own a COM object — addresses are passed to the HWP engine
+on demand.
+
+## Attributes
+
+| Name | Description |
+| --- | --- |
+| [address](#hwpapi.collections.tables.Cell.address) | A1-style address (e.g. ``"B3"``). |
+| [text](#hwpapi.collections.tables.Cell.text) | Best-effort cell text. Selects the cell, reads the saved-block |
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [select](#hwpapi.collections.tables.Cell.select) | Navigate the caret to this cell. Selects the owning table first, |
+
+### select { #hwpapi.collections.tables.Cell.select }
+
+```python
+collections.tables.Cell.select()
+```
+
+Navigate the caret to this cell. Selects the owning table first,
+then uses ``SetCellAddr`` / ``TableCellBlock`` navigation. Returns
+``True`` on success, ``False`` on any COM error.

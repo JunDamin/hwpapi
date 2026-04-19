@@ -1,0 +1,157 @@
+---
+title: "ADR-002: Quarto single-pipeline documentation"
+subtitle: "docs/ is the one source of truth"
+---
+
+# Status
+
+**Accepted** — 2026-04-18
+
+Implemented in Phase 6 of the v2 redesign plan.
+
+# Context
+
+v1 of hwpapi produced documentation from three parallel sources:
+
+1. `nbs/` — Quarto + nbdev.yml (legacy, 13 tutorial notebooks + 5
+   API notebooks)
+2. `examples/` — seven hand-written `.py` scripts
+3. `docs/` — eleven Markdown planning/audit documents
+
+README linked to bits and pieces of each. There was no rendered
+API reference — users reading code had to grep through `__init__.py`
+wildcards.
+
+This fragmented authoring model had two costs:
+
+1. **No single source of truth.** A user searching for "how to fill a
+   field" got one answer from a nbs/ notebook, another from
+   examples/, a third from an inline README snippet, and none of them
+   were linked.
+2. **Maintenance divergence.** When the API moved, some sources
+   updated and others drifted.
+
+# Decision
+
+Adopt a single `docs/` Quarto website as the canonical documentation
+source:
+
+- `docs/_quarto.yml` — site configuration with navbar sections
+  matching the import tree 1:1 (Home / Getting Started / Guide /
+  Recipes / Reference / Design).
+- `docs/index.qmd` — hero page + 5-minute tour.
+- `docs/getting-started/` — install, quickstart, migration v1→v2.
+- `docs/guide/` — six conceptual pages (app-and-document, collections,
+  elements, context-scopes, units, low-level-escape-hatch).
+- `docs/recipes/` — task-first snippets ported from nbs/ and examples/.
+- `docs/reference/` — **auto-generated** by quartodoc from the
+  `hwpapi` package's docstrings. Tree mirrors import tree.
+- `docs/design/` — architecture notes and ADRs (including this one).
+
+Archive and delete pre-v2 documentation:
+
+- `docs/*.md` — moved to `docs/archive/`.
+- `nbs/` and `examples/` — archived in Phase 7 release work (not
+  this ADR's scope).
+- `nbs/nbdev.yml` — deleted.
+
+# Decision drivers
+
+1. **API-reference-centric site** — direct user request. Without a
+   rendered reference, users can't browse the surface.
+2. **IA ↔ code structure 1:1** — documentation sidebar items should
+   correspond to import tree nodes. Supports the v2 design principle
+   "documentation is the shape of the code".
+3. **Single maintenance burden** — one source of truth reduces the
+   "which doc is canonical?" question to zero.
+
+# Alternatives considered
+
+## MkDocs Material
+
+Pro: Python-native, widely deployed, excellent default theme.
+
+Con: Loses existing Quarto assets (nbs/ content). Worse support for
+computational pages (nbs/ used Jupyter kernel execution; Quarto
+preserves that natively).
+
+**Rejected** on asset-preservation grounds.
+
+## Two sites in parallel (nbs/ → tutorials, docs/ → reference)
+
+Pro: Minimum migration effort.
+
+Con: Violates the "single source of truth" principle. Invites the
+same drift the v1 state showed.
+
+**Rejected.**
+
+## Sphinx + autodoc + sphinx_book_theme
+
+Pro: Mature Python toolchain.
+
+Con: Markdown-first authoring via `myst_parser` is still less polished
+than Quarto's. Would require replacing Quarto anyway. More moving
+parts.
+
+**Rejected** given Quarto's existing adoption in the repo.
+
+# Consequences
+
+## Positive
+
+- One `quarto render docs/` produces the entire site.
+- `quartodoc build` regenerates the reference layer from docstrings —
+  the reference cannot drift from the code.
+- `docs/recipes/*.qmd` can stay readable (Markdown tables, inline
+  code) without executing HWP-dependent code blocks (marked
+  `eval: false`).
+- ADRs and architecture notes live alongside user documentation —
+  `design/` is just another sidebar section.
+
+## Negative
+
+- `quarto` and `quartodoc` are build-time dependencies for anyone
+  re-rendering the site. Mitigation: `pip install -e ".[docs]"`
+  captures both.
+- `quartodoc` has occasional quirks with Protocol classes and
+  `cached_property` descriptors. Mitigation: explicit `contents:`
+  listings in `_quarto.yml` name every page, rather than relying on
+  auto-discovery for core classes.
+
+## Neutral
+
+- Users no longer get example scripts under `examples/` — those now
+  live as recipe pages. `nbs/` tutorials similarly consolidate into
+  `docs/recipes/`. Phase 7 (release) is responsible for the final
+  archival move.
+
+# Implementation notes
+
+- **Theme**: cosmo light / darkly dark, via Quarto's built-in
+  Bootstrap Bootswatch set.
+- **Navbar**: pinned top bar with six top-level items matching the
+  sidebar sections.
+- **Sidebar**: per-section docked sidebar; `reference/` uses
+  `auto: "reference"` so new quartodoc-generated pages appear
+  automatically.
+- **Search**: Quarto's built-in Lunr search, overlay mode.
+- **Build**: `quartodoc build --config docs/_quarto.yml` writes the
+  reference pages; `quarto render docs/` compiles the full site.
+- **Execute policy**: `freeze: auto` at the site level. HWP-dependent
+  code blocks use `eval: false` explicitly — they are documentation
+  snippets, not runnable cells.
+
+# Follow-ups
+
+- Algolia-based search if Lunr is insufficient.
+- Automatic deployment via GitHub Actions (`deploy-docs.yaml`).
+- Cross-page interlinks — enable `render_interlinks: true` in
+  quartodoc once the reference is stable.
+
+# References
+
+- `.omc/plans/hwpapi_v2_redesign.md` — Phase 6 "Quarto 문서 사이트 신규"
+- [Quarto docs](https://quarto.org)
+- [quartodoc docs](https://machow.github.io/quartodoc/)
+- ADR-001 — the two-layer API whose shape this documentation mirrors

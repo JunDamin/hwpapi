@@ -1,0 +1,134 @@
+# low.actions
+
+900+ HWP action wrappers.
+
+# actions._Actions { #hwpapi.low.actions._Actions }
+
+```python
+low.actions._Actions(app)
+```
+
+Dynamic action dispatcher with instance caching.
+
+Actions are resolved via __getattr__ using the _action_info dict.
+Resolved _Action instances are cached so repeated access does not
+trigger repeated COM calls.
+
+Usage:
+    app.actions.CharShape           # cached _Action
+    app.actions.get_pset_class(...) # introspect without COM
+    app.actions.refresh()           # clear cache
+    'CharShape' in app.actions      # membership test
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [get_description](#hwpapi.low.actions._Actions.get_description) | Get action description without creating _Action. |
+| [get_pset_class](#hwpapi.low.actions._Actions.get_pset_class) | Get the ParameterSet class for an action WITHOUT creating _Action. |
+| [list_actions](#hwpapi.low.actions._Actions.list_actions) | List all available action names. |
+| [refresh](#hwpapi.low.actions._Actions.refresh) | Invalidate cache; next access creates fresh _Action with HWP defaults. |
+
+### get_description { #hwpapi.low.actions._Actions.get_description }
+
+```python
+low.actions._Actions.get_description(action_name)
+```
+
+Get action description without creating _Action.
+
+### get_pset_class { #hwpapi.low.actions._Actions.get_pset_class }
+
+```python
+low.actions._Actions.get_pset_class(action_name)
+```
+
+Get the ParameterSet class for an action WITHOUT creating _Action.
+
+This is a cheap introspection — no COM calls.
+
+Returns:
+    ParameterSet subclass, or None if the action has no pset.
+
+Raises:
+    KeyError: if action_name is unknown.
+
+### list_actions { #hwpapi.low.actions._Actions.list_actions }
+
+```python
+low.actions._Actions.list_actions(with_pset_only=False)
+```
+
+List all available action names.
+
+Args:
+    with_pset_only: if True, return only actions that have a ParameterSet.
+
+### refresh { #hwpapi.low.actions._Actions.refresh }
+
+```python
+low.actions._Actions.refresh(name=None)
+```
+
+Invalidate cache; next access creates fresh _Action with HWP defaults.
+
+Args:
+    name: action name to refresh. None clears entire cache.
+
+# actions._Action { #hwpapi.low.actions._Action }
+
+```python
+low.actions._Action(app, action_key)
+```
+
+한글 Action 클래스. `app.api.CreateAction()` 로 생성되는 HWP 액션을
+감싼 얇은 래퍼.
+
+**문서 바인딩 규칙 (v0.0.4+)**:
+`CreateAction()` 은 호출 시점의 **활성 문서** 에 바인딩된 action 을
+반환합니다. 과거에는 ``__init__`` 에서 한 번만 호출했기 때문에 이후
+다른 문서로 전환해도 action 이 원래 문서에 계속 writes 하는 버그가
+있었습니다.
+
+이제는 ``act`` 와 ``pset`` 을 **활성 문서 ID 별로 lazy-cache** 합니다.
+동일 문서에서는 캐시 히트, 다른 문서로 전환하면 자동으로 새 action 을
+생성합니다. Public API 는 기존과 동일합니다.
+
+## Attributes
+
+| Name | Description |
+| --- | --- |
+| [act](#hwpapi.low.actions._Action.act) | 현재 활성 문서에 바인딩된 IXHwpAction. |
+| [pset](#hwpapi.low.actions._Action.pset) | 현재 활성 문서에 바인딩된 wrapped ParameterSet. |
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [get_pset](#hwpapi.low.actions._Action.get_pset) | Return ParameterSet bound to global HParameterSet node (HAction pattern). |
+| [run](#hwpapi.low.actions._Action.run) | Execute the action using pset-based approach. |
+
+### get_pset { #hwpapi.low.actions._Action.get_pset }
+
+```python
+low.actions._Action.get_pset()
+```
+
+Return ParameterSet bound to global HParameterSet node (HAction pattern).
+
+This is the 'HAction' style described in HWP Automation docs (p.60):
+    HAction.GetDefault(actname, HParameterSet.HXxx.HSet)
+    HParameterSet.HXxx.<field> = value
+    HAction.Execute(actname, HParameterSet.HXxx.HSet)
+
+The returned ParameterSet shares state with the global HParameterSet,
+unlike `.pset` which uses a local pset from CreateSet().
+
+### run { #hwpapi.low.actions._Action.run }
+
+```python
+low.actions._Action.run(parameterset=None)
+```
+
+Execute the action using pset-based approach.
+Direct execution with pset objects without HSet synchronization.

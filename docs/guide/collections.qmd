@@ -1,0 +1,142 @@
+---
+title: "Collections"
+subtitle: "One pattern for every list-of-things in a Document"
+---
+
+# The pattern
+
+Every document-scoped aggregation in hwpapi v2 follows **one**
+interface — dict-like, iterable, sized, membership-testable,
+names-exposing, and predicate-filterable. The contract lives in
+[`hwpapi.collections.Collection`](../reference/index.qmd) as a
+`typing.Protocol`:
+
+```python
+from typing import Callable, Iterator, Protocol, runtime_checkable
+
+@runtime_checkable
+class Collection(Protocol):
+    def __getitem__(self, key): ...
+    def __iter__(self) -> Iterator: ...
+    def __len__(self) -> int: ...
+    def __contains__(self, key) -> bool: ...
+    def names(self) -> list[str]: ...
+    def filter(self, predicate: Callable[..., bool]) -> list: ...
+```
+
+Every concrete collection under `app.doc.*` implements this:
+
+| `app.doc.*` | Returns | Elements keyed by |
+|---|---|---|
+| `fields` | `FieldCollection` | field name |
+| `bookmarks` | `BookmarkCollection` | bookmark name |
+| `hyperlinks` | `HyperlinkCollection` | URL or index |
+| `images` | `ImageCollection` | image name or index |
+| `styles` | `StyleCollection` | style name |
+| `paragraphs` | `ParagraphCollection` | index (`int`) |
+| `tables` | `TableCollection` | table name or index |
+
+# The common moves
+
+Because every collection implements the same six methods, the same
+five operations work on all of them:
+
+```{python}
+#| eval: false
+coll = app.doc.fields                 # or bookmarks, images, ...
+
+len(coll)                             # count
+"author" in coll                      # membership
+for item in coll: ...                 # iterate
+coll["author"]                        # by key → element
+coll.names()                          # list of keys
+coll.filter(lambda f: "head" in f.name)   # list[Element] where predicate holds
+```
+
+Collections that support mutation add `__setitem__`, `__delitem__`,
+and `clear()`:
+
+```{python}
+#| eval: false
+app.doc.fields["author"] = "홍길동"    # write
+del app.doc.fields["author"]          # remove one
+app.doc.fields.clear()                # remove all
+```
+
+# Element value objects
+
+Subscripting a collection returns a lightweight **element** object:
+
+- `fields[name]` → [`Field`](../reference/collections/fields.qmd) —
+  `.name`, `.value`, `.goto()`
+- `bookmarks[name]` → [`Bookmark`](../reference/collections/bookmarks.qmd) —
+  `.name`, `.goto()`
+- `hyperlinks[key]` → [`Hyperlink`](../reference/collections/hyperlinks.qmd)
+- `images[key]` → [`Image`](../reference/collections/images.qmd)
+- `paragraphs[i]` → [`Paragraph`](../reference/collections/paragraphs.qmd) —
+  `.text`, `.style`, `.charshape`, `.parashape`, `.runs`
+- `styles[name]` → [`Style`](../reference/collections/styles.qmd)
+- `tables[key]` → [`Table`](../reference/collections/tables.qmd) —
+  `.cell(row, col)`, `.rows`, `.cols`
+
+Elements are *value objects*: constructing one does not touch COM.
+Reading a property like `field.value` or `paragraph.text` is what
+triggers the COM call. This matters when you iterate —
+`for p in app.doc.paragraphs: p.text` pays one COM hit per `text`
+read, not one per construction.
+
+# Recipes
+
+## Bulk-fill form fields from a dict
+
+```{python}
+#| eval: false
+data = {"author": "홍길동", "date": "2026-04-19", "title": "보고서"}
+
+for name, value in data.items():
+    if name in app.doc.fields:
+        app.doc.fields[name] = value
+```
+
+## Find all paragraphs that use a specific style
+
+```{python}
+#| eval: false
+para = app.doc.paragraphs.filter(lambda p: p.style == "Heading 1")
+print(f"{len(para)} heading 1 paragraphs")
+```
+
+## Rename a bookmark
+
+```{python}
+#| eval: false
+if "old-name" in app.doc.bookmarks:
+    app.doc.bookmarks.rename("old-name", "new-name")
+```
+
+## List every image in the document
+
+```{python}
+#| eval: false
+for img in app.doc.images:
+    print(img.name, img.width, img.height)
+```
+
+# Migration note
+
+In v1, these lived on `App` directly:
+
+| v1 | v2 |
+|---|---|
+| `app.fields` | `app.doc.fields` |
+| `app.bookmarks` | `app.doc.bookmarks` |
+| `app.hyperlinks` | `app.doc.hyperlinks` |
+| `app.images` | `app.doc.images` |
+| `app.styles` | `app.doc.styles` |
+| `app.field_names` | `app.doc.fields.names()` |
+| `app.field_exists(n)` | `n in app.doc.fields` |
+| `app.delete_field(n)` | `del app.doc.fields[n]` |
+| `app.delete_all_fields()` | `app.doc.fields.clear()` |
+
+See the [migration guide](../getting-started/migration-v1-to-v2.qmd) for
+the complete table.

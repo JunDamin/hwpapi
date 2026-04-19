@@ -1,0 +1,116 @@
+---
+title: "Find and replace"
+subtitle: "From simple replace_all to nested shape constraints"
+---
+
+Ported from `examples/find_replace.py` + `nbs/01_tutorials/02_find_and_replace.ipynb`.
+
+# 1. Simple replace
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.new()
+    app.doc.insert_text("Hello world. Hello universe. Hello python.\n")
+
+    # Jump to a first match (cursor moves; returns bool)
+    found = app.doc.find_text("Hello")
+    print("find_text('Hello') →", found)
+
+    # Replace all occurrences
+    count = app.doc.replace_all("Hello", "Hi")
+    print(f"replace_all('Hello' → 'Hi'): {count} replacements")
+```
+
+# 2. Detailed FindReplace ParameterSet
+
+For wildcard / case-sensitivity / whole-word constraints, drop to the
+`AllReplace` action and configure its ParameterSet:
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.new()
+    app.doc.insert_text("Old text. Some other text. Old text again.\n")
+
+    action = app.actions.AllReplace
+    ps = action.pset  # FindReplace ParameterSet
+
+    ps.FindString = "Old"
+    ps.ReplaceString = "NEW"
+    ps.IgnoreCase = 0            # case-sensitive
+    ps.WholeWordOnly = 0
+    ps.UseWildCards = 0
+
+    action.run()
+    print("Replaced 'Old' → 'NEW' (case-sensitive)")
+```
+
+# 3. Find with formatting constraints
+
+`FindReplace.find_char_shape` is an auto-creating nested ParameterSet.
+On first access, it calls `CreateItemSet` internally — no manual
+construction needed:
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.new()
+    action = app.actions.FindReplace
+    ps = action.pset
+
+    ps.FindString = "important"
+
+    # Auto-creating nested ParameterSet
+    ps.find_char_shape.Bold = True   # only find BOLD occurrences
+    print("FindCharShape.Bold set:", ps.find_char_shape.Bold)
+
+    # action.run() would actually find the text; skipped here
+```
+
+# 4. Snapshot / restore via clone
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    action = app.actions.FindReplace
+    ps = action.pset
+
+    original = ps.clone()
+    print("Snapshot:", repr(original))
+
+    ps.FindString = "temporary"
+    ps.IgnoreCase = 1
+    print("Changed:", repr(ps))
+    print("is_equivalent(original):", ps.is_equivalent(original))
+
+    ps.update_from(original)
+    print("Restored:", repr(ps))
+```
+
+# 5. Which find-like actions exist?
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    for name in ['FindReplace', 'AllReplace', 'ForwardFind', 'BackwardFind']:
+        if name in app.actions:
+            cls = app.actions.get_pset_class(name)
+            desc = app.actions.get_description(name)
+            print(f"{name} → {cls.__name__ if cls else 'None'}: {desc}")
+```
+
+# See also
+
+- [Reference: low.actions](../reference/low/actions.qmd)
+- [Reference: low.parametersets](../reference/low/parametersets.qmd)

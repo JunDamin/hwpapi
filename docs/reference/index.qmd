@@ -1,0 +1,77 @@
+# API Reference {.doc .doc-index}
+
+## Top-level facade
+
+The two classes every user starts from. `App` owns the COM engine
+lifecycle; `Document` owns per-document state via `app.doc`.
+
+
+| | |
+| --- | --- |
+| [App](App.qmd) | Slim facade — lifecycle + window-level concerns. |
+| [Document](Document.qmd) | Per-document facade — text, cursor, collections. |
+
+## Collections
+
+Dict-like + iterable + filterable collections under `app.doc.*`.
+Every collection implements the `Collection` Protocol.
+
+
+| | |
+| --- | --- |
+| [fields](collections/fields.qmd) | Field (누름틀) collection. |
+| [bookmarks](collections/bookmarks.qmd) | Bookmark (책갈피) collection. |
+| [hyperlinks](collections/hyperlinks.qmd) | Hyperlink collection. |
+| [images](collections/images.qmd) | Image collection. |
+| [paragraphs](collections/paragraphs.qmd) | Paragraph collection with Run element. |
+| [styles](collections/styles.qmd) | Style collection. |
+| [tables](collections/tables.qmd) | Table collection with Table/Cell elements. |
+
+## Context managers
+
+Formatting scopes extracted from the v1 App. All three live at
+module level so you can drive them from any `App` instance.
+
+
+| | |
+| --- | --- |
+| [context.scopes](context/scopes.qmd) | charshape_scope / parashape_scope / styled_text. |
+
+## I/O and export
+
+Thin, error-wrapping shortcuts over the raw COM open/save calls.
+
+
+| | |
+| --- | --- |
+| [io.open](io/open.qmd) | open_file / new_document. |
+| [io.export](io/export.qmd) | export_pdf / export_image / export_text. |
+
+## Errors
+
+Exception hierarchy every public call promises to raise.
+
+| | |
+| --- | --- |
+| [errors](errors.qmd) | HwpApiError and subclasses. |
+
+## Units
+
+mm / cm / inch / pt ↔ HWPUNIT conversion helpers.
+
+| | |
+| --- | --- |
+| [units](units.qmd) | Unit conversion module. |
+
+## Low-level escape hatch
+
+Raw action wrappers, ParameterSet classes, and the COM engine.
+Prefer the top-level facade unless you need something the
+facade does not expose yet.
+
+
+| | |
+| --- | --- |
+| [low.actions](low/actions.qmd) | 900+ HWP action wrappers. |
+| [low.engine](low/engine.qmd) | Engine / Engines / Apps. |
+| [low.parametersets](low/parametersets.qmd) | ParameterSet classes (CharShape, ParaShape, ...). |

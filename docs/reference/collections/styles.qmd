@@ -1,0 +1,58 @@
+# styles
+
+Style collection.
+
+# styles.StyleCollection { #hwpapi.collections.styles.StyleCollection }
+
+```python
+collections.styles.StyleCollection(app)
+```
+
+``doc.styles`` — paragraph-style collection (minimal Phase 3 impl).
+
+Enumeration requires a live HWP runtime because HWP COM doesn't
+expose a direct style list. This stub is Protocol-compliant; full
+enumeration will land after Phase 4 when the HWPML-export path
+is ported over from ``hwpapi/classes/styles.py``.
+
+## Attributes
+
+| Name | Description |
+| --- | --- |
+| [current](#hwpapi.collections.styles.StyleCollection.current) | Paragraph style currently applied at the cursor, or ``None``. |
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [names](#hwpapi.collections.styles.StyleCollection.names) | Empty until HWPML-based enumeration is ported. |
+
+### names { #hwpapi.collections.styles.StyleCollection.names }
+
+```python
+collections.styles.StyleCollection.names()
+```
+
+Empty until HWPML-based enumeration is ported.
+
+# styles.Style { #hwpapi.collections.styles.Style }
+
+```python
+collections.styles.Style(app, name, index=None)
+```
+
+Value object for a single paragraph style.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [apply](#hwpapi.collections.styles.Style.apply) | Apply this style to the current cursor paragraph. |
+
+### apply { #hwpapi.collections.styles.Style.apply }
+
+```python
+collections.styles.Style.apply()
+```
+
+Apply this style to the current cursor paragraph.

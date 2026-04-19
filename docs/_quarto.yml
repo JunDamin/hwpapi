@@ -1,0 +1,331 @@
+project:
+  type: website
+  output-dir: _site
+  preview:
+    port: 4200
+    browser: false
+  # Exclude legacy v1 docs from render. They live here as a historical
+  # reference only — not part of the v2 navigation tree.
+  render:
+    - "*.qmd"
+    - "!archive/"
+
+website:
+  title: "hwpapi"
+  description: "Python COM wrapper for HWP (한컴오피스 한글) — slim App facade, dict-like collections, escape hatch to raw actions."
+  site-url: https://JunDamin.github.io/hwpapi
+  repo-url: https://github.com/JunDamin/hwpapi
+  repo-actions: [edit, issue]
+  page-navigation: true
+  back-to-top-navigation: true
+  search:
+    location: navbar
+    type: overlay
+  navbar:
+    background: primary
+    pinned: true
+    logo: _assets/logo.png
+    left:
+      - text: Home
+        file: index.qmd
+      - text: Getting Started
+        file: getting-started/install.qmd
+      - text: Guide
+        file: guide/app-and-document.qmd
+      - text: Recipes
+        file: recipes/index.qmd
+      - text: Reference
+        file: reference/index.qmd
+      - text: Design
+        file: design/index.qmd
+    right:
+      - icon: github
+        href: https://github.com/JunDamin/hwpapi
+        aria-label: GitHub
+  sidebar:
+    - title: "Getting Started"
+      style: docked
+      align: left
+      contents:
+        - getting-started/install.qmd
+        - getting-started/quickstart.qmd
+        - getting-started/migration-v1-to-v2.qmd
+    - title: "Guide"
+      style: docked
+      align: left
+      contents:
+        - guide/app-and-document.qmd
+        - guide/collections.qmd
+        - guide/elements.qmd
+        - guide/context-scopes.qmd
+        - guide/units.qmd
+        - guide/low-level-escape-hatch.qmd
+    - title: "Recipes"
+      style: docked
+      align: left
+      contents:
+        - recipes/index.qmd
+        - recipes/quickstart-tour.qmd
+        - recipes/find-replace.qmd
+        - recipes/fill-fields.qmd
+        - recipes/charshape-formatting.qmd
+        - recipes/mail-merge.qmd
+        - recipes/bulk-edit.qmd
+        - recipes/data-to-table.qmd
+        - recipes/report-generation.qmd
+        - recipes/presets-gallery.qmd
+        - recipes/debugging-tools.qmd
+    - title: "Reference"
+      style: docked
+      align: left
+      contents:
+        - reference/index.qmd
+        - auto: "reference"
+    - title: "Design"
+      style: docked
+      align: left
+      contents:
+        - design/index.qmd
+        - design/architecture.qmd
+        - section: "ADRs"
+          contents:
+            - design/adr/adr-001-v2-redesign.qmd
+            - design/adr/adr-002-quarto-docs.qmd
+  page-footer:
+    left: "hwpapi v2.0 · Python COM wrapper for HWP"
+    right:
+      - text: "GitHub"
+        href: https://github.com/JunDamin/hwpapi
+      - text: "PyPI"
+        href: https://pypi.org/project/hwpapi/
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    css: _assets/styles.css
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    code-copy: true
+    code-overflow: wrap
+    code-block-bg: true
+    code-block-border-left: "#4582EC"
+    highlight-style: github
+    link-external-newwindow: true
+    anchor-sections: true
+    smooth-scroll: true
+
+# Freeze computational output by default. HWP-dependent code blocks
+# use `eval: false` at the chunk level (see individual .qmd pages).
+execute:
+  freeze: auto
+  echo: true
+  warning: false
+  error: false
+
+# Quartodoc API reference generation
+quartodoc:
+  style: pkgdown
+  dir: reference
+  package: hwpapi
+  title: API Reference
+  sidebar: reference/_sidebar.yml
+  render_interlinks: false
+  options:
+    include_inherited: false
+    signature_name: relative
+  sections:
+    - title: Top-level facade
+      desc: |
+        The two classes every user starts from. `App` owns the COM engine
+        lifecycle; `Document` owns per-document state via `app.doc`.
+      contents:
+        - kind: page
+          path: App
+          package: hwpapi.core.app
+          summary:
+            name: "App"
+            desc: "Slim facade — lifecycle + window-level concerns."
+          contents:
+            - name: App
+        - kind: page
+          path: Document
+          package: hwpapi.document
+          summary:
+            name: "Document"
+            desc: "Per-document facade — text, cursor, collections."
+          contents:
+            - name: Document
+    - title: Collections
+      desc: |
+        Dict-like + iterable + filterable collections under `app.doc.*`.
+        Every collection implements the `Collection` Protocol.
+      package: hwpapi.collections
+      contents:
+        - kind: page
+          path: collections/fields
+          summary:
+            name: fields
+            desc: "Field (누름틀) collection."
+          contents:
+            - name: fields.FieldCollection
+            - name: fields.Field
+        - kind: page
+          path: collections/bookmarks
+          summary:
+            name: bookmarks
+            desc: "Bookmark (책갈피) collection."
+          contents:
+            - name: bookmarks.BookmarkCollection
+            - name: bookmarks.Bookmark
+        - kind: page
+          path: collections/hyperlinks
+          summary:
+            name: hyperlinks
+            desc: "Hyperlink collection."
+          contents:
+            - name: hyperlinks.HyperlinkCollection
+            - name: hyperlinks.Hyperlink
+        - kind: page
+          path: collections/images
+          summary:
+            name: images
+            desc: "Image collection."
+          contents:
+            - name: images.ImageCollection
+            - name: images.Image
+        - kind: page
+          path: collections/paragraphs
+          summary:
+            name: paragraphs
+            desc: "Paragraph collection with Run element."
+          contents:
+            - name: paragraphs.ParagraphCollection
+            - name: paragraphs.Paragraph
+            - name: paragraphs.Run
+        - kind: page
+          path: collections/styles
+          summary:
+            name: styles
+            desc: "Style collection."
+          contents:
+            - name: styles.StyleCollection
+            - name: styles.Style
+        - kind: page
+          path: collections/tables
+          summary:
+            name: tables
+            desc: "Table collection with Table/Cell elements."
+          contents:
+            - name: tables.TableCollection
+            - name: tables.Table
+            - name: tables.Cell
+    - title: Context managers
+      desc: |
+        Formatting scopes extracted from the v1 App. All three live at
+        module level so you can drive them from any `App` instance.
+      package: hwpapi.context
+      contents:
+        - kind: page
+          path: context/scopes
+          summary:
+            name: context.scopes
+            desc: "charshape_scope / parashape_scope / styled_text."
+          contents:
+            - name: scopes.charshape_scope
+            - name: scopes.parashape_scope
+            - name: scopes.styled_text
+    - title: I/O and export
+      desc: |
+        Thin, error-wrapping shortcuts over the raw COM open/save calls.
+      package: hwpapi.io
+      contents:
+        - kind: page
+          path: io/open
+          summary:
+            name: io.open
+            desc: "open_file / new_document."
+          contents:
+            - name: open.open_file
+            - name: open.new_document
+        - kind: page
+          path: io/export
+          summary:
+            name: io.export
+            desc: "export_pdf / export_image / export_text."
+          contents:
+            - name: export.export_pdf
+            - name: export.export_image
+            - name: export.export_text
+    - title: Errors
+      desc: Exception hierarchy every public call promises to raise.
+      package: hwpapi
+      contents:
+        - kind: page
+          path: errors
+          summary:
+            name: errors
+            desc: "HwpApiError and subclasses."
+          contents:
+            - name: errors.HwpApiError
+            - name: errors.ConnectionError
+            - name: errors.ActionFailedError
+            - name: errors.InvalidArgumentError
+            - name: errors.FileIOError
+            - name: errors.wrap_com_error
+    - title: Units
+      desc: mm / cm / inch / pt ↔ HWPUNIT conversion helpers.
+      package: hwpapi
+      contents:
+        - kind: page
+          path: units
+          summary:
+            name: units
+            desc: "Unit conversion module."
+          contents:
+            - name: units.mm
+            - name: units.cm
+            - name: units.inch
+            - name: units.pt
+            - name: units.to_mm
+            - name: units.to_cm
+            - name: units.to_inch
+            - name: units.to_pt
+            - name: units.parse
+    - title: Low-level escape hatch
+      desc: |
+        Raw action wrappers, ParameterSet classes, and the COM engine.
+        Prefer the top-level facade unless you need something the
+        facade does not expose yet.
+      package: hwpapi.low
+      contents:
+        - kind: page
+          path: low/actions
+          summary:
+            name: low.actions
+            desc: "900+ HWP action wrappers."
+          contents:
+            - name: actions._Actions
+            - name: actions._Action
+        - kind: page
+          path: low/engine
+          summary:
+            name: low.engine
+            desc: "Engine / Engines / Apps."
+          contents:
+            - name: engine.Engine
+            - name: engine.Engines
+            - name: engine.Apps
+        - kind: page
+          package: hwpapi.low.parametersets
+          path: low/parametersets
+          summary:
+            name: low.parametersets
+            desc: "ParameterSet classes (CharShape, ParaShape, ...)."
+          contents:
+            - name: base.ParameterSet
+            - name: base.ParameterSetMeta
+            - name: properties.PropertyDescriptor
+            - name: backends.PsetBackend

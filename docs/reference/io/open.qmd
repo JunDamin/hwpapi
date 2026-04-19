@@ -1,0 +1,43 @@
+# io.open
+
+open_file / new_document.
+
+# open.open_file { #hwpapi.io.open.open_file }
+
+```python
+io.open.open_file(app, path, format=None)
+```
+
+Open ``path`` in ``app`` and return the absolute path opened.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type        | Description                                                                            | Default    |
+|--------|-------------|----------------------------------------------------------------------------------------|------------|
+| app    | hwpapi.App  | Live App instance.                                                                     | _required_ |
+| path   | str \| Path | File path (relative resolved against cwd).                                             | _required_ |
+| format | str         | HWP format string (``"HWP"``, ``"PDF"``, ``"HWPX"`` …). ``None`` lets HWP auto-detect. | `None`     |
+
+## Raises {.doc-section .doc-section-raises}
+
+| Name   | Type        | Description                                                                            |
+|--------|-------------|----------------------------------------------------------------------------------------|
+|        | FileIOError | Wraps any COM error raised by :meth:`App.open`, with the path included in the message. |
+
+# open.new_document { #hwpapi.io.open.new_document }
+
+```python
+io.open.new_document(is_visible=True)
+```
+
+Create a fresh :class:`~hwpapi.App` backed by a blank document.
+
+Thin helper around :meth:`hwpapi.App.new` — prefer this when reading
+linearly in io-heavy scripts so the ``hwpapi.io`` namespace exposes
+the full open/new/export lifecycle.
+
+## Raises {.doc-section .doc-section-raises}
+
+| Name   | Type        | Description                                                                                                 |
+|--------|-------------|-------------------------------------------------------------------------------------------------------------|
+|        | FileIOError | If the underlying :meth:`App.new` raises a COM error (rare — usually means HWP can't be dispatched at all). |

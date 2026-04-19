@@ -1,0 +1,103 @@
+---
+title: "Character formatting"
+subtitle: "Bold, color, size — via scopes and ParameterSets"
+---
+
+Ported from `examples/charshape_bold.py`.
+
+# 1. Scope-based — the ordinary case
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.context import charshape_scope
+from hwpapi import units as U
+
+with App() as app:
+    app.new()
+
+    with charshape_scope(app, bold=True, size=U.pt(14), color="#C0392B"):
+        app.doc.insert_text("This line is bold 14pt red\n")
+    # Cursor style restored here
+    app.doc.insert_text("Back to default\n")
+```
+
+# 2. Element-based — for a specific paragraph
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.low.parametersets import CharShape
+
+with App() as app:
+    app.open("report.hwp")
+
+    para0 = app.doc.paragraphs[0]
+    para0.charshape = CharShape(Bold=True, Height=1800, TextColor="#000080")
+```
+
+# 3. Tweak a single attribute
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.open("report.hwp")
+
+    # Read current shape, mutate one key, write back
+    cs = app.doc.paragraphs[0].charshape
+    cs.Italic = True
+    app.doc.paragraphs[0].charshape = cs
+```
+
+# 4. Snapshot / restore via clone
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.new()
+    app.doc.insert_text("Snapshot test.\n")
+    app.doc.select_all()
+
+    action = app.actions.CharShape
+    ps = action.pset
+
+    # Snapshot — native pset.Clone()
+    original = ps.clone()
+    print(f"Snapshot: Bold={original.Bold}, Italic={original.Italic}")
+
+    # Apply temporary changes
+    ps.Bold = True
+    ps.Italic = True
+    ps.TextColor = "#00FF00"
+    action.run()
+    print("Applied temporary formatting.")
+
+    # Restore from snapshot
+    ps.update_from(original)
+    action.run()
+    print("Restored original formatting.")
+```
+
+# 5. Introspect without running
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    cls = app.actions.get_pset_class("CharShape")
+    desc = app.actions.get_description("CharShape")
+    print(f"CharShape → {cls.__name__}: {desc}")
+    print(f"Has {len(cls._property_registry)} properties")
+    print(f"First 5: {list(cls._property_registry.keys())[:5]}")
+```
+
+# See also
+
+- [Guide: context scopes](../guide/context-scopes.qmd)
+- [Reference: context.scopes](../reference/context/scopes.qmd)
+- [Reference: low.parametersets](../reference/low/parametersets.qmd)

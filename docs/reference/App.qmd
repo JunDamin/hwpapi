@@ -1,0 +1,152 @@
+# App
+
+Slim facade — lifecycle + window-level concerns.
+
+# App { #hwpapi.core.app.App }
+
+```python
+core.app.App(new_app=False, is_visible=True, dll_path=None, engine=None)
+```
+
+High-level v2 façade for HWP (한글) automation.
+
+The slim v2 :class:`App` owns an :class:`~hwpapi.low.engine.Engine`
+and exposes only lifecycle + window-level concerns. All
+document-scoped operations live on :attr:`doc`.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name       | Type           | Description                                                                                                   | Default   |
+|------------|----------------|---------------------------------------------------------------------------------------------------------------|-----------|
+| new_app    | bool           | If ``True`` spawn a fresh engine; otherwise reuse the most recently opened one (or create one if none exist). | `False`   |
+| is_visible | bool           | Initial visibility of the HWP main window.                                                                    | `True`    |
+| dll_path   | str \| None    | Path to ``FilePathCheckerModuleExample.dll``. Auto-discovered when omitted.                                   | `None`    |
+| engine     | Engine \| None | Pre-built engine to wrap. Rare — primarily for tests.                                                         | `None`    |
+
+## Examples {.doc-section .doc-section-examples}
+
+```python
+>>> with App() as app:
+...     app.open("report.hwp")
+...     app.doc.text                 # document text (→ Document)
+...     app.save_as("report.pdf")
+```
+
+## Attributes
+
+| Name | Description |
+| --- | --- |
+| [api](#hwpapi.core.app.App.api) | Read-only COM handle — thin alias for ``self.engine.impl``. |
+| [doc](#hwpapi.core.app.App.doc) | Cached :class:`hwpapi.document.Document` façade bound to this App. |
+| [visible](#hwpapi.core.app.App.visible) | HWP main-window visibility — read/write. |
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [close](#hwpapi.core.app.App.close) | Close the active document (``FileClose`` command). |
+| [new](#hwpapi.core.app.App.new) | Create an :class:`App` backed by a brand-new HWP document. |
+| [open](#hwpapi.core.app.App.open) | Open a document in HWP. Returns the absolute path opened. |
+| [quit](#hwpapi.core.app.App.quit) | Terminate the HWP engine (``FileQuit`` command). |
+| [reload](#hwpapi.core.app.App.reload) | Rebind this :class:`App` to a fresh/updated engine. |
+| [save](#hwpapi.core.app.App.save) | Save the active document. |
+| [save_as](#hwpapi.core.app.App.save_as) | v2 rename of v1 ``save_block``: save the active document |
+
+### close { #hwpapi.core.app.App.close }
+
+```python
+core.app.App.close(save=False)
+```
+
+Close the active document (``FileClose`` command).
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type   | Description                                                                                              | Default   |
+|--------|--------|----------------------------------------------------------------------------------------------------------|-----------|
+| save   | bool   | If ``True`` save before closing. HWP prompts by default; the caller can set this to force the save path. | `False`   |
+
+### new { #hwpapi.core.app.App.new }
+
+```python
+core.app.App.new(is_visible=True)
+```
+
+Create an :class:`App` backed by a brand-new HWP document.
+
+v2 rename of v1 ``App.new_document(is_tab=True)``. Replaces the
+document-level helper with a constructor-shaped factory so the
+returned object is the usual App handle.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+| Name       | Type   | Description                                  | Default   |
+|------------|--------|----------------------------------------------|-----------|
+| is_visible | bool   | Initial window visibility. Default ``True``. | `True`    |
+
+#### Returns {.doc-section .doc-section-returns}
+
+| Name   | Type   | Description                                                |
+|--------|--------|------------------------------------------------------------|
+|        | App    | Fresh :class:`App` bound to a brand-new engine + document. |
+
+### open { #hwpapi.core.app.App.open }
+
+```python
+core.app.App.open(path, format=None, arg='')
+```
+
+Open a document in HWP. Returns the absolute path opened.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type        | Description                                                                                                    | Default    |
+|--------|-------------|----------------------------------------------------------------------------------------------------------------|------------|
+| path   | str \| Path | File path (relative paths are resolved against cwd).                                                           | _required_ |
+| format | str         | Forwarded to ``HwpObject.Open`` when provided (HWP's extended-open signature). Omit for the default behaviour. | `None`     |
+| arg    | str         | Forwarded to ``HwpObject.Open`` when provided (HWP's extended-open signature). Omit for the default behaviour. | `None`     |
+
+### quit { #hwpapi.core.app.App.quit }
+
+```python
+core.app.App.quit()
+```
+
+Terminate the HWP engine (``FileQuit`` command).
+
+### reload { #hwpapi.core.app.App.reload }
+
+```python
+core.app.App.reload(new_app=False, dll_path=None)
+```
+
+Rebind this :class:`App` to a fresh/updated engine.
+
+Useful after DLL reinstall or when the HWP process has exited
+out from under the Python binding. Also invalidates the cached
+:attr:`doc`.
+
+### save { #hwpapi.core.app.App.save }
+
+```python
+core.app.App.save(path=None, format=None, arg='')
+```
+
+Save the active document.
+
+Without ``path`` performs an in-place save (``HwpObject.Save``).
+With ``path`` performs a ``SaveAs`` using the file-extension-
+derived format — ``.hwp``, ``.pdf``, ``.hwpx``, ``.hml``, ``.png``,
+``.txt``, ``.docx`` are recognised.
+
+### save_as { #hwpapi.core.app.App.save_as }
+
+```python
+core.app.App.save_as(path, format=None, arg='')
+```
+
+v2 rename of v1 ``save_block``: save the active document
+selection/block to ``path``.
+
+Extension-sniffed format set matches v1: ``.hwp``, ``.pdf``,
+``.hwpx`` (HWPML2X), ``.png``.

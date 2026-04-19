@@ -1,0 +1,87 @@
+---
+title: "Presets gallery"
+subtitle: "Pre-built formatting macros — highlight, shade, rule lines"
+---
+
+Ported from `nbs/01_tutorials/11_presets_gallery.ipynb`.
+
+`hwpapi.presets` bundles small, opinionated helpers for things that
+aren't worth re-writing every script. They all take an `App` first.
+
+# Highlight (형광펜)
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.presets import highlight_yellow, highlight_cyan, highlight_green
+
+with App() as app:
+    app.open("report.hwp")
+
+    # Jump to a phrase, select it, then highlight
+    app.doc.find_text("important")
+    app.doc.select_text(start=None, end=None)   # select the matched word
+    highlight_yellow(app)
+```
+
+`presets.highlight_yellow` / `highlight_cyan` / `highlight_green` all
+drive the same underlying action — they just pre-fill the `ShadeColor`.
+
+# Cell shading
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.presets import shade_cell_light_grey, shade_cell_accent
+
+with App() as app:
+    app.open("report.hwp")
+    tbl = app.doc.tables[0]
+
+    # Header row — accent
+    for c in range(tbl.cols):
+        tbl.cell(0, c).goto()
+        shade_cell_accent(app)
+
+    # Alternating stripe on data rows
+    for r in range(1, tbl.rows, 2):
+        for c in range(tbl.cols):
+            tbl.cell(r, c).goto()
+            shade_cell_light_grey(app)
+```
+
+# Insert a horizontal rule
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.presets import rule_line_thin, rule_line_thick
+
+with App() as app:
+    app.new()
+    app.doc.insert_text("Section A\n")
+    rule_line_thin(app)
+    app.doc.insert_text("\nSection B\n")
+    rule_line_thick(app)
+```
+
+# Why presets are a separate module
+
+Presets are the layer above the facade. Each one is a few lines of
+`hwpapi.context.scopes` + `hwpapi.low.actions`. They exist to:
+
+- capture team-style conventions in one place (same accent color
+  everywhere, same stroke width)
+- avoid repeating a dozen parameter-set tweaks at every call site
+- document which parameter combinations are "known-good" with the
+  current HWP version (highlight has a bleed-safe fallback, see the
+  module docstring)
+
+If a preset doesn't fit, read its source — it's the shortest tutorial
+on how to call the underlying action directly.
+
+# See also
+
+- [Reference: hwpapi.presets](../reference/index.qmd) (listed via
+  auto-discovery when the package grows)
+- [Recipe: charshape-formatting](charshape-formatting.qmd)

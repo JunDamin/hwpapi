@@ -1,0 +1,80 @@
+name: Deploy docs to GitHub Pages
+
+# v2 Quarto documentation site. Renders docs/ (Home / Getting Started /
+# Guide / Recipes / Reference / Design) into docs/_site/ and publishes
+# the artifact via actions/deploy-pages. Supersedes the legacy
+# deploy.yaml which rendered nbs/ via the old nbdev pipeline.
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+on:
+  push:
+    branches: [ "main", "master", "v2-redesign" ]
+    paths:
+      - "docs/**"
+      - "hwpapi/**"
+      - "pyproject.toml"
+      - ".github/workflows/deploy-docs.yaml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install docs dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[docs]"
+          # Sanity check — the reference layer relies on these:
+          python -c "import quartodoc, griffe; print(quartodoc.__version__, griffe.__version__)"
+
+      - name: Setup Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      # Generate the auto-reference pages into docs/reference/**.
+      - name: Build quartodoc reference
+        run: quartodoc build --config docs/_quarto.yml
+        # If this step fails because `hwpapi` can't be imported on
+        # Linux (pywin32 / COM machinery is Windows-only), we will
+        # need to stub the import. For now we rely on the fact that
+        # hwpapi.low.* imports succeed on Linux (pywin32 is a lazy
+        # dependency).
+
+      - name: Render site
+        working-directory: ./docs
+        run: quarto render --no-execute
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./docs/_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

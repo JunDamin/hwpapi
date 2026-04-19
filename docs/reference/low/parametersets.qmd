@@ -1,0 +1,288 @@
+# low.parametersets
+
+ParameterSet classes (CharShape, ParaShape, ...).
+
+# base.ParameterSet { #hwpapi.low.parametersets.base.ParameterSet }
+
+```python
+low.parametersets.base.ParameterSet(
+    parameterset=None,
+    *,
+    backend_factory=None,
+    initial=None,
+    expected_setid=None,
+    app_instance=None,
+    **kwargs,
+)
+```
+
+Unified ParameterSet supporting both pset and HSet backends.
+
+- Prioritizes pset objects (from action.CreateSet()) for direct operation
+- Falls back to HSet objects for backward compatibility
+- Supports immediate parameter changes (no staging required for pset)
+- Maintains staging for HSet objects to preserve existing behavior
+
+Usage Example (pset-based - preferred):
+    # 1. Get the ParameterSet for an action (e.g., FindReplace)
+    pset = actions.FindReplace.pset
+
+    # 2. Set parameters directly (immediate effect)
+    pset.find_string = "foo"
+    pset.replace_string = "bar"
+    pset.match_case = True
+
+    # 3. Run the action (parameters already set)
+    actions.FindReplace.run()
+
+Usage Example (HSet-based - legacy):
+    # Same as before with staging and apply()
+    pset = actions.FindReplace.get_pset()
+    pset.find_string = "foo"
+    pset.apply()
+    actions.FindReplace.run(pset)
+
+## Attributes
+
+| Name | Description |
+| --- | --- |
+| [attributes_names](#hwpapi.low.parametersets.base.ParameterSet.attributes_names) | Auto-generated list of attribute names from property registry. |
+| [parameterset](#hwpapi.low.parametersets.base.ParameterSet.parameterset) | Return the underlying raw object (COM ParameterSet or Python object), or None if unbound. |
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [apply](#hwpapi.low.parametersets.base.ParameterSet.apply) | Flush staged changes (and deletions) to backend. |
+| [bind](#hwpapi.low.parametersets.base.ParameterSet.bind) | Bind/attach a raw parameterset to this instance (or re-bind a new one). |
+| [clone](#hwpapi.low.parametersets.base.ParameterSet.clone) | Clone this ParameterSet using the native COM Clone() method. |
+| [create_itemset](#hwpapi.low.parametersets.base.ParameterSet.create_itemset) | Create a nested parameter set using CreateItemSet (pset-based) or direct access (HSet-based). |
+| [deleted](#hwpapi.low.parametersets.base.ParameterSet.deleted) | Return attribute names marked for deletion. |
+| [dirty](#hwpapi.low.parametersets.base.ParameterSet.dirty) | Return staged changes as {attr_name: value}, excluding deletions. |
+| [discard](#hwpapi.low.parametersets.base.ParameterSet.discard) | Drop staged edits and deletions (keep snapshot). |
+| [is_equivalent](#hwpapi.low.parametersets.base.ParameterSet.is_equivalent) | Check value equality with another ParameterSet via native IsEquivalent(). |
+| [item_exists](#hwpapi.low.parametersets.base.ParameterSet.item_exists) | Check if an item exists in the underlying pset via native ItemExist(). |
+| [merge](#hwpapi.low.parametersets.base.ParameterSet.merge) | Merge another ParameterSet's items into this one via native Merge(). |
+| [reload](#hwpapi.low.parametersets.base.ParameterSet.reload) | Refresh in-memory snapshot from backend and clear staged edits (but keep wrapper cache coherent). |
+| [update](#hwpapi.low.parametersets.base.ParameterSet.update) | Stage multiple values by attribute name (not raw keys). |
+
+### apply { #hwpapi.low.parametersets.base.ParameterSet.apply }
+
+```python
+low.parametersets.base.ParameterSet.apply(
+    overrides=None,
+    *,
+    require='error',
+    only_overrides=False,
+    parameterset=None,
+    **kwargs,
+)
+```
+
+Flush staged changes (and deletions) to backend.
+
+#### Parameters {.doc-section .doc-section-parameters}
+
+| Name           | Type                            | Description                                                                                  | Default                 |
+|----------------|---------------------------------|----------------------------------------------------------------------------------------------|-------------------------|
+| overrides      | dict \| None                    | Additional values (by attribute name) to stage just-in-time.                                 | `None`                  |
+| require        | (\'error\', \'warn\', \'skip\') | Control missing-required behavior at apply-time.                                             | `"error","warn","skip"` |
+| only_overrides | bool                            | If True, ignore previously staged edits and apply ONLY overrides/**kwargs.                   | `False`                 |
+| parameterset   | Any \| None                     | Optionally (re)bind a raw parameterset right before applying. Required if not already bound. | `None`                  |
+| **kwargs       |                                 | Same as overrides; convenient for inline use.                                                | `{}`                    |
+
+### bind { #hwpapi.low.parametersets.base.ParameterSet.bind }
+
+```python
+low.parametersets.base.ParameterSet.bind(parameterset, *, backend_factory=None)
+```
+
+Bind/attach a raw parameterset to this instance (or re-bind a new one).
+Validates SetID presence and (optionally) equality to expected SetID.
+
+### clone { #hwpapi.low.parametersets.base.ParameterSet.clone }
+
+```python
+low.parametersets.base.ParameterSet.clone()
+```
+
+Clone this ParameterSet using the native COM Clone() method.
+
+Faster and more reliable than manual update_from for simple copies.
+
+Returns:
+    New ParameterSet wrapping a cloned pset COM object, or None if
+    the underlying object doesn't support Clone.
+
+### create_itemset { #hwpapi.low.parametersets.base.ParameterSet.create_itemset }
+
+```python
+low.parametersets.base.ParameterSet.create_itemset(key, setid)
+```
+
+Create a nested parameter set using CreateItemSet (pset-based) or direct access (HSet-based).
+
+Args:
+    key: The parameter key for the nested set
+    setid: The SetID for the nested parameter set
+
+Returns:
+    ParameterSet instance wrapping the nested parameter set
+
+### deleted { #hwpapi.low.parametersets.base.ParameterSet.deleted }
+
+```python
+low.parametersets.base.ParameterSet.deleted()
+```
+
+Return attribute names marked for deletion.
+
+### dirty { #hwpapi.low.parametersets.base.ParameterSet.dirty }
+
+```python
+low.parametersets.base.ParameterSet.dirty()
+```
+
+Return staged changes as {attr_name: value}, excluding deletions.
+
+### discard { #hwpapi.low.parametersets.base.ParameterSet.discard }
+
+```python
+low.parametersets.base.ParameterSet.discard()
+```
+
+Drop staged edits and deletions (keep snapshot).
+
+### is_equivalent { #hwpapi.low.parametersets.base.ParameterSet.is_equivalent }
+
+```python
+low.parametersets.base.ParameterSet.is_equivalent(other)
+```
+
+Check value equality with another ParameterSet via native IsEquivalent().
+
+Returns True if both parameter sets have identical items and values.
+
+### item_exists { #hwpapi.low.parametersets.base.ParameterSet.item_exists }
+
+```python
+low.parametersets.base.ParameterSet.item_exists(item_id)
+```
+
+Check if an item exists in the underlying pset via native ItemExist().
+
+### merge { #hwpapi.low.parametersets.base.ParameterSet.merge }
+
+```python
+low.parametersets.base.ParameterSet.merge(other)
+```
+
+Merge another ParameterSet's items into this one via native Merge().
+
+Result: self gets "self's items + items unique to other".
+
+### reload { #hwpapi.low.parametersets.base.ParameterSet.reload }
+
+```python
+low.parametersets.base.ParameterSet.reload()
+```
+
+Refresh in-memory snapshot from backend and clear staged edits (but keep wrapper cache coherent).
+
+### update { #hwpapi.low.parametersets.base.ParameterSet.update }
+
+```python
+low.parametersets.base.ParameterSet.update(data)
+```
+
+Stage multiple values by attribute name (not raw keys).
+
+# base.ParameterSetMeta { #hwpapi.low.parametersets.base.ParameterSetMeta }
+
+```python
+low.parametersets.base.ParameterSetMeta()
+```
+
+Metaclass for automatic property registration and ParameterSet registration.
+
+# properties.PropertyDescriptor { #hwpapi.low.parametersets.properties.PropertyDescriptor }
+
+```python
+low.parametersets.properties.PropertyDescriptor(
+    key,
+    doc='',
+    *,
+    to_python=None,
+    to_backend=None,
+    default=None,
+    readonly=False,
+    required=False,
+    wrap=None,
+)
+```
+
+Descriptor for parameter properties backed by a staged ParameterSet.
+
+Features:
+- Reads prefer staged values, then snapshot, then default.
+- Writes stage the value; nothing is sent until ParameterSet.apply().
+- Optional automatic wrapping of nested ParameterSets via `wrap=...`.
+
+# backends.PsetBackend { #hwpapi.low.parametersets.backends.PsetBackend }
+
+```python
+low.parametersets.backends.PsetBackend(pset)
+```
+
+Backend for pset objects created via action.CreateSet().
+Supports direct pset operations: Item, SetItem, CreateItemSet.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [create_itemset](#hwpapi.low.parametersets.backends.PsetBackend.create_itemset) | Create nested parameter set using pset.CreateItemSet(key, setid). |
+| [delete](#hwpapi.low.parametersets.backends.PsetBackend.delete) | Delete item if supported by pset. |
+| [get](#hwpapi.low.parametersets.backends.PsetBackend.get) | Get value using pset.Item(key). |
+| [item_exists](#hwpapi.low.parametersets.backends.PsetBackend.item_exists) | Check if item exists using pset.ItemExist(key) if available. |
+| [set](#hwpapi.low.parametersets.backends.PsetBackend.set) | Set value using pset.SetItem(key, value). |
+
+### create_itemset { #hwpapi.low.parametersets.backends.PsetBackend.create_itemset }
+
+```python
+low.parametersets.backends.PsetBackend.create_itemset(key, setid)
+```
+
+Create nested parameter set using pset.CreateItemSet(key, setid).
+
+### delete { #hwpapi.low.parametersets.backends.PsetBackend.delete }
+
+```python
+low.parametersets.backends.PsetBackend.delete(key)
+```
+
+Delete item if supported by pset.
+
+### get { #hwpapi.low.parametersets.backends.PsetBackend.get }
+
+```python
+low.parametersets.backends.PsetBackend.get(key)
+```
+
+Get value using pset.Item(key).
+
+### item_exists { #hwpapi.low.parametersets.backends.PsetBackend.item_exists }
+
+```python
+low.parametersets.backends.PsetBackend.item_exists(key)
+```
+
+Check if item exists using pset.ItemExist(key) if available.
+
+### set { #hwpapi.low.parametersets.backends.PsetBackend.set }
+
+```python
+low.parametersets.backends.PsetBackend.set(key, value)
+```
+
+Set value using pset.SetItem(key, value).

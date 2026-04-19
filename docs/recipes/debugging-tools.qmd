@@ -1,0 +1,117 @@
+---
+title: "Debugging tools"
+subtitle: "When something's wrong, here's where to look"
+---
+
+Ported from `nbs/01_tutorials/13_debugging_tools.ipynb`.
+
+# 1. Turn on debug logging
+
+```{python}
+#| eval: false
+import os
+os.environ["HWPAPI_LOG_LEVEL"] = "DEBUG"
+
+from hwpapi import App
+# logging now prints every COM call with arguments
+```
+
+Default level is `WARNING` — a working script sees no log output.
+`DEBUG` is chatty; `INFO` is the usual dev-mode middle ground.
+
+# 2. Inspect an action without running it
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    cls = app.actions.get_pset_class("FindReplace")
+    desc = app.actions.get_description("FindReplace")
+    print(desc)
+    print("properties:", list(cls._property_registry.keys())[:10])
+```
+
+# 3. Print a ParameterSet
+
+`__repr__` renders human-readable values and inline doc comments:
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    ps = app.actions.CharShape.pset
+    ps.Bold = True
+    ps.Height = 1400
+    ps.TextColor = "#FF0000"
+    print(ps)
+    # CharShape(
+    #   Bold=True  # Bold formatting
+    #   Height=14.0pt  # Font size in HWPUNIT (100=1pt)
+    #   TextColor="#ff0000"  # Text color in BBGGRR format
+    # )
+```
+
+# 4. Escape to the raw COM layer
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    # Raw HWP COM handle — everything the automation SDK exposes
+    hwp = app.api
+
+    print("Document count:", hwp.XHwpDocuments.Count)
+    print("Active format:", hwp.Version)
+```
+
+# 5. Use `FailableCOMCall` to catch raw COM errors
+
+Most facade calls raise `hwpapi.errors.HwpApiError` subclasses, but
+when you drop to `app.api` you get raw pywintypes:
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.errors import ActionFailedError, wrap_com_error
+
+with App() as app:
+    with wrap_com_error(action_name="Save"):
+        app.api.Save()
+    # raw com_error is now re-raised as ActionFailedError
+```
+
+# 6. Snapshot / diff a pset
+
+```{python}
+#| eval: false
+ps = app.actions.CharShape.pset
+before = ps.clone()
+
+ps.Bold = True
+ps.Italic = True
+
+after = ps.clone()
+print("equivalent?", before.is_equivalent(after))  # False
+print("changes:", {
+    k: (getattr(before, k, None), getattr(after, k, None))
+    for k in before._property_registry
+    if getattr(before, k, None) != getattr(after, k, None)
+})
+```
+
+# 7. Dump the entire public surface
+
+```{python}
+import hwpapi
+public = sorted(n for n in dir(hwpapi) if not n.startswith("_"))
+print(public)
+```
+
+# See also
+
+- [Reference: errors](../reference/errors.qmd) — the exception hierarchy
+- [Reference: low.actions](../reference/low/actions.qmd) — the action
+  introspection surface

@@ -1,0 +1,47 @@
+# io.export
+
+export_pdf / export_image / export_text.
+
+# export.export_pdf { #hwpapi.io.export.export_pdf }
+
+```python
+io.export.export_pdf(app, path)
+```
+
+Export the active document to PDF at ``path``.
+
+Thin wrapper around ``app.save_as(path, format="PDF")`` that turns
+raw COM errors into :class:`FileIOError`.
+
+# export.export_image { #hwpapi.io.export.export_image }
+
+```python
+io.export.export_image(app, path, page=None)
+```
+
+Export the active document (or one page) to an image file.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type        | Description                                                                                                                                                                    | Default    |
+|--------|-------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
+| app    | hwpapi.App  |                                                                                                                                                                                | _required_ |
+| path   | str \| Path | Destination path. Extension suggests the target format — the ``.png`` path passes ``format="PNG"`` to HWP, everything else falls through to ``BMP`` which HWP always supports. | _required_ |
+| page   | int         | Reserved for future per-page export. Currently HWP's ``SaveBlockAction`` path doesn't accept a page index, so we log the request and delegate to the whole-document export.    | `None`     |
+
+## Raises {.doc-section .doc-section-raises}
+
+| Name   | Type        | Description               |
+|--------|-------------|---------------------------|
+|        | FileIOError | On any COM-level failure. |
+
+# export.export_text { #hwpapi.io.export.export_text }
+
+```python
+io.export.export_text(app, path)
+```
+
+Export the active document to a plain-text file at ``path``.
+
+Thin wrapper around ``app.save_as(path, format="TEXT")`` that turns
+raw COM errors into :class:`FileIOError`.

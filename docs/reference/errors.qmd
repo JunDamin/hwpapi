@@ -1,0 +1,62 @@
+# errors
+
+HwpApiError and subclasses.
+
+# errors.HwpApiError { #hwpapi.errors.HwpApiError }
+
+```python
+errors.HwpApiError()
+```
+
+Base for every hwpapi-raised exception.
+
+# errors.ConnectionError { #hwpapi.errors.ConnectionError }
+
+```python
+errors.ConnectionError()
+```
+
+Raised when the HWP COM object can't be dispatched or has died.
+
+# errors.ActionFailedError { #hwpapi.errors.ActionFailedError }
+
+```python
+errors.ActionFailedError()
+```
+
+Raised when ``HAction.Run`` / ``HAction.Execute`` returns falsy.
+
+# errors.InvalidArgumentError { #hwpapi.errors.InvalidArgumentError }
+
+```python
+errors.InvalidArgumentError()
+```
+
+Raised for unknown formats, malformed paths, or bad kwargs.
+
+# errors.FileIOError { #hwpapi.errors.FileIOError }
+
+```python
+errors.FileIOError()
+```
+
+Raised when an open/save/export fails at the filesystem/COM edge.
+
+# errors.wrap_com_error { #hwpapi.errors.wrap_com_error }
+
+```python
+errors.wrap_com_error(action_name)
+```
+
+Re-raise COM errors inside the block as :class:`ActionFailedError`.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name        | Type   | Description                                                                                                                    | Default    |
+|-------------|--------|--------------------------------------------------------------------------------------------------------------------------------|------------|
+| action_name | str    | Short label for the failing operation — included in the error message so callers can tell ``FileOpen`` from ``FileSaveAsPdf``. | _required_ |
+
+## Example {.doc-section .doc-section-example}
+
+>>> with wrap_com_error("FileOpen"):
+...     app.api.Open(path)

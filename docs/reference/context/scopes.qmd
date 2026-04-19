@@ -1,0 +1,71 @@
+# context.scopes
+
+charshape_scope / parashape_scope / styled_text.
+
+# scopes.charshape_scope { #hwpapi.context.scopes.charshape_scope }
+
+```python
+context.scopes.charshape_scope(app, **fmt)
+```
+
+Apply a char-shape override inside the ``with`` block, then restore.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type       | Description                                                                                                                                                                    | Default    |
+|--------|------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
+| app    | hwpapi.App | Live App instance (or any object exposing ``.actions`` and ``.api``).                                                                                                          | _required_ |
+| **fmt  | Any        | Char-shape overrides. Friendly keys — ``bold``, ``italic``, ``size``, ``color``, ``shade_color``, ``font`` — are translated to HWP COM names; anything else is passed through. | `{}`       |
+
+## Example {.doc-section .doc-section-example}
+
+>>> with charshape_scope(app, bold=True, size=1400, color="#FF0000"):
+...     app.doc.insert_text("important!")
+
+# scopes.parashape_scope { #hwpapi.context.scopes.parashape_scope }
+
+```python
+context.scopes.parashape_scope(app, **fmt)
+```
+
+Apply a para-shape override inside the ``with`` block, then restore.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type       | Description                                                                                                                                                   | Default    |
+|--------|------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
+| app    | hwpapi.App |                                                                                                                                                               | _required_ |
+| **fmt  | Any        | Paragraph-shape overrides. Friendly keys — ``align``, ``line_spacing``, ``left_margin``, ``right_margin``, ``indentation`` — are translated to HWP COM names. | `{}`       |
+
+## Example {.doc-section .doc-section-example}
+
+>>> with parashape_scope(app, align="center"):
+...     app.doc.insert_text("centred paragraph")
+
+# scopes.styled_text { #hwpapi.context.scopes.styled_text }
+
+```python
+context.scopes.styled_text(app, text, **fmt)
+```
+
+Insert ``text`` with a temporary char-shape, then restore.
+
+Shorthand for ::
+
+    with charshape_scope(app, **fmt):
+        app.api.HAction.Run("InsertText") / InsertText action
+
+The function returns ``None`` — it's a side-effecting one-shot, not
+a context manager.
+
+## Parameters {.doc-section .doc-section-parameters}
+
+| Name   | Type       | Description                                                        | Default    |
+|--------|------------|--------------------------------------------------------------------|------------|
+| app    | hwpapi.App |                                                                    | _required_ |
+| text   | str        | Literal text to insert at the cursor.                              | _required_ |
+| **fmt  | Any        | Same friendly-key char-shape overrides as :func:`charshape_scope`. | `{}`       |
+
+## Example {.doc-section .doc-section-example}
+
+>>> styled_text(app, "Hello", bold=True, color="#FF0000")

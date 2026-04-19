@@ -383,7 +383,7 @@ v1 implementation into your own code.
 
 # See also
 
-- [Phase 1 release notes](./releases/v1.0.md) (frozen v1 snapshot)
-- [hwpapi.low reference](./reference/low.md) (escape hatch documentation)
+- [Low-level escape hatch](../guide/low-level-escape-hatch.qmd) — where v1 `app.api` calls migrate to
+- [API Reference](../reference/index.qmd) — rendered v2 surface
+- [ADR-001: Two-layer API](../design/adr/adr-001-v2-redesign.qmd) — why v2 split this way
 - Plan of record: `.omc/plans/hwpapi_v2_redesign.md`
-- Audit source: `docs/design/app-member-audit.md`

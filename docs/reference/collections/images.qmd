@@ -1,0 +1,19 @@
+# images
+
+Image collection.
+
+# images.ImageCollection { #hwpapi.collections.images.ImageCollection }
+
+```python
+collections.images.ImageCollection(app)
+```
+
+``doc.images`` — image controls in document order.
+
+# images.Image { #hwpapi.collections.images.Image }
+
+```python
+collections.images.Image(app, ctrl, index)
+```
+
+Value object for a single image control.

@@ -1,0 +1,33 @@
+---
+title: "Recipes"
+subtitle: "Task-first, copy-pasteable snippets"
+listing:
+  type: table
+  fields: [title, subtitle]
+  contents:
+    - quickstart-tour.qmd
+    - find-replace.qmd
+    - fill-fields.qmd
+    - charshape-formatting.qmd
+    - mail-merge.qmd
+    - bulk-edit.qmd
+    - data-to-table.qmd
+    - report-generation.qmd
+    - presets-gallery.qmd
+    - debugging-tools.qmd
+  sort: "title asc"
+  filter-ui: false
+  sort-ui: false
+---
+
+# Recipes index
+
+Each recipe below is a self-contained script you can paste into a
+Python session and run against a live HWP instance. Snippets that
+need the HWP COM server are marked `eval: false` — copy them into your
+own script and run on Windows.
+
+The recipes are ported from the v1 notebook tutorials
+(`nbs/01_tutorials/*.ipynb`) and example scripts (`examples/*.py`),
+then rewritten to target the v2 API surface (`App.doc.*` + collections
++ context scopes).

@@ -1,0 +1,167 @@
+---
+title: "Low-level escape hatch"
+subtitle: "hwpapi.low.actions / parametersets / engine"
+---
+
+# The rule of two layers
+
+hwpapi is designed as two stacked APIs:
+
+1. **High-level** (`hwpapi.App` → `app.doc.*`) — what 95% of users
+   should write. Collections, elements, context scopes, units. One
+   way to do each thing.
+2. **Low-level** (`hwpapi.low.*`) — the raw HWP action wrappers and
+   ParameterSet classes. **Not deprecated** — these are the
+   officially supported escape hatch. Use them when the high-level
+   API doesn't expose what you need.
+
+The boundary policy (from [ADR-001](../design/adr/adr-001-v2-redesign.qmd)):
+
+> *"A feature provided only on `hwpapi.low` that the high layer
+> actively blocks is a bug. The inverse is also a bug. `hwpapi.low`
+> is always self-sufficient; the high layer is always expressible in
+> terms of `hwpapi.low`."*
+
+You are not "dropping to something dangerous" when you use
+`hwpapi.low`. You are using a different abstraction level for a
+reason you (and no one else) understand.
+
+# The three sub-modules
+
+```python
+from hwpapi.low import actions       # 900+ action wrappers
+from hwpapi.low import parametersets # 130+ ParameterSet classes
+from hwpapi.low import engine        # Engine / Engines / Apps
+```
+
+## `hwpapi.low.actions`
+
+Wraps each of HWP's ~900 named actions (InsertText, CharShape,
+FileOpen, …) as a Python-friendly callable. Every wrapper:
+
+- exposes `.pset` — the [ParameterSet](#hwpapi-low-parametersets)
+  bound to the action
+- exposes `.run()` — calls `HAction.Execute()` with the pset
+- exposes `.description` — Korean description string from HWP's
+  action catalogue
+
+```{python}
+#| eval: false
+from hwpapi.low import actions
+
+charshape = actions._Action("CharShape")
+
+# Type-safe property access
+charshape.pset.Bold = True
+charshape.pset.Height = 1400       # 14pt (HWPUNIT: 100/pt)
+charshape.pset.TextColor = "#FF0000"
+
+charshape.run()
+```
+
+Or via the app's pre-built catalogue:
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+app = App()
+charshape = app.actions.CharShape   # same instance
+charshape.pset.Italic = True
+charshape.run()
+```
+
+`app.actions.list_actions()` returns every registered name;
+`app.actions.get_pset_class("CharShape")` returns the ParameterSet
+*class* without touching COM (handy for introspection).
+
+## `hwpapi.low.parametersets`
+
+The type-safe Python wrappers around HWP's `HParameterSet` COM
+objects. Each ParameterSet class:
+
+- declares its properties as class-level `PropertyDescriptor`s
+  (`IntProperty`, `BoolProperty`, `ColorProperty`, `UnitProperty`,
+  `MappedProperty`, `NestedProperty`, `ArrayProperty`)
+- renders itself with human-readable values via `__repr__`
+  (12pt instead of 1200 HWPUNIT, `#ff0000` instead of 0x0000FF)
+- supports `.clone()` (snapshot), `.update_from(other)` (restore),
+  `.is_equivalent(other)` (compare)
+
+```{python}
+#| eval: false
+from hwpapi.low.parametersets import CharShape
+
+cs = CharShape()
+cs.Bold = True
+cs.Height = 1400
+cs.TextColor = "#FF0000"
+print(cs)
+# CharShape(
+#   Bold=True  # Bold formatting
+#   Height=14.0pt  # Font size in HWPUNIT (100=1pt)
+#   TextColor="#ff0000"  # Text color in BBGGRR format
+# )
+```
+
+See the [Reference: low.parametersets](../reference/low/parametersets.qmd)
+page for the full catalogue.
+
+## `hwpapi.low.engine`
+
+- `Engine` — wraps one HWP COM engine. `engine.impl` is the raw COM
+  handle (`HwpObject`).
+- `Engines` — registry of live engines.
+- `Apps` — parallel registry of `App` facades.
+
+You rarely construct these directly; `App()` makes an `Engine` for
+you. You reach them via `app.engine` when you need to call a raw COM
+method that hwpapi hasn't wrapped.
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    # Raw COM call that hwpapi doesn't wrap
+    app.engine.impl.XHwpDocuments.Item(0).Save()
+
+    # Or the even rawer shortcut
+    app.api.XHwpDocuments.Count
+```
+
+# When to drop down
+
+Use the high-level facade first. Drop to `hwpapi.low` when:
+
+- You need a specific ParameterSet property the high-level API
+  doesn't expose (common for `FindReplace`'s nested shapes).
+- You need to call an action that the high-level API doesn't wrap.
+- You want introspection (`app.actions.list_actions()`) without
+  running anything.
+- You're building your own abstraction on top of hwpapi and want
+  stability guarantees the facade can't offer.
+
+If you find yourself in `hwpapi.low` for something that feels like
+common-user-territory — that's a facade gap. Please open an issue.
+
+# What was deleted
+
+A handful of v1 names that routed requests to the low layer
+indirectly are gone:
+
+| v1 | v2 |
+|---|---|
+| `app.actions` | still there (escape hatch on App) or `hwpapi.low.actions` |
+| `app.create_action(n)` | `hwpapi.low.actions._Action(n)` |
+| `app.create_parameterset(...)` | `hwpapi.low.parametersets` class constructors |
+| `app.parameters` | `hwpapi.low.parametersets` |
+
+See the [migration guide](../getting-started/migration-v1-to-v2.qmd#moved-to-hwpapi-low).
+
+# See also
+
+- [Reference: low.actions](../reference/low/actions.qmd)
+- [Reference: low.parametersets](../reference/low/parametersets.qmd)
+- [Reference: low.engine](../reference/low/engine.qmd)
+- [ADR-001: two-layer API](../design/adr/adr-001-v2-redesign.qmd)

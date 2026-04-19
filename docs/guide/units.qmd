@@ -1,0 +1,133 @@
+---
+title: "Units"
+subtitle: "mm / cm / inch / pt ↔ HWPUNIT"
+---
+
+# Why a module
+
+HWP stores almost every measurement (page width, margins, line
+spacing, font size, cell width) in an internal unit called **HWPUNIT**.
+The conversion table is:
+
+| User unit | HWPUNIT |
+|---|---|
+| 1 mm | 283 HWPUNIT |
+| 1 cm | 2,834 HWPUNIT |
+| 1 inch | 7,200 HWPUNIT |
+| 1 pt | 100 HWPUNIT |
+
+Nobody wants to write `Height = 1200  # 12pt` in a script. The
+`hwpapi.units` module holds both directions of the conversion plus a
+string parser.
+
+# The five entry points
+
+```{python}
+from hwpapi import units as U
+
+# → HWPUNIT (int)
+U.mm(210)          # A4 width
+U.cm(21.0)         # same, different unit
+U.inch(8.27)       # same, imperial
+U.pt(12)           # 12pt font
+
+# HWPUNIT → user unit (float)
+U.to_mm(59430)     # ≈ 210.0
+U.to_cm(59430)     # ≈ 21.0
+U.to_inch(59430)   # ≈ 8.27
+U.to_pt(1200)      # 12.0
+
+# String parser — accepts "210mm" / "21cm" / "8.27in" / "12pt"
+U.parse("210mm")
+U.parse("12pt")
+```
+
+`U.parse` is the most general — use it when you're accepting a
+measurement from the user (CLI arg, config file, YAML) and want to
+stay unit-agnostic. It returns HWPUNIT as `int`.
+
+# Where you'll use it
+
+## Page setup
+
+```{python}
+#| eval: false
+app.doc.page.setup(
+    width=U.mm(210),
+    height=U.mm(297),
+    left_margin=U.mm(25),
+    right_margin=U.mm(25),
+    top_margin=U.mm(30),
+    bottom_margin=U.mm(30),
+)
+```
+
+## Font size in scopes
+
+```{python}
+#| eval: false
+from hwpapi.context import charshape_scope
+from hwpapi import units as U
+
+with charshape_scope(app, size=U.pt(14)):
+    app.doc.insert_text("14pt heading\n")
+```
+
+`charshape_scope`'s `size` alias maps to HWP's `Height` property,
+which expects HWPUNIT. Calling `U.pt(14)` is the clearest way to
+write "14 points".
+
+## Table cell width
+
+```{python}
+#| eval: false
+# pseudo-code; exact API is Phase 3 surface
+cell = app.doc.tables[0].cell(0, 0)
+cell.width = U.mm(30)
+```
+
+# Parsing user strings
+
+If your script accepts dimensions from a config:
+
+```{python}
+from hwpapi import units as U
+
+page_size = U.parse("A4")        # ValueError — parse only does unit strings
+
+# Typical form
+for value in ("210mm", "21cm", "8.27in", "12pt"):
+    print(value, "=", U.parse(value), "HWPUNIT")
+```
+
+`U.parse` raises `ValueError` on an input it can't interpret — catch
+it to produce a user-friendly error:
+
+```{python}
+from hwpapi import units as U
+
+try:
+    U.parse("A4")
+except ValueError as e:
+    print("Sorry, please use 210mm or 8.27in:", e)
+```
+
+# What v2 dropped from `App`
+
+The v1 `App` had four duplicate methods for the same conversions:
+
+| v1 | v2 |
+|---|---|
+| `app.mm_to_hwpunit(v)` | `U.mm(v)` |
+| `app.cm_to_hwpunit(v)` | `U.cm(v)` |
+| `app.hwpunit_to_mm(v)` | `U.to_mm(v)` |
+| `app.hwpunit_to_point(v)` | `U.to_pt(v)` |
+| `app.point_to_hwpunit(v)` | `U.pt(v)` |
+
+These are removed from `App` — the module functions replace them
+and work without an `App` instance.
+
+# See also
+
+- [Reference: units](../reference/units.qmd) — full symbol list
+- [App and Document](app-and-document.qmd) — why `App` is slim

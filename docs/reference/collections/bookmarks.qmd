@@ -1,0 +1,59 @@
+# bookmarks
+
+Bookmark (책갈피) collection.
+
+# bookmarks.BookmarkCollection { #hwpapi.collections.bookmarks.BookmarkCollection }
+
+```python
+collections.bookmarks.BookmarkCollection(app)
+```
+
+``doc.bookmarks`` — collection of HWP bookmarks (책갈피).
+
+Enumerates the document's ``HeadCtrl`` → ``Next`` chain, yielding a
+:class:`Bookmark` for each control whose ``CtrlID`` is ``"bokm"``.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [add](#hwpapi.collections.bookmarks.BookmarkCollection.add) | Insert a bookmark at the current cursor position. |
+
+### add { #hwpapi.collections.bookmarks.BookmarkCollection.add }
+
+```python
+collections.bookmarks.BookmarkCollection.add(name)
+```
+
+Insert a bookmark at the current cursor position.
+
+# bookmarks.Bookmark { #hwpapi.collections.bookmarks.Bookmark }
+
+```python
+collections.bookmarks.Bookmark(app, name)
+```
+
+Value object for a single HWP bookmark.
+
+## Methods
+
+| Name | Description |
+| --- | --- |
+| [goto](#hwpapi.collections.bookmarks.Bookmark.goto) | Move the cursor to this bookmark. Returns success. |
+| [remove](#hwpapi.collections.bookmarks.Bookmark.remove) | Delete this bookmark. Returns success. |
+
+### goto { #hwpapi.collections.bookmarks.Bookmark.goto }
+
+```python
+collections.bookmarks.Bookmark.goto()
+```
+
+Move the cursor to this bookmark. Returns success.
+
+### remove { #hwpapi.collections.bookmarks.Bookmark.remove }
+
+```python
+collections.bookmarks.Bookmark.remove()
+```
+
+Delete this bookmark. Returns success.

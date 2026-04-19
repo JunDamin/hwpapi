@@ -1,0 +1,168 @@
+---
+title: "ADR-001: Two-layer API"
+subtitle: "hwpapi.low + App.doc.* as the v2 public surface"
+---
+
+# Status
+
+**Accepted** — 2026-04-18
+
+Implemented across Phases 1–5 of the v2 redesign plan
+(`.omc/plans/hwpapi_v2_redesign.md`).
+
+# Context
+
+v1.0 of hwpapi exposed 144+ symbols at the top level via four
+wildcard imports in `__init__.py`:
+
+```python
+from .core import *
+from .actions import *
+from .functions import *
+from .parametersets import *
+```
+
+The `App` class alone carried 82 public members, mixing:
+
+- lifecycle (open/save/close/quit)
+- document state (text, cursor, selection)
+- per-document collections (fields, bookmarks, images, styles)
+- element state (charshape, parashape)
+- formatting scopes (charshape_scope, parashape_scope)
+- unit conversions (mm_to_hwpunit etc.)
+- low-level COM utilities (actions, parameters, register_security_module)
+
+The result: no single mental model, two or three ways to do every
+task, a 3,290-line `core/app.py`, and an import surface users couldn't
+realistically explore.
+
+# Decision
+
+Restructure the public API as two explicit, co-equal layers:
+
+1. **High layer** — `hwpapi.App` → `app.doc.*`. Opinionated, small,
+   collection-oriented. The ≤15-member `App` owns lifecycle; the
+   `Document` owns per-document state; collections follow one
+   protocol; elements are value objects.
+2. **Low layer** — `hwpapi.low.actions`, `hwpapi.low.parametersets`,
+   `hwpapi.low.engine`. Raw action wrappers and ParameterSet classes.
+   **Officially supported**, not deprecated. The high layer is
+   expressed in terms of the low layer — never independent of it.
+
+The `__init__.py` exports exactly three names: `App`, `Document`,
+`__version__`.
+
+# Decision drivers
+
+1. **Consistency** — every user path goes through the same few
+   entry points, with one shape for collections and one shape for
+   context scopes.
+2. **Learnability** — IDE tab completion on `app.`, `app.doc.`, and
+   `app.doc.fields[...]` should cover 95% of daily tasks without
+   opening the docs.
+3. **Maintainability** — a small public surface reduces the cost of
+   every change. Clear layer boundaries stop feature drift.
+
+# Alternatives considered
+
+## Option A — hierarchical domain model (Office Automation style)
+
+```
+app.doc.paragraphs[i].runs[j].charshape.bold = True
+```
+
+Pro: familiar to Word/Excel automation users; maximum collection
+consistency.
+
+Con: HWP is fundamentally position-based internally — some drill-down
+paths (runs) require virtualization. This became the **shape of the
+high layer** but not the *whole* API.
+
+## Option B — flat verb API
+
+```
+app.fill_field(), app.set_charshape(), app.goto_bookmark()
+```
+
+Pro: one namespace, minimal hierarchy.
+
+Con: reproduces the v1 `App`-as-god-object problem with new names.
+Defeats the slim-facade goal.
+
+**Rejected.**
+
+## Option C — two-layer (low + high)  ← **chosen**
+
+Django ORM pattern: `Model.objects` is the opinionated public surface,
+`django.db.connection` is the escape hatch, both coexist as first-class
+APIs.
+
+Adopted as the v2 shape. Option A's hierarchical domain model lives
+inside `App.doc.*`; Option D's predicate filtering is partially
+adopted via `Collection.filter(predicate)`.
+
+## Option D — query-centric (pandas-style)
+
+```
+doc.paragraphs.where(style="제목").set(bold=True)
+```
+
+Pro: powerful bulk operations.
+
+Con: HWP is stream-based — `where` devolves to eager iteration, with
+performance cliffs on large documents.
+
+**Partially adopted** — `collection.filter(predicate)` is a subset
+of the query model.
+
+## Option E — keep a deprecation shim
+
+Pro: unbroken migration for v1 users.
+
+Con: doubles the maintenance surface (two public APIs, two doc
+paths), defeats the slim-facade goal, makes type-level
+"App-level vs. Document-level" distinctions impossible. Would
+preserve the 82-member footprint forever.
+
+**Rejected** — per user acceptance. v2 is a clean-cut; v1 is frozen on
+the `v1.x` branch.
+
+# Consequences
+
+## Positive
+
+- Documentation IA matches code structure 1:1 — sidebar items
+  correspond to import tree nodes.
+- New features are forced to answer *"which layer?"* before being
+  added, preventing the v1-style drift.
+- `hwpapi.low` is extractable — if it ever grows too large, it can
+  ship as a separate package without breaking the high-level API.
+- `dir(app)` fits on one screen.
+
+## Negative
+
+- v1 scripts break. Mitigation: the
+  [migration guide](../../getting-started/migration-v1-to-v2.qmd)
+  provides a row for every removed member with a v2 successor or
+  escape-hatch pointer.
+- The layer policy requires vigilance. Mitigation: `docs/design/architecture.qmd`
+  defines the "does this belong on the facade?" test, and every PR
+  adding a public symbol must justify its layer choice.
+
+## Neutral
+
+- Documentation is a single source now (`docs/` Quarto). The old
+  nbs/ + examples/ + docs/*.md split is consolidated.
+
+# Follow-ups
+
+- **v2.1**: consider a partial Option D — `app.doc.paragraphs.where(style=...).update(...)`
+  for bulk edits, as a Collection extension.
+- **v2.x**: if `hwpapi.low.parametersets` keeps growing, split it to
+  a separately-released sub-package.
+
+# References
+
+- `.omc/plans/hwpapi_v2_redesign.md` — the plan this ADR was extracted from
+- `docs/design/app-member-audit.md` — disposition of the 82 v1 `App` members
+- `docs/design/baseline-v1.0.md` — v1 performance baseline for regression checks

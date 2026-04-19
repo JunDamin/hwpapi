@@ -1,0 +1,36 @@
+---
+title: "Design"
+subtitle: "Architecture notes, ADRs, and audits"
+---
+
+# What lives here
+
+This section is the *why* behind the code. If the [Guide](../guide/app-and-document.qmd)
+tells you how to use hwpapi, the Design section tells you how it got
+to be shaped this way.
+
+# Architecture
+
+- [Architecture overview](architecture.qmd) — the v2 import tree,
+  the two-layer model, the collection protocol, and how they fit
+  together.
+
+# Architecture Decision Records
+
+Each ADR documents one accepted decision, its context, alternatives,
+and consequences. They are the primary historical record for v2
+design choices.
+
+- [ADR-001: Two-layer API (`hwpapi.low` + `App.doc.*`)](adr/adr-001-v2-redesign.qmd)
+- [ADR-002: Quarto single-pipeline documentation](adr/adr-002-quarto-docs.qmd)
+
+# Audits and design notes (archived)
+
+These pre-v2 documents led to the redesign. They are kept for
+provenance — the authoritative current spec is the ADRs plus the
+live codebase.
+
+- [`baseline-v1.0.md`](../design/baseline-v1.0.md) — v1 performance baseline
+- [`public-api-v1.0.txt`](../design/public-api-v1.0.txt) — v1 public symbol dump
+- [`app-public-v2.txt`](../design/app-public-v2.txt) — v2 `dir(App)` snapshot
+- [`app-member-audit.md`](../design/app-member-audit.md) — the 82-member disposition matrix
