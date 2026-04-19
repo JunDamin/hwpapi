@@ -21,7 +21,6 @@ from hwpapi.logging import get_logger
 from hwpapi.low.actions import _Action, _Actions
 from hwpapi.low.parametersets import ParaShape
 import hwpapi.low.parametersets as parametersets
-from hwpapi.classes import MoveAccessor, CellAccessor, TableAccessor, PageAccessor
 from hwpapi.functions import (
     check_dll,
     get_hwp_objects,

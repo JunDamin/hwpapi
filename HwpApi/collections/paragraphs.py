@@ -10,16 +10,78 @@ Named enumeration is intentionally not supported — HWP paragraphs have
 no natural names. ``names()`` returns index strings (``"0"``, ``"1"``,
 …) to satisfy the Protocol.
 
+Phase 4 enriches :class:`Paragraph` with ``.style``, ``.charshape``,
+``.parashape`` and ``.runs``. Shape properties delegate to
+:mod:`hwpapi.low.parametersets` via the ``CharShape`` and
+``ParagraphShape`` actions on the owning :class:`App`. :class:`Run`
+is a lightweight slice of a paragraph's text + charshape.
+
 All COM access goes through ``self._app.engine.impl``.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Iterator, List
+from typing import TYPE_CHECKING, Callable, Iterator, List, Optional
 
 if TYPE_CHECKING:
     from hwpapi.core.app import App
 
-__all__ = ["Paragraph", "ParagraphCollection"]
+__all__ = ["Paragraph", "ParagraphCollection", "Run"]
+
+
+class Run:
+    """
+    A run — contiguous slice of a :class:`Paragraph` sharing a
+    :class:`~hwpapi.low.parametersets.CharShape`.
+
+    Phase 4 ships a single-run stub covering the whole paragraph; a
+    future phase can split on CharShape boundaries by walking the
+    characters.
+
+    Parameters
+    ----------
+    paragraph : Paragraph
+        Owning paragraph value object.
+    start, end : int
+        Character offsets into :attr:`Paragraph.text` (Python slice
+        semantics). ``end == -1`` means "to end of paragraph".
+
+    Attributes are evaluated lazily; constructing a :class:`Run` does
+    not touch COM.
+    """
+
+    __slots__ = ("_paragraph", "start", "end")
+
+    def __init__(self, paragraph: "Paragraph", start: int = 0, end: int = -1) -> None:
+        self._paragraph = paragraph
+        self.start = int(start)
+        self.end = int(end)
+
+    @property
+    def paragraph(self) -> "Paragraph":
+        """The :class:`Paragraph` this run belongs to."""
+        return self._paragraph
+
+    @property
+    def text(self) -> str:
+        """Substring of the paragraph text covered by this run."""
+        text = self._paragraph.text
+        if self.end == -1:
+            return text[self.start:]
+        return text[self.start:self.end]
+
+    @property
+    def charshape(self):
+        """Best-effort :class:`CharShape` — currently the paragraph's."""
+        return self._paragraph.charshape
+
+    def __len__(self) -> int:
+        if self.end == -1:
+            return max(0, len(self._paragraph.text) - self.start)
+        return max(0, self.end - self.start)
+
+    def __repr__(self) -> str:
+        end = "end" if self.end == -1 else str(self.end)
+        return f"Run(para=#{self._paragraph.index}, {self.start}:{end})"
 
 
 class Paragraph:
@@ -31,6 +93,10 @@ class Paragraph:
         self._app = app
         self.index = index
         self._raw = raw
+
+    # ------------------------------------------------------------------
+    # Text / style
+    # ------------------------------------------------------------------
 
     @property
     def text(self) -> str:
@@ -48,6 +114,71 @@ class Paragraph:
             except Exception:
                 continue
         return ""
+
+    @property
+    def style(self) -> str:
+        """Paragraph style name (e.g. "바탕글"). Empty string on failure."""
+        raw = self._raw
+        if raw is None:
+            return ""
+        for attr in ("StyleName", "Style"):
+            try:
+                v = getattr(raw, attr, None)
+                if callable(v):
+                    v = v()
+                if v is None:
+                    continue
+                return str(v)
+            except Exception:
+                continue
+        return ""
+
+    # ------------------------------------------------------------------
+    # Shape delegation to hwpapi.low.parametersets
+    # ------------------------------------------------------------------
+
+    def _action_pset(self, action_name: str):
+        """Return ``app.actions.<action_name>.pset`` or ``None``."""
+        try:
+            actions = getattr(self._app, "actions", None)
+            if actions is None:
+                return None
+            action = getattr(actions, action_name, None)
+            if action is None:
+                return None
+            return getattr(action, "pset", None)
+        except Exception:
+            return None
+
+    @property
+    def charshape(self):
+        """
+        :class:`~hwpapi.low.parametersets.CharShape` snapshot for this
+        paragraph. Returns the pset wrapped by
+        ``app.actions.CharShape`` — shared with the current caret
+        position. ``None`` when the action is unavailable.
+        """
+        return self._action_pset("CharShape")
+
+    @property
+    def parashape(self):
+        """
+        :class:`~hwpapi.low.parametersets.ParaShape` snapshot for this
+        paragraph. Delegates to ``app.actions.ParagraphShape.pset``.
+        """
+        return self._action_pset("ParagraphShape")
+
+    @property
+    def runs(self) -> List[Run]:
+        """
+        Runs covering this paragraph. Phase 4 returns a single-element
+        list spanning the full paragraph; later phases may split on
+        CharShape boundaries.
+        """
+        # Phase 4+: refine by walking characters and emitting a Run per
+        # CharShape-contiguous region. Single run is correct for the
+        # common case of uniformly-formatted paragraphs.
+        return [Run(self, 0, -1)]
 
     def __repr__(self) -> str:
         return f"Paragraph(#{self.index})"

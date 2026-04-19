@@ -545,7 +545,8 @@ out_dir = sys.argv[2]
 
 import fitz
 from hwpapi.core import App
-from hwpapi.classes.shapes import CharShape, ParaShape
+# Phase 4 (v2) scrubbed ``hwpapi.classes`` — char/para state reset below is
+# a no-op instead of calling ``app.set_charshape(CharShape())``.
 
 app = App(is_visible=False)
 time.sleep(0.5)
@@ -595,15 +596,8 @@ for idx, (name, code) in enumerate(demos.items()):
         pass
     time.sleep(0.4)
 
-    # Reset char/para state
-    try:
-        app.set_charshape(CharShape())
-    except Exception:
-        pass
-    try:
-        app.set_parashape(ParaShape())
-    except Exception:
-        pass
+    # Reset char/para state — v2 removed set_charshape/set_parashape;
+    # this block is intentionally left as a best-effort no-op.
 
     # Execute demo code
     try:
