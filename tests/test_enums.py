@@ -1,14 +1,14 @@
 """Test v0.0.25+ enum maps and Color class constants."""
 import pytest
 
-from hwpapi.parametersets.mappings import (
+from hwpapi.low.parametersets.mappings import (
     BORDER_TYPE_MAP,
     HATCH_STYLE_MAP,
     CELL_APPLY_TO_MAP,
     DIAGONAL_FLAG_MAP,
     resolve_enum,
 )
-from hwpapi.parametersets.properties import Color
+from hwpapi.low.parametersets.properties import Color
 
 
 # ─── BORDER_TYPE_MAP ──────────────────────────────────────────────

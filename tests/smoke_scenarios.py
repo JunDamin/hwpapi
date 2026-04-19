@@ -773,11 +773,11 @@ def scenario_07_page_setup(app):
     with Scenario("7. PageDef unit strings — '20mm' 변환 검증") as s:
         # PageSetup action uses SecDef pset; margins live on SecDef.PageDef (nested).
         # Instead of a full run, we directly exercise UnitProperty on a PageDef.
-        from hwpapi.parametersets.sets import PageDef
+        from hwpapi.low.parametersets.sets import PageDef
 
         page = PageDef()  # unbound — uses staged in-memory values
         # PageDef uses PascalCase keys; pick any UnitProperty
-        from hwpapi.parametersets import UnitProperty
+        from hwpapi.low.parametersets import UnitProperty
         unit_props = [n for n, d in PageDef._property_registry.items()
                       if isinstance(d, UnitProperty)]
         s.log(f"PageDef UnitProperty fields: {unit_props}")
@@ -841,7 +841,7 @@ def scenario_08_clone_merge(app):
 def scenario_09_array_property(app):
     """HArray wrapper via TabDef.tab_stops."""
     with Scenario("9. Array properties — TabDef tab_stops") as s:
-        from hwpapi.parametersets import ArrayProperty
+        from hwpapi.low.parametersets import ArrayProperty
 
         action = app.actions.ParagraphShape
         ps = action.pset
@@ -850,7 +850,7 @@ def scenario_09_array_property(app):
         assert len(ps.attributes_names) > 5, "ParaShape has too few attributes"
 
         # TabDef directly
-        from hwpapi.parametersets import TabDef
+        from hwpapi.low.parametersets import TabDef
         td = TabDef()
         attr_names = td.attributes_names
         s.log(f"VERIFY: TabDef.attributes_names = {attr_names[:5]}... ({len(attr_names)} total)")
@@ -859,7 +859,7 @@ def scenario_09_array_property(app):
         assert len(type(td)._property_registry) > 0, "TabDef._property_registry is empty"
 
         # Count ArrayProperty across all registered ParameterSets (introspection only)
-        from hwpapi.parametersets import PARAMETERSET_REGISTRY
+        from hwpapi.low.parametersets import PARAMETERSET_REGISTRY
         array_prop_count = 0
         for cls_name, cls in PARAMETERSET_REGISTRY.items():
             for name, desc in getattr(cls, '_property_registry', {}).items():
@@ -895,8 +895,8 @@ def scenario_11_bulk_insert(app):
 def scenario_12_introspection_chain(app):
     """Chain of introspection calls — no COM needed."""
     with Scenario("12. Introspection chain — no COM") as s:
-        from hwpapi.actions import _action_info
-        from hwpapi.parametersets import PARAMETERSET_REGISTRY
+        from hwpapi.low.actions import _action_info
+        from hwpapi.low.parametersets import PARAMETERSET_REGISTRY
 
         # VERIFY: basic registry sanity
         total_actions = len(_action_info)

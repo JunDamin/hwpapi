@@ -18,9 +18,9 @@ except ImportError:
 
 try:
     from hwpapi.core import App
-    from hwpapi.actions import _Action, _Actions, _action_info
-    from hwpapi.parametersets import ParameterSet, PARAMETERSET_REGISTRY
-    import hwpapi.parametersets as ps_mod
+    from hwpapi.low.actions import _Action, _Actions, _action_info
+    from hwpapi.low.parametersets import ParameterSet, PARAMETERSET_REGISTRY
+    import hwpapi.low.parametersets as ps_mod
     HAS_HWPAPI = True
 except ImportError:
     HAS_HWPAPI = False
@@ -147,7 +147,7 @@ class TestActionsWithParameterSet:
         pset = action.pset
         for attr_name in pset.attributes_names:
             descriptor = pset._property_registry.get(attr_name)
-            from hwpapi.parametersets import NestedProperty, ArrayProperty
+            from hwpapi.low.parametersets import NestedProperty, ArrayProperty
             if isinstance(descriptor, (NestedProperty, ArrayProperty)):
                 continue
             try:

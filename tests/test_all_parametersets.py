@@ -4,13 +4,13 @@ These tests do NOT require HWP to be installed.
 """
 import pytest
 import inspect
-from hwpapi.parametersets import (
+from hwpapi.low.parametersets import (
     ParameterSet, GenericParameterSet, PARAMETERSET_REGISTRY,
     PropertyDescriptor, IntProperty, BoolProperty, StringProperty,
     ColorProperty, UnitProperty, MappedProperty, TypedProperty,
     NestedProperty, ArrayProperty, ListProperty,
 )
-import hwpapi.parametersets as ps_mod
+import hwpapi.low.parametersets as ps_mod
 
 
 # ── Collect all ParameterSet subclasses ──────────────────────────────────
@@ -202,6 +202,6 @@ class TestCrossClassConsistency:
 
     def test_all_have_metaclass(self):
         """All ParameterSet subclasses should use ParameterSetMeta."""
-        from hwpapi.parametersets import ParameterSetMeta
+        from hwpapi.low.parametersets import ParameterSetMeta
         for name, cls in ALL_PS_CLASSES:
             assert isinstance(cls, ParameterSetMeta), f"{name} doesn't use ParameterSetMeta"

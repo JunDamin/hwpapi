@@ -28,7 +28,7 @@ except ImportError:
 
 try:
     from hwpapi.core import App
-    from hwpapi.parametersets import (
+    from hwpapi.low.parametersets import (
         _is_com,
         HParamBackend, make_backend, ComBackend, AttrBackend,
         resolve_action_args, apply_staged_to_backend
@@ -309,7 +309,7 @@ class TestParameterSetUpdateFrom(unittest.TestCase):
     """Test ParameterSet.update_from for attribute-based copying."""
 
     def test_update_from_simple(self):
-        from hwpapi.parametersets import ParameterSet, IntProperty
+        from hwpapi.low.parametersets import ParameterSet, IntProperty
 
         class SimplePS(ParameterSet):
             a = IntProperty("a", "Value a")
@@ -330,7 +330,7 @@ class TestParameterSetUpdateFrom(unittest.TestCase):
 
     def test_attributes_names_auto_generation(self):
         """Test that attributes_names property works correctly."""
-        from hwpapi.parametersets import CharShape
+        from hwpapi.low.parametersets import CharShape
 
         # Test that attributes_names is auto-generated from property registry
         ps = CharShape()

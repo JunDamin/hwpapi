@@ -4,7 +4,7 @@ Verifies structural invariants documented in PARAMETERSET_ARCHITECTURE.md.
 """
 import pytest
 import inspect
-from hwpapi.parametersets import (
+from hwpapi.low.parametersets import (
     ParameterSet, ParameterSetMeta, GenericParameterSet, PARAMETERSET_REGISTRY,
     PropertyDescriptor, IntProperty, BoolProperty, StringProperty,
     ColorProperty, UnitProperty, MappedProperty, TypedProperty,
@@ -12,7 +12,7 @@ from hwpapi.parametersets import (
     PsetBackend, HParamBackend, ComBackend, AttrBackend,
     _is_com, _looks_like_pset, make_backend,
 )
-import hwpapi.parametersets as ps_mod
+import hwpapi.low.parametersets as ps_mod
 
 
 # ── Collect classes ──────────────────────────────────────────────────────
@@ -193,7 +193,7 @@ class TestParameterSetLifecycle:
 
     def test_unbound_attributes_names(self):
         """Unbound ParameterSet should still have attributes_names."""
-        from hwpapi.parametersets import CharShape
+        from hwpapi.low.parametersets import CharShape
         ps = CharShape()
         assert isinstance(ps.attributes_names, list)
         assert len(ps.attributes_names) == 65
@@ -204,19 +204,19 @@ class TestParameterSetLifecycle:
 
     def test_snake_case_to_pascal_case(self):
         """Setting snake_case should map to PascalCase in _staged."""
-        from hwpapi.parametersets import CharShape
+        from hwpapi.low.parametersets import CharShape
         ps = CharShape()
         ps.bold = True
         assert "Bold" in ps._staged
 
     def test_repr_no_crash_unbound(self):
-        from hwpapi.parametersets import CharShape
+        from hwpapi.low.parametersets import CharShape
         ps = CharShape()
         r = repr(ps)
         assert "CharShape" in r
 
     def test_update_from_copies_values(self):
-        from hwpapi.parametersets import IntProperty
+        from hwpapi.low.parametersets import IntProperty
         cls = type("TestPS", (ParameterSet,), {
             "a": IntProperty("a", ""),
             "b": IntProperty("b", ""),

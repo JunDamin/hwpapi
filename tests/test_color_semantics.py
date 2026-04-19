@@ -10,7 +10,7 @@ These tests pin down the intended behaviour of ``ColorProperty``:
 """
 import unittest
 
-from hwpapi.parametersets import Color, UNSET, CharShape
+from hwpapi.low.parametersets import Color, UNSET, CharShape
 
 
 class TestColorClass(unittest.TestCase):
@@ -65,7 +65,7 @@ class TestUnsetSentinel(unittest.TestCase):
         self.assertFalse(bool(UNSET))
 
     def test_unset_is_singleton(self):
-        from hwpapi.parametersets.properties import _Unset
+        from hwpapi.low.parametersets.properties import _Unset
         a = _Unset()
         b = _Unset()
         self.assertIs(a, b)
