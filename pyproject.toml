@@ -45,6 +45,9 @@ test = [
 ]
 docs = [
     "matplotlib",    # tutorial illustrations
+    "quartodoc",     # API reference generation for v2.0 Quarto site
+    "griffe",        # Python introspection backend for quartodoc
+    "jupyter",       # notebook-based recipe pages
 ]
 
 [project.urls]
