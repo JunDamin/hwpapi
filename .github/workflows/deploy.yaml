@@ -22,8 +22,9 @@ concurrency:
   cancel-in-progress: false
 
 on:
-  push:
-    branches: [ "main", "master" ]
+  # v2 부터는 deploy-docs.yaml (docs/ 렌더) 가 정식 사이트.
+  # 이 워크플로우는 legacy nbs/ 사이트를 렌더하므로 자동 트리거 비활성화.
+  # 필요 시 수동 실행만 가능.
   workflow_dispatch:
 
 jobs:

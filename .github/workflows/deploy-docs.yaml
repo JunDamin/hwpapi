@@ -48,7 +48,7 @@ jobs:
           pip install matplotlib quartodoc "griffe<1.0" jupyter
           pip install -e . --no-deps
           # Sanity check — the reference layer relies on these:
-          python -c "import quartodoc, griffe; print(quartodoc.__version__, griffe.__version__)"
+          python -c "import quartodoc, griffe; print('quartodoc/griffe import OK')"
           python -c "import hwpapi; print('hwpapi import OK')"
 
       - name: Setup Quarto
