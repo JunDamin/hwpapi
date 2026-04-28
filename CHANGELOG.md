@@ -6,7 +6,7 @@
 
 ## [Unreleased]
 
-## [2.0.0] — 2026-04-19 — 🚀 Major redesign (dual-layer API + Quarto docs)
+## [2.0.0] — 2026-04-28 — 🚀 Major redesign (dual-layer API + Quarto docs)
 
 v1.0 이후 약 4일간 진행한 **전면 재설계**. public API break 을 허용한 클린컷
 릴리즈로, 구조/퍼사드/문서 파이프라인을 한꺼번에 갈아엎었습니다.
@@ -55,6 +55,8 @@ v1.0 이후 약 4일간 진행한 **전면 재설계**. public API break 을 허
   `InvalidArgumentError`, `FileIOError` + `wrap_com_error()`
 - `hwpapi/context/scopes.py` — `charshape_scope`, `parashape_scope`, `styled_text`
 - `hwpapi/io/` — `open_file`, `new_document`, `export_pdf`, `export_image`, `export_text`
+- `app.save()` 의 확장자 → 포맷 매핑(`_SAVE_FORMAT_MAP`)에 `.html` / `.htm` →
+  `"HTML"` 포함 — `app.save("report.html")` 만으로 HTML 저장 가능
 - `docs/` Quarto 사이트 (43 페이지, 0 warnings) — getting-started / guide /
   recipes / reference / design / adr
 - `.github/workflows/deploy-docs.yaml` — GitHub Pages 자동 배포
@@ -66,6 +68,10 @@ v1.0 이후 약 4일간 진행한 **전면 재설계**. public API break 을 허
 - pytest 전체 세션에서 HWP 다이얼로그가 더 이상 블로킹하지 않음
 - griffe 2.x API drift 대응 — `griffe<1.0` 핀 (`[project.optional-dependencies].docs`)
 - 순환 import 제거 (`low/engine.py` 의 dead `from hwpapi.classes import ...` 제거)
+- 패키지 디렉터리 케이싱 정규화: git 인덱스가 `HwpApi/` (PascalCase) 로 트래킹되어
+  Linux/macOS (case-sensitive FS) 에서 `from hwpapi.core import App` 가
+  `ModuleNotFoundError: No module named 'hwpapi'` 로 실패하던 문제 수정 (#6).
+  Windows (case-insensitive FS) 에서는 표면화되지 않았으나 PyPI sdist 재현성에 영향.
 
 ### Tests
 

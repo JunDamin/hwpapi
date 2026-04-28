@@ -254,7 +254,7 @@ class App:
         Without ``path`` performs an in-place save (``HwpObject.Save``).
         With ``path`` performs a ``SaveAs`` using the file-extension-
         derived format — ``.hwp``, ``.pdf``, ``.hwpx``, ``.hml``, ``.png``,
-        ``.txt``, ``.docx`` are recognised.
+        ``.txt``, ``.docx``, ``.html`` / ``.htm`` are recognised.
         """
         self._logger.debug(f"save({path!r})")
         if not path:
@@ -355,6 +355,8 @@ _SAVE_FORMAT_MAP = {
     ".png": "PNG",
     ".txt": "TEXT",
     ".docx": "MSWORD",
+    ".html": "HTML+",
+    ".htm": "HTML",
 }
 
 _BLOCK_FORMAT_MAP = {
