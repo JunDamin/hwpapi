@@ -1,0 +1,1819 @@
+[
+  {
+    "objectID": "reference/units.html",
+    "href": "reference/units.html",
+    "title": "units",
+    "section": "",
+    "text": "Unit conversion module.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "units"
+    ]
+  },
+  {
+    "objectID": "reference/units.html#examples",
+    "href": "reference/units.html#examples",
+    "title": "units",
+    "section": "Examples",
+    "text": "Examples\n&gt;&gt;&gt; parse(\"210mm\")   # 283 * 210 ≈ 59544\n59430\n&gt;&gt;&gt; parse(\"21cm\")\n59430\n&gt;&gt;&gt; parse(\"8.27in\")  # 7200 * 8.27\n59544\n&gt;&gt;&gt; parse(\"12pt\")    # 100 * 12\n1200\n&gt;&gt;&gt; parse(210)       # int → assumed mm\n59430",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "units"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html",
+    "href": "reference/low/engine.html",
+    "title": "low.engine",
+    "section": "",
+    "text": "Engine / Engines / Apps.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#매개변수",
+    "href": "reference/low/engine.html#매개변수",
+    "title": "low.engine",
+    "section": "매개변수",
+    "text": "매개변수\nhwp_object : object, optional Engine에 의해 캡슐화될 Hwp 객체. 제공되지 않은 경우, “HWPFrame.HwpObject”를 사용하여 새로운 Hwp 객체를 생성합니다.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#속성",
+    "href": "reference/low/engine.html#속성",
+    "title": "low.engine",
+    "section": "속성",
+    "text": "속성\nimpl : object Hwp 객체의 구현체.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#메서드",
+    "href": "reference/low/engine.html#메서드",
+    "title": "low.engine",
+    "section": "메서드",
+    "text": "메서드\nname() Hwp 객체의 이름(CLSID)을 반환합니다.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#사용-예시",
+    "href": "reference/low/engine.html#사용-예시",
+    "title": "low.engine",
+    "section": "사용 예시",
+    "text": "사용 예시\n\n\n\nengine = Engine() print(engine.name)",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#attributes",
+    "href": "reference/low/engine.html#attributes",
+    "title": "low.engine",
+    "section": "Attributes",
+    "text": "Attributes\n\n\n\nName\nDescription\n\n\n\n\nname\nHwp 객체의 이름(CLSID)을 반환합니다.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#매개변수-1",
+    "href": "reference/low/engine.html#매개변수-1",
+    "title": "low.engine",
+    "section": "매개변수",
+    "text": "매개변수\ndll_path : str, optional 초기화에 필요한 경우 DLL 파일의 경로.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#속성-1",
+    "href": "reference/low/engine.html#속성-1",
+    "title": "low.engine",
+    "section": "속성",
+    "text": "속성\nactive : Engine or None 현재 활성화된 Engine 인스턴스. engines : list of Engine 이 컬렉션에서 관리하는 Engine 인스턴스 목록.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#메서드-1",
+    "href": "reference/low/engine.html#메서드-1",
+    "title": "low.engine",
+    "section": "메서드",
+    "text": "메서드\nadd(engine) 컬렉션에 새로운 Engine 인스턴스를 추가합니다. count() 컬렉션의 Engine 인스턴스 수를 반환합니다.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#사용-예시-1",
+    "href": "reference/low/engine.html#사용-예시-1",
+    "title": "low.engine",
+    "section": "사용 예시",
+    "text": "사용 예시\n\n\n\nengines = Engines() engines.add(Engine()) print(engines.count) for engine in engines: … print(engine)",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#주의사항",
+    "href": "reference/low/engine.html#주의사항",
+    "title": "low.engine",
+    "section": "주의사항",
+    "text": "주의사항\nEngines 클래스는 get_hwp_objects() 함수에서 검색된 각 객체에 대해 Engine 인스턴스를 생성하여 초기화됩니다. dll_path가 제공된 경우 필요한 DLL을 확인합니다.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#attributes-1",
+    "href": "reference/low/engine.html#attributes-1",
+    "title": "low.engine",
+    "section": "Attributes",
+    "text": "Attributes\n\n\n\nName\nDescription\n\n\n\n\ncount\n컬렉션의 Engine 인스턴스 수를 반환합니다.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#methods",
+    "href": "reference/low/engine.html#methods",
+    "title": "low.engine",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\nadd\n컬렉션에 새로운 Engine 인스턴스를 추가합니다.\n\n\n\n\nadd\nlow.engine.Engines.add(engine)\n컬렉션에 새로운 Engine 인스턴스를 추가합니다.\n\n매개변수\nengine : Engine 컬렉션에 추가할 Engine 인스턴스.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#속성-2",
+    "href": "reference/low/engine.html#속성-2",
+    "title": "low.engine",
+    "section": "속성",
+    "text": "속성\n_apps : list App 인스턴스를 포함하는 리스트.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#메서드-2",
+    "href": "reference/low/engine.html#메서드-2",
+    "title": "low.engine",
+    "section": "메서드",
+    "text": "메서드\nadd(**kwargs) 새로운 App을 생성하고 컬렉션에 추가합니다. count() 컬렉션의 앱 수를 반환합니다. cleanup() [메서드 설명 필요]",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#attributes-2",
+    "href": "reference/low/engine.html#attributes-2",
+    "title": "low.engine",
+    "section": "Attributes",
+    "text": "Attributes\n\n\n\nName\nDescription\n\n\n\n\ncount\n컬렉션의 앱 수를 반환합니다.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/low/engine.html#methods-1",
+    "href": "reference/low/engine.html#methods-1",
+    "title": "low.engine",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\nadd\n새로운 App을 생성합니다. 새로운 App이 활성화됩니다.\n\n\ncleanup\n[메서드 설명 필요]\n\n\n\n\nadd\nlow.engine.Apps.add(**kwargs)\n새로운 App을 생성합니다. 새로운 App이 활성화됩니다.\n\n반환값\nApp 새로 생성된 App 객체.\n\n\n\ncleanup\nlow.engine.Apps.cleanup()\n[메서드 설명 필요]\n[메서드가 수행하는 작업과 부작용에 대한 설명]",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.engine"
+    ]
+  },
+  {
+    "objectID": "reference/io/open.html",
+    "href": "reference/io/open.html",
+    "title": "io.open",
+    "section": "",
+    "text": "open_file / new_document.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Io",
+      "io.open"
+    ]
+  },
+  {
+    "objectID": "reference/io/open.html#parameters",
+    "href": "reference/io/open.html#parameters",
+    "title": "io.open",
+    "section": "Parameters",
+    "text": "Parameters\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\napp\nhwpapi.App\nLive App instance.\nrequired\n\n\npath\nstr | Path\nFile path (relative resolved against cwd).\nrequired\n\n\nformat\nstr\nHWP format string (\"HWP\", \"PDF\", \"HWPX\" …). None lets HWP auto-detect.\nNone",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Io",
+      "io.open"
+    ]
+  },
+  {
+    "objectID": "reference/io/open.html#raises",
+    "href": "reference/io/open.html#raises",
+    "title": "io.open",
+    "section": "Raises",
+    "text": "Raises\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFileIOError\nWraps any COM error raised by :meth:App.open, with the path included in the message.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Io",
+      "io.open"
+    ]
+  },
+  {
+    "objectID": "reference/io/open.html#raises-1",
+    "href": "reference/io/open.html#raises-1",
+    "title": "io.open",
+    "section": "Raises",
+    "text": "Raises\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFileIOError\nIf the underlying :meth:App.new raises a COM error (rare — usually means HWP can’t be dispatched at all).",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Io",
+      "io.open"
+    ]
+  },
+  {
+    "objectID": "reference/index.html",
+    "href": "reference/index.html",
+    "title": "API Reference",
+    "section": "",
+    "text": "The two classes every user starts from. App owns the COM engine lifecycle; Document owns per-document state via app.doc.\n\n\n\nApp\nSlim facade — lifecycle + window-level concerns.\n\n\nDocument\nPer-document facade — text, cursor, collections.\n\n\n\n\n\n\nDict-like + iterable + filterable collections under app.doc.*. Every collection implements the Collection Protocol.\n\n\n\nfields\nField (누름틀) collection.\n\n\nbookmarks\nBookmark (책갈피) collection.\n\n\nhyperlinks\nHyperlink collection.\n\n\nimages\nImage collection.\n\n\nparagraphs\nParagraph collection with Run element.\n\n\nstyles\nStyle collection.\n\n\ntables\nTable collection with Table/Cell elements.\n\n\n\n\n\n\nFormatting scopes extracted from the v1 App. All three live at module level so you can drive them from any App instance.\n\n\n\ncontext.scopes\ncharshape_scope / parashape_scope / styled_text.\n\n\n\n\n\n\nThin, error-wrapping shortcuts over the raw COM open/save calls.\n\n\n\nio.open\nopen_file / new_document.\n\n\nio.export\nexport_pdf / export_image / export_text.\n\n\n\n\n\n\nException hierarchy every public call promises to raise.\n\n\n\nerrors\nHwpApiError and subclasses.\n\n\n\n\n\n\nmm / cm / inch / pt ↔︎ HWPUNIT conversion helpers.\n\n\n\nunits\nUnit conversion module.\n\n\n\n\n\n\nRaw action wrappers, ParameterSet classes, and the COM engine. Prefer the top-level facade unless you need something the facade does not expose yet.\n\n\n\nlow.actions\n900+ HWP action wrappers.\n\n\nlow.engine\nEngine / Engines / Apps.\n\n\nlow.parametersets\nParameterSet classes (CharShape, ParaShape, …).",
+    "crumbs": [
+      "Reference",
+      "API Reference"
+    ]
+  },
+  {
+    "objectID": "reference/index.html#top-level-facade",
+    "href": "reference/index.html#top-level-facade",
+    "title": "API Reference",
+    "section": "",
+    "text": "The two classes every user starts from. App owns the COM engine lifecycle; Document owns per-document state via app.doc.\n\n\n\nApp\nSlim facade — lifecycle + window-level concerns.\n\n\nDocument\nPer-document facade — text, cursor, collections.",
+    "crumbs": [
+      "Reference",
+      "API Reference"
+    ]
+  },
+  {
+    "objectID": "reference/index.html#collections",
+    "href": "reference/index.html#collections",
+    "title": "API Reference",
+    "section": "",
+    "text": "Dict-like + iterable + filterable collections under app.doc.*. Every collection implements the Collection Protocol.\n\n\n\nfields\nField (누름틀) collection.\n\n\nbookmarks\nBookmark (책갈피) collection.\n\n\nhyperlinks\nHyperlink collection.\n\n\nimages\nImage collection.\n\n\nparagraphs\nParagraph collection with Run element.\n\n\nstyles\nStyle collection.\n\n\ntables\nTable collection with Table/Cell elements.",
+    "crumbs": [
+      "Reference",
+      "API Reference"
+    ]
+  },
+  {
+    "objectID": "reference/index.html#context-managers",
+    "href": "reference/index.html#context-managers",
+    "title": "API Reference",
+    "section": "",
+    "text": "Formatting scopes extracted from the v1 App. All three live at module level so you can drive them from any App instance.\n\n\n\ncontext.scopes\ncharshape_scope / parashape_scope / styled_text.",
+    "crumbs": [
+      "Reference",
+      "API Reference"
+    ]
+  },
+  {
+    "objectID": "reference/index.html#io-and-export",
+    "href": "reference/index.html#io-and-export",
+    "title": "API Reference",
+    "section": "",
+    "text": "Thin, error-wrapping shortcuts over the raw COM open/save calls.\n\n\n\nio.open\nopen_file / new_document.\n\n\nio.export\nexport_pdf / export_image / export_text.",
+    "crumbs": [
+      "Reference",
+      "API Reference"
+    ]
+  },
+  {
+    "objectID": "reference/index.html#errors",
+    "href": "reference/index.html#errors",
+    "title": "API Reference",
+    "section": "",
+    "text": "Exception hierarchy every public call promises to raise.\n\n\n\nerrors\nHwpApiError and subclasses.",
+    "crumbs": [
+      "Reference",
+      "API Reference"
+    ]
+  },
+  {
+    "objectID": "reference/index.html#units",
+    "href": "reference/index.html#units",
+    "title": "API Reference",
+    "section": "",
+    "text": "mm / cm / inch / pt ↔︎ HWPUNIT conversion helpers.\n\n\n\nunits\nUnit conversion module.",
+    "crumbs": [
+      "Reference",
+      "API Reference"
+    ]
+  },
+  {
+    "objectID": "reference/index.html#low-level-escape-hatch",
+    "href": "reference/index.html#low-level-escape-hatch",
+    "title": "API Reference",
+    "section": "",
+    "text": "Raw action wrappers, ParameterSet classes, and the COM engine. Prefer the top-level facade unless you need something the facade does not expose yet.\n\n\n\nlow.actions\n900+ HWP action wrappers.\n\n\nlow.engine\nEngine / Engines / Apps.\n\n\nlow.parametersets\nParameterSet classes (CharShape, ParaShape, …).",
+    "crumbs": [
+      "Reference",
+      "API Reference"
+    ]
+  },
+  {
+    "objectID": "reference/context/scopes.html",
+    "href": "reference/context/scopes.html",
+    "title": "context.scopes",
+    "section": "",
+    "text": "charshape_scope / parashape_scope / styled_text.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Context",
+      "context.scopes"
+    ]
+  },
+  {
+    "objectID": "reference/context/scopes.html#parameters",
+    "href": "reference/context/scopes.html#parameters",
+    "title": "context.scopes",
+    "section": "Parameters",
+    "text": "Parameters\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\napp\nhwpapi.App\nLive App instance (or any object exposing .actions and .api).\nrequired\n\n\n**fmt\nAny\nChar-shape overrides. Friendly keys — bold, italic, size, color, shade_color, font — are translated to HWP COM names; anything else is passed through.\n{}",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Context",
+      "context.scopes"
+    ]
+  },
+  {
+    "objectID": "reference/context/scopes.html#example",
+    "href": "reference/context/scopes.html#example",
+    "title": "context.scopes",
+    "section": "Example",
+    "text": "Example\n\n\n\nwith charshape_scope(app, bold=True, size=1400, color=“#FF0000”): … app.doc.insert_text(“important!”)",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Context",
+      "context.scopes"
+    ]
+  },
+  {
+    "objectID": "reference/context/scopes.html#parameters-1",
+    "href": "reference/context/scopes.html#parameters-1",
+    "title": "context.scopes",
+    "section": "Parameters",
+    "text": "Parameters\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\napp\nhwpapi.App\n\nrequired\n\n\n**fmt\nAny\nParagraph-shape overrides. Friendly keys — align, line_spacing, left_margin, right_margin, indentation — are translated to HWP COM names.\n{}",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Context",
+      "context.scopes"
+    ]
+  },
+  {
+    "objectID": "reference/context/scopes.html#example-1",
+    "href": "reference/context/scopes.html#example-1",
+    "title": "context.scopes",
+    "section": "Example",
+    "text": "Example\n\n\n\nwith parashape_scope(app, align=“center”): … app.doc.insert_text(“centred paragraph”)",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Context",
+      "context.scopes"
+    ]
+  },
+  {
+    "objectID": "reference/context/scopes.html#parameters-2",
+    "href": "reference/context/scopes.html#parameters-2",
+    "title": "context.scopes",
+    "section": "Parameters",
+    "text": "Parameters\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\napp\nhwpapi.App\n\nrequired\n\n\ntext\nstr\nLiteral text to insert at the cursor.\nrequired\n\n\n**fmt\nAny\nSame friendly-key char-shape overrides as :func:charshape_scope.\n{}",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Context",
+      "context.scopes"
+    ]
+  },
+  {
+    "objectID": "reference/context/scopes.html#example-2",
+    "href": "reference/context/scopes.html#example-2",
+    "title": "context.scopes",
+    "section": "Example",
+    "text": "Example\n\n\n\nstyled_text(app, “Hello”, bold=True, color=“#FF0000”)",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Context",
+      "context.scopes"
+    ]
+  },
+  {
+    "objectID": "reference/collections/styles.html",
+    "href": "reference/collections/styles.html",
+    "title": "styles",
+    "section": "",
+    "text": "Style collection.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "styles"
+    ]
+  },
+  {
+    "objectID": "reference/collections/styles.html#attributes",
+    "href": "reference/collections/styles.html#attributes",
+    "title": "styles",
+    "section": "Attributes",
+    "text": "Attributes\n\n\n\nName\nDescription\n\n\n\n\ncurrent\nParagraph style currently applied at the cursor, or None.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "styles"
+    ]
+  },
+  {
+    "objectID": "reference/collections/styles.html#methods",
+    "href": "reference/collections/styles.html#methods",
+    "title": "styles",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\nnames\nEmpty until HWPML-based enumeration is ported.\n\n\n\n\nnames\ncollections.styles.StyleCollection.names()\nEmpty until HWPML-based enumeration is ported.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "styles"
+    ]
+  },
+  {
+    "objectID": "reference/collections/styles.html#methods-1",
+    "href": "reference/collections/styles.html#methods-1",
+    "title": "styles",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\napply\nApply this style to the current cursor paragraph.\n\n\n\n\napply\ncollections.styles.Style.apply()\nApply this style to the current cursor paragraph.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "styles"
+    ]
+  },
+  {
+    "objectID": "reference/collections/images.html",
+    "href": "reference/collections/images.html",
+    "title": "images",
+    "section": "",
+    "text": "images\nImage collection.\n\n\nimages.ImageCollection\ncollections.images.ImageCollection(app)\ndoc.images — image controls in document order.\n\n\nimages.Image\ncollections.images.Image(app, ctrl, index)\nValue object for a single image control.\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "images"
+    ]
+  },
+  {
+    "objectID": "reference/collections/fields.html",
+    "href": "reference/collections/fields.html",
+    "title": "fields",
+    "section": "",
+    "text": "Field (누름틀) collection.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "fields"
+    ]
+  },
+  {
+    "objectID": "reference/collections/fields.html#methods",
+    "href": "reference/collections/fields.html#methods",
+    "title": "fields",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\nfilter\nReturn the subset of fields for which predicate is truthy.\n\n\nfind\nReturn the :class:Field with name or None.\n\n\nget\nReturn a field’s current value, or default if missing.\n\n\nnames\nAll field names, document order, deduplicated.\n\n\nupdate\nDict-style batch assignment.\n\n\n\n\nfilter\ncollections.fields.FieldCollection.filter(predicate)\nReturn the subset of fields for which predicate is truthy.\n\n\nfind\ncollections.fields.FieldCollection.find(name)\nReturn the :class:Field with name or None.\n\n\nget\ncollections.fields.FieldCollection.get(name, default='')\nReturn a field’s current value, or default if missing.\n\n\nnames\ncollections.fields.FieldCollection.names()\nAll field names, document order, deduplicated.\n\n\nupdate\ncollections.fields.FieldCollection.update(mapping=None, **kwargs)\nDict-style batch assignment.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "fields"
+    ]
+  },
+  {
+    "objectID": "reference/Document.html",
+    "href": "reference/Document.html",
+    "title": "Document",
+    "section": "",
+    "text": "Per-document facade — text, cursor, collections.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Document"
+    ]
+  },
+  {
+    "objectID": "reference/Document.html#parameters",
+    "href": "reference/Document.html#parameters",
+    "title": "Document",
+    "section": "Parameters",
+    "text": "Parameters\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\napp\nhwpapi.App\nThe owning :class:~hwpapi.core.app.App instance.\nrequired",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Document"
+    ]
+  },
+  {
+    "objectID": "reference/Document.html#examples",
+    "href": "reference/Document.html#examples",
+    "title": "Document",
+    "section": "Examples",
+    "text": "Examples\n&gt;&gt;&gt; app = App()\n&gt;&gt;&gt; doc = app.doc              # same instance on every access\n&gt;&gt;&gt; len(doc.fields)            # number of 누름틀 fields\n0",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Document"
+    ]
+  },
+  {
+    "objectID": "reference/Document.html#attributes",
+    "href": "reference/Document.html#attributes",
+    "title": "Document",
+    "section": "Attributes",
+    "text": "Attributes\n\n\n\nName\nDescription\n\n\n\n\napp\nThe owning :class:App — escape hatch.\n\n\nbookmarks\nBookmark collection (책갈피).\n\n\nfields\nField collection (누름틀).\n\n\nhyperlinks\nHyperlink collection.\n\n\nimages\nImage collection.\n\n\nparagraphs\nParagraph collection (ordinal access).\n\n\nstyles\nParagraph-style collection (minimal, see module docstring).\n\n\ntables\nTable collection.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Document"
+    ]
+  },
+  {
+    "objectID": "recipes/report-generation.html",
+    "href": "recipes/report-generation.html",
+    "title": "Report generation",
+    "section": "",
+    "text": "Ported from nbs/01_tutorials/07_usecase_report_generation.ipynb.",
+    "crumbs": [
+      "Recipes",
+      "Report generation"
+    ]
+  },
+  {
+    "objectID": "recipes/report-generation.html#multi-section-report",
+    "href": "recipes/report-generation.html#multi-section-report",
+    "title": "Report generation",
+    "section": "Multi-section report",
+    "text": "Multi-section report\n\nsections = [\n    (\"1. 개요\",    \"본 보고서의 목적은 …\"),\n    (\"2. 방법론\",  \"데이터는 …\"),\n    (\"3. 결과\",    \"Q1 대비 …\"),\n    (\"4. 결론\",    \"전사 차원에서 …\"),\n]\n\nwith App(is_visible=False) as app:\n    app.new()\n    for i, (heading, body) in enumerate(sections):\n        with charshape_scope(app, bold=True, size=U.pt(14)):\n            app.doc.insert_text(heading + \"\\n\")\n        app.doc.insert_text(body + \"\\n\\n\")\n        if i &lt; len(sections) - 1:\n            app.doc.insert_page_break()\n    app.save_as(\"report.hwp\")",
+    "crumbs": [
+      "Recipes",
+      "Report generation"
+    ]
+  },
+  {
+    "objectID": "recipes/report-generation.html#export-each-page-as-an-image",
+    "href": "recipes/report-generation.html#export-each-page-as-an-image",
+    "title": "Report generation",
+    "section": "Export each page as an image",
+    "text": "Export each page as an image\n\nfrom hwpapi.io import export_image\n\nwith App(is_visible=False) as app:\n    app.open(\"report.hwp\")\n    for page in range(1, app.doc.page_count + 1):\n        export_image(app, f\"out/page-{page:03d}.png\", page=page)",
+    "crumbs": [
+      "Recipes",
+      "Report generation"
+    ]
+  },
+  {
+    "objectID": "recipes/presets-gallery.html",
+    "href": "recipes/presets-gallery.html",
+    "title": "Presets gallery",
+    "section": "",
+    "text": "Ported from nbs/01_tutorials/11_presets_gallery.ipynb.\nhwpapi.presets bundles small, opinionated helpers for things that aren’t worth re-writing every script. They all take an App first.\n\nHighlight (형광펜)\n\nfrom hwpapi import App\nfrom hwpapi.presets import highlight_yellow, highlight_cyan, highlight_green\n\nwith App() as app:\n    app.open(\"report.hwp\")\n\n    # Jump to a phrase, select it, then highlight\n    app.doc.find_text(\"important\")\n    app.doc.select_text(start=None, end=None)   # select the matched word\n    highlight_yellow(app)\n\npresets.highlight_yellow / highlight_cyan / highlight_green all drive the same underlying action — they just pre-fill the ShadeColor.\n\n\nCell shading\n\nfrom hwpapi import App\nfrom hwpapi.presets import shade_cell_light_grey, shade_cell_accent\n\nwith App() as app:\n    app.open(\"report.hwp\")\n    tbl = app.doc.tables[0]\n\n    # Header row — accent\n    for c in range(tbl.cols):\n        tbl.cell(0, c).goto()\n        shade_cell_accent(app)\n\n    # Alternating stripe on data rows\n    for r in range(1, tbl.rows, 2):\n        for c in range(tbl.cols):\n            tbl.cell(r, c).goto()\n            shade_cell_light_grey(app)\n\n\n\nInsert a horizontal rule\n\nfrom hwpapi import App\nfrom hwpapi.presets import rule_line_thin, rule_line_thick\n\nwith App() as app:\n    app.new()\n    app.doc.insert_text(\"Section A\\n\")\n    rule_line_thin(app)\n    app.doc.insert_text(\"\\nSection B\\n\")\n    rule_line_thick(app)\n\n\n\nWhy presets are a separate module\nPresets are the layer above the facade. Each one is a few lines of hwpapi.context.scopes + hwpapi.low.actions. They exist to:\n\ncapture team-style conventions in one place (same accent color everywhere, same stroke width)\navoid repeating a dozen parameter-set tweaks at every call site\ndocument which parameter combinations are “known-good” with the current HWP version (highlight has a bleed-safe fallback, see the module docstring)\n\nIf a preset doesn’t fit, read its source — it’s the shortest tutorial on how to call the underlying action directly.\n\n\nSee also\n\nReference: hwpapi.presets (listed via auto-discovery when the package grows)\nRecipe: charshape-formatting\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Recipes",
+      "Presets gallery"
+    ]
+  },
+  {
+    "objectID": "recipes/insert-picture.html",
+    "href": "recipes/insert-picture.html",
+    "title": "Insert a picture",
+    "section": "",
+    "text": "v1 의 app.insert_picture(...) 헬퍼는 v2 슬림 퍼사드에서 의도적으로 제거되었습니다 (App public 멤버 82 → 12). 그림 삽입은 두 가지 길로 계속 가능합니다 — 호출 환경에 맞춰 선택하세요.\n\n\n\n\n\n\nNote\n\n\n\nIssue #3 — TypeError: ... unexpected keyword argument 'reverse': v1 헬퍼가 HWP COM 인터페이스의 매개변수 이름과 다른 키워드를 넘겨 발생했던 문제입니다. v2 에서는 헬퍼를 거치지 않고 COM 메서드 또는 actions.InsertPicture 액션을 직접 사용하므로 이 문제는 재발하지 않습니다.\n\n\n\n1. 가장 간단 — app.api.InsertPicture(...) 직접 호출\napp.api 는 raw HwpObject COM 핸들이라, HWP COM 메서드를 그대로 부를 수 있습니다.\n\nfrom pathlib import Path\nfrom hwpapi import App\n\nwith App() as app:\n    app.open(\"report.hwp\")\n\n    fpath = Path(\"logo.png\").absolute().as_posix()\n    app.api.InsertPicture(\n        Path=fpath,\n        Embedded=True,           # 이미지 임베드 (외부 링크 X)\n        sizeoption=2,            # 0=원본 크기, 2=글자크기 비율, 3=수동\n        Reverse=False,\n        watermark=False,\n        effect=0,                # 0=원본, 1=흑백, 2=회색조\n    )\n\n    app.save()\n\n\n\n\n\n\n\nWarning\n\n\n\n파라미터 이름 대소문자 주의 — HWP COM 메서드는 IDL 시그니처 대로 케이스를 맞춰야 합니다 (Path, Embedded, Reverse). 잘못 쓰면 TypeError: ... got an unexpected keyword argument 가 납니다. 정확한 시그니처는 한컴 SDK 문서 또는 dir(app.api) 로 확인하세요.\n\n\n\n\n2. v2 액션 escape hatch — app.actions.InsertPicture\nhwpapi.low.actions 의 액션 형태로도 호출 가능합니다. pset 으로 파라미터를 넘기는 패턴이라 다른 액션과 일관됩니다.\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.open(\"report.hwp\")\n\n    action = app.actions.InsertPicture\n    pset = action.pset\n    pset.Path = \"logo.png\"        # HWP 가 절대경로로 변환\n    pset.Embedded = True\n    action.run(pset)\n\n    app.save()\n\n\n\n3. 정확한 위치에 삽입하기\n먼저 필드/북마크/표 셀로 커서를 이동시킨 다음 호출합니다.\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.open(\"template.hwp\")\n\n    # 누름틀로 이동\n    app.doc.fields[\"logo_slot\"].goto()\n    app.api.InsertPicture(Path=\"logo.png\", Embedded=True, sizeoption=2)\n\n    # 또는 책갈피로 이동\n    app.doc.bookmarks.goto(\"appendix-figure-1\")\n    app.api.InsertPicture(Path=\"diagram.png\", Embedded=True, sizeoption=0)\n\n    app.save_as(\"out/report.hwp\")\n\n\n\n4. 폴더의 모든 이미지 일괄 삽입\n\nfrom pathlib import Path\nfrom hwpapi import App\n\nwith App() as app:\n    app.open(\"report.hwp\")\n\n    for img in sorted(Path(\"figures\").glob(\"*.png\")):\n        app.api.InsertPicture(\n            Path=str(img.absolute()),\n            Embedded=True,\n            sizeoption=0,\n        )\n        app.api.Run(\"BreakPara\")   # 다음 줄로 이동\n        print(f\"inserted {img.name}\")\n\n    app.save()\n\n\n\nSee also\n\nGuide: low-level escape hatch\nRecipe: fill-fields — 필드 위치로 이동하기\nReference: App.api — raw COM 핸들\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Recipes",
+      "Insert a picture"
+    ]
+  },
+  {
+    "objectID": "recipes/headers-and-footers.html",
+    "href": "recipes/headers-and-footers.html",
+    "title": "Headers and footers",
+    "section": "",
+    "text": "머리말(header) 과 꼬리말(footer) 은 HWP 의 컨트롤(HeaderFooter) 이라, 일반 문단 텍스트가 아닌 액션을 통해 만들어집니다. 이 레시피는 가장 자주 쓰는 머리말/꼬리말 시나리오 4가지를 묶어 보여줍니다.\n\n1. 본문 상단에 머리말 텍스트 한 줄\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.open(\"report.hwp\")\n\n    action = app.actions.HeaderFooter\n    pset = action.pset\n    pset.CtrlType = 0      # 0 = 머리말, 1 = 꼬리말\n    pset.Type = 0          # 0 = 양쪽, 1 = 짝수쪽, 2 = 홀수쪽\n    action.run(pset)\n\n    # 액션 실행으로 머리말 영역에 커서가 들어옴 — 그냥 입력\n    app.doc.insert_text(\"2026 Q1 — Internal Report\")\n\n    # 본문으로 복귀\n    app.api.Run(\"CloseEx\")\n\n    app.save()\n\n\n\n2. 페이지 번호가 들어간 꼬리말\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.open(\"report.hwp\")\n\n    # 꼬리말 진입\n    action = app.actions.HeaderFooter\n    pset = action.pset\n    pset.CtrlType = 1      # 꼬리말\n    pset.Type = 0          # 양쪽\n    action.run(pset)\n\n    # 가운데 정렬 후 \"n / total\" 형식 페이지 번호\n    app.api.Run(\"ParagraphShapeAlignCenter\")\n    app.api.Run(\"AutoChangeMode\")              # 페이지 자동 변경 활성\n    app.api.Run(\"InsertPageNum\")               # 현재 페이지 번호\n    app.doc.insert_text(\" / \")\n    app.api.Run(\"InsertPageCount\")             # 총 페이지 수\n\n    app.api.Run(\"CloseEx\")\n    app.save()\n\n\n\n3. 짝수/홀수쪽 다른 머리말\n양면 인쇄에서 흔한 패턴 — 짝수쪽엔 책 제목, 홀수쪽엔 장 제목.\n\nfrom hwpapi import App\n\ndef insert_header(app, text: str, *, type_: int) -&gt; None:\n    \"\"\"type_: 1=짝수쪽, 2=홀수쪽\"\"\"\n    action = app.actions.HeaderFooter\n    pset = action.pset\n    pset.CtrlType = 0\n    pset.Type = type_\n    action.run(pset)\n\n    app.api.Run(\n        \"ParagraphShapeAlignLeft\" if type_ == 2 else \"ParagraphShapeAlignRight\"\n    )\n    app.doc.insert_text(text)\n    app.api.Run(\"CloseEx\")\n\n\nwith App() as app:\n    app.open(\"book.hwp\")\n    insert_header(app, \"한글 자동화 가이드\", type_=1)        # 짝수\n    insert_header(app, \"Chapter 3 — Collections\", type_=2)   # 홀수\n    app.save()\n\n\n\n4. 모든 머리말/꼬리말 지우기\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.open(\"report.hwp\")\n\n    # 한 번 호출에 모든 머리말/꼬리말 컨트롤 제거\n    app.api.Run(\"HeaderFooterDelete\")\n\n    app.save()\n\n\n\n5. HeaderFooter ParameterSet 필드 요약\n\n\n\n필드\n의미\n값\n\n\n\n\nCtrlType\n종류\n0 = 머리말, 1 = 꼬리말\n\n\nType\n위치\n0 = 양쪽, 1 = 짝수쪽, 2 = 홀수쪽\n\n\nHeaderFooterCtrlType\n한글2007+ 종류\n0 = 머리말, 1 = 꼬리말\n\n\nHeaderFooterStyle\n마당 스타일\n한글2007+\n\n\nDialogOption\n대화상자 “편집” 버튼 표시\n1 = 보이기\n\n\nDialogResult\n대화상자 결과\n1 = 만들기, 2 = 편집\n\n\n\n전체 정의는 hwpapi/low/parametersets/sets/document.py:121 의 HeaderFooter 클래스 또는 Reference 페이지 에서 확인하세요.\n\n\nSee also\n\nRecipe: charshape-formatting\nGuide: low-level escape hatch\nReference: actions\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Recipes",
+      "Headers and footers"
+    ]
+  },
+  {
+    "objectID": "recipes/fill-fields.html",
+    "href": "recipes/fill-fields.html",
+    "title": "Fill form fields",
+    "section": "",
+    "text": "Fields (누름틀) are the cleanest way to build a template-driven document workflow. Every field has a stable name; you fill it by dict-assignment.\n\n1. The fundamentals\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.open(\"template.hwp\")\n\n    # How many fields? What are they called?\n    print(len(app.doc.fields), \"fields:\")\n    for name in app.doc.fields.names():\n        print(\" \", name, \"=\", app.doc.fields[name].value)\n\n    # Write one\n    app.doc.fields[\"author\"] = \"홍길동\"\n\n    # Check existence\n    assert \"author\" in app.doc.fields\n\n    # Read back\n    print(app.doc.fields[\"author\"].value)\n\n\n\n2. Bulk-fill from a dict\n\nfrom hwpapi import App\n\ndata = {\n    \"title\": \"2026 Q1 Report\",\n    \"author\": \"홍길동\",\n    \"date\": \"2026-04-19\",\n    \"department\": \"R&D\",\n}\n\nwith App() as app:\n    app.open(\"template.hwp\")\n\n    for name, value in data.items():\n        if name in app.doc.fields:\n            app.doc.fields[name] = value\n        else:\n            print(f\"[warn] template has no field named {name!r}\")\n\n    app.save_as(\"reports/2026-q1.hwp\")\n\n\n\n3. Bulk-fill from a CSV\n\nimport csv\nfrom pathlib import Path\nfrom hwpapi import App\n\nwith App() as app:\n    app.open(\"template.hwp\")\n\n    with open(\"employees.csv\", newline=\"\", encoding=\"utf-8-sig\") as f:\n        reader = csv.DictReader(f)\n        for row in reader:\n            for name, value in row.items():\n                if name in app.doc.fields:\n                    app.doc.fields[name] = value\n\n            out = Path(\"out\") / f\"report-{row['id']}.hwp\"\n            out.parent.mkdir(parents=True, exist_ok=True)\n            app.save_as(str(out))\n            print(\"wrote\", out)\n\n\n\n4. Navigate to a field\n\n# Move the cursor to a field (useful when you want to insert around it)\napp.doc.fields[\"author\"].goto()\n\n# Then insert, format, etc.\napp.doc.insert_text(\"  (작성자)\")\n\n\n\n5. Clear or delete fields\n\n# Remove one\ndel app.doc.fields[\"author\"]\n\n# Remove all\napp.doc.fields.clear()\n\n# Rename (preserves value)\napp.doc.fields.rename(\"old\", \"new\")\n\n\n\nSee also\n\nReference: collections/fields\nMigration: field helpers\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Recipes",
+      "Fill form fields"
+    ]
+  },
+  {
+    "objectID": "recipes/debugging-tools.html",
+    "href": "recipes/debugging-tools.html",
+    "title": "Debugging tools",
+    "section": "",
+    "text": "Ported from nbs/01_tutorials/13_debugging_tools.ipynb.\n\n1. Turn on debug logging\n\nimport os\nos.environ[\"HWPAPI_LOG_LEVEL\"] = \"DEBUG\"\n\nfrom hwpapi import App\n# logging now prints every COM call with arguments\n\nDefault level is WARNING — a working script sees no log output. DEBUG is chatty; INFO is the usual dev-mode middle ground.\n\n\n2. Inspect an action without running it\n\nfrom hwpapi import App\n\nwith App() as app:\n    cls = app.actions.get_pset_class(\"FindReplace\")\n    desc = app.actions.get_description(\"FindReplace\")\n    print(desc)\n    print(\"properties:\", list(cls._property_registry.keys())[:10])\n\n\n\n3. Print a ParameterSet\n__repr__ renders human-readable values and inline doc comments:\n\nfrom hwpapi import App\n\nwith App() as app:\n    ps = app.actions.CharShape.pset\n    ps.Bold = True\n    ps.Height = 1400\n    ps.TextColor = \"#FF0000\"\n    print(ps)\n    # CharShape(\n    #   Bold=True  # Bold formatting\n    #   Height=14.0pt  # Font size in HWPUNIT (100=1pt)\n    #   TextColor=\"#ff0000\"  # Text color in BBGGRR format\n    # )\n\n\n\n4. Escape to the raw COM layer\n\nfrom hwpapi import App\n\nwith App() as app:\n    # Raw HWP COM handle — everything the automation SDK exposes\n    hwp = app.api\n\n    print(\"Document count:\", hwp.XHwpDocuments.Count)\n    print(\"Active format:\", hwp.Version)\n\n\n\n5. Use FailableCOMCall to catch raw COM errors\nMost facade calls raise hwpapi.errors.HwpApiError subclasses, but when you drop to app.api you get raw pywintypes:\n\nfrom hwpapi import App\nfrom hwpapi.errors import ActionFailedError, wrap_com_error\n\nwith App() as app:\n    with wrap_com_error(action_name=\"Save\"):\n        app.api.Save()\n    # raw com_error is now re-raised as ActionFailedError\n\n\n\n6. Snapshot / diff a pset\n\nps = app.actions.CharShape.pset\nbefore = ps.clone()\n\nps.Bold = True\nps.Italic = True\n\nafter = ps.clone()\nprint(\"equivalent?\", before.is_equivalent(after))  # False\nprint(\"changes:\", {\n    k: (getattr(before, k, None), getattr(after, k, None))\n    for k in before._property_registry\n    if getattr(before, k, None) != getattr(after, k, None)\n})\n\n\n\n7. Dump the entire public surface\n\nimport hwpapi\npublic = sorted(n for n in dir(hwpapi) if not n.startswith(\"_\"))\nprint(public)\n\n\n\nSee also\n\nReference: errors — the exception hierarchy\nReference: low.actions — the action introspection surface\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Recipes",
+      "Debugging tools"
+    ]
+  },
+  {
+    "objectID": "recipes/charshape-formatting.html",
+    "href": "recipes/charshape-formatting.html",
+    "title": "Character formatting",
+    "section": "",
+    "text": "Ported from examples/charshape_bold.py.\n\n1. Scope-based — the ordinary case\n\nfrom hwpapi import App\nfrom hwpapi.context import charshape_scope\nfrom hwpapi import units as U\n\nwith App() as app:\n    app.new()\n\n    with charshape_scope(app, bold=True, size=U.pt(14), color=\"#C0392B\"):\n        app.doc.insert_text(\"This line is bold 14pt red\\n\")\n    # Cursor style restored here\n    app.doc.insert_text(\"Back to default\\n\")\n\n\n\n2. Element-based — for a specific paragraph\n\nfrom hwpapi import App\nfrom hwpapi.low.parametersets import CharShape\n\nwith App() as app:\n    app.open(\"report.hwp\")\n\n    para0 = app.doc.paragraphs[0]\n    para0.charshape = CharShape(Bold=True, Height=1800, TextColor=\"#000080\")\n\n\n\n3. Tweak a single attribute\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.open(\"report.hwp\")\n\n    # Read current shape, mutate one key, write back\n    cs = app.doc.paragraphs[0].charshape\n    cs.Italic = True\n    app.doc.paragraphs[0].charshape = cs\n\n\n\n4. Snapshot / restore via clone\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.new()\n    app.doc.insert_text(\"Snapshot test.\\n\")\n    app.doc.select_all()\n\n    action = app.actions.CharShape\n    ps = action.pset\n\n    # Snapshot — native pset.Clone()\n    original = ps.clone()\n    print(f\"Snapshot: Bold={original.Bold}, Italic={original.Italic}\")\n\n    # Apply temporary changes\n    ps.Bold = True\n    ps.Italic = True\n    ps.TextColor = \"#00FF00\"\n    action.run()\n    print(\"Applied temporary formatting.\")\n\n    # Restore from snapshot\n    ps.update_from(original)\n    action.run()\n    print(\"Restored original formatting.\")\n\n\n\n5. Introspect without running\n\nfrom hwpapi import App\n\nwith App() as app:\n    cls = app.actions.get_pset_class(\"CharShape\")\n    desc = app.actions.get_description(\"CharShape\")\n    print(f\"CharShape → {cls.__name__}: {desc}\")\n    print(f\"Has {len(cls._property_registry)} properties\")\n    print(f\"First 5: {list(cls._property_registry.keys())[:5]}\")\n\n\n\nSee also\n\nGuide: context scopes\nReference: context.scopes\nReference: low.parametersets\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Recipes",
+      "Character formatting"
+    ]
+  },
+  {
+    "objectID": "recipes/batch-processing.html",
+    "href": "recipes/batch-processing.html",
+    "title": "Batch-process a folder of .hwp files",
+    "section": "",
+    "text": "자동화 요청 1순위 — 폴더에 있는 모든 .hwp 를 차례로 열고, 어떤 변환을 적용한 뒤, 다른 폴더에 저장. 한 개의 App 인스턴스를 재사용하기 때문에 HWP 엔진을 N번 띄우지 않아도 되어 빠릅니다.\n\n1. 가장 단순한 형태 — 모든 .hwp → .pdf\n\nfrom pathlib import Path\nfrom hwpapi import App\n\nsrc_dir = Path(\"contracts\")\ndst_dir = Path(\"contracts_pdf\")\ndst_dir.mkdir(exist_ok=True)\n\nwith App() as app:\n    for hwp in sorted(src_dir.glob(\"*.hwp\")):\n        app.open(str(hwp.absolute()))\n        out = dst_dir / hwp.with_suffix(\".pdf\").name\n        app.save(str(out.absolute()))\n        app.close()\n        print(f\"✓ {hwp.name} → {out.name}\")\n\n\n\n2. 일괄 find/replace 후 저장\n\nfrom pathlib import Path\nfrom hwpapi import App\n\nsubstitutions = {\n    \"[[YEAR]]\": \"2026\",\n    \"[[QUARTER]]\": \"Q1\",\n    \"[[CONTACT]]\": \"ops@example.com\",\n}\n\nwith App() as app:\n    for hwp in Path(\"templates\").glob(\"*.hwp\"):\n        app.open(str(hwp.absolute()))\n\n        for needle, replacement in substitutions.items():\n            app.doc.find_replace(needle, replacement, all=True)\n\n        out = Path(\"rendered\") / hwp.name\n        out.parent.mkdir(exist_ok=True)\n        app.save(str(out.absolute()))\n        app.close()\n\n\n\n3. 데이터 한 행 → 문서 한 개 (메일머지 형 워크플로)\nCSV/JSON 의 행 단위로 템플릿을 채워 N개의 결과물을 만듭니다. fill-fields 레시피와 같은 패턴이지만, 여기서는 출력을 PDF 로 바로 떨굽니다.\n\nimport csv\nfrom pathlib import Path\nfrom hwpapi import App\n\ntemplate = \"templates/invoice.hwp\"\nout_dir = Path(\"out_invoices\")\nout_dir.mkdir(exist_ok=True)\n\nwith App() as app, open(\"clients.csv\", encoding=\"utf-8-sig\") as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        app.open(template)\n\n        for field, value in row.items():\n            if field in app.doc.fields:\n                app.doc.fields[field] = value\n\n        pdf = out_dir / f\"invoice-{row['client_id']}.pdf\"\n        app.save(str(pdf.absolute()))\n        app.close()\n        print(f\"  → {pdf.name}\")\n\n\n\n4. 견고한 에러 처리 — 한 파일 실패해도 진행\n배치 작업에서는 한 파일이 깨졌다고 멈추면 안 됩니다. hwpapi.errors.HwpApiError 계열을 잡아 로그하고 다음 파일로 넘어가세요.\n\nimport logging\nfrom pathlib import Path\nfrom hwpapi import App\nfrom hwpapi.errors import HwpApiError\n\nlogging.basicConfig(level=logging.INFO)\nlog = logging.getLogger(\"batch\")\n\nresults = {\"ok\": 0, \"fail\": []}\n\nwith App() as app:\n    for hwp in Path(\"input\").glob(\"*.hwp\"):\n        try:\n            app.open(str(hwp.absolute()))\n            app.save(f\"output/{hwp.stem}.pdf\")\n            app.close()\n            results[\"ok\"] += 1\n        except HwpApiError as exc:\n            log.warning(f\"skip {hwp.name}: {exc}\")\n            results[\"fail\"].append(hwp.name)\n            try:\n                app.close(save=False)\n            except Exception:\n                pass\n\nlog.info(f\"converted {results['ok']}, failed {len(results['fail'])}\")\n\n\n\n5. 진행률 표시 — tqdm 통합\n\nfrom pathlib import Path\nfrom hwpapi import App\nfrom tqdm import tqdm\n\nfiles = sorted(Path(\"input\").glob(\"*.hwp\"))\n\nwith App() as app:\n    for hwp in tqdm(files, desc=\"HWP→PDF\"):\n        app.open(str(hwp.absolute()))\n        app.save(f\"output/{hwp.stem}.pdf\")\n        app.close()\n\n\n\n\n\n\n\nWarning\n\n\n\n병렬 처리 주의 — HWP COM 서버는 단일 스레드를 가정합니다. multiprocessing 으로 프로세스를 분리하지 않는 한 threading / asyncio 로 병렬화해도 빨라지지 않습니다 (오히려 dead-lock 위험). 프로세스 단위로 나눌 때도 각 프로세스가 자체 App() 을 들어야 하며, HWP 인스턴스 수만큼 메모리를 먹습니다.\n\n\n\n\nSee also\n\nRecipe: export-formats — 다양한 출력 포맷\nRecipe: fill-fields — 필드 일괄 채우기\nRecipe: find-replace\nReference: errors\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Recipes",
+      "Batch-process a folder of .hwp files"
+    ]
+  },
+  {
+    "objectID": "guide/units.html",
+    "href": "guide/units.html",
+    "title": "Units",
+    "section": "",
+    "text": "HWP stores almost every measurement (page width, margins, line spacing, font size, cell width) in an internal unit called HWPUNIT. The conversion table is:\n\n\n\nUser unit\nHWPUNIT\n\n\n\n\n1 mm\n283 HWPUNIT\n\n\n1 cm\n2,834 HWPUNIT\n\n\n1 inch\n7,200 HWPUNIT\n\n\n1 pt\n100 HWPUNIT\n\n\n\nNobody wants to write Height = 1200  # 12pt in a script. The hwpapi.units module holds both directions of the conversion plus a string parser.",
+    "crumbs": [
+      "Guide",
+      "Units"
+    ]
+  },
+  {
+    "objectID": "guide/units.html#page-setup",
+    "href": "guide/units.html#page-setup",
+    "title": "Units",
+    "section": "Page setup",
+    "text": "Page setup\n\napp.doc.page.setup(\n    width=U.mm(210),\n    height=U.mm(297),\n    left_margin=U.mm(25),\n    right_margin=U.mm(25),\n    top_margin=U.mm(30),\n    bottom_margin=U.mm(30),\n)",
+    "crumbs": [
+      "Guide",
+      "Units"
+    ]
+  },
+  {
+    "objectID": "guide/units.html#font-size-in-scopes",
+    "href": "guide/units.html#font-size-in-scopes",
+    "title": "Units",
+    "section": "Font size in scopes",
+    "text": "Font size in scopes\n\nfrom hwpapi.context import charshape_scope\nfrom hwpapi import units as U\n\nwith charshape_scope(app, size=U.pt(14)):\n    app.doc.insert_text(\"14pt heading\\n\")\n\ncharshape_scope’s size alias maps to HWP’s Height property, which expects HWPUNIT. Calling U.pt(14) is the clearest way to write “14 points”.",
+    "crumbs": [
+      "Guide",
+      "Units"
+    ]
+  },
+  {
+    "objectID": "guide/units.html#table-cell-width",
+    "href": "guide/units.html#table-cell-width",
+    "title": "Units",
+    "section": "Table cell width",
+    "text": "Table cell width\n\n# pseudo-code; exact API is Phase 3 surface\ncell = app.doc.tables[0].cell(0, 0)\ncell.width = U.mm(30)",
+    "crumbs": [
+      "Guide",
+      "Units"
+    ]
+  },
+  {
+    "objectID": "guide/elements.html",
+    "href": "guide/elements.html",
+    "title": "Elements",
+    "section": "",
+    "text": "Elements are the lightweight objects you get when you subscript a collection. They wrap one item of the document — a paragraph, a run, a table cell — and expose Pythonic attributes for the properties you care about.\nTwo rules:\n\nConstruction is free. An element wraps a reference to the owning App + some coordinates (index, name, row/col). It does not touch COM until you read an attribute.\nReads are live. Every property getter hits HWP at call time — there is no caching. If you assign p.text = \"…\" on paragraph 0 and then read p.text again, you get the new value. If the document changed underneath you (user undo, concurrent script), you see the current state.",
+    "crumbs": [
+      "Guide",
+      "Elements"
+    ]
+  },
+  {
+    "objectID": "guide/elements.html#setting-a-shape",
+    "href": "guide/elements.html#setting-a-shape",
+    "title": "Elements",
+    "section": "Setting a shape",
+    "text": "Setting a shape\nAssigning to .charshape or .parashape applies formatting to the whole paragraph (or run):\n\nfrom hwpapi.low.parametersets import CharShape, ParaShape\n\np = app.doc.paragraphs[0]\n\n# Replace charshape wholesale\np.charshape = CharShape(Bold=True, Height=1400, TextColor=\"#C0392B\")\n\n# Or set one field at a time (reads current, edits, writes back)\ncurrent = p.charshape\ncurrent.Italic = True\np.charshape = current\n\nThis is the successor to the v1 app.set_charshape(...) method — see the migration guide.",
+    "crumbs": [
+      "Guide",
+      "Elements"
+    ]
+  },
+  {
+    "objectID": "guide/elements.html#iterating-selectively",
+    "href": "guide/elements.html#iterating-selectively",
+    "title": "Elements",
+    "section": "Iterating selectively",
+    "text": "Iterating selectively\nParagraphCollection supports .filter(predicate):\n\nheadings = app.doc.paragraphs.filter(lambda p: p.style.startswith(\"제목\"))\nfor h in headings:\n    print(h.text)",
+    "crumbs": [
+      "Guide",
+      "Elements"
+    ]
+  },
+  {
+    "objectID": "guide/collections.html",
+    "href": "guide/collections.html",
+    "title": "Collections",
+    "section": "",
+    "text": "Every document-scoped aggregation in hwpapi v2 follows one interface — dict-like, iterable, sized, membership-testable, names-exposing, and predicate-filterable. The contract lives in hwpapi.collections.Collection as a typing.Protocol:\nfrom typing import Callable, Iterator, Protocol, runtime_checkable\n\n@runtime_checkable\nclass Collection(Protocol):\n    def __getitem__(self, key): ...\n    def __iter__(self) -&gt; Iterator: ...\n    def __len__(self) -&gt; int: ...\n    def __contains__(self, key) -&gt; bool: ...\n    def names(self) -&gt; list[str]: ...\n    def filter(self, predicate: Callable[..., bool]) -&gt; list: ...\nEvery concrete collection under app.doc.* implements this:\n\n\n\napp.doc.*\nReturns\nElements keyed by\n\n\n\n\nfields\nFieldCollection\nfield name\n\n\nbookmarks\nBookmarkCollection\nbookmark name\n\n\nhyperlinks\nHyperlinkCollection\nURL or index\n\n\nimages\nImageCollection\nimage name or index\n\n\nstyles\nStyleCollection\nstyle name\n\n\nparagraphs\nParagraphCollection\nindex (int)\n\n\ntables\nTableCollection\ntable name or index",
+    "crumbs": [
+      "Guide",
+      "Collections"
+    ]
+  },
+  {
+    "objectID": "guide/collections.html#bulk-fill-form-fields-from-a-dict",
+    "href": "guide/collections.html#bulk-fill-form-fields-from-a-dict",
+    "title": "Collections",
+    "section": "Bulk-fill form fields from a dict",
+    "text": "Bulk-fill form fields from a dict\n\ndata = {\"author\": \"홍길동\", \"date\": \"2026-04-19\", \"title\": \"보고서\"}\n\nfor name, value in data.items():\n    if name in app.doc.fields:\n        app.doc.fields[name] = value",
+    "crumbs": [
+      "Guide",
+      "Collections"
+    ]
+  },
+  {
+    "objectID": "guide/collections.html#find-all-paragraphs-that-use-a-specific-style",
+    "href": "guide/collections.html#find-all-paragraphs-that-use-a-specific-style",
+    "title": "Collections",
+    "section": "Find all paragraphs that use a specific style",
+    "text": "Find all paragraphs that use a specific style\n\npara = app.doc.paragraphs.filter(lambda p: p.style == \"Heading 1\")\nprint(f\"{len(para)} heading 1 paragraphs\")",
+    "crumbs": [
+      "Guide",
+      "Collections"
+    ]
+  },
+  {
+    "objectID": "guide/collections.html#rename-a-bookmark",
+    "href": "guide/collections.html#rename-a-bookmark",
+    "title": "Collections",
+    "section": "Rename a bookmark",
+    "text": "Rename a bookmark\n\nif \"old-name\" in app.doc.bookmarks:\n    app.doc.bookmarks.rename(\"old-name\", \"new-name\")",
+    "crumbs": [
+      "Guide",
+      "Collections"
+    ]
+  },
+  {
+    "objectID": "guide/collections.html#list-every-image-in-the-document",
+    "href": "guide/collections.html#list-every-image-in-the-document",
+    "title": "Collections",
+    "section": "List every image in the document",
+    "text": "List every image in the document\n\nfor img in app.doc.images:\n    print(img.name, img.width, img.height)",
+    "crumbs": [
+      "Guide",
+      "Collections"
+    ]
+  },
+  {
+    "objectID": "getting-started/quickstart.html",
+    "href": "getting-started/quickstart.html",
+    "title": "Quickstart",
+    "section": "",
+    "text": "This page walks through the smallest useful hwpapi workflow: open a document, change some text, inspect a collection, save to PDF. Every code block below is marked eval: false because it drives the HWP COM server — run the snippets against your own HWP install.\n\n1. Connect to HWP\n\nfrom hwpapi import App\n\napp = App()             # launches HWP if needed, reuses if already running\nprint(app)              # repr — shows engine id and visible state\n\nPass is_visible=False to keep the HWP window hidden (useful for server scripts):\n\napp = App(is_visible=False)\n\nThe context-manager form calls close() and quit() on your behalf:\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.new()\n    app.doc.insert_text(\"Hello from hwpapi\\n\")\n    app.save_as(\"hello.hwp\")\n\n\n\n2. Open or create a document\n\napp.open(\"report.hwp\")                 # open an existing file\napp.new()                              # create a blank document\napp.save()                             # save in place\napp.save_as(\"report_final.hwp\")        # save as a new file\napp.save_as(\"report.pdf\")              # format is inferred from extension\napp.close()                            # close the active document\napp.quit()                             # tear down the COM engine\n\n\n\n3. Work with text via app.doc\nEverything document-scoped lives under app.doc (a Document instance):\n\n# Full document text\nprint(app.doc.text)\n\n# Replace entire text in place\napp.doc.text = \"Entirely new content.\"\n\n# Insert at cursor\napp.doc.insert_text(\"Inserted line\\n\")\n\n# Navigate\napp.doc.cursor.goto_page(3)\napp.doc.cursor.in_table()              # → bool\n\n# Copy / cut / paste / select / delete\napp.doc.select_all()\nselected = app.doc.get_selected_text()\n\n\n\n4. Collections are dict-like\nEvery collection under app.doc.* supports [], in, for, len, names(), filter(...):\n\n# Fields (누름틀) — read and write by name\nnames = app.doc.fields.names()         # → list[str]\nfor name in names:\n    print(name, \"=\", app.doc.fields[name].value)\n\napp.doc.fields[\"author\"] = \"홍길동\"\n\"author\" in app.doc.fields             # → True\ndel app.doc.fields[\"author\"]           # remove one\napp.doc.fields.clear()                 # remove all\n\n# Bookmarks\napp.doc.bookmarks.add(\"chapter-1\")\nfor bm in app.doc.bookmarks:\n    print(bm.name)\n\n# Tables (Phase 3 target)\ntbl = app.doc.tables[0]                # first table\ntbl.cell(1, 1).text = \"Q1\"\n\n\n\n5. Formatting via context scopes\nThe v1 app.set_charshape(...) / app.charshape_scope(...) methods are gone — use the module-level scopes:\n\nfrom hwpapi.context import charshape_scope, parashape_scope, styled_text\n\n# Block — several operations share one style, then restore.\nwith charshape_scope(app, bold=True, size=14, color=\"#C0392B\"):\n    app.doc.insert_text(\"Heading\\n\")\n    app.doc.insert_text(\"Still bold red\\n\")\n# ← cursor style restored here\n\n# Paragraph-level — alignment and line spacing.\nwith parashape_scope(app, align=\"center\", line_spacing=180):\n    app.doc.insert_text(\"Centered, 180% line spacing\\n\")\n\n# One-shot — insert a styled phrase inline.\nstyled_text(app, \"urgent\", bold=True, color=\"#E74C3C\")\n\n\n\n6. Friendly units\n\nfrom hwpapi import units as U\n\nU.mm(210)       # → HWPUNIT\nU.pt(12)        # → HWPUNIT\nU.inch(8.27)    # → HWPUNIT (approx 210mm)\n\nU.to_mm(59430)  # → ~210.0\nU.to_pt(1200)   # → 12.0\n\nU.parse(\"210mm\")\nU.parse(\"12pt\")\nU.parse(\"8.27in\")\n\n\n\n7. Escape hatch\nWhen the facade doesn’t expose what you need, drop into hwpapi.low:\n\nfrom hwpapi.low import actions, parametersets\n\n# Raw action by name\ncharshape = actions._Action(\"CharShape\")\ncharshape.pset.Bold = True\ncharshape.pset.Height = 1400           # 14pt in HWPUNIT (100/pt)\ncharshape.run()\n\n# ParameterSet class catalogue\nlist(parametersets.__dict__.keys())[:5]\n\nYou can also reach the raw COM handle via app.api and the engine via app.engine.\n\n\nNext steps\n\nNeed to convert a v1 script? → Migration guide\nWant more worked examples? → Recipes\nLooking for a specific class? → Reference\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Getting Started",
+      "Quickstart"
+    ]
+  },
+  {
+    "objectID": "getting-started/install.html",
+    "href": "getting-started/install.html",
+    "title": "Install",
+    "section": "",
+    "text": "Requirements\nhwpapi drives HWP (한컴오피스 한글) over its Windows COM automation surface. That means:\n\nOS: Windows 10 or newer.\nHWP: 한글 2018 / 2020 / 2022 / 2024 (Hancom Office). A non-viewer installation is required — the Viewer edition does not expose the automation server.\nPython: 3.9 or newer.\npywin32: installed automatically via pip install hwpapi.\n\nmacOS / Linux are not supported because HWP’s COM server is Windows-only. You can still run hwpapi’s unit tests on Linux — they stub the COM layer — but anything that touches a live HWP instance must run on Windows.\n\n\nInstall from PyPI\npip install hwpapi\nThis pulls hwpapi plus pywin32. Confirm the install:\n\nimport hwpapi\nprint(hwpapi.__version__)\n\n\n\nInstall from source\ngit clone https://github.com/JunDamin/hwpapi.git\ncd hwpapi\npip install -e .\nFor building the documentation site (this site) locally, add the docs extra:\npip install -e \".[docs]\"\n# Or, explicitly:\npip install quartodoc griffe jupyter\nThe docs extra pulls in quartodoc (for auto-generated API pages) and griffe (the Python AST backend quartodoc uses).\n\n\nThe FilePathCheckerModuleExample DLL\nHWP ships a small DLL named FilePathCheckerModuleExample.dll that suppresses the “is this file safe to open?” dialog when you call App.open(path). hwpapi auto-discovers it via check_dll() — if you’re seeing an OS dialog pop up each time you open a file, install that module from your HWP installer or point hwpapi at it explicitly:\n\nfrom hwpapi import App\napp = App(dll_path=\"C:/hwpapi/FilePathCheckerModuleExample.dll\")\n\n\n\nVerify the install\nThe smoke test — launches HWP, opens a blank document, checks the version, and closes cleanly:\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.new()\n    print(\"HWP version:\", app.engine.version)\n    print(\"Document text:\", repr(app.doc.text))\n\nIf this prints the HWP version and '' for text, you are good to go.\nHead to the Quickstart.\n\n\nTroubleshooting\nModuleNotFoundError: No module named 'win32com' — pywin32 didn’t install correctly. Run pip install --force-reinstall pywin32 and then python Scripts\\pywin32_postinstall.py -install (as admin).\nHWP pops up a security dialog every time you open a file — the FilePathCheckerModuleExample.dll isn’t registered. Pass dll_path= explicitly as shown above, or copy the DLL into the hwpapi install directory.\nConnectionError: can't dispatch HwpObject — HWP isn’t installed, or you’re running from the Viewer edition, or COM registration is corrupted. Reinstall HWP and try again.\nRuby/Tk errors inside HWP on exit — call app.close() before app.quit() or use the context manager form (with App() as app:) which does it for you.\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Getting Started",
+      "Install"
+    ]
+  },
+  {
+    "objectID": "design/architecture.html",
+    "href": "design/architecture.html",
+    "title": "Architecture",
+    "section": "",
+    "text": "Import tree\nhwpapi\n├── App                  # core.app.App   — slim facade (≤15 public members)\n├── Document             # document.Document — per-document surface (app.doc)\n├── collections/         # dict-like aggregations under app.doc.*\n│   ├── Collection       # Protocol: __getitem__, __iter__, __len__,\n│   │                    #            __contains__, names, filter\n│   ├── fields           # FieldCollection + Field\n│   ├── bookmarks        # BookmarkCollection + Bookmark\n│   ├── hyperlinks\n│   ├── images\n│   ├── paragraphs       # ParagraphCollection + Paragraph + Run\n│   ├── styles\n│   └── tables           # TableCollection + Table + Cell\n├── context/\n│   └── scopes           # charshape_scope, parashape_scope, styled_text\n├── io/\n│   ├── open             # open_file, new_document\n│   └── export           # export_pdf, export_image, export_text\n├── errors               # HwpApiError hierarchy + wrap_com_error\n├── units                # mm, cm, inch, pt, parse, to_mm, ...\n├── logging              # get_logger, HWPAPI_LOG_LEVEL\n└── low/                 # escape hatch\n    ├── actions          # _Actions, _Action (900+ action wrappers)\n    ├── engine           # Engine, Engines, Apps\n    └── parametersets    # ParameterSet classes (CharShape, ParaShape, ...)\n\n\nThe two-layer model\nhwpapi v2 is a layered API, not a levelled one. Both layers are first-class:\n\nHigh layer (hwpapi.App → app.doc.*) — the default surface. Opinionated, collection-oriented, one way to do each thing.\nLow layer (hwpapi.low.*) — the raw action + ParameterSet + engine primitives. Officially supported. The high layer is implemented on top of the low layer, not alongside it.\n\nSee ADR-001 for the full rationale.\n\n\nThe Collection protocol\nEvery dict-like aggregation under app.doc.* implements hwpapi.collections.Collection:\nfrom typing import Callable, Iterator, Protocol, runtime_checkable\n\n@runtime_checkable\nclass Collection(Protocol):\n    def __getitem__(self, key): ...\n    def __iter__(self) -&gt; Iterator: ...\n    def __len__(self) -&gt; int: ...\n    def __contains__(self, key) -&gt; bool: ...\n    def names(self) -&gt; list[str]: ...\n    def filter(self, predicate: Callable[..., bool]) -&gt; list: ...\nThis is a structural contract, not a nominal one — the collection classes do not inherit from Collection. Runtime checks use isinstance(coll, Collection) thanks to @runtime_checkable.\nCollections that support mutation add __setitem__, __delitem__, and clear(). That set is not part of the Protocol, because some collections are read-only (e.g. paragraphs — you can’t delete a paragraph by index without affecting surrounding ones).\n\n\nThe element value-object pattern\nSubscripting a collection returns a lightweight element — a reference object that carries (app, identifier) and looks up the underlying state lazily. Elements:\n\nare cheap to construct (no COM calls)\nhit COM at property-read time\nnever cache (reading twice hits COM twice)\n\nWhy not dataclasses? Because HWP state can change under you (user undo, concurrent script) and caching a snapshot would lie. When you want a snapshot, take one explicitly (e.g. pset.clone() on a ParameterSet, or a plain dict for element state).\n\n\nOwnership and lifecycle\nApp\n └── Engine              (via app.engine)\n      └── HwpObject      (raw COM; via app.api or app.engine.impl)\n └── Document            (via app.doc; cached_property)\n      └── Collections    (per-collection, via cached_property)\n\nApp owns the Engine.\nDocument does not own a COM handle. It holds a reference to its owning App and fetches app.engine.impl at the point of use.\nCollections similarly reach into self._app.engine.impl on every call — they are stateless wrappers over HWP’s live state.\n\nThis means: once app.close() runs, reading from the cached Document or any cached collection will raise — the indirection through app.engine.impl surfaces the invalidation.\n\n\nThe facade boundary\nThe v2 facade (App + Document + collections + context + io + errors + units) is intentionally small. The test of “what belongs on the facade” is:\n\nDoes removing this symbol break the one-screen dir(App) guarantee, or does it trade a clear high-level affordance for a low-level call?\n\nIf the answer is “break the guarantee” or “trade a clear affordance”, it stays. Everything else goes to hwpapi.low or a sibling package.\n\n\nRelated documents\n\nADR-001: two-layer API\nADR-002: Quarto single-pipeline docs\ndocs/design/app-member-audit.md — disposition of the original 82 App members\ndocs/design/app-public-v2.txt — the final dir(App) snapshot\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Design",
+      "Architecture"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html",
+    "href": "design/adr/adr-001-v2-redesign.html",
+    "title": "ADR-001: Two-layer API",
+    "section": "",
+    "text": "Accepted — 2026-04-18\nImplemented across Phases 1–5 of the v2 redesign plan (.omc/plans/hwpapi_v2_redesign.md).",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-a-hierarchical-domain-model-office-automation-style",
+    "href": "design/adr/adr-001-v2-redesign.html#option-a-hierarchical-domain-model-office-automation-style",
+    "title": "ADR-001: Two-layer API",
+    "section": "Option A — hierarchical domain model (Office Automation style)",
+    "text": "Option A — hierarchical domain model (Office Automation style)\napp.doc.paragraphs[i].runs[j].charshape.bold = True\nPro: familiar to Word/Excel automation users; maximum collection consistency.\nCon: HWP is fundamentally position-based internally — some drill-down paths (runs) require virtualization. This became the shape of the high layer but not the whole API.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-b-flat-verb-api",
+    "href": "design/adr/adr-001-v2-redesign.html#option-b-flat-verb-api",
+    "title": "ADR-001: Two-layer API",
+    "section": "Option B — flat verb API",
+    "text": "Option B — flat verb API\napp.fill_field(), app.set_charshape(), app.goto_bookmark()\nPro: one namespace, minimal hierarchy.\nCon: reproduces the v1 App-as-god-object problem with new names. Defeats the slim-facade goal.\nRejected.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-c-two-layer-low-high-chosen",
+    "href": "design/adr/adr-001-v2-redesign.html#option-c-two-layer-low-high-chosen",
+    "title": "ADR-001: Two-layer API",
+    "section": "Option C — two-layer (low + high) ← chosen",
+    "text": "Option C — two-layer (low + high) ← chosen\nDjango ORM pattern: Model.objects is the opinionated public surface, django.db.connection is the escape hatch, both coexist as first-class APIs.\nAdopted as the v2 shape. Option A’s hierarchical domain model lives inside App.doc.*; Option D’s predicate filtering is partially adopted via Collection.filter(predicate).",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-d-query-centric-pandas-style",
+    "href": "design/adr/adr-001-v2-redesign.html#option-d-query-centric-pandas-style",
+    "title": "ADR-001: Two-layer API",
+    "section": "Option D — query-centric (pandas-style)",
+    "text": "Option D — query-centric (pandas-style)\ndoc.paragraphs.where(style=\"제목\").set(bold=True)\nPro: powerful bulk operations.\nCon: HWP is stream-based — where devolves to eager iteration, with performance cliffs on large documents.\nPartially adopted — collection.filter(predicate) is a subset of the query model.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-e-keep-a-deprecation-shim",
+    "href": "design/adr/adr-001-v2-redesign.html#option-e-keep-a-deprecation-shim",
+    "title": "ADR-001: Two-layer API",
+    "section": "Option E — keep a deprecation shim",
+    "text": "Option E — keep a deprecation shim\nPro: unbroken migration for v1 users.\nCon: doubles the maintenance surface (two public APIs, two doc paths), defeats the slim-facade goal, makes type-level “App-level vs. Document-level” distinctions impossible. Would preserve the 82-member footprint forever.\nRejected — per user acceptance. v2 is a clean-cut; v1 is frozen on the v1.x branch.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#positive",
+    "href": "design/adr/adr-001-v2-redesign.html#positive",
+    "title": "ADR-001: Two-layer API",
+    "section": "Positive",
+    "text": "Positive\n\nDocumentation IA matches code structure 1:1 — sidebar items correspond to import tree nodes.\nNew features are forced to answer “which layer?” before being added, preventing the v1-style drift.\nhwpapi.low is extractable — if it ever grows too large, it can ship as a separate package without breaking the high-level API.\ndir(app) fits on one screen.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#negative",
+    "href": "design/adr/adr-001-v2-redesign.html#negative",
+    "title": "ADR-001: Two-layer API",
+    "section": "Negative",
+    "text": "Negative\n\nv1 scripts break. Mitigation: the migration guide provides a row for every removed member with a v2 successor or escape-hatch pointer.\nThe layer policy requires vigilance. Mitigation: docs/design/architecture.qmd defines the “does this belong on the facade?” test, and every PR adding a public symbol must justify its layer choice.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#neutral",
+    "href": "design/adr/adr-001-v2-redesign.html#neutral",
+    "title": "ADR-001: Two-layer API",
+    "section": "Neutral",
+    "text": "Neutral\n\nDocumentation is a single source now (docs/ Quarto). The old nbs/ + examples/ + docs/*.md split is consolidated.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html",
+    "href": "design/adr/adr-002-quarto-docs.html",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "",
+    "text": "Accepted — 2026-04-18\nImplemented in Phase 6 of the v2 redesign plan.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#mkdocs-material",
+    "href": "design/adr/adr-002-quarto-docs.html#mkdocs-material",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "MkDocs Material",
+    "text": "MkDocs Material\nPro: Python-native, widely deployed, excellent default theme.\nCon: Loses existing Quarto assets (nbs/ content). Worse support for computational pages (nbs/ used Jupyter kernel execution; Quarto preserves that natively).\nRejected on asset-preservation grounds.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#two-sites-in-parallel-nbs-tutorials-docs-reference",
+    "href": "design/adr/adr-002-quarto-docs.html#two-sites-in-parallel-nbs-tutorials-docs-reference",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Two sites in parallel (nbs/ → tutorials, docs/ → reference)",
+    "text": "Two sites in parallel (nbs/ → tutorials, docs/ → reference)\nPro: Minimum migration effort.\nCon: Violates the “single source of truth” principle. Invites the same drift the v1 state showed.\nRejected.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#sphinx-autodoc-sphinx_book_theme",
+    "href": "design/adr/adr-002-quarto-docs.html#sphinx-autodoc-sphinx_book_theme",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Sphinx + autodoc + sphinx_book_theme",
+    "text": "Sphinx + autodoc + sphinx_book_theme\nPro: Mature Python toolchain.\nCon: Markdown-first authoring via myst_parser is still less polished than Quarto’s. Would require replacing Quarto anyway. More moving parts.\nRejected given Quarto’s existing adoption in the repo.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#positive",
+    "href": "design/adr/adr-002-quarto-docs.html#positive",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Positive",
+    "text": "Positive\n\nOne quarto render docs/ produces the entire site.\nquartodoc build regenerates the reference layer from docstrings — the reference cannot drift from the code.\ndocs/recipes/*.qmd can stay readable (Markdown tables, inline code) without executing HWP-dependent code blocks (marked eval: false).\nADRs and architecture notes live alongside user documentation — design/ is just another sidebar section.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#negative",
+    "href": "design/adr/adr-002-quarto-docs.html#negative",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Negative",
+    "text": "Negative\n\nquarto and quartodoc are build-time dependencies for anyone re-rendering the site. Mitigation: pip install -e \".[docs]\" captures both.\nquartodoc has occasional quirks with Protocol classes and cached_property descriptors. Mitigation: explicit contents: listings in _quarto.yml name every page, rather than relying on auto-discovery for core classes.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#neutral",
+    "href": "design/adr/adr-002-quarto-docs.html#neutral",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Neutral",
+    "text": "Neutral\n\nUsers no longer get example scripts under examples/ — those now live as recipe pages. nbs/ tutorials similarly consolidate into docs/recipes/. Phase 7 (release) is responsible for the final archival move.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/index.html",
+    "href": "design/index.html",
+    "title": "Design",
+    "section": "",
+    "text": "What lives here\nThis section is the why behind the code. If the Guide tells you how to use hwpapi, the Design section tells you how it got to be shaped this way.\n\n\nArchitecture\n\nArchitecture overview — the v2 import tree, the two-layer model, the collection protocol, and how they fit together.\n\n\n\nArchitecture Decision Records\nEach ADR documents one accepted decision, its context, alternatives, and consequences. They are the primary historical record for v2 design choices.\n\nADR-001: Two-layer API (hwpapi.low + App.doc.*)\nADR-002: Quarto single-pipeline documentation\n\n\n\nAudits and design notes (archived)\nThese pre-v2 documents led to the redesign. They are kept for provenance — the authoritative current spec is the ADRs plus the live codebase.\n\nbaseline-v1.0.md — v1 performance baseline\npublic-api-v1.0.txt — v1 public symbol dump\napp-public-v2.txt — v2 dir(App) snapshot\napp-member-audit.md — the 82-member disposition matrix\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Design"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v1-to-v2.html",
+    "href": "getting-started/migration-v1-to-v2.html",
+    "title": "Migrating from hwpapi v1.x to v2.0",
+    "section": "",
+    "text": "hwpapi v2.0 redesigns the public API around a dual-layer model: a slim App facade (≤ 15 public members) that handles lifecycle only, and a Document object (app.doc) that owns everything scoped to an open document. Collections (fields, bookmarks, images, etc.) become first-class dict-like objects under Document. Element-level state (character formatting, paragraph formatting, table cells) moves to Run, Paragraph, and Cell objects exposed through hwpapi.elements. The v1 App class carried 106 public members representing two years of accretion; v2 cuts that to 14, with every removed symbol having a documented landing point or an explicit deletion rationale.",
+    "crumbs": [
+      "Getting Started",
+      "Migrating from hwpapi v1.x to v2.0"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v1-to-v2.html#renamed-stays-on-app",
+    "href": "getting-started/migration-v1-to-v2.html#renamed-stays-on-app",
+    "title": "Migrating from hwpapi v1.x to v2.0",
+    "section": "Renamed — stays on App",
+    "text": "Renamed — stays on App\n\n\n\n\n\n\n\n\nv1 call\nv2 equivalent\nNotes\n\n\n\n\napp.new_document()\nApp.new()\nClassmethod; name aligned with open/close/save\n\n\napp.save_block(path)\napp.save_as(path, *, as_block=False)\nSignature extended; save_block name was misleading\n\n\napp.set_visible(flag)\napp.visible = flag\nProperty assignment replaces the method",
+    "crumbs": [
+      "Getting Started",
+      "Migrating from hwpapi v1.x to v2.0"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v1-to-v2.html#moved-to-app.doc-document",
+    "href": "getting-started/migration-v1-to-v2.html#moved-to-app.doc-document",
+    "title": "Migrating from hwpapi v1.x to v2.0",
+    "section": "Moved to app.doc (Document)",
+    "text": "Moved to app.doc (Document)\n\n\n\n\n\n\n\n\nv1 call\nv2 equivalent\nNotes\n\n\n\n\napp.clear()\napp.doc.clear()\n\n\n\napp.copy()\napp.doc.copy()\n\n\n\napp.create_field(name, dir)\napp.doc.create_field(name, dir)\nComplements app.doc.fields\n\n\napp.current_page\napp.doc.current_page\n\n\n\napp.cut()\napp.doc.cut()\n\n\n\napp.delete()\napp.doc.delete()\n\n\n\napp.find_text(query)\napp.doc.find_text(query)\n\n\n\napp.get_charshape()\napp.doc.cursor.get_charshape()\n\n\n\napp.get_filepath()\napp.doc.get_filepath()\n\n\n\napp.get_hwnd()\napp.doc.get_hwnd()\n\n\n\napp.get_parashape()\napp.doc.cursor.get_parashape()\n\n\n\napp.get_selected_text()\napp.doc.get_selected_text()\n\n\n\napp.get_text()\napp.doc.get_text()\n\n\n\napp.goto_page(n)\napp.doc.cursor.goto_page(n)\n\n\n\napp.highlight(color)\napp.doc.highlight(color)\n\n\n\napp.in_table()\napp.doc.cursor.in_table()\n\n\n\napp.insert_file(path)\napp.doc.insert_file(path)\n\n\n\napp.insert_heading(level, text)\napp.doc.insert_heading(level, text)\n\n\n\napp.insert_line_break()\napp.doc.insert_line_break()\n\n\n\napp.insert_page_break()\napp.doc.insert_page_break()\n\n\n\napp.insert_paragraph_break()\napp.doc.insert_paragraph_break()\n\n\n\napp.insert_picture(path)\napp.doc.insert_picture(path)\n\n\n\napp.insert_tab()\napp.doc.insert_tab()\n\n\n\napp.insert_text(s)\napp.doc.insert_text(s)\n\n\n\napp.move_to_field(name)\napp.doc.cursor.move_to_field(name)\n\n\n\napp.page_count\napp.doc.page_count\n\n\n\napp.paste()\napp.doc.paste()\n\n\n\napp.read_table()\napp.doc.read_table()\n\n\n\napp.redo()\napp.doc.redo()\n\n\n\napp.replace_all(find, replace)\napp.doc.replace_all(find, replace)\n\n\n\napp.scan(...)\napp.doc.scan(...)\nContext manager; same interface\n\n\napp.select_all()\napp.doc.select_all()\n\n\n\napp.select_text(start, end)\napp.doc.select_text(start, end)\n\n\n\napp.selection\napp.doc.selection\n\n\n\napp.setup_page(...)\napp.doc.page.setup(...)\n\n\n\napp.text\napp.doc.text\nr/w property; app.text is gone\n\n\napp.undo()\napp.doc.undo()",
+    "crumbs": [
+      "Getting Started",
+      "Migrating from hwpapi v1.x to v2.0"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v1-to-v2.html#moved-to-collections-via-app.doc.",
+    "href": "getting-started/migration-v1-to-v2.html#moved-to-collections-via-app.doc.",
+    "title": "Migrating from hwpapi v1.x to v2.0",
+    "section": "Moved to Collections (via app.doc.*)",
+    "text": "Moved to Collections (via app.doc.*)\n\n\n\n\n\n\n\n\nv1 call\nv2 equivalent\nNotes\n\n\n\n\napp.bookmarks\napp.doc.bookmarks\nBookmarkCollection — dict-like\n\n\napp.controls\napp.doc.controls\nControlCollection — iterable\n\n\napp.delete_all_fields()\napp.doc.fields.clear()\n\n\n\napp.delete_field(name)\ndel app.doc.fields[name]\n\n\n\napp.field_exists(name)\nname in app.doc.fields\n\n\n\napp.field_names\napp.doc.fields.names()\n\n\n\napp.fields\napp.doc.fields\nFieldCollection — dict-like\n\n\napp.hyperlinks\napp.doc.hyperlinks\nHyperlinkCollection — dict-like\n\n\napp.images\napp.doc.images\nImageCollection — dict-like\n\n\napp.rename_field(old, new)\napp.doc.fields.rename(old, new)\n\n\n\napp.styles\napp.doc.styles\nStyleCollection — dict-like",
+    "crumbs": [
+      "Getting Started",
+      "Migrating from hwpapi v1.x to v2.0"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v1-to-v2.html#moved-to-elements",
+    "href": "getting-started/migration-v1-to-v2.html#moved-to-elements",
+    "title": "Migrating from hwpapi v1.x to v2.0",
+    "section": "Moved to Elements",
+    "text": "Moved to Elements\n\n\n\n\n\n\n\n\nv1 call\nv2 equivalent\nNotes\n\n\n\n\napp.cell\napp.doc.tables[i].cell(r, c)\nCell element\n\n\napp.charshape\nrun.charshape\nProperty on Run element\n\n\napp.charshape_scope(...)\nhwpapi.context.scopes.charshape_scope(...)\nModule-level context manager\n\n\napp.insert_bookmark(name)\napp.doc.bookmarks.add(name)\n\n\n\napp.insert_hyperlink(url)\napp.doc.hyperlinks.add(url)\n\n\n\napp.insert_table(rows, cols)\napp.doc.tables.add(rows, cols)\nPhase 3 target\n\n\napp.parashape\nparagraph.parashape\nProperty on Paragraph element\n\n\napp.parashape_scope(...)\nhwpapi.context.scopes.parashape_scope(...)\nModule-level context manager\n\n\napp.set_cell_border(...)\ncell.border = ...\nCell.border setter\n\n\napp.set_cell_color(...)\ncell.fill = ...\nCell.fill setter\n\n\napp.set_charshape(...)\nrun.charshape = CharShape(...)\nElement-level assignment\n\n\napp.set_parashape(...)\nparagraph.parashape = ParaShape(...)\nElement-level assignment\n\n\napp.styled_text(...)\nhwpapi.context.scopes.styled_text(...)\nModule-level context manager\n\n\napp.table\napp.doc.tables[i]\nTable element via collection",
+    "crumbs": [
+      "Getting Started",
+      "Migrating from hwpapi v1.x to v2.0"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v1-to-v2.html#moved-to-hwpapi.low",
+    "href": "getting-started/migration-v1-to-v2.html#moved-to-hwpapi.low",
+    "title": "Migrating from hwpapi v1.x to v2.0",
+    "section": "Moved to hwpapi.low",
+    "text": "Moved to hwpapi.low\n\n\n\n\n\n\n\n\nv1 call\nv2 equivalent\nNotes\n\n\n\n\napp.actions\nhwpapi.low.actions or app.engine.actions\nStill reachable; low-layer namespace\n\n\napp.create_action(name)\nhwpapi.low.actions._Action(name)\nRaw action factory\n\n\napp.create_parameterset(...)\nhwpapi.low.parametersets factory\nRaw parameterset factory\n\n\napp.parameters\nhwpapi.low.parametersets\nHParameterSet alias",
+    "crumbs": [
+      "Getting Started",
+      "Migrating from hwpapi v1.x to v2.0"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v1-to-v2.html#deleted-no-direct-replacement",
+    "href": "getting-started/migration-v1-to-v2.html#deleted-no-direct-replacement",
+    "title": "Migrating from hwpapi v1.x to v2.0",
+    "section": "Deleted — no direct replacement",
+    "text": "Deleted — no direct replacement\nThese members are removed from the public surface. Where a successor exists it is noted; otherwise raw COM access via app.api or app.engine is the escape hatch.\n\n\n\n\n\n\n\n\nv1 member\nRationale\nSuccessor / escape hatch\n\n\n\n\napp._ACCESSOR_MAP\nDiscovery metadata — superseded by Quarto reference site + IDE tab completion\n—\n\n\napp._CONTEXT_MANAGERS\nSame as _ACCESSOR_MAP\n—\n\n\napp.__repr__ / app.__str__\nReplaced by minimal __repr__ in the slim class\n—\n\n\napp.batch_mode()\nContext manager moves to module level\nhwpapi.context.scopes.batch_mode(app)\n\n\napp.config\nPreferences accessor dropped from App\n— (resurfaces if needed in future release)\n\n\napp.convert\nAccessor cluster dissolved\nutility functions in hwpapi.io\n\n\napp.debug\nDebug cluster\nhwpapi.debug module\n\n\napp.documents\nMulti-doc collection deferred to v2.1\n— (use app.doc for active document)\n\n\napp.field_names_internal()\nInternal leak; replaced by collection\napp.doc.fields.names()\n\n\napp.fields_dict\nDuplicate of dict(app.doc.fields)\ndict(app.doc.fields)\n\n\napp.get_field(name)\nDuplicate of FieldCollection.__getitem__\napp.doc.fields[name]\n\n\napp.get_font_list()\nUtility method\nhwpapi.fonts.list_used() (if retained)\n\n\napp.get_message_box_mode()\nLow-level dialog config\napp.engine / hwpapi.low.engine\n\n\napp.help()\nDiscovery replaced by Quarto site\n—\n\n\napp.hwpunit_to_mm(v)\nDuplicate of module-level function\nhwpapi.units.hwpunit_to_mm(v)\n\n\napp.hwpunit_to_point(v)\nDuplicate of module-level function\nhwpapi.units.hwpunit_to_point(v)\n\n\napp.lint\nLint cluster\nhwpapi.lint module\n\n\napp.logger\nInternal attribute; should not be public\n—\n\n\napp.mm_to_hwpunit(v)\nDuplicate of module-level function\nhwpapi.units.mm_to_hwpunit(v)\n\n\napp.move\nMoveAccessor collapses into Document.cursor\napp.doc.cursor\n\n\napp.page\nPageAccessor collapses into Document.page\napp.doc.page\n\n\napp.point_to_hwpunit(v)\nDuplicate of module-level function\nhwpapi.units.point_to_hwpunit(v)\n\n\napp.preset\nPresets layer is a sibling package\nhwpapi.presets (separate package)\n\n\napp.register_security_module(path)\nInit-time config\nhwpapi.low.engine setup\n\n\napp.replace_brackets_with_fields()\nMail-merge macro helper\nhwpapi.recipes or FieldCollection.from_brackets() (Phase 3)\n\n\napp.rgb_color(r, g, b)\nDuplicate of module-level function\nhwpapi.units.rgb_color(r, g, b)\n\n\napp.save_all_page_images(...)\nExport helper\nhwpapi.io.export.pages_to_images(app, ...)\n\n\napp.save_page_image(...)\nExport helper\nhwpapi.io.export.page_to_image(app, ...)\n\n\napp.sel\nSelection accessor\napp.doc.selection\n\n\napp.set_field(name, value)\nDuplicate of FieldCollection.__setitem__\napp.doc.fields[name] = value\n\n\napp.set_message_box_mode(mode)\nPairs with deleted getter\nhwpapi.low.engine\n\n\napp.set_visible(flag)\nExplicit duplicate of visible property — deleted per plan 2.4\napp.visible = flag\n\n\napp.silenced()\nContext manager moves to module level\nhwpapi.context.scopes.silenced(app)\n\n\napp.status\nDiscovery aid — superseded by Quarto reference\n—\n\n\napp.suppress_errors()\nContext manager moves to module level\nhwpapi.context.scopes.suppress_errors(app)\n\n\napp.template\nTemplate cluster\nhwpapi.templates module\n\n\napp.undo_group()\nContext manager moves to module level\nhwpapi.context.scopes.undo_group(app)\n\n\napp.use_document()\nMulti-doc switch deferred to v2.1\n—\n\n\napp.version\nEngine / document property\napp.engine.version or app.doc.version\n\n\napp.view\nView accessor\ndedicated module (TBD)",
+    "crumbs": [
+      "Getting Started",
+      "Migrating from hwpapi v1.x to v2.0"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v1-to-v2.html#example-1-open-a-file-insert-text-save",
+    "href": "getting-started/migration-v1-to-v2.html#example-1-open-a-file-insert-text-save",
+    "title": "Migrating from hwpapi v1.x to v2.0",
+    "section": "Example 1 — Open a file, insert text, save",
+    "text": "Example 1 — Open a file, insert text, save\n# v1.x\nfrom hwpapi import App\napp = App()\napp.open(\"report.hwp\")\napp.insert_text(\"Hello, world.\")\napp.save()\napp.quit()\n\n# v2.0\nfrom hwpapi import App\napp = App()\napp.open(\"report.hwp\")\napp.doc.insert_text(\"Hello, world.\")\napp.save()\napp.quit()\nContext-manager form (both versions support it):\n# v2.0 — preferred for scripts\nfrom hwpapi import App\nwith App() as app:\n    app.open(\"report.hwp\")\n    app.doc.insert_text(\"Hello, world.\")\n    app.save()\n# app.close() called automatically on exit",
+    "crumbs": [
+      "Getting Started",
+      "Migrating from hwpapi v1.x to v2.0"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v1-to-v2.html#example-2-field-operations",
+    "href": "getting-started/migration-v1-to-v2.html#example-2-field-operations",
+    "title": "Migrating from hwpapi v1.x to v2.0",
+    "section": "Example 2 — Field operations",
+    "text": "Example 2 — Field operations\n# v1.x\nnames = app.field_names                     # list\napp.create_field(\"author\", \"direction\")\nexists = app.field_exists(\"author\")\napp.delete_field(\"author\")\napp.delete_all_fields()\n\n# v2.0\nnames = app.doc.fields.names()              # FieldCollection method\napp.doc.create_field(\"author\", \"direction\") # or app.doc.fields.add(\"author\", \"direction\")\nexists = \"author\" in app.doc.fields         # __contains__\ndel app.doc.fields[\"author\"]                # __delitem__\napp.doc.fields.clear()                      # replaces delete_all_fields()",
+    "crumbs": [
+      "Getting Started",
+      "Migrating from hwpapi v1.x to v2.0"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v1-to-v2.html#example-3-character-formatting",
+    "href": "getting-started/migration-v1-to-v2.html#example-3-character-formatting",
+    "title": "Migrating from hwpapi v1.x to v2.0",
+    "section": "Example 3 — Character formatting",
+    "text": "Example 3 — Character formatting\n# v1.x\napp.set_charshape(bold=True, size=12)\n\nwith app.charshape_scope(bold=True):\n    app.insert_text(\"bold text\")\n\n# v2.0 — element-based assignment\nfrom hwpapi.parametersets import CharShape\n\nrun = app.doc.cursor.run\nrun.charshape = CharShape(bold=True, size=12)\n\n# Context-manager form — now a module-level function\nfrom hwpapi.context.scopes import charshape_scope\n\nwith charshape_scope(bold=True):\n    app.doc.insert_text(\"bold text\")",
+    "crumbs": [
+      "Getting Started",
+      "Migrating from hwpapi v1.x to v2.0"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v1-to-v2.html#example-4-unit-conversions-deleted-from-app",
+    "href": "getting-started/migration-v1-to-v2.html#example-4-unit-conversions-deleted-from-app",
+    "title": "Migrating from hwpapi v1.x to v2.0",
+    "section": "Example 4 — Unit conversions (deleted from App)",
+    "text": "Example 4 — Unit conversions (deleted from App)\n# v1.x\nmm_value = app.hwpunit_to_mm(59430)\npt_value = app.hwpunit_to_point(1200)\nhwp = app.mm_to_hwpunit(210)\n\n# v2.0 — use hwpapi.units directly\nfrom hwpapi.units import hwpunit_to_mm, hwpunit_to_point, mm_to_hwpunit\n\nmm_value = hwpunit_to_mm(59430)     # 210.0\npt_value = hwpunit_to_point(1200)   # 12.0\nhwp = mm_to_hwpunit(210)            # 59430",
+    "crumbs": [
+      "Getting Started",
+      "Migrating from hwpapi v1.x to v2.0"
+    ]
+  },
+  {
+    "objectID": "guide/app-and-document.html",
+    "href": "guide/app-and-document.html",
+    "title": "App and Document",
+    "section": "",
+    "text": "The split\nhwpapi v2 divides the public surface into two top-level classes:\n\n\n\nClass\nOwns\nObtained from\n\n\n\n\nApp\nCOM engine lifecycle, window visibility, open/save/close/quit\nApp()\n\n\nDocument\nEverything scoped to one open document — text, cursor, collections, page layout\napp.doc\n\n\n\nThis is the central design choice of v2. The v1 App carried 82+ public members; the v2 App has ≤ 15. Every document-scoped member moved to Document.\n\n\nWhen to use which\n\nApp — connect/disconnect, open a file, save or export, toggle window visibility, reach the escape hatch.\nDocument (app.doc) — read/write text, navigate the cursor, insert things, access collections (fields, bookmarks, images, …), configure page layout.\n\n\nfrom hwpapi import App\n\napp = App()\n\n# Lifecycle on App\napp.open(\"report.hwp\")\napp.save()\napp.save_as(\"report.pdf\")\n\n# Content on app.doc\ntext = app.doc.text\napp.doc.insert_text(\"new paragraph\\n\")\napp.doc.fields[\"author\"] = \"홍길동\"\napp.doc.page.setup(width=\"210mm\", height=\"297mm\")\n\napp.close()\napp.quit()\n\n\n\nApp — the lifecycle layer\nThe full v2 App public surface is:\n\n\n\nMember\nKind\nPurpose\n\n\n\n\nApp(new_app=False, is_visible=True, dll_path=None, engine=None)\nconstructor\nConnect to HWP\n\n\nopen(path)\nmethod\nOpen a .hwp / .hwpx file\n\n\nnew()\nmethod\nCreate a blank document\n\n\nclose()\nmethod\nClose the active document\n\n\nsave()\nmethod\nSave in place\n\n\nsave_as(path, *, as_block=False)\nmethod\nSave to a new file (format inferred from extension)\n\n\nreload()\nmethod\nRebind to an existing COM engine\n\n\nquit()\nmethod\nTear down the COM engine\n\n\nvisible\nproperty (r/w)\nWindow visibility\n\n\ndoc\nproperty\nThe active Document\n\n\nengine\nproperty\nThe Engine — escape hatch\n\n\napi\nproperty\nRaw HWP COM handle — ultimate escape hatch\n\n\nactions\nproperty\nThe action catalogue — escape hatch\n\n\n__enter__ / __exit__\ncontext manager\nAuto-closes on exit\n\n\n\nContext-manager usage handles cleanup for you:\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.open(\"template.hwp\")\n    app.doc.insert_text(\"Generated by hwpapi\\n\")\n    app.save_as(\"generated.pdf\")\n# app.close() + app.quit() happen here even if an exception was raised\n\n\n\nDocument — the per-document layer\napp.doc returns the same Document instance on every access (@cached_property). It owns:\n\nText — doc.text (read/write), doc.get_text(), doc.insert_text(s), doc.get_selected_text(), doc.selection\nNavigation — doc.cursor.goto_page(n), doc.cursor.move_to_field(name), doc.cursor.in_table(), doc.cursor.get_charshape(), doc.cursor.get_parashape()\nClipboard — doc.copy(), doc.cut(), doc.paste(), doc.delete()\nUndo — doc.undo(), doc.redo()\nSearch — doc.find_text(q), doc.replace_all(find, replace)\nStructure — doc.insert_page_break(), doc.insert_line_break(), doc.insert_paragraph_break(), doc.insert_tab(), doc.insert_heading(level, text)\nInserts — doc.insert_file(path), doc.insert_picture(path)\nPage setup — doc.page.setup(...)\nCounters — doc.page_count, doc.current_page, doc.get_filepath(), doc.get_hwnd()\nCollections (dict-like) — doc.fields, doc.bookmarks, doc.hyperlinks, doc.images, doc.styles, doc.paragraphs, doc.tables\nScanner — doc.scan(...) context manager\n\n\n\nWhy not merge them?\nThe v1 App was a god-object: 82 public members mixing lifecycle, content, formatting, navigation, and low-level utilities. The split serves three goals:\n\nDiscoverability. dir(app) now fits on one screen; everything else lives under app.doc.* with IDE tab completion.\nLifetime. A Document stops being useful when the underlying file closes. Splitting the surface makes the invalidation boundary explicit — future v2.1 work on multi-document support targets app.documents[…] returning a new Document, without touching App.\nTeachability. “App = COM engine, Document = contents” is a sentence. “App = everything HWP-related” was a paragraph.\n\n\n\nSee also\n\nCollections guide — the dict-like accessors under app.doc.*\nContext scopes — charshape_scope, parashape_scope, styled_text\nLow-level escape hatch — hwpapi.low.*\nMigration v1 → v2 — full 1:1 table\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Guide",
+      "App and Document"
+    ]
+  },
+  {
+    "objectID": "guide/context-scopes.html",
+    "href": "guide/context-scopes.html",
+    "title": "Context scopes",
+    "section": "",
+    "text": "Why scopes?\nThree recurring patterns in HWP scripting:\n\n“Insert a few lines that all share one style, then continue with the original cursor style.”\n“Change a paragraph-level property (alignment, line spacing) for the next block, then restore.”\n“Drop in a single styled phrase inline.”\n\nv1 handled these as App.charshape_scope(...), App.parashape_scope(...) and App.styled_text(...). v2 lifts all three out of App — they live at module level so they work uniformly against any App instance:\nfrom hwpapi.context import charshape_scope, parashape_scope, styled_text\n\n\nThe decision tree\nSingle line with a tweak?                 → styled_text(app, \"…\", …)\nMultiple ops sharing char format?         → with charshape_scope(app, …):\nParagraph alignment/line-spacing block?   → with parashape_scope(app, …):\n\n\ncharshape_scope — block-level char formatting\n\nfrom hwpapi.context import charshape_scope\n\nwith charshape_scope(app, bold=True, size=14, color=\"#C0392B\"):\n    app.doc.insert_text(\"Heading\\n\")\n    app.doc.insert_text(\"Still bold red\\n\")\n# cursor style restored\n\nAccepted friendly keys (alias → HWP CharShape key):\n\n\n\nFriendly\nHWP property\n\n\n\n\nbold\nBold\n\n\nitalic\nItalic\n\n\nunderline\nUnderlineType\n\n\nsize, height\nHeight (HWPUNIT, 100/pt)\n\n\ncolor, text_color\nTextColor\n\n\nshade_color\nShadeColor\n\n\nface, face_name, font\nFaceNameHangul\n\n\n\nAny key not in the alias map is passed through unchanged — so charshape_scope(app, Height=1200) works for advanced users.\nThe scope snapshots the cursor’s current shape on enter (reading back the keys you’re about to override), applies your overrides, and restores the snapshot on exit — even if the block raised.\n\n\nparashape_scope — block-level paragraph formatting\n\nfrom hwpapi.context import parashape_scope\n\nwith parashape_scope(app, align=\"center\", line_spacing=180):\n    app.doc.insert_text(\"Centered paragraph\\n\")\n    app.doc.insert_text(\"Also centered, 180% leading\\n\")\n\nFriendly keys:\n\n\n\nFriendly\nHWP property\n\n\n\n\nalign, alignment\nAlignType\n\n\nline_spacing\nLineSpacing\n\n\nleft_margin\nLeftMargin\n\n\nright_margin\nRightMargin\n\n\nindentation\nIndentation\n\n\nprev_spacing\nPrevSpacing\n\n\nnext_spacing\nNextSpacing\n\n\n\nFor align, you can pass the string (\"left\", \"center\", \"right\", \"justify\", \"distribute\") or the numeric code (0–4).\n\n\nstyled_text — one-shot inline insertion\n\nfrom hwpapi.context import styled_text\n\napp.doc.insert_text(\"This word is \")\nstyled_text(app, \"urgent\", bold=True, color=\"#E74C3C\")\napp.doc.insert_text(\" and the rest is normal.\\n\")\n\nInternally styled_text opens a charshape_scope, calls InsertText once, and lets the scope’s __exit__ restore. It’s a plain function (not a context manager) so the closing restore is implicit.\n\n\nWhy not methods on App?\nTwo reasons.\n\nComposability. You can drive scopes against a subset of a script that only has a document handle, or across multiple helpers that all receive app. Module-level functions keep the dependency explicit.\nSlim facade. The v2 App commits to ≤15 public members. Each scope was one of those 82 v1 App members — lifting them out was mandatory, not stylistic.\n\n\n\nException safety\nAll three scopes use contextlib.contextmanager and wrap the body in try/finally. If your block raises, the cursor’s shape is still restored before the exception propagates.\n\ntry:\n    with charshape_scope(app, bold=True):\n        app.doc.insert_text(\"this works\\n\")\n        raise RuntimeError(\"boom\")\nexcept RuntimeError:\n    pass\n# cursor is back to its pre-block style\n\n\n\nSee also\n\nReference: context.scopes\nElements — element-level formatting (alternative when you have a specific paragraph/run handle)\nMigration guide — v1 App.charshape_scope → v2 hwpapi.context.charshape_scope\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Guide",
+      "Context scopes"
+    ]
+  },
+  {
+    "objectID": "guide/low-level-escape-hatch.html",
+    "href": "guide/low-level-escape-hatch.html",
+    "title": "Low-level escape hatch",
+    "section": "",
+    "text": "hwpapi is designed as two stacked APIs:\n\nHigh-level (hwpapi.App → app.doc.*) — what 95% of users should write. Collections, elements, context scopes, units. One way to do each thing.\nLow-level (hwpapi.low.*) — the raw HWP action wrappers and ParameterSet classes. Not deprecated — these are the officially supported escape hatch. Use them when the high-level API doesn’t expose what you need.\n\nThe boundary policy (from ADR-001):\n\n“A feature provided only on hwpapi.low that the high layer actively blocks is a bug. The inverse is also a bug. hwpapi.low is always self-sufficient; the high layer is always expressible in terms of hwpapi.low.”\n\nYou are not “dropping to something dangerous” when you use hwpapi.low. You are using a different abstraction level for a reason you (and no one else) understand.",
+    "crumbs": [
+      "Guide",
+      "Low-level escape hatch"
+    ]
+  },
+  {
+    "objectID": "guide/low-level-escape-hatch.html#hwpapi.low.actions",
+    "href": "guide/low-level-escape-hatch.html#hwpapi.low.actions",
+    "title": "Low-level escape hatch",
+    "section": "hwpapi.low.actions",
+    "text": "hwpapi.low.actions\nWraps each of HWP’s ~900 named actions (InsertText, CharShape, FileOpen, …) as a Python-friendly callable. Every wrapper:\n\nexposes .pset — the ParameterSet bound to the action\nexposes .run() — calls HAction.Execute() with the pset\nexposes .description — Korean description string from HWP’s action catalogue\n\n\nfrom hwpapi.low import actions\n\ncharshape = actions._Action(\"CharShape\")\n\n# Type-safe property access\ncharshape.pset.Bold = True\ncharshape.pset.Height = 1400       # 14pt (HWPUNIT: 100/pt)\ncharshape.pset.TextColor = \"#FF0000\"\n\ncharshape.run()\n\nOr via the app’s pre-built catalogue:\n\nfrom hwpapi import App\n\napp = App()\ncharshape = app.actions.CharShape   # same instance\ncharshape.pset.Italic = True\ncharshape.run()\n\napp.actions.list_actions() returns every registered name; app.actions.get_pset_class(\"CharShape\") returns the ParameterSet class without touching COM (handy for introspection).",
+    "crumbs": [
+      "Guide",
+      "Low-level escape hatch"
+    ]
+  },
+  {
+    "objectID": "guide/low-level-escape-hatch.html#hwpapi.low.parametersets",
+    "href": "guide/low-level-escape-hatch.html#hwpapi.low.parametersets",
+    "title": "Low-level escape hatch",
+    "section": "hwpapi.low.parametersets",
+    "text": "hwpapi.low.parametersets\nThe type-safe Python wrappers around HWP’s HParameterSet COM objects. Each ParameterSet class:\n\ndeclares its properties as class-level PropertyDescriptors (IntProperty, BoolProperty, ColorProperty, UnitProperty, MappedProperty, NestedProperty, ArrayProperty)\nrenders itself with human-readable values via __repr__ (12pt instead of 1200 HWPUNIT, #ff0000 instead of 0x0000FF)\nsupports .clone() (snapshot), .update_from(other) (restore), .is_equivalent(other) (compare)\n\n\nfrom hwpapi.low.parametersets import CharShape\n\ncs = CharShape()\ncs.Bold = True\ncs.Height = 1400\ncs.TextColor = \"#FF0000\"\nprint(cs)\n# CharShape(\n#   Bold=True  # Bold formatting\n#   Height=14.0pt  # Font size in HWPUNIT (100=1pt)\n#   TextColor=\"#ff0000\"  # Text color in BBGGRR format\n# )\n\nSee the Reference: low.parametersets page for the full catalogue.",
+    "crumbs": [
+      "Guide",
+      "Low-level escape hatch"
+    ]
+  },
+  {
+    "objectID": "guide/low-level-escape-hatch.html#hwpapi.low.engine",
+    "href": "guide/low-level-escape-hatch.html#hwpapi.low.engine",
+    "title": "Low-level escape hatch",
+    "section": "hwpapi.low.engine",
+    "text": "hwpapi.low.engine\n\nEngine — wraps one HWP COM engine. engine.impl is the raw COM handle (HwpObject).\nEngines — registry of live engines.\nApps — parallel registry of App facades.\n\nYou rarely construct these directly; App() makes an Engine for you. You reach them via app.engine when you need to call a raw COM method that hwpapi hasn’t wrapped.\n\nfrom hwpapi import App\n\nwith App() as app:\n    # Raw COM call that hwpapi doesn't wrap\n    app.engine.impl.XHwpDocuments.Item(0).Save()\n\n    # Or the even rawer shortcut\n    app.api.XHwpDocuments.Count",
+    "crumbs": [
+      "Guide",
+      "Low-level escape hatch"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "hwpapi",
+    "section": "",
+    "text": "A slim Python facade over HWP’s COM automation — with dict-like collections, context-managed formatting, and a documented escape hatch to the raw action layer.\n\npip install hwpapi"
+  },
+  {
+    "objectID": "index.html#minute-tour",
+    "href": "index.html#minute-tour",
+    "title": "hwpapi",
+    "section": "5-minute tour",
+    "text": "5-minute tour\n\nfrom hwpapi import App\n\n# 1. Open a file — `App` owns lifecycle only.\nwith App() as app:\n    app.open(\"report.hwp\")\n\n    # 2. Everything document-scoped lives under `app.doc`.\n    app.doc.insert_text(\"Hello, 한글!\\n\")\n\n    # 3. Collections are dict-like.\n    app.doc.fields[\"author\"] = \"홍길동\"\n    for name in app.doc.fields.names():\n        print(name, \"-&gt;\", app.doc.fields[name].value)\n\n    # 4. Formatting is a context scope.\n    from hwpapi.context import charshape_scope\n    with charshape_scope(app, bold=True, size=14, color=\"#C0392B\"):\n        app.doc.insert_text(\"important line\\n\")\n\n    # 5. Need a raw action? Drop into `hwpapi.low`.\n    from hwpapi.low import actions\n    # e.g. actions._Action(\"MovePos\")(...)\n\n    app.save_as(\"report.pdf\")\n\nThe blocks above are marked eval: false because they drive the HWP COM server on Windows. Every other code block on the site that does not need HWP runs at render time."
+  },
+  {
+    "objectID": "index.html#whats-in-the-box",
+    "href": "index.html#whats-in-the-box",
+    "title": "hwpapi",
+    "section": "What’s in the box",
+    "text": "What’s in the box\n\n\nTwo-layer API\nApp → app.doc for everyday scripts. hwpapi.low.* for raw actions and ParameterSet manipulation when you need it.\nGuide →\n\n\nDict-like collections\nfields, bookmarks, hyperlinks, images, styles, paragraphs, tables — every collection supports [], in, for, len, filter, names.\nGuide →\n\n\nContext-managed formatting\ncharshape_scope, parashape_scope, styled_text snapshot the cursor’s shape on enter and restore it on exit — even if your code raises.\nGuide →\n\n\nFriendly units\nhwpapi.units.mm(210), pt(12), inch(8.27) — no more HWPUNIT arithmetic.\nGuide →\n\n\nReal exceptions\nEvery public call wraps pywintypes.com_error as an HwpApiError subclass with a useful message.\nReference →\n\n\nEscape hatch, documented\nhwpapi.low.actions, hwpapi.low.parametersets, hwpapi.low.engine — the 900+ action wrappers and 130+ ParameterSet classes, cleanly namespaced.\nGuide →"
+  },
+  {
+    "objectID": "index.html#where-to-next",
+    "href": "index.html#where-to-next",
+    "title": "hwpapi",
+    "section": "Where to next",
+    "text": "Where to next\n\nNew here? Start with Install → Quickstart.\nUpgrading from v1? The Migration guide has a 1:1 mapping table for every v1 App member.\nLooking for a recipe? See the Recipes index.\nNeed to look up a symbol? Jump to the API Reference.\nCurious why it’s shaped this way? Read the ADRs."
+  },
+  {
+    "objectID": "recipes/bulk-edit.html",
+    "href": "recipes/bulk-edit.html",
+    "title": "Bulk edit",
+    "section": "",
+    "text": "Ported from nbs/01_tutorials/05_usecase_bulk_edit.ipynb.\n\n1. Apply a style to every heading paragraph\n\nfrom hwpapi import App\nfrom hwpapi.low.parametersets import CharShape\n\nwith App() as app:\n    app.open(\"document.hwp\")\n\n    headings = app.doc.paragraphs.filter(lambda p: p.style.startswith(\"제목\"))\n    print(f\"Found {len(headings)} headings\")\n\n    shape = CharShape(Bold=True, TextColor=\"#1F4E79\")\n    for h in headings:\n        h.charshape = shape\n\n    app.save()\n\n\n\n2. Replace a phrase across every .hwp in a folder\n\nfrom pathlib import Path\nfrom hwpapi import App\n\n\ndef replace_across(folder: Path, find: str, replace: str):\n    with App(is_visible=False) as app:\n        for hwp in sorted(folder.glob(\"*.hwp\")):\n            app.open(str(hwp))\n            count = app.doc.replace_all(find, replace)\n            if count:\n                app.save()\n                print(f\"{hwp.name}: {count} replacements\")\n            app.close()\n\n\nreplace_across(Path(\"reports\"), \"FY2025\", \"FY2026\")\n\n\n\n3. Batch-apply a charshape with undo grouping\nHWP’s undo stack is per-document; wrapping a loop in an undo-group lets the user press Ctrl+Z once to revert the whole batch:\n\nfrom hwpapi import App\nfrom hwpapi.context import charshape_scope\n\nwith App() as app:\n    app.open(\"document.hwp\")\n\n    # Every sub-edit collapses into a single undo entry\n    with app.doc.scan() as scope:\n        for p in app.doc.paragraphs:\n            if \"DRAFT\" in p.text:\n                with charshape_scope(app, color=\"#E74C3C\", bold=True):\n                    app.doc.select_text(p.start, p.end)\n                    # re-apply the scope's shape to the selection\n                    app.actions.CharShape.run()\n\n    app.save()\n\n\n\n4. Aggregate statistics\n\nfrom collections import Counter\nfrom hwpapi import App\n\nwith App() as app:\n    app.open(\"document.hwp\")\n\n    styles = Counter(p.style for p in app.doc.paragraphs)\n    print(\"Most common styles:\")\n    for style, n in styles.most_common(10):\n        print(f\"  {n:5d}  {style}\")\n\n    word_count = sum(len(p.text.split()) for p in app.doc.paragraphs)\n    print(f\"\\nTotal words: {word_count}\")\n\n\n\nPerformance tips\n\nHide HWP — App(is_visible=False) avoids window-flash overhead.\nIterate, don’t index — for p in app.doc.paragraphs is cheaper than for i in range(len(app.doc.paragraphs)): app.doc.paragraphs[i] because the collection can stream without re-resolving.\nBatch saves — save once per file, not per paragraph.\nRead-only vs. write — reading 10 k paragraphs is ~1 s; writing 10 k paragraphs is 10× that. Filter first, then write only what changed.\n\n\n\nSee also\n\nRecipe: batch-format — formatting a smaller scope\nReference: ParagraphCollection\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Recipes",
+      "Bulk edit"
+    ]
+  },
+  {
+    "objectID": "recipes/data-to-table.html",
+    "href": "recipes/data-to-table.html",
+    "title": "Data to table",
+    "section": "",
+    "text": "Ported from nbs/01_tutorials/06_usecase_data_to_table.ipynb.\n\n1. From a list of dicts\n\nfrom hwpapi import App\n\nrows = [\n    {\"name\": \"홍길동\", \"dept\": \"R&D\", \"score\": 91},\n    {\"name\": \"김영희\", \"dept\": \"Sales\", \"score\": 88},\n    {\"name\": \"이철수\", \"dept\": \"R&D\", \"score\": 95},\n]\n\nwith App() as app:\n    app.new()\n\n    # Insert a table: (rows + header, cols)\n    cols = list(rows[0].keys())\n    app.doc.tables.add(rows=len(rows) + 1, cols=len(cols))\n\n    tbl = app.doc.tables[-1]   # the just-inserted table\n\n    # Header row\n    for c, name in enumerate(cols):\n        tbl.cell(0, c).text = name\n\n    # Data rows\n    for r, row in enumerate(rows, start=1):\n        for c, key in enumerate(cols):\n            tbl.cell(r, c).text = str(row[key])\n\n    app.save_as(\"report.hwp\")\n\n\n\n2. From a pandas DataFrame\n\nimport pandas as pd\nfrom hwpapi import App\n\ndf = pd.DataFrame({\n    \"name\": [\"홍길동\", \"김영희\", \"이철수\"],\n    \"dept\": [\"R&D\", \"Sales\", \"R&D\"],\n    \"score\": [91, 88, 95],\n})\n\nwith App() as app:\n    app.new()\n    rows, cols = df.shape\n    app.doc.tables.add(rows=rows + 1, cols=cols)\n\n    tbl = app.doc.tables[-1]\n\n    for c, name in enumerate(df.columns):\n        tbl.cell(0, c).text = str(name)\n\n    for r, row in enumerate(df.itertuples(index=False), start=1):\n        for c, value in enumerate(row):\n            tbl.cell(r, c).text = str(value)\n\n    app.save_as(\"report.hwp\")\n\n\n\n3. Format the header row\n\nfrom hwpapi import App\nfrom hwpapi.low.parametersets import CharShape\n\nwith App() as app:\n    # ... (insert table as above)\n\n    header_shape = CharShape(Bold=True, TextColor=\"#FFFFFF\")\n    header_fill = \"#1F4E79\"\n\n    for c in range(tbl.cols):\n        cell = tbl.cell(0, c)\n        cell.text = cols[c]\n        cell.fill = header_fill\n        # Per-cell charshape isn't always exposed; fall back to selection:\n        cell.goto()\n        app.doc.select_all_in_cell()   # if your version exposes this\n        app.actions.CharShape.pset = header_shape\n        app.actions.CharShape.run()\n\n\n\n4. Round-trip: read a table back\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.open(\"report.hwp\")\n\n    tbl = app.doc.tables[0]\n    data = [\n        [tbl.cell(r, c).text for c in range(tbl.cols)]\n        for r in range(tbl.rows)\n    ]\n\n    header, *rows = data\n    print(\"columns:\", header)\n    for row in rows:\n        print(dict(zip(header, row)))\n\n\n\nSee also\n\nReference: TableCollection\nRecipe: report-generation — tables inside a larger document\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Recipes",
+      "Data to table"
+    ]
+  },
+  {
+    "objectID": "recipes/export-formats.html",
+    "href": "recipes/export-formats.html",
+    "title": "Export to PDF, HTML, image, text",
+    "section": "",
+    "text": "app.save(path) 한 줄이면 확장자에 따라 적절한 포맷으로 저장됩니다. 명시적으로 format= 을 줄 수도 있고, hwpapi.io.export_* 의 형식별 헬퍼를 쓸 수도 있습니다. 이 레시피는 세 갈래의 차이와 사용 시점을 정리합니다.\n\n1. 확장자가 알아서 포맷을 정하는 경우\nhwpapi.App.save() 의 매핑(_SAVE_FORMAT_MAP)에 등록된 확장자라면 format= 인자 없이 그대로 됩니다.\n\n\n\n확장자\nHWP 포맷 문자열\n\n\n\n\n.hwp\nHWP\n\n\n.pdf\nPDF\n\n\n.hwpx\nHWPX\n\n\n.hml\nHWPML2X\n\n\n.png\nPNG\n\n\n.txt\nTEXT\n\n\n.docx\nMSWORD\n\n\n.html\nHTML+\n\n\n.htm\nHTML\n\n\n\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.open(\"report.hwp\")\n\n    app.save(\"out/report.pdf\")     # → PDF\n    app.save(\"out/report.html\")    # → HTML+ (한글2007 신형 HTML)\n    app.save(\"out/report.htm\")     # → HTML  (구형 HTML)\n    app.save(\"out/report.png\")     # → PNG\n    app.save(\"out/report.txt\")     # → 평문 텍스트\n    app.save(\"out/report.docx\")    # → Microsoft Word\n\n\n\n\n\n\n\nNote\n\n\n\nHTML 두 종류 — .html 은 한글2007 이후의 향상된 HTML 출력 (HTML+), .htm 은 구형 HTML 입니다. 호환성이 중요한 곳(레거시 브라우저, 외부 변환 파이프라인) 에서만 .htm 을 쓰세요.\n\n\n\n\n2. 확장자를 못 잡거나 강제하고 싶을 때\n확장자 매핑에 없는 포맷, 또는 .hwp 인데 다른 포맷으로 저장하고 싶을 때는 format= 으로 직접 지정합니다.\n\n# 확장자가 .data 같은 비표준이지만 PDF 로 저장하고 싶을 때\napp.save(\"snapshot.data\", format=\"PDF\")\n\n# 확장자는 .html 인데 구형 HTML 로 강제\napp.save(\"legacy.html\", format=\"HTML\")\n\n\n\n3. hwpapi.io.export_* 헬퍼 — FileIOError 자동 변환\nhwpapi.io 의 형식별 헬퍼는 내부적으로 app.save_as() 를 호출하면서 pywintypes.com_error 를 FileIOError 로 감쌉니다. 호출자가 항상 패키지 고유 예외만 잡으면 되도록 만들어주는 얇은 래퍼입니다.\n\nfrom hwpapi import App\nfrom hwpapi.io import export_pdf, export_image, export_text\nfrom hwpapi.errors import FileIOError\n\nwith App() as app:\n    app.open(\"report.hwp\")\n\n    try:\n        export_pdf(app, \"out/report.pdf\")\n        export_image(app, \"out/report.png\")\n        export_text(app, \"out/report.txt\")\n    except FileIOError as exc:\n        print(f\"export failed: {exc}\")\n\n\n\n\n헬퍼\n포맷\n\n\n\n\nexport_pdf(app, path)\nPDF\n\n\nexport_image(app, path)\n확장자 sniff — .png → PNG, 그 외 → BMP\n\n\nexport_text(app, path)\nTEXT (평문)\n\n\n\n\n\n\n\n\n\nTip\n\n\n\nHTML 전용 헬퍼는 아직 없지만, 패턴은 동일합니다 — export_pdf 를 본떠 10줄 정도로 쉽게 만들 수 있습니다 (hwpapi/io/export.py 참고).\n\n\n\n\n4. app.save() vs app.save_as()\n\n\n\n\n\n\n\n메서드\n사용 시점\n\n\n\n\napp.save() (인자 없음)\n현재 파일 위치에 in-place 저장 (HwpObject.Save)\n\n\napp.save(path)\nHwpObject.SaveAs 로 저장 — 활성 문서를 통째로 저장\n\n\napp.save_as(path)\nv1 의 save_block 에 해당 — 선택 영역(블록)만 저장. 일반 사용에서는 save() 면 충분\n\n\n\n\n\n5. 폴더 일괄 변환\n\nfrom pathlib import Path\nfrom hwpapi import App\n\nsrc = Path(\"input\")           # *.hwp 들이 있는 폴더\ndst = Path(\"output_pdf\")\ndst.mkdir(exist_ok=True)\n\nwith App() as app:\n    for hwp in src.glob(\"*.hwp\"):\n        app.open(str(hwp.absolute()))\n        app.save(str(dst / hwp.with_suffix(\".pdf\").name))\n        app.close()\n        print(f\"converted {hwp.name}\")\n\n\n\nSee also\n\nReference: App.save\nReference: io/export\nRecipe: batch-processing\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Recipes",
+      "Export to PDF, HTML, image, text"
+    ]
+  },
+  {
+    "objectID": "recipes/find-replace.html",
+    "href": "recipes/find-replace.html",
+    "title": "Find and replace",
+    "section": "",
+    "text": "Ported from examples/find_replace.py + nbs/01_tutorials/02_find_and_replace.ipynb.\n\n1. Simple replace\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.new()\n    app.doc.insert_text(\"Hello world. Hello universe. Hello python.\\n\")\n\n    # Jump to a first match (cursor moves; returns bool)\n    found = app.doc.find_text(\"Hello\")\n    print(\"find_text('Hello') →\", found)\n\n    # Replace all occurrences\n    count = app.doc.replace_all(\"Hello\", \"Hi\")\n    print(f\"replace_all('Hello' → 'Hi'): {count} replacements\")\n\n\n\n2. Detailed FindReplace ParameterSet\nFor wildcard / case-sensitivity / whole-word constraints, drop to the AllReplace action and configure its ParameterSet:\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.new()\n    app.doc.insert_text(\"Old text. Some other text. Old text again.\\n\")\n\n    action = app.actions.AllReplace\n    ps = action.pset  # FindReplace ParameterSet\n\n    ps.FindString = \"Old\"\n    ps.ReplaceString = \"NEW\"\n    ps.IgnoreCase = 0            # case-sensitive\n    ps.WholeWordOnly = 0\n    ps.UseWildCards = 0\n\n    action.run()\n    print(\"Replaced 'Old' → 'NEW' (case-sensitive)\")\n\n\n\n3. Find with formatting constraints\nFindReplace.find_char_shape is an auto-creating nested ParameterSet. On first access, it calls CreateItemSet internally — no manual construction needed:\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.new()\n    action = app.actions.FindReplace\n    ps = action.pset\n\n    ps.FindString = \"important\"\n\n    # Auto-creating nested ParameterSet\n    ps.find_char_shape.Bold = True   # only find BOLD occurrences\n    print(\"FindCharShape.Bold set:\", ps.find_char_shape.Bold)\n\n    # action.run() would actually find the text; skipped here\n\n\n\n4. Snapshot / restore via clone\n\nfrom hwpapi import App\n\nwith App() as app:\n    action = app.actions.FindReplace\n    ps = action.pset\n\n    original = ps.clone()\n    print(\"Snapshot:\", repr(original))\n\n    ps.FindString = \"temporary\"\n    ps.IgnoreCase = 1\n    print(\"Changed:\", repr(ps))\n    print(\"is_equivalent(original):\", ps.is_equivalent(original))\n\n    ps.update_from(original)\n    print(\"Restored:\", repr(ps))\n\n\n\n5. Which find-like actions exist?\n\nfrom hwpapi import App\n\nwith App() as app:\n    for name in ['FindReplace', 'AllReplace', 'ForwardFind', 'BackwardFind']:\n        if name in app.actions:\n            cls = app.actions.get_pset_class(name)\n            desc = app.actions.get_description(name)\n            print(f\"{name} → {cls.__name__ if cls else 'None'}: {desc}\")\n\n\n\nSee also\n\nReference: low.actions\nReference: low.parametersets\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Recipes",
+      "Find and replace"
+    ]
+  },
+  {
+    "objectID": "recipes/index.html",
+    "href": "recipes/index.html",
+    "title": "Recipes",
+    "section": "",
+    "text": "Recipes index\nEach recipe below is a self-contained script you can paste into a Python session and run against a live HWP instance. Snippets that need the HWP COM server are marked eval: false — copy them into your own script and run on Windows.\nThe recipes are ported from the v1 notebook tutorials (nbs/01_tutorials/*.ipynb) and example scripts (examples/*.py), then rewritten to target the v2 API surface (App.doc.* + collections + context scopes).\n\n\n\n\n\n\n\n\n\n\n\nTitle\n\n\n\nSubtitle\n\n\n\n\n\n\n\n\nBatch-process a folder of .hwp files\n\n\nOpen → transform → save, for every file in a directory\n\n\n\n\n\n\nBulk edit\n\n\nFormat N paragraphs / replace across M files\n\n\n\n\n\n\nCharacter formatting\n\n\nBold, color, size — via scopes and ParameterSets\n\n\n\n\n\n\nData to table\n\n\nDataFrame / list-of-dicts → HWP table\n\n\n\n\n\n\nDebugging tools\n\n\nWhen something’s wrong, here’s where to look\n\n\n\n\n\n\nExport to PDF, HTML, image, text\n\n\nSave the active document in any format HWP supports\n\n\n\n\n\n\nFill form fields\n\n\nBulk-fill 누름틀 fields from a dict or CSV\n\n\n\n\n\n\nFind and replace\n\n\nFrom simple replace_all to nested shape constraints\n\n\n\n\n\n\nHeaders and footers\n\n\nInsert page headers, footers, and page numbers programmatically\n\n\n\n\n\n\nInsert a picture\n\n\nDrop an image into the active document via the v2 escape hatch\n\n\n\n\n\n\nMail merge\n\n\nTemplate + CSV → N output files\n\n\n\n\n\n\nPresets gallery\n\n\nPre-built formatting macros — highlight, shade, rule lines\n\n\n\n\n\n\nQuickstart tour\n\n\nThe seven moves every hwpapi script uses\n\n\n\n\n\n\nReport generation\n\n\nEnd-to-end: title + text + table + image + PDF export\n\n\n\n\n\n\nNo matching items\n Back to top",
+    "crumbs": [
+      "Recipes"
+    ]
+  },
+  {
+    "objectID": "recipes/mail-merge.html",
+    "href": "recipes/mail-merge.html",
+    "title": "Mail merge",
+    "section": "",
+    "text": "Ported from nbs/01_tutorials/09_usecase_mail_merge.ipynb, rewritten against the v2 collection API.\n\nThe shape\n\nOpen a template .hwp file with named fields (누름틀).\nIterate rows of a data source (CSV, list of dicts, database query).\nAssign each column to the corresponding field.\nSave-as a per-row output file (.hwp or .pdf).\n\n\n\nMinimal implementation\n\nimport csv\nfrom pathlib import Path\nfrom hwpapi import App\n\n\ndef mail_merge(template: Path, data: Path, output_dir: Path):\n    output_dir.mkdir(parents=True, exist_ok=True)\n\n    with App(is_visible=False) as app:\n        app.open(str(template))\n\n        with open(data, newline=\"\", encoding=\"utf-8-sig\") as f:\n            reader = csv.DictReader(f)\n            for i, row in enumerate(reader, 1):\n                for name, value in row.items():\n                    if name in app.doc.fields:\n                        app.doc.fields[name] = value\n\n                out = output_dir / f\"letter-{i:03d}.pdf\"\n                app.save_as(str(out))\n                print(f\"[{i}] wrote {out}\")\n\n\nif __name__ == \"__main__\":\n    mail_merge(\n        template=Path(\"templates/letter.hwp\"),\n        data=Path(\"data/recipients.csv\"),\n        output_dir=Path(\"out\"),\n    )\n\n\n\nSample CSV\nid,name,title,date\n001,홍길동,사원,2026-04-19\n002,김영희,대리,2026-04-19\n003,이철수,과장,2026-04-20\nThe template must have fields named id, name, title, date — hwpapi silently skips fields that aren’t in the template.\n\n\nSkip invalid rows\n\nrequired = {\"name\", \"date\"}\n\nfor i, row in enumerate(reader, 1):\n    missing = required - set(k for k, v in row.items() if v)\n    if missing:\n        print(f\"[skip row {i}] missing: {missing}\")\n        continue\n    # ... normal merge\n\n\n\nKeep HWP hidden for batch jobs\nApp(is_visible=False) suppresses the window flash on every save_as. For large batches, this is noticeably faster and doesn’t steal focus.\n\n\nExport as PDF vs. HWP\nThe extension on save_as(path) decides the format:\n\nsave_as(\"letter.hwp\") — native HWP\nsave_as(\"letter.pdf\") — PDF export (uses HWP’s built-in exporter)\nsave_as(\"letter.docx\") — Word export (if HWP has the converter installed)\n\nFor finer-grained control (resolution, page range), see hwpapi.io.export_pdf.\n\n\nSee also\n\nRecipe: fill-fields — the building block\nReference: collections/fields\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Recipes",
+      "Mail merge"
+    ]
+  },
+  {
+    "objectID": "recipes/quickstart-tour.html",
+    "href": "recipes/quickstart-tour.html",
+    "title": "Quickstart tour",
+    "section": "",
+    "text": "Run the shortest useful script: open/new, insert text, format, find, save. Ported from examples/quickstart.py to the v2 surface.\n\nfrom hwpapi import App\nfrom hwpapi.context import charshape_scope\nfrom hwpapi import units as U\n\n\ndef main():\n    with App(is_visible=True) as app:\n        app.new()\n\n        # 1. Insert text\n        app.doc.insert_text(\"hwpapi 테스트 문서\\n\\n\")\n        app.doc.insert_text(\"이 문서는 hwpapi로 자동 생성되었습니다.\\n\")\n\n        # 2. Format: jump to top, select first line, apply heading style\n        app.doc.cursor.goto_page(1)\n        app.doc.select_text(0, len(\"hwpapi 테스트 문서\"))\n\n        with charshape_scope(app, bold=True, size=U.pt(18)):\n            app.doc.insert_text(\"hwpapi 테스트 문서\")\n\n        # 3. Navigate and insert more\n        app.doc.cursor.goto_end()\n        app.doc.insert_text(\"\\n\")\n        for i in range(3):\n            app.doc.insert_text(f\"• 항목 {i + 1}\\n\")\n\n        # 4. Find / Replace\n        count = app.doc.replace_all(\"항목\", \"list item\")\n        print(f\"Replaced {count} occurrences\")\n\n        # 5. Action introspection (no COM calls beyond a listing)\n        actions = app.actions\n        print(f\"\\nAvailable actions: {len(actions.list_actions())}\")\n\n        # 6. Raw COM access (escape hatch)\n        print(f\"\\nRaw HWP COM: {app.api.CLSID}\")\n\n        # 7. Save\n        app.save_as(\"quickstart-output.hwp\")\n\n\nif __name__ == \"__main__\":\n    main()\n\n\nWhat changed from v1\n\n\n\n\n\n\n\nv1\nv2\n\n\n\n\napp.insert_text(...)\napp.doc.insert_text(...)\n\n\napp.move.top_of_file()\napp.doc.cursor.goto_page(1)\n\n\napp.select_text()\napp.doc.select_text(...)\n\n\napp.set_charshape(bold=True, height=1800)\ncharshape_scope(app, bold=True, size=U.pt(18))\n\n\napp.replace_all(...)\napp.doc.replace_all(...)\n\n\napp.api.CLSID\napp.api.CLSID (unchanged — api is still on App)\n\n\n\n\n\n\n\n Back to top",
+    "crumbs": [
+      "Recipes",
+      "Quickstart tour"
+    ]
+  },
+  {
+    "objectID": "reference/App.html",
+    "href": "reference/App.html",
+    "title": "App",
+    "section": "",
+    "text": "Slim facade — lifecycle + window-level concerns.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "App"
+    ]
+  },
+  {
+    "objectID": "reference/App.html#parameters",
+    "href": "reference/App.html#parameters",
+    "title": "App",
+    "section": "Parameters",
+    "text": "Parameters\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nnew_app\nbool\nIf True spawn a fresh engine; otherwise reuse the most recently opened one (or create one if none exist).\nFalse\n\n\nis_visible\nbool\nInitial visibility of the HWP main window.\nTrue\n\n\ndll_path\nstr | None\nPath to FilePathCheckerModuleExample.dll. Auto-discovered when omitted.\nNone\n\n\nengine\nEngine | None\nPre-built engine to wrap. Rare — primarily for tests.\nNone",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "App"
+    ]
+  },
+  {
+    "objectID": "reference/App.html#examples",
+    "href": "reference/App.html#examples",
+    "title": "App",
+    "section": "Examples",
+    "text": "Examples\n&gt;&gt;&gt; with App() as app:\n...     app.open(\"report.hwp\")\n...     app.doc.text                 # document text (→ Document)\n...     app.save_as(\"report.pdf\")",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "App"
+    ]
+  },
+  {
+    "objectID": "reference/App.html#attributes",
+    "href": "reference/App.html#attributes",
+    "title": "App",
+    "section": "Attributes",
+    "text": "Attributes\n\n\n\nName\nDescription\n\n\n\n\napi\nRead-only COM handle — thin alias for self.engine.impl.\n\n\ndoc\nCached :class:hwpapi.document.Document façade bound to this App.\n\n\nvisible\nHWP main-window visibility — read/write.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "App"
+    ]
+  },
+  {
+    "objectID": "reference/App.html#methods",
+    "href": "reference/App.html#methods",
+    "title": "App",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\nclose\nClose the active document (FileClose command).\n\n\nnew\nCreate an :class:App backed by a brand-new HWP document.\n\n\nopen\nOpen a document in HWP. Returns the absolute path opened.\n\n\nquit\nTerminate the HWP engine (FileQuit command).\n\n\nreload\nRebind this :class:App to a fresh/updated engine.\n\n\nsave\nSave the active document.\n\n\nsave_as\nv2 rename of v1 save_block: save the active document\n\n\n\n\nclose\ncore.app.App.close(save=False)\nClose the active document (FileClose command).\n\nParameters\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsave\nbool\nIf True save before closing. HWP prompts by default; the caller can set this to force the save path.\nFalse\n\n\n\n\n\n\nnew\ncore.app.App.new(is_visible=True)\nCreate an :class:App backed by a brand-new HWP document.\nv2 rename of v1 App.new_document(is_tab=True). Replaces the document-level helper with a constructor-shaped factory so the returned object is the usual App handle.\n\nParameters\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nis_visible\nbool\nInitial window visibility. Default True.\nTrue\n\n\n\n\n\nReturns\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nApp\nFresh :class:App bound to a brand-new engine + document.\n\n\n\n\n\n\nopen\ncore.app.App.open(path, format=None, arg='')\nOpen a document in HWP. Returns the absolute path opened.\n\nParameters\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npath\nstr | Path\nFile path (relative paths are resolved against cwd).\nrequired\n\n\nformat\nstr\nForwarded to HwpObject.Open when provided (HWP’s extended-open signature). Omit for the default behaviour.\nNone\n\n\narg\nstr\nForwarded to HwpObject.Open when provided (HWP’s extended-open signature). Omit for the default behaviour.\nNone\n\n\n\n\n\n\nquit\ncore.app.App.quit()\nTerminate the HWP engine (FileQuit command).\n\n\nreload\ncore.app.App.reload(new_app=False, dll_path=None)\nRebind this :class:App to a fresh/updated engine.\nUseful after DLL reinstall or when the HWP process has exited out from under the Python binding. Also invalidates the cached :attr:doc.\n\n\nsave\ncore.app.App.save(path=None, format=None, arg='')\nSave the active document.\nWithout path performs an in-place save (HwpObject.Save). With path performs a SaveAs using the file-extension- derived format — .hwp, .pdf, .hwpx, .hml, .png, .txt, .docx, .html / .htm are recognised.\n\n\nsave_as\ncore.app.App.save_as(path, format=None, arg='')\nv2 rename of v1 save_block: save the active document selection/block to path.\nExtension-sniffed format set matches v1: .hwp, .pdf, .hwpx (HWPML2X), .png.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "App"
+    ]
+  },
+  {
+    "objectID": "reference/collections/bookmarks.html",
+    "href": "reference/collections/bookmarks.html",
+    "title": "bookmarks",
+    "section": "",
+    "text": "Bookmark (책갈피) collection.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "bookmarks"
+    ]
+  },
+  {
+    "objectID": "reference/collections/bookmarks.html#methods",
+    "href": "reference/collections/bookmarks.html#methods",
+    "title": "bookmarks",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\nadd\nInsert a bookmark at the current cursor position.\n\n\n\n\nadd\ncollections.bookmarks.BookmarkCollection.add(name)\nInsert a bookmark at the current cursor position.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "bookmarks"
+    ]
+  },
+  {
+    "objectID": "reference/collections/bookmarks.html#methods-1",
+    "href": "reference/collections/bookmarks.html#methods-1",
+    "title": "bookmarks",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\ngoto\nMove the cursor to this bookmark. Returns success.\n\n\nremove\nDelete this bookmark. Returns success.\n\n\n\n\ngoto\ncollections.bookmarks.Bookmark.goto()\nMove the cursor to this bookmark. Returns success.\n\n\nremove\ncollections.bookmarks.Bookmark.remove()\nDelete this bookmark. Returns success.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "bookmarks"
+    ]
+  },
+  {
+    "objectID": "reference/collections/hyperlinks.html",
+    "href": "reference/collections/hyperlinks.html",
+    "title": "hyperlinks",
+    "section": "",
+    "text": "Hyperlink collection.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "hyperlinks"
+    ]
+  },
+  {
+    "objectID": "reference/collections/hyperlinks.html#methods",
+    "href": "reference/collections/hyperlinks.html#methods",
+    "title": "hyperlinks",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\nadd\nInsert a hyperlink at the current cursor position.\n\n\nnames\nLink-display-text values, document order.\n\n\n\n\nadd\ncollections.hyperlinks.HyperlinkCollection.add(text, url)\nInsert a hyperlink at the current cursor position.\n\n\nnames\ncollections.hyperlinks.HyperlinkCollection.names()\nLink-display-text values, document order.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "hyperlinks"
+    ]
+  },
+  {
+    "objectID": "reference/collections/paragraphs.html",
+    "href": "reference/collections/paragraphs.html",
+    "title": "paragraphs",
+    "section": "",
+    "text": "Paragraph collection with Run element.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "paragraphs"
+    ]
+  },
+  {
+    "objectID": "reference/collections/paragraphs.html#methods",
+    "href": "reference/collections/paragraphs.html#methods",
+    "title": "paragraphs",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\nnames\nOrdinal strings — paragraphs have no intrinsic names.\n\n\n\n\nnames\ncollections.paragraphs.ParagraphCollection.names()\nOrdinal strings — paragraphs have no intrinsic names.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "paragraphs"
+    ]
+  },
+  {
+    "objectID": "reference/collections/paragraphs.html#attributes",
+    "href": "reference/collections/paragraphs.html#attributes",
+    "title": "paragraphs",
+    "section": "Attributes",
+    "text": "Attributes\n\n\n\nName\nDescription\n\n\n\n\ncharshape\n:class:~hwpapi.low.parametersets.CharShape snapshot for this\n\n\nparashape\n:class:~hwpapi.low.parametersets.ParaShape snapshot for this\n\n\nruns\nRuns covering this paragraph. Phase 4 returns a single-element\n\n\nstyle\nParagraph style name (e.g. “바탕글”). Empty string on failure.\n\n\ntext\nParagraph text. Returns \"\" when the backend cannot resolve it.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "paragraphs"
+    ]
+  },
+  {
+    "objectID": "reference/collections/paragraphs.html#parameters",
+    "href": "reference/collections/paragraphs.html#parameters",
+    "title": "paragraphs",
+    "section": "Parameters",
+    "text": "Parameters\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nparagraph\nParagraph\nOwning paragraph value object.\nrequired\n\n\nstart\nint\nCharacter offsets into :attr:Paragraph.text (Python slice semantics). end == -1 means “to end of paragraph”.\n0\n\n\nend\nint\nCharacter offsets into :attr:Paragraph.text (Python slice semantics). end == -1 means “to end of paragraph”.\n0\n\n\nAttributes\n\n\nrequired\n\n\nnot\n\n\nrequired",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "paragraphs"
+    ]
+  },
+  {
+    "objectID": "reference/collections/paragraphs.html#attributes-1",
+    "href": "reference/collections/paragraphs.html#attributes-1",
+    "title": "paragraphs",
+    "section": "Attributes",
+    "text": "Attributes\n\n\n\nName\nDescription\n\n\n\n\ncharshape\nBest-effort :class:CharShape — currently the paragraph’s.\n\n\nparagraph\nThe :class:Paragraph this run belongs to.\n\n\ntext\nSubstring of the paragraph text covered by this run.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "paragraphs"
+    ]
+  },
+  {
+    "objectID": "reference/collections/tables.html",
+    "href": "reference/collections/tables.html",
+    "title": "tables",
+    "section": "",
+    "text": "Table collection with Table/Cell elements.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "tables"
+    ]
+  },
+  {
+    "objectID": "reference/collections/tables.html#attributes",
+    "href": "reference/collections/tables.html#attributes",
+    "title": "tables",
+    "section": "Attributes",
+    "text": "Attributes\n\n\n\nName\nDescription\n\n\n\n\ncaption\nCaption text, or an empty string if the table has none.\n\n\ncols\nNumber of columns in the table (0 if unknown).\n\n\nname\nBest-effort display name — caption when present, else ordinal.\n\n\nrows\nNumber of rows in the table (0 if unknown).",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "tables"
+    ]
+  },
+  {
+    "objectID": "reference/collections/tables.html#methods",
+    "href": "reference/collections/tables.html#methods",
+    "title": "tables",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\ncell\nReturn a :class:Cell for (row, col) (0-indexed).\n\n\n\n\ncell\ncollections.tables.Table.cell(row, col)\nReturn a :class:Cell for (row, col) (0-indexed).",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "tables"
+    ]
+  },
+  {
+    "objectID": "reference/collections/tables.html#attributes-1",
+    "href": "reference/collections/tables.html#attributes-1",
+    "title": "tables",
+    "section": "Attributes",
+    "text": "Attributes\n\n\n\nName\nDescription\n\n\n\n\naddress\nA1-style address (e.g. \"B3\").\n\n\ntext\nBest-effort cell text. Selects the cell, reads the saved-block",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "tables"
+    ]
+  },
+  {
+    "objectID": "reference/collections/tables.html#methods-1",
+    "href": "reference/collections/tables.html#methods-1",
+    "title": "tables",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\nselect\nNavigate the caret to this cell. Selects the owning table first,\n\n\n\n\nselect\ncollections.tables.Cell.select()\nNavigate the caret to this cell. Selects the owning table first, then uses SetCellAddr / TableCellBlock navigation. Returns True on success, False on any COM error.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Collections",
+      "tables"
+    ]
+  },
+  {
+    "objectID": "reference/errors.html",
+    "href": "reference/errors.html",
+    "title": "errors",
+    "section": "",
+    "text": "HwpApiError and subclasses.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "errors"
+    ]
+  },
+  {
+    "objectID": "reference/errors.html#parameters",
+    "href": "reference/errors.html#parameters",
+    "title": "errors",
+    "section": "Parameters",
+    "text": "Parameters\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\naction_name\nstr\nShort label for the failing operation — included in the error message so callers can tell FileOpen from FileSaveAsPdf.\nrequired",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "errors"
+    ]
+  },
+  {
+    "objectID": "reference/errors.html#example",
+    "href": "reference/errors.html#example",
+    "title": "errors",
+    "section": "Example",
+    "text": "Example\n\n\n\nwith wrap_com_error(“FileOpen”): … app.api.Open(path)",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "errors"
+    ]
+  },
+  {
+    "objectID": "reference/io/export.html",
+    "href": "reference/io/export.html",
+    "title": "io.export",
+    "section": "",
+    "text": "export_pdf / export_image / export_text.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Io",
+      "io.export"
+    ]
+  },
+  {
+    "objectID": "reference/io/export.html#parameters",
+    "href": "reference/io/export.html#parameters",
+    "title": "io.export",
+    "section": "Parameters",
+    "text": "Parameters\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\napp\nhwpapi.App\n\nrequired\n\n\npath\nstr | Path\nDestination path. Extension suggests the target format — the .png path passes format=\"PNG\" to HWP, everything else falls through to BMP which HWP always supports.\nrequired\n\n\npage\nint\nReserved for future per-page export. Currently HWP’s SaveBlockAction path doesn’t accept a page index, so we log the request and delegate to the whole-document export.\nNone",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Io",
+      "io.export"
+    ]
+  },
+  {
+    "objectID": "reference/io/export.html#raises",
+    "href": "reference/io/export.html#raises",
+    "title": "io.export",
+    "section": "Raises",
+    "text": "Raises\n\n\n\nName\nType\nDescription\n\n\n\n\n\nFileIOError\nOn any COM-level failure.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Io",
+      "io.export"
+    ]
+  },
+  {
+    "objectID": "reference/low/actions.html",
+    "href": "reference/low/actions.html",
+    "title": "low.actions",
+    "section": "",
+    "text": "900+ HWP action wrappers.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.actions"
+    ]
+  },
+  {
+    "objectID": "reference/low/actions.html#methods",
+    "href": "reference/low/actions.html#methods",
+    "title": "low.actions",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\nget_description\nGet action description without creating _Action.\n\n\nget_pset_class\nGet the ParameterSet class for an action WITHOUT creating _Action.\n\n\nlist_actions\nList all available action names.\n\n\nrefresh\nInvalidate cache; next access creates fresh _Action with HWP defaults.\n\n\n\n\nget_description\nlow.actions._Actions.get_description(action_name)\nGet action description without creating _Action.\n\n\nget_pset_class\nlow.actions._Actions.get_pset_class(action_name)\nGet the ParameterSet class for an action WITHOUT creating _Action.\nThis is a cheap introspection — no COM calls.\nReturns: ParameterSet subclass, or None if the action has no pset.\nRaises: KeyError: if action_name is unknown.\n\n\nlist_actions\nlow.actions._Actions.list_actions(with_pset_only=False)\nList all available action names.\nArgs: with_pset_only: if True, return only actions that have a ParameterSet.\n\n\nrefresh\nlow.actions._Actions.refresh(name=None)\nInvalidate cache; next access creates fresh _Action with HWP defaults.\nArgs: name: action name to refresh. None clears entire cache.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.actions"
+    ]
+  },
+  {
+    "objectID": "reference/low/actions.html#attributes",
+    "href": "reference/low/actions.html#attributes",
+    "title": "low.actions",
+    "section": "Attributes",
+    "text": "Attributes\n\n\n\nName\nDescription\n\n\n\n\nact\n현재 활성 문서에 바인딩된 IXHwpAction.\n\n\npset\n현재 활성 문서에 바인딩된 wrapped ParameterSet.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.actions"
+    ]
+  },
+  {
+    "objectID": "reference/low/actions.html#methods-1",
+    "href": "reference/low/actions.html#methods-1",
+    "title": "low.actions",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\nget_pset\nReturn ParameterSet bound to global HParameterSet node (HAction pattern).\n\n\nrun\nExecute the action using pset-based approach.\n\n\n\n\nget_pset\nlow.actions._Action.get_pset()\nReturn ParameterSet bound to global HParameterSet node (HAction pattern).\nThis is the ‘HAction’ style described in HWP Automation docs (p.60): HAction.GetDefault(actname, HParameterSet.HXxx.HSet) HParameterSet.HXxx. = value HAction.Execute(actname, HParameterSet.HXxx.HSet)\nThe returned ParameterSet shares state with the global HParameterSet, unlike .pset which uses a local pset from CreateSet().\n\n\nrun\nlow.actions._Action.run(parameterset=None)\nExecute the action using pset-based approach. Direct execution with pset objects without HSet synchronization.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.actions"
+    ]
+  },
+  {
+    "objectID": "reference/low/parametersets.html",
+    "href": "reference/low/parametersets.html",
+    "title": "low.parametersets",
+    "section": "",
+    "text": "ParameterSet classes (CharShape, ParaShape, …).",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.parametersets"
+    ]
+  },
+  {
+    "objectID": "reference/low/parametersets.html#attributes",
+    "href": "reference/low/parametersets.html#attributes",
+    "title": "low.parametersets",
+    "section": "Attributes",
+    "text": "Attributes\n\n\n\nName\nDescription\n\n\n\n\nattributes_names\nAuto-generated list of attribute names from property registry.\n\n\nparameterset\nReturn the underlying raw object (COM ParameterSet or Python object), or None if unbound.",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.parametersets"
+    ]
+  },
+  {
+    "objectID": "reference/low/parametersets.html#methods",
+    "href": "reference/low/parametersets.html#methods",
+    "title": "low.parametersets",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\napply\nFlush staged changes (and deletions) to backend.\n\n\nbind\nBind/attach a raw parameterset to this instance (or re-bind a new one).\n\n\nclone\nClone this ParameterSet using the native COM Clone() method.\n\n\ncreate_itemset\nCreate a nested parameter set using CreateItemSet (pset-based) or direct access (HSet-based).\n\n\ndeleted\nReturn attribute names marked for deletion.\n\n\ndirty\nReturn staged changes as {attr_name: value}, excluding deletions.\n\n\ndiscard\nDrop staged edits and deletions (keep snapshot).\n\n\nis_equivalent\nCheck value equality with another ParameterSet via native IsEquivalent().\n\n\nitem_exists\nCheck if an item exists in the underlying pset via native ItemExist().\n\n\nmerge\nMerge another ParameterSet’s items into this one via native Merge().\n\n\nreload\nRefresh in-memory snapshot from backend and clear staged edits (but keep wrapper cache coherent).\n\n\nupdate\nStage multiple values by attribute name (not raw keys).\n\n\n\n\napply\nlow.parametersets.base.ParameterSet.apply(\n    overrides=None,\n    *,\n    require='error',\n    only_overrides=False,\n    parameterset=None,\n    **kwargs,\n)\nFlush staged changes (and deletions) to backend.\n\nParameters\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\noverrides\ndict | None\nAdditional values (by attribute name) to stage just-in-time.\nNone\n\n\nrequire\n('error', 'warn', 'skip')\nControl missing-required behavior at apply-time.\n\"error\",\"warn\",\"skip\"\n\n\nonly_overrides\nbool\nIf True, ignore previously staged edits and apply ONLY overrides/**kwargs.\nFalse\n\n\nparameterset\nAny | None\nOptionally (re)bind a raw parameterset right before applying. Required if not already bound.\nNone\n\n\n**kwargs\n\nSame as overrides; convenient for inline use.\n{}\n\n\n\n\n\n\nbind\nlow.parametersets.base.ParameterSet.bind(parameterset, *, backend_factory=None)\nBind/attach a raw parameterset to this instance (or re-bind a new one). Validates SetID presence and (optionally) equality to expected SetID.\n\n\nclone\nlow.parametersets.base.ParameterSet.clone()\nClone this ParameterSet using the native COM Clone() method.\nFaster and more reliable than manual update_from for simple copies.\nReturns: New ParameterSet wrapping a cloned pset COM object, or None if the underlying object doesn’t support Clone.\n\n\ncreate_itemset\nlow.parametersets.base.ParameterSet.create_itemset(key, setid)\nCreate a nested parameter set using CreateItemSet (pset-based) or direct access (HSet-based).\nArgs: key: The parameter key for the nested set setid: The SetID for the nested parameter set\nReturns: ParameterSet instance wrapping the nested parameter set\n\n\ndeleted\nlow.parametersets.base.ParameterSet.deleted()\nReturn attribute names marked for deletion.\n\n\ndirty\nlow.parametersets.base.ParameterSet.dirty()\nReturn staged changes as {attr_name: value}, excluding deletions.\n\n\ndiscard\nlow.parametersets.base.ParameterSet.discard()\nDrop staged edits and deletions (keep snapshot).\n\n\nis_equivalent\nlow.parametersets.base.ParameterSet.is_equivalent(other)\nCheck value equality with another ParameterSet via native IsEquivalent().\nReturns True if both parameter sets have identical items and values.\n\n\nitem_exists\nlow.parametersets.base.ParameterSet.item_exists(item_id)\nCheck if an item exists in the underlying pset via native ItemExist().\n\n\nmerge\nlow.parametersets.base.ParameterSet.merge(other)\nMerge another ParameterSet’s items into this one via native Merge().\nResult: self gets “self’s items + items unique to other”.\n\n\nreload\nlow.parametersets.base.ParameterSet.reload()\nRefresh in-memory snapshot from backend and clear staged edits (but keep wrapper cache coherent).\n\n\nupdate\nlow.parametersets.base.ParameterSet.update(data)\nStage multiple values by attribute name (not raw keys).",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.parametersets"
+    ]
+  },
+  {
+    "objectID": "reference/low/parametersets.html#methods-1",
+    "href": "reference/low/parametersets.html#methods-1",
+    "title": "low.parametersets",
+    "section": "Methods",
+    "text": "Methods\n\n\n\nName\nDescription\n\n\n\n\ncreate_itemset\nCreate nested parameter set using pset.CreateItemSet(key, setid).\n\n\ndelete\nDelete item if supported by pset.\n\n\nget\nGet value using pset.Item(key).\n\n\nitem_exists\nCheck if item exists using pset.ItemExist(key) if available.\n\n\nset\nSet value using pset.SetItem(key, value).\n\n\n\n\ncreate_itemset\nlow.parametersets.backends.PsetBackend.create_itemset(key, setid)\nCreate nested parameter set using pset.CreateItemSet(key, setid).\n\n\ndelete\nlow.parametersets.backends.PsetBackend.delete(key)\nDelete item if supported by pset.\n\n\nget\nlow.parametersets.backends.PsetBackend.get(key)\nGet value using pset.Item(key).\n\n\nitem_exists\nlow.parametersets.backends.PsetBackend.item_exists(key)\nCheck if item exists using pset.ItemExist(key) if available.\n\n\nset\nlow.parametersets.backends.PsetBackend.set(key, value)\nSet value using pset.SetItem(key, value).",
+    "crumbs": [
+      "Reference",
+      "API Reference",
+      "Low",
+      "low.parametersets"
+    ]
+  }
+]

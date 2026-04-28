@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-04-19">
+
+<title>Migrating from hwpapi v1.x to v2.0 – hwpapi</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../getting-started/quickstart.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-dbc92dda8186f57fa2e333fbb71d6a9d.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-521d016db09673342a232bde0428f48f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-ea9b9fa81ac2322170bca8b828f21f7b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-521d016db09673342a232bde0428f48f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<link rel="stylesheet" href="../_assets/styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../_assets/logo.png" alt="" class="navbar-logo light-content">
+    <img src="../_assets/logo.png" alt="" class="navbar-logo dark-content">
+    </a>
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">hwpapi</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../getting-started/install.html" aria-current="page"> 
+<span class="menu-text">Getting Started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../guide/app-and-document.html"> 
+<span class="menu-text">Guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../recipes/index.html"> 
+<span class="menu-text">Recipes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../reference/index.html"> 
+<span class="menu-text">Reference</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../design/index.html"> 
+<span class="menu-text">Design</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../ko/index.html"> 
+<span class="menu-text">🇰🇷 한국어</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/JunDamin/hwpapi"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../getting-started/migration-v1-to-v2.html">Migrating from hwpapi v1.x to v2.0</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../getting-started/install.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Install</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../getting-started/quickstart.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Quickstart</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../getting-started/migration-v1-to-v2.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Migrating from hwpapi v1.x to v2.0</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#compatibility-policy" id="toc-compatibility-policy" class="nav-link" data-scroll-target="#compatibility-policy">Compatibility Policy</a></li>
+  <li><a href="#the-new-shape-v2" id="toc-the-new-shape-v2" class="nav-link" data-scroll-target="#the-new-shape-v2">The new shape (v2)</a></li>
+  <li><a href="#migration-table" id="toc-migration-table" class="nav-link" data-scroll-target="#migration-table">1:1 migration table</a>
+  <ul class="collapse">
+  <li><a href="#renamed-stays-on-app" id="toc-renamed-stays-on-app" class="nav-link" data-scroll-target="#renamed-stays-on-app">Renamed — stays on App</a></li>
+  <li><a href="#moved-to-app.doc-document" id="toc-moved-to-app.doc-document" class="nav-link" data-scroll-target="#moved-to-app.doc-document">Moved to <code>app.doc</code> (Document)</a></li>
+  <li><a href="#moved-to-collections-via-app.doc." id="toc-moved-to-collections-via-app.doc." class="nav-link" data-scroll-target="#moved-to-collections-via-app.doc.">Moved to Collections (via <code>app.doc.*</code>)</a></li>
+  <li><a href="#moved-to-elements" id="toc-moved-to-elements" class="nav-link" data-scroll-target="#moved-to-elements">Moved to Elements</a></li>
+  <li><a href="#moved-to-hwpapi.low" id="toc-moved-to-hwpapi.low" class="nav-link" data-scroll-target="#moved-to-hwpapi.low">Moved to <code>hwpapi.low</code></a></li>
+  <li><a href="#deleted-no-direct-replacement" id="toc-deleted-no-direct-replacement" class="nav-link" data-scroll-target="#deleted-no-direct-replacement">Deleted — no direct replacement</a></li>
+  </ul></li>
+  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a>
+  <ul class="collapse">
+  <li><a href="#example-1-open-a-file-insert-text-save" id="toc-example-1-open-a-file-insert-text-save" class="nav-link" data-scroll-target="#example-1-open-a-file-insert-text-save">Example 1 — Open a file, insert text, save</a></li>
+  <li><a href="#example-2-field-operations" id="toc-example-2-field-operations" class="nav-link" data-scroll-target="#example-2-field-operations">Example 2 — Field operations</a></li>
+  <li><a href="#example-3-character-formatting" id="toc-example-3-character-formatting" class="nav-link" data-scroll-target="#example-3-character-formatting">Example 3 — Character formatting</a></li>
+  <li><a href="#example-4-unit-conversions-deleted-from-app" id="toc-example-4-unit-conversions-deleted-from-app" class="nav-link" data-scroll-target="#example-4-unit-conversions-deleted-from-app">Example 4 — Unit conversions (deleted from App)</a></li>
+  </ul></li>
+  <li><a href="#faq" id="toc-faq" class="nav-link" data-scroll-target="#faq">FAQ</a></li>
+  <li><a href="#see-also" id="toc-see-also" class="nav-link" data-scroll-target="#see-also">See also</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/getting-started/migration-v1-to-v2.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Migrating from hwpapi v1.x to v2.0</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 19, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="overview" class="level1">
+<h1>Overview</h1>
+<p>hwpapi v2.0 redesigns the public API around a dual-layer model: a slim <code>App</code> facade (≤ 15 public members) that handles lifecycle only, and a <code>Document</code> object (<code>app.doc</code>) that owns everything scoped to an open document. Collections (<code>fields</code>, <code>bookmarks</code>, <code>images</code>, etc.) become first-class dict-like objects under <code>Document</code>. Element-level state (character formatting, paragraph formatting, table cells) moves to <code>Run</code>, <code>Paragraph</code>, and <code>Cell</code> objects exposed through <code>hwpapi.elements</code>. The v1 <code>App</code> class carried 106 public members representing two years of accretion; v2 cuts that to 14, with every removed symbol having a documented landing point or an explicit deletion rationale.</p>
+</section>
+<section id="compatibility-policy" class="level1">
+<h1>Compatibility Policy</h1>
+<p>hwpapi 2.0 is a <strong>clean-cut break</strong>. There is <strong>no deprecation shim</strong>.</p>
+<ul>
+<li>v1 code that calls removed <code>App</code> members raises <code>AttributeError</code>.</li>
+<li>No runtime warnings. No compatibility layer. No import-level aliases.</li>
+<li>Reason: The v1 <code>App</code> surface reached 106 public members (244 public symbols package-wide), with document state, element state, collection accessors, unit-conversion utilities, and lifecycle methods all mixed onto a single class. Introducing a shim would require keeping that entire surface importable, defeating the slim-facade goal and making it impossible to distinguish “App lifecycle” from “Document operation” at the type level. A clean break is cheaper for every user than a perpetual compat layer.</li>
+<li>v1.x users who cannot migrate immediately should pin <code>hwpapi==1.*</code> — that line is frozen on the <code>v1.x</code> branch and tagged <code>v1.0.0</code>.</li>
+</ul>
+</section>
+<section id="the-new-shape-v2" class="level1">
+<h1>The new shape (v2)</h1>
+<pre><code>hwpapi.App
+├── open(path)          # open a .hwp / .hwpx file
+├── new()               # create a new blank document
+├── close()             # close the active document
+├── save()              # save in place
+├── save_as(path)       # save to a new path
+├── reload()            # rebind to an existing COM engine
+├── quit()              # tear down the COM engine process
+├── visible (property)  # window visibility — bool r/w
+├── doc  ──────────────────────────────── hwpapi.Document
+│   ├── .text                  # full document text (r/w property)
+│   ├── .page_count            # total pages
+│   ├── .current_page          # cursor page number
+│   ├── .get_filepath()        # path of the open file
+│   ├── .get_hwnd()            # window handle
+│   ├── .select_all()
+│   ├── .selection             # selected text (alias)
+│   ├── .get_selected_text()
+│   ├── .get_text()
+│   ├── .insert_text(s)
+│   ├── .insert_line_break()
+│   ├── .insert_page_break()
+│   ├── .insert_paragraph_break()
+│   ├── .insert_tab()
+│   ├── .insert_heading(level, text)
+│   ├── .insert_file(path)
+│   ├── .insert_picture(path)
+│   ├── .highlight(color)
+│   ├── .copy() / .cut() / .paste()
+│   ├── .delete()
+│   ├── .clear()
+│   ├── .undo() / .redo()
+│   ├── .find_text(query)
+│   ├── .replace_all(find, replace)
+│   ├── .select_text(start, end)
+│   ├── .read_table()
+│   ├── .create_field(name, direction)
+│   ├── .scan(...)             # paragraph/line scanner context manager
+│   ├── .cursor
+│   │   ├── .goto_page(n)
+│   │   ├── .move_to_field(name)
+│   │   ├── .in_table()
+│   │   ├── .get_charshape()
+│   │   └── .get_parashape()
+│   ├── .page
+│   │   └── .setup(...)        # page layout configuration
+│   ├── .fields   → FieldCollection
+│   ├── .bookmarks → BookmarkCollection
+│   ├── .hyperlinks → HyperlinkCollection
+│   ├── .images   → ImageCollection
+│   ├── .styles   → StyleCollection
+│   ├── .controls → ControlCollection
+│   └── .tables   → TableCollection (Phase 3)
+├── engine              # Engine escape hatch (prefer hwpapi.low.*)
+└── api                 # raw COM handle escape hatch</code></pre>
+<p>Context managers that were App methods in v1 are now module-level functions:</p>
+<pre><code>hwpapi.context.scopes
+├── charshape_scope(...)   # was app.charshape_scope()
+├── parashape_scope(...)   # was app.parashape_scope()
+├── styled_text(...)       # was app.styled_text()
+├── batch_mode(app)        # was app.batch_mode()
+├── silenced(app)          # was app.silenced()
+├── suppress_errors(app)   # was app.suppress_errors()
+└── undo_group(app)        # was app.undo_group()</code></pre>
+</section>
+<section id="migration-table" class="level1">
+<h1>1:1 migration table</h1>
+<p>Rows are grouped by destination. Every non-<code>keep_in_App</code> member from the audit appears exactly once.</p>
+<section id="renamed-stays-on-app" class="level2">
+<h2 class="anchored" data-anchor-id="renamed-stays-on-app">Renamed — stays on App</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>v1 call</th>
+<th>v2 equivalent</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>app.new_document()</code></td>
+<td><code>App.new()</code></td>
+<td>Classmethod; name aligned with <code>open</code>/<code>close</code>/<code>save</code></td>
+</tr>
+<tr class="even">
+<td><code>app.save_block(path)</code></td>
+<td><code>app.save_as(path, *, as_block=False)</code></td>
+<td>Signature extended; <code>save_block</code> name was misleading</td>
+</tr>
+<tr class="odd">
+<td><code>app.set_visible(flag)</code></td>
+<td><code>app.visible = flag</code></td>
+<td>Property assignment replaces the method</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="moved-to-app.doc-document" class="level2">
+<h2 class="anchored" data-anchor-id="moved-to-app.doc-document">Moved to <code>app.doc</code> (Document)</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>v1 call</th>
+<th>v2 equivalent</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>app.clear()</code></td>
+<td><code>app.doc.clear()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.copy()</code></td>
+<td><code>app.doc.copy()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.create_field(name, dir)</code></td>
+<td><code>app.doc.create_field(name, dir)</code></td>
+<td>Complements <code>app.doc.fields</code></td>
+</tr>
+<tr class="even">
+<td><code>app.current_page</code></td>
+<td><code>app.doc.current_page</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.cut()</code></td>
+<td><code>app.doc.cut()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.delete()</code></td>
+<td><code>app.doc.delete()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.find_text(query)</code></td>
+<td><code>app.doc.find_text(query)</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.get_charshape()</code></td>
+<td><code>app.doc.cursor.get_charshape()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.get_filepath()</code></td>
+<td><code>app.doc.get_filepath()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.get_hwnd()</code></td>
+<td><code>app.doc.get_hwnd()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.get_parashape()</code></td>
+<td><code>app.doc.cursor.get_parashape()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.get_selected_text()</code></td>
+<td><code>app.doc.get_selected_text()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.get_text()</code></td>
+<td><code>app.doc.get_text()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.goto_page(n)</code></td>
+<td><code>app.doc.cursor.goto_page(n)</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.highlight(color)</code></td>
+<td><code>app.doc.highlight(color)</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.in_table()</code></td>
+<td><code>app.doc.cursor.in_table()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.insert_file(path)</code></td>
+<td><code>app.doc.insert_file(path)</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.insert_heading(level, text)</code></td>
+<td><code>app.doc.insert_heading(level, text)</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.insert_line_break()</code></td>
+<td><code>app.doc.insert_line_break()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.insert_page_break()</code></td>
+<td><code>app.doc.insert_page_break()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.insert_paragraph_break()</code></td>
+<td><code>app.doc.insert_paragraph_break()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.insert_picture(path)</code></td>
+<td><code>app.doc.insert_picture(path)</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.insert_tab()</code></td>
+<td><code>app.doc.insert_tab()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.insert_text(s)</code></td>
+<td><code>app.doc.insert_text(s)</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.move_to_field(name)</code></td>
+<td><code>app.doc.cursor.move_to_field(name)</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.page_count</code></td>
+<td><code>app.doc.page_count</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.paste()</code></td>
+<td><code>app.doc.paste()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.read_table()</code></td>
+<td><code>app.doc.read_table()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.redo()</code></td>
+<td><code>app.doc.redo()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.replace_all(find, replace)</code></td>
+<td><code>app.doc.replace_all(find, replace)</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.scan(...)</code></td>
+<td><code>app.doc.scan(...)</code></td>
+<td>Context manager; same interface</td>
+</tr>
+<tr class="even">
+<td><code>app.select_all()</code></td>
+<td><code>app.doc.select_all()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.select_text(start, end)</code></td>
+<td><code>app.doc.select_text(start, end)</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.selection</code></td>
+<td><code>app.doc.selection</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.setup_page(...)</code></td>
+<td><code>app.doc.page.setup(...)</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.text</code></td>
+<td><code>app.doc.text</code></td>
+<td>r/w property; <code>app.text</code> is gone</td>
+</tr>
+<tr class="odd">
+<td><code>app.undo()</code></td>
+<td><code>app.doc.undo()</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="moved-to-collections-via-app.doc." class="level2">
+<h2 class="anchored" data-anchor-id="moved-to-collections-via-app.doc.">Moved to Collections (via <code>app.doc.*</code>)</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>v1 call</th>
+<th>v2 equivalent</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>app.bookmarks</code></td>
+<td><code>app.doc.bookmarks</code></td>
+<td><code>BookmarkCollection</code> — dict-like</td>
+</tr>
+<tr class="even">
+<td><code>app.controls</code></td>
+<td><code>app.doc.controls</code></td>
+<td><code>ControlCollection</code> — iterable</td>
+</tr>
+<tr class="odd">
+<td><code>app.delete_all_fields()</code></td>
+<td><code>app.doc.fields.clear()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.delete_field(name)</code></td>
+<td><code>del app.doc.fields[name]</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.field_exists(name)</code></td>
+<td><code>name in app.doc.fields</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.field_names</code></td>
+<td><code>app.doc.fields.names()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.fields</code></td>
+<td><code>app.doc.fields</code></td>
+<td><code>FieldCollection</code> — dict-like</td>
+</tr>
+<tr class="even">
+<td><code>app.hyperlinks</code></td>
+<td><code>app.doc.hyperlinks</code></td>
+<td><code>HyperlinkCollection</code> — dict-like</td>
+</tr>
+<tr class="odd">
+<td><code>app.images</code></td>
+<td><code>app.doc.images</code></td>
+<td><code>ImageCollection</code> — dict-like</td>
+</tr>
+<tr class="even">
+<td><code>app.rename_field(old, new)</code></td>
+<td><code>app.doc.fields.rename(old, new)</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.styles</code></td>
+<td><code>app.doc.styles</code></td>
+<td><code>StyleCollection</code> — dict-like</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="moved-to-elements" class="level2">
+<h2 class="anchored" data-anchor-id="moved-to-elements">Moved to Elements</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>v1 call</th>
+<th>v2 equivalent</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>app.cell</code></td>
+<td><code>app.doc.tables[i].cell(r, c)</code></td>
+<td><code>Cell</code> element</td>
+</tr>
+<tr class="even">
+<td><code>app.charshape</code></td>
+<td><code>run.charshape</code></td>
+<td>Property on <code>Run</code> element</td>
+</tr>
+<tr class="odd">
+<td><code>app.charshape_scope(...)</code></td>
+<td><code>hwpapi.context.scopes.charshape_scope(...)</code></td>
+<td>Module-level context manager</td>
+</tr>
+<tr class="even">
+<td><code>app.insert_bookmark(name)</code></td>
+<td><code>app.doc.bookmarks.add(name)</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.insert_hyperlink(url)</code></td>
+<td><code>app.doc.hyperlinks.add(url)</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.insert_table(rows, cols)</code></td>
+<td><code>app.doc.tables.add(rows, cols)</code></td>
+<td>Phase 3 target</td>
+</tr>
+<tr class="odd">
+<td><code>app.parashape</code></td>
+<td><code>paragraph.parashape</code></td>
+<td>Property on <code>Paragraph</code> element</td>
+</tr>
+<tr class="even">
+<td><code>app.parashape_scope(...)</code></td>
+<td><code>hwpapi.context.scopes.parashape_scope(...)</code></td>
+<td>Module-level context manager</td>
+</tr>
+<tr class="odd">
+<td><code>app.set_cell_border(...)</code></td>
+<td><code>cell.border = ...</code></td>
+<td><code>Cell.border</code> setter</td>
+</tr>
+<tr class="even">
+<td><code>app.set_cell_color(...)</code></td>
+<td><code>cell.fill = ...</code></td>
+<td><code>Cell.fill</code> setter</td>
+</tr>
+<tr class="odd">
+<td><code>app.set_charshape(...)</code></td>
+<td><code>run.charshape = CharShape(...)</code></td>
+<td>Element-level assignment</td>
+</tr>
+<tr class="even">
+<td><code>app.set_parashape(...)</code></td>
+<td><code>paragraph.parashape = ParaShape(...)</code></td>
+<td>Element-level assignment</td>
+</tr>
+<tr class="odd">
+<td><code>app.styled_text(...)</code></td>
+<td><code>hwpapi.context.scopes.styled_text(...)</code></td>
+<td>Module-level context manager</td>
+</tr>
+<tr class="even">
+<td><code>app.table</code></td>
+<td><code>app.doc.tables[i]</code></td>
+<td><code>Table</code> element via collection</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="moved-to-hwpapi.low" class="level2">
+<h2 class="anchored" data-anchor-id="moved-to-hwpapi.low">Moved to <code>hwpapi.low</code></h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>v1 call</th>
+<th>v2 equivalent</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>app.actions</code></td>
+<td><code>hwpapi.low.actions</code> or <code>app.engine.actions</code></td>
+<td>Still reachable; low-layer namespace</td>
+</tr>
+<tr class="even">
+<td><code>app.create_action(name)</code></td>
+<td><code>hwpapi.low.actions._Action(name)</code></td>
+<td>Raw action factory</td>
+</tr>
+<tr class="odd">
+<td><code>app.create_parameterset(...)</code></td>
+<td><code>hwpapi.low.parametersets</code> factory</td>
+<td>Raw parameterset factory</td>
+</tr>
+<tr class="even">
+<td><code>app.parameters</code></td>
+<td><code>hwpapi.low.parametersets</code></td>
+<td><code>HParameterSet</code> alias</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="deleted-no-direct-replacement" class="level2">
+<h2 class="anchored" data-anchor-id="deleted-no-direct-replacement">Deleted — no direct replacement</h2>
+<p>These members are removed from the public surface. Where a successor exists it is noted; otherwise raw COM access via <code>app.api</code> or <code>app.engine</code> is the escape hatch.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>v1 member</th>
+<th>Rationale</th>
+<th>Successor / escape hatch</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>app._ACCESSOR_MAP</code></td>
+<td>Discovery metadata — superseded by Quarto reference site + IDE tab completion</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td><code>app._CONTEXT_MANAGERS</code></td>
+<td>Same as <code>_ACCESSOR_MAP</code></td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td><code>app.__repr__</code> / <code>app.__str__</code></td>
+<td>Replaced by minimal <code>__repr__</code> in the slim class</td>
+<td>—</td>
+</tr>
+<tr class="even">
+<td><code>app.batch_mode()</code></td>
+<td>Context manager moves to module level</td>
+<td><code>hwpapi.context.scopes.batch_mode(app)</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.config</code></td>
+<td>Preferences accessor dropped from App</td>
+<td>— (resurfaces if needed in future release)</td>
+</tr>
+<tr class="even">
+<td><code>app.convert</code></td>
+<td>Accessor cluster dissolved</td>
+<td>utility functions in <code>hwpapi.io</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.debug</code></td>
+<td>Debug cluster</td>
+<td><code>hwpapi.debug</code> module</td>
+</tr>
+<tr class="even">
+<td><code>app.documents</code></td>
+<td>Multi-doc collection deferred to v2.1</td>
+<td>— (use <code>app.doc</code> for active document)</td>
+</tr>
+<tr class="odd">
+<td><code>app.field_names_internal()</code></td>
+<td>Internal leak; replaced by collection</td>
+<td><code>app.doc.fields.names()</code></td>
+</tr>
+<tr class="even">
+<td><code>app.fields_dict</code></td>
+<td>Duplicate of <code>dict(app.doc.fields)</code></td>
+<td><code>dict(app.doc.fields)</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.get_field(name)</code></td>
+<td>Duplicate of <code>FieldCollection.__getitem__</code></td>
+<td><code>app.doc.fields[name]</code></td>
+</tr>
+<tr class="even">
+<td><code>app.get_font_list()</code></td>
+<td>Utility method</td>
+<td><code>hwpapi.fonts.list_used()</code> (if retained)</td>
+</tr>
+<tr class="odd">
+<td><code>app.get_message_box_mode()</code></td>
+<td>Low-level dialog config</td>
+<td><code>app.engine</code> / <code>hwpapi.low.engine</code></td>
+</tr>
+<tr class="even">
+<td><code>app.help()</code></td>
+<td>Discovery replaced by Quarto site</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td><code>app.hwpunit_to_mm(v)</code></td>
+<td>Duplicate of module-level function</td>
+<td><code>hwpapi.units.hwpunit_to_mm(v)</code></td>
+</tr>
+<tr class="even">
+<td><code>app.hwpunit_to_point(v)</code></td>
+<td>Duplicate of module-level function</td>
+<td><code>hwpapi.units.hwpunit_to_point(v)</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.lint</code></td>
+<td>Lint cluster</td>
+<td><code>hwpapi.lint</code> module</td>
+</tr>
+<tr class="even">
+<td><code>app.logger</code></td>
+<td>Internal attribute; should not be public</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td><code>app.mm_to_hwpunit(v)</code></td>
+<td>Duplicate of module-level function</td>
+<td><code>hwpapi.units.mm_to_hwpunit(v)</code></td>
+</tr>
+<tr class="even">
+<td><code>app.move</code></td>
+<td><code>MoveAccessor</code> collapses into <code>Document.cursor</code></td>
+<td><code>app.doc.cursor</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.page</code></td>
+<td><code>PageAccessor</code> collapses into <code>Document.page</code></td>
+<td><code>app.doc.page</code></td>
+</tr>
+<tr class="even">
+<td><code>app.point_to_hwpunit(v)</code></td>
+<td>Duplicate of module-level function</td>
+<td><code>hwpapi.units.point_to_hwpunit(v)</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.preset</code></td>
+<td>Presets layer is a sibling package</td>
+<td><code>hwpapi.presets</code> (separate package)</td>
+</tr>
+<tr class="even">
+<td><code>app.register_security_module(path)</code></td>
+<td>Init-time config</td>
+<td><code>hwpapi.low.engine</code> setup</td>
+</tr>
+<tr class="odd">
+<td><code>app.replace_brackets_with_fields()</code></td>
+<td>Mail-merge macro helper</td>
+<td><code>hwpapi.recipes</code> or <code>FieldCollection.from_brackets()</code> (Phase 3)</td>
+</tr>
+<tr class="even">
+<td><code>app.rgb_color(r, g, b)</code></td>
+<td>Duplicate of module-level function</td>
+<td><code>hwpapi.units.rgb_color(r, g, b)</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.save_all_page_images(...)</code></td>
+<td>Export helper</td>
+<td><code>hwpapi.io.export.pages_to_images(app, ...)</code></td>
+</tr>
+<tr class="even">
+<td><code>app.save_page_image(...)</code></td>
+<td>Export helper</td>
+<td><code>hwpapi.io.export.page_to_image(app, ...)</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.sel</code></td>
+<td>Selection accessor</td>
+<td><code>app.doc.selection</code></td>
+</tr>
+<tr class="even">
+<td><code>app.set_field(name, value)</code></td>
+<td>Duplicate of <code>FieldCollection.__setitem__</code></td>
+<td><code>app.doc.fields[name] = value</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.set_message_box_mode(mode)</code></td>
+<td>Pairs with deleted getter</td>
+<td><code>hwpapi.low.engine</code></td>
+</tr>
+<tr class="even">
+<td><code>app.set_visible(flag)</code></td>
+<td>Explicit duplicate of <code>visible</code> property — deleted per plan 2.4</td>
+<td><code>app.visible = flag</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.silenced()</code></td>
+<td>Context manager moves to module level</td>
+<td><code>hwpapi.context.scopes.silenced(app)</code></td>
+</tr>
+<tr class="even">
+<td><code>app.status</code></td>
+<td>Discovery aid — superseded by Quarto reference</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td><code>app.suppress_errors()</code></td>
+<td>Context manager moves to module level</td>
+<td><code>hwpapi.context.scopes.suppress_errors(app)</code></td>
+</tr>
+<tr class="even">
+<td><code>app.template</code></td>
+<td>Template cluster</td>
+<td><code>hwpapi.templates</code> module</td>
+</tr>
+<tr class="odd">
+<td><code>app.undo_group()</code></td>
+<td>Context manager moves to module level</td>
+<td><code>hwpapi.context.scopes.undo_group(app)</code></td>
+</tr>
+<tr class="even">
+<td><code>app.use_document()</code></td>
+<td>Multi-doc switch deferred to v2.1</td>
+<td>—</td>
+</tr>
+<tr class="odd">
+<td><code>app.version</code></td>
+<td>Engine / document property</td>
+<td><code>app.engine.version</code> or <code>app.doc.version</code></td>
+</tr>
+<tr class="even">
+<td><code>app.view</code></td>
+<td>View accessor</td>
+<td>dedicated module (TBD)</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="examples" class="level1">
+<h1>Examples</h1>
+<section id="example-1-open-a-file-insert-text-save" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-open-a-file-insert-text-save">Example 1 — Open a file, insert text, save</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># v1.x</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App()</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>app.<span class="bu">open</span>(<span class="st">"report.hwp"</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>app.insert_text(<span class="st">"Hello, world."</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>app.save()</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>app.quit()</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># v2.0</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App()</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>app.<span class="bu">open</span>(<span class="st">"report.hwp"</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>app.doc.insert_text(<span class="st">"Hello, world."</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>app.save()</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>app.quit()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Context-manager form (both versions support it):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># v2.0 — preferred for scripts</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    app.<span class="bu">open</span>(<span class="st">"report.hwp"</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    app.doc.insert_text(<span class="st">"Hello, world."</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    app.save()</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># app.close() called automatically on exit</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="example-2-field-operations" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-field-operations">Example 2 — Field operations</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># v1.x</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>names <span class="op">=</span> app.field_names                     <span class="co"># list</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>app.create_field(<span class="st">"author"</span>, <span class="st">"direction"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>exists <span class="op">=</span> app.field_exists(<span class="st">"author"</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>app.delete_field(<span class="st">"author"</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>app.delete_all_fields()</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># v2.0</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>names <span class="op">=</span> app.doc.fields.names()              <span class="co"># FieldCollection method</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>app.doc.create_field(<span class="st">"author"</span>, <span class="st">"direction"</span>) <span class="co"># or app.doc.fields.add("author", "direction")</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>exists <span class="op">=</span> <span class="st">"author"</span> <span class="kw">in</span> app.doc.fields         <span class="co"># __contains__</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="kw">del</span> app.doc.fields[<span class="st">"author"</span>]                <span class="co"># __delitem__</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>app.doc.fields.clear()                      <span class="co"># replaces delete_all_fields()</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="example-3-character-formatting" class="level2">
+<h2 class="anchored" data-anchor-id="example-3-character-formatting">Example 3 — Character formatting</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># v1.x</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>app.set_charshape(bold<span class="op">=</span><span class="va">True</span>, size<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> app.charshape_scope(bold<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    app.insert_text(<span class="st">"bold text"</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co"># v2.0 — element-based assignment</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.parametersets <span class="im">import</span> CharShape</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>run <span class="op">=</span> app.doc.cursor.run</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>run.charshape <span class="op">=</span> CharShape(bold<span class="op">=</span><span class="va">True</span>, size<span class="op">=</span><span class="dv">12</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Context-manager form — now a module-level function</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.context.scopes <span class="im">import</span> charshape_scope</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> charshape_scope(bold<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    app.doc.insert_text(<span class="st">"bold text"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="example-4-unit-conversions-deleted-from-app" class="level2">
+<h2 class="anchored" data-anchor-id="example-4-unit-conversions-deleted-from-app">Example 4 — Unit conversions (deleted from App)</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># v1.x</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>mm_value <span class="op">=</span> app.hwpunit_to_mm(<span class="dv">59430</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>pt_value <span class="op">=</span> app.hwpunit_to_point(<span class="dv">1200</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>hwp <span class="op">=</span> app.mm_to_hwpunit(<span class="dv">210</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># v2.0 — use hwpapi.units directly</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.units <span class="im">import</span> hwpunit_to_mm, hwpunit_to_point, mm_to_hwpunit</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>mm_value <span class="op">=</span> hwpunit_to_mm(<span class="dv">59430</span>)     <span class="co"># 210.0</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>pt_value <span class="op">=</span> hwpunit_to_point(<span class="dv">1200</span>)   <span class="co"># 12.0</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>hwp <span class="op">=</span> mm_to_hwpunit(<span class="dv">210</span>)            <span class="co"># 59430</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="faq" class="level1">
+<h1>FAQ</h1>
+<p><strong>“My script uses <code>app.bookmarks['x']</code>. Does this still work?”</strong> Yes, via <code>app.doc.bookmarks['x']</code> in v2. The dict-like interface is preserved and extended (Phase 3).</p>
+<p><strong>“What happened to <code>app.charshape()</code>?”</strong> Removed. Character-level formatting now lives on <code>Run</code> elements; see Example 3. The context-manager form (<code>charshape_scope</code>) moves to <code>hwpapi.context.scopes</code>.</p>
+<p><strong>“I need <code>app.api</code> (raw COM handle).”</strong> Still available as <code>app.api</code> — it is an explicit escape hatch. For most cases, prefer <code>hwpapi.low.*</code> which provides a more structured interface.</p>
+<p><strong>“How do I disable output for batch scripts?”</strong> <code>app.visible = False</code> — the <code>set_visible()</code> method was removed; use the property directly.</p>
+<p><strong>“I relied on <code>app.silenced()</code> / <code>app.suppress_errors()</code> / <code>app.undo_group()</code>.”</strong> These context managers survive as module-level functions: <code>from hwpapi.context.scopes import silenced, suppress_errors, undo_group</code>. Pass <code>app</code> as the first argument.</p>
+<p><strong>“What about multi-document workflows (<code>app.documents</code>, <code>app.use_document()</code>)?”</strong> Multi-document collection is deferred to v2.1 (plan section 12). In v2.0 <code>app.doc</code> always refers to the active document. Pin to <code>hwpapi==1.*</code> if you need multi-doc now.</p>
+<p><strong>“The <code>save_block</code> signature changed — what is the new signature?”</strong> <code>save_as(path: str | Path, *, as_block: bool = False)</code>. The <code>as_block</code> keyword argument preserves the original behaviour when set to <code>True</code>.</p>
+<p><strong>“I used <code>app.replace_brackets_with_fields()</code> for mail merge.”</strong> That helper is removed from <code>App</code>. It will resurface as <code>FieldCollection.from_brackets(text)</code> or in a <code>hwpapi.recipes</code> module in Phase 3. For now, call <code>app.api</code> and use the raw action directly, or copy the v1 implementation into your own code.</p>
+</section>
+<section id="see-also" class="level1">
+<h1>See also</h1>
+<ul>
+<li><a href="../guide/low-level-escape-hatch.html">Low-level escape hatch</a> — where v1 <code>app.api</code> calls migrate to</li>
+<li><a href="../reference/index.html">API Reference</a> — rendered v2 surface</li>
+<li><a href="../design/adr/adr-001-v2-redesign.html">ADR-001: Two-layer API</a> — why v2 split this way</li>
+<li>Plan of record: <code>.omc/plans/hwpapi_v2_redesign.md</code></li>
+</ul>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/JunDamin\.github\.io\/hwpapi");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../getting-started/quickstart.html" class="pagination-link" aria-label="Quickstart">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Quickstart</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>hwpapi v2.0 · Python COM wrapper for HWP</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/getting-started/migration-v1-to-v2.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://github.com/JunDamin/hwpapi">
+<p>GitHub</p>
+</a>
+  </li>  
+    <li class="nav-item">
+    <a class="nav-link" href="https://pypi.org/project/hwpapi/">
+<p>PyPI</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

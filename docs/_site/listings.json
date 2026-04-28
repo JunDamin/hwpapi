@@ -1,0 +1,21 @@
+[
+  {
+    "listing": "/recipes/index.html",
+    "items": [
+      "/recipes/batch-processing.html",
+      "/recipes/bulk-edit.html",
+      "/recipes/charshape-formatting.html",
+      "/recipes/data-to-table.html",
+      "/recipes/debugging-tools.html",
+      "/recipes/export-formats.html",
+      "/recipes/fill-fields.html",
+      "/recipes/find-replace.html",
+      "/recipes/headers-and-footers.html",
+      "/recipes/insert-picture.html",
+      "/recipes/mail-merge.html",
+      "/recipes/presets-gallery.html",
+      "/recipes/quickstart-tour.html",
+      "/recipes/report-generation.html"
+    ]
+  }
+]
