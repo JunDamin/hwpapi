@@ -46,11 +46,13 @@ jobs:
         shell: pwsh
 
       - name: Import smoke test
-        # 핵심 모듈 import 검증 (이제 Windows runner 라 winreg/win32com OK)
+        # v2 surface 검증 — 핵심 facade + 모듈 import.
+        # (winreg / win32com 은 Windows runner 라 정상 import)
         run: |
-          python -c "import hwpapi; print('import OK')"
-          python -c "from hwpapi.functions import cell_addr, navigate_until; print('functions OK')"
-          python -c "from hwpapi import units; print('units OK')"
-          python -c "from hwpapi.parametersets.mappings import BORDER_TYPE_MAP, HATCH_STYLE_MAP; print('enums OK')"
-          python -c "from hwpapi.parametersets.properties import Color; print('Color.RED =', Color.RED.hex)"
+          python -c "import hwpapi; print('hwpapi import OK, version =', hwpapi.__version__)"
+          python -c "from hwpapi import App, Document; print('facade OK:', App.__name__, Document.__name__)"
+          python -c "from hwpapi import units as U; print('units OK: 210mm =', U.mm(210), 'HWPUNIT')"
+          python -c "from hwpapi.context import scopes; print('context.scopes OK')"
+          python -c "from hwpapi.errors import HwpApiError; print('errors OK')"
+          python -c "from hwpapi.low import actions, engine, parametersets; print('low layer OK')"
         shell: pwsh
