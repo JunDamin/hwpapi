@@ -1,5 +1,10 @@
 name: Tests
 
+# hwpapi 는 Windows COM (pywin32 / winreg) 의존이므로 windows-latest
+# 러너에서만 테스트 가능. Linux 우회 (winreg guard, fallback install) 를
+# 시도하면 임시 fix 가 필수가 되어 유지보수가 어려움 — Windows 러너에서
+# 실제 import 가 통과하는지 검증하는 것이 정공법.
+
 on:
   push:
     branches: [main]
@@ -8,7 +13,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
@@ -25,25 +30,27 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # pywin32 는 Windows 전용이지만 pyproject 의존성이므로 필요
-          # 실제 HWP 호출은 Mock 으로 우회 — Linux 에서도 import 가능
-          pip install -e ".[test]" || pip install pytest PyMuPDF
+          pip install -e ".[test]"
 
       - name: Run mock-based tests
-        # 1,388 unit tests (Mock 기반) — HWP 설치 불필요
+        # 1,373+ 단위 테스트 (Mock 기반) — HWP 설치 불필요하지만
+        # pywin32 / winreg import 는 정상 동작 (Windows 러너).
+        # 실제 HWP COM 을 띄우는 smoke 테스트는 별도 (수동 / self-hosted).
         run: |
-          python -m pytest tests/ -v --tb=short \
-            --ignore=tests/test_all_actions.py \
-            --ignore=tests/test_all_parametersets.py \
-            --ignore=tests/smoke_features.py \
-            --ignore=tests/smoke_scenarios.py \
+          python -m pytest tests/ -v --tb=short `
+            --ignore=tests/test_all_actions.py `
+            --ignore=tests/test_all_parametersets.py `
+            --ignore=tests/smoke_features.py `
+            --ignore=tests/smoke_scenarios.py `
             --ignore=tests/smoke_visual.py
+        shell: pwsh
 
       - name: Import smoke test
-        # 전체 모듈 import 만 확인 (Windows COM 없이도 import OK 해야 함)
+        # 핵심 모듈 import 검증 (이제 Windows runner 라 winreg/win32com OK)
         run: |
-          python -c "import hwpapi; print('import OK')" || true
+          python -c "import hwpapi; print('import OK')"
           python -c "from hwpapi.functions import cell_addr, navigate_until; print('functions OK')"
           python -c "from hwpapi import units; print('units OK')"
           python -c "from hwpapi.parametersets.mappings import BORDER_TYPE_MAP, HATCH_STYLE_MAP; print('enums OK')"
           python -c "from hwpapi.parametersets.properties import Color; print('Color.RED =', Color.RED.hex)"
+        shell: pwsh

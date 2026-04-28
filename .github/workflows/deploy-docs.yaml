@@ -5,14 +5,13 @@ name: Deploy docs to GitHub Pages
 # `cd docs && quarto render` 로 _site/ 를 빌드한 뒤 commit+push 하면
 # 이 워크플로우가 그 정적 산출물만 GitHub Pages 에 업로드.
 #
-# 로컬 빌드 절차:
+# 로컬 빌드 절차 (Windows + HWP 설치된 환경):
 #   pip install -e ".[docs]"
-#   cd docs
-#   quartodoc build
-#   quarto render
-#   cd .. && git add docs/_site && git commit -m "docs(site): rebuild" && git push
+#   pwsh docs/render-bilingual.ps1   # 또는 bash docs/render-bilingual.sh
+#   git add docs/_site && git commit -m "docs(site): rebuild" && git push
 #
-# (`docs/_site/` 가 .gitignore 에 있다면 제외 규칙 해제 필요)
+# 양언어 모두 한 번에 render — 영문 (`docs/`) → 한국어 (`docs/ko/`)
+# 순서가 중요. 헬퍼 스크립트가 그 순서를 보장.
 
 permissions:
   contents: read
@@ -43,6 +42,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
+      - name: Verify bilingual artifact
+        # 두 언어 모두 존재하는지 확인 — 한쪽이 누락되면 deploy 거부
+        run: |
+          set -e
+          test -f docs/_site/index.html       || { echo "::error::English index missing"; exit 1; }
+          test -f docs/_site/ko/index.html    || { echo "::error::Korean index missing"; exit 1; }
+          test -d docs/_site/reference        || { echo "::error::English reference dir missing"; exit 1; }
+          test -d docs/_site/ko/reference     || { echo "::error::Korean reference dir missing"; exit 1; }
+          en_pages=$(find docs/_site -maxdepth 3 -name "*.html" -not -path "*/ko/*" | wc -l)
+          ko_pages=$(find docs/_site/ko -maxdepth 3 -name "*.html" | wc -l)
+          echo "English pages: $en_pages"
+          echo "Korean  pages: $ko_pages"
+          if [ "$en_pages" -lt 30 ]; then echo "::error::English page count too low ($en_pages)"; exit 1; fi
+          if [ "$ko_pages" -lt 30 ]; then echo "::error::Korean page count too low ($ko_pages)"; exit 1; fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

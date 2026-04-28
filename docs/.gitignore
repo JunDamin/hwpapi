@@ -1,4 +1,9 @@
 /.quarto/
 # _site/ is now committed — deploy-docs.yaml uploads it as static
 # Pages artifact (Linux runner cannot run quartodoc due to win32com).
+# Quarto computational cache — regenerated on each render, no value
+# in committing.
+_freeze/
+# OMC session state (machine-local).
+.omc/
 **/*.quarto_ipynb
