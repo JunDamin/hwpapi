@@ -1,0 +1,152 @@
+---
+title: "Batch-process a folder of .hwp files"
+subtitle: "Open → transform → save, for every file in a directory"
+---
+
+자동화 요청 1순위 — 폴더에 있는 모든 `.hwp` 를 차례로 열고, 어떤
+변환을 적용한 뒤, 다른 폴더에 저장. 한 개의 `App` 인스턴스를
+재사용하기 때문에 HWP 엔진을 N번 띄우지 않아도 되어 빠릅니다.
+
+# 1. 가장 단순한 형태 — 모든 .hwp → .pdf
+
+```{python}
+#| eval: false
+from pathlib import Path
+from hwpapi import App
+
+src_dir = Path("contracts")
+dst_dir = Path("contracts_pdf")
+dst_dir.mkdir(exist_ok=True)
+
+with App() as app:
+    for hwp in sorted(src_dir.glob("*.hwp")):
+        app.open(str(hwp.absolute()))
+        out = dst_dir / hwp.with_suffix(".pdf").name
+        app.save(str(out.absolute()))
+        app.close()
+        print(f"✓ {hwp.name} → {out.name}")
+```
+
+# 2. 일괄 find/replace 후 저장
+
+```{python}
+#| eval: false
+from pathlib import Path
+from hwpapi import App
+
+substitutions = {
+    "[[YEAR]]": "2026",
+    "[[QUARTER]]": "Q1",
+    "[[CONTACT]]": "ops@example.com",
+}
+
+with App() as app:
+    for hwp in Path("templates").glob("*.hwp"):
+        app.open(str(hwp.absolute()))
+
+        for needle, replacement in substitutions.items():
+            app.doc.find_replace(needle, replacement, all=True)
+
+        out = Path("rendered") / hwp.name
+        out.parent.mkdir(exist_ok=True)
+        app.save(str(out.absolute()))
+        app.close()
+```
+
+# 3. 데이터 한 행 → 문서 한 개 (메일머지 형 워크플로)
+
+CSV/JSON 의 행 단위로 템플릿을 채워 N개의 결과물을 만듭니다.
+`fill-fields` 레시피와 같은 패턴이지만, 여기서는 출력을 PDF 로
+바로 떨굽니다.
+
+```{python}
+#| eval: false
+import csv
+from pathlib import Path
+from hwpapi import App
+
+template = "templates/invoice.hwp"
+out_dir = Path("out_invoices")
+out_dir.mkdir(exist_ok=True)
+
+with App() as app, open("clients.csv", encoding="utf-8-sig") as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        app.open(template)
+
+        for field, value in row.items():
+            if field in app.doc.fields:
+                app.doc.fields[field] = value
+
+        pdf = out_dir / f"invoice-{row['client_id']}.pdf"
+        app.save(str(pdf.absolute()))
+        app.close()
+        print(f"  → {pdf.name}")
+```
+
+# 4. 견고한 에러 처리 — 한 파일 실패해도 진행
+
+배치 작업에서는 한 파일이 깨졌다고 멈추면 안 됩니다.
+`hwpapi.errors.HwpApiError` 계열을 잡아 로그하고 다음 파일로 넘어가세요.
+
+```{python}
+#| eval: false
+import logging
+from pathlib import Path
+from hwpapi import App
+from hwpapi.errors import HwpApiError
+
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger("batch")
+
+results = {"ok": 0, "fail": []}
+
+with App() as app:
+    for hwp in Path("input").glob("*.hwp"):
+        try:
+            app.open(str(hwp.absolute()))
+            app.save(f"output/{hwp.stem}.pdf")
+            app.close()
+            results["ok"] += 1
+        except HwpApiError as exc:
+            log.warning(f"skip {hwp.name}: {exc}")
+            results["fail"].append(hwp.name)
+            try:
+                app.close(save=False)
+            except Exception:
+                pass
+
+log.info(f"converted {results['ok']}, failed {len(results['fail'])}")
+```
+
+# 5. 진행률 표시 — `tqdm` 통합
+
+```{python}
+#| eval: false
+from pathlib import Path
+from hwpapi import App
+from tqdm import tqdm
+
+files = sorted(Path("input").glob("*.hwp"))
+
+with App() as app:
+    for hwp in tqdm(files, desc="HWP→PDF"):
+        app.open(str(hwp.absolute()))
+        app.save(f"output/{hwp.stem}.pdf")
+        app.close()
+```
+
+::: {.callout-warning}
+**병렬 처리 주의** — HWP COM 서버는 단일 스레드를 가정합니다.
+`multiprocessing` 으로 프로세스를 분리하지 않는 한 `threading` /
+`asyncio` 로 병렬화해도 빨라지지 않습니다 (오히려 dead-lock 위험).
+프로세스 단위로 나눌 때도 각 프로세스가 자체 `App()` 을 들어야 하며,
+HWP 인스턴스 수만큼 메모리를 먹습니다.
+:::
+
+# See also
+
+- [Recipe: export-formats](export-formats.qmd) — 다양한 출력 포맷
+- [Recipe: fill-fields](fill-fields.qmd) — 필드 일괄 채우기
+- [Recipe: find-replace](find-replace.qmd)
+- [Reference: errors](../reference/errors.qmd)

@@ -13,6 +13,10 @@ listing:
     - bulk-edit.qmd
     - data-to-table.qmd
     - report-generation.qmd
+    - export-formats.qmd
+    - insert-picture.qmd
+    - batch-processing.qmd
+    - headers-and-footers.qmd
     - presets-gallery.qmd
     - debugging-tools.qmd
   sort: "title asc"

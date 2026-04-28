@@ -73,6 +73,10 @@ website:
         - recipes/bulk-edit.qmd
         - recipes/data-to-table.qmd
         - recipes/report-generation.qmd
+        - recipes/export-formats.qmd
+        - recipes/insert-picture.qmd
+        - recipes/batch-processing.qmd
+        - recipes/headers-and-footers.qmd
         - recipes/presets-gallery.qmd
         - recipes/debugging-tools.qmd
     - title: "Reference"

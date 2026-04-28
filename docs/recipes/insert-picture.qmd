@@ -1,0 +1,120 @@
+---
+title: "Insert a picture"
+subtitle: "Drop an image into the active document via the v2 escape hatch"
+---
+
+v1 의 `app.insert_picture(...)` 헬퍼는 v2 슬림 퍼사드에서 의도적으로
+제거되었습니다 (App public 멤버 82 → 12). 그림 삽입은 두 가지 길로
+계속 가능합니다 — 호출 환경에 맞춰 선택하세요.
+
+::: {.callout-note}
+**Issue #3 — `TypeError: ... unexpected keyword argument 'reverse'`**:
+v1 헬퍼가 HWP COM 인터페이스의 매개변수 이름과 다른 키워드를
+넘겨 발생했던 문제입니다. v2 에서는 헬퍼를 거치지 않고 COM 메서드
+또는 `actions.InsertPicture` 액션을 직접 사용하므로 이 문제는
+재발하지 않습니다.
+:::
+
+# 1. 가장 간단 — `app.api.InsertPicture(...)` 직접 호출
+
+`app.api` 는 raw `HwpObject` COM 핸들이라, HWP COM 메서드를 그대로
+부를 수 있습니다.
+
+```{python}
+#| eval: false
+from pathlib import Path
+from hwpapi import App
+
+with App() as app:
+    app.open("report.hwp")
+
+    fpath = Path("logo.png").absolute().as_posix()
+    app.api.InsertPicture(
+        Path=fpath,
+        Embedded=True,           # 이미지 임베드 (외부 링크 X)
+        sizeoption=2,            # 0=원본 크기, 2=글자크기 비율, 3=수동
+        Reverse=False,
+        watermark=False,
+        effect=0,                # 0=원본, 1=흑백, 2=회색조
+    )
+
+    app.save()
+```
+
+::: {.callout-warning}
+**파라미터 이름 대소문자 주의** — HWP COM 메서드는 IDL 시그니처
+대로 케이스를 맞춰야 합니다 (`Path`, `Embedded`, `Reverse`). 잘못
+쓰면 `TypeError: ... got an unexpected keyword argument` 가 납니다.
+정확한 시그니처는 한컴 SDK 문서 또는 `dir(app.api)` 로 확인하세요.
+:::
+
+# 2. v2 액션 escape hatch — `app.actions.InsertPicture`
+
+`hwpapi.low.actions` 의 액션 형태로도 호출 가능합니다. pset 으로
+파라미터를 넘기는 패턴이라 다른 액션과 일관됩니다.
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.open("report.hwp")
+
+    action = app.actions.InsertPicture
+    pset = action.pset
+    pset.Path = "logo.png"        # HWP 가 절대경로로 변환
+    pset.Embedded = True
+    action.run(pset)
+
+    app.save()
+```
+
+# 3. 정확한 위치에 삽입하기
+
+먼저 필드/북마크/표 셀로 커서를 이동시킨 다음 호출합니다.
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.open("template.hwp")
+
+    # 누름틀로 이동
+    app.doc.fields["logo_slot"].goto()
+    app.api.InsertPicture(Path="logo.png", Embedded=True, sizeoption=2)
+
+    # 또는 책갈피로 이동
+    app.doc.bookmarks.goto("appendix-figure-1")
+    app.api.InsertPicture(Path="diagram.png", Embedded=True, sizeoption=0)
+
+    app.save_as("out/report.hwp")
+```
+
+# 4. 폴더의 모든 이미지 일괄 삽입
+
+```{python}
+#| eval: false
+from pathlib import Path
+from hwpapi import App
+
+with App() as app:
+    app.open("report.hwp")
+
+    for img in sorted(Path("figures").glob("*.png")):
+        app.api.InsertPicture(
+            Path=str(img.absolute()),
+            Embedded=True,
+            sizeoption=0,
+        )
+        app.api.Run("BreakPara")   # 다음 줄로 이동
+        print(f"inserted {img.name}")
+
+    app.save()
+```
+
+# See also
+
+- [Guide: low-level escape hatch](../guide/low-level-escape-hatch.qmd)
+- [Recipe: fill-fields](fill-fields.qmd) — 필드 위치로 이동하기
+- [Reference: App.api](../reference/App.qmd) — raw COM 핸들
