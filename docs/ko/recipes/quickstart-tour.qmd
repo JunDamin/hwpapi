@@ -3,6 +3,8 @@ title: "퀵스타트 투어"
 subtitle: "모든 hwpapi 스크립트가 사용하는 7가지 동작"
 ---
 
+![샘플 출력 — `tests/generate_v2_doc_artifacts.py` 가 실제 HWP 를 구동해 생성](../_assets/img/v2/quickstart_overview.png){fig-align="center" width="80%"}
+
 가장 짧고 유용한 스크립트 — 열기/새로 만들기, 텍스트 삽입, 서식
 지정, 찾기, 저장 — 을 실행해봅니다. `examples/quickstart.py` 를 v2
 표면에 맞게 이식한 것입니다.

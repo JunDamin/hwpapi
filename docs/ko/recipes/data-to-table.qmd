@@ -3,6 +3,8 @@ title: "데이터를 표로"
 subtitle: "DataFrame / dict 의 list → HWP 표"
 ---
 
+![샘플 출력 — `tests/generate_v2_doc_artifacts.py` 가 실제 HWP 를 구동해 생성](../_assets/img/v2/data_to_table.png){fig-align="center" width="80%"}
+
 `nbs/01_tutorials/06_usecase_data_to_table.ipynb` 에서 이식.
 
 # 1. dict 의 list 로부터

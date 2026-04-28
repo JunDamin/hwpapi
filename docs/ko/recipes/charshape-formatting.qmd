@@ -3,6 +3,8 @@ title: "글자 서식"
 subtitle: "굵게, 색상, 크기 — 스코프와 ParameterSet 을 통해"
 ---
 
+![샘플 출력 — `tests/generate_v2_doc_artifacts.py` 가 실제 HWP 를 구동해 생성](../_assets/img/v2/charshape_formatting.png){fig-align="center" width="80%"}
+
 `examples/charshape_bold.py` 에서 이식.
 
 # 1. 스코프 기반 — 일반적인 경우

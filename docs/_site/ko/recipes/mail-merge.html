@@ -491,6 +491,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../_assets/img/v2/mail_merge_letter.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption>샘플 출력 — <code>tests/generate_v2_doc_artifacts.py</code> 가 실제 HWP 를 구동해 생성</figcaption>
+</figure>
+</div>
 <p><code>nbs/01_tutorials/09_usecase_mail_merge.ipynb</code> 에서 이식했으며, v2 컬렉션 API 에 맞게 다시 작성되었습니다.</p>
 <section id="형태" class="level1">
 <h1>형태</h1>
@@ -503,7 +509,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="최소-구현" class="level1">
 <h1>최소 구현</h1>
-<div id="a10d4f31" class="cell" data-execution_count="1">
+<div id="48c5c959" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> csv</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
@@ -545,7 +551,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="잘못된-행-건너뛰기" class="level1">
 <h1>잘못된 행 건너뛰기</h1>
-<div id="33c57c1c" class="cell" data-execution_count="2">
+<div id="3463287f" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>required <span class="op">=</span> {<span class="st">"name"</span>, <span class="st">"date"</span>}</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, row <span class="kw">in</span> <span class="bu">enumerate</span>(reader, <span class="dv">1</span>):</span>

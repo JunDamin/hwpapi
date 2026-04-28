@@ -3,6 +3,8 @@ title: "메일 머지"
 subtitle: "템플릿 + CSV → N개의 출력 파일"
 ---
 
+![샘플 출력 — `tests/generate_v2_doc_artifacts.py` 가 실제 HWP 를 구동해 생성](../_assets/img/v2/mail_merge_letter.png){fig-align="center" width="80%"}
+
 `nbs/01_tutorials/09_usecase_mail_merge.ipynb` 에서 이식했으며, v2
 컬렉션 API 에 맞게 다시 작성되었습니다.
 

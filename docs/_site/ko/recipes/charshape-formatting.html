@@ -490,10 +490,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../_assets/img/v2/charshape_formatting.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption>샘플 출력 — <code>tests/generate_v2_doc_artifacts.py</code> 가 실제 HWP 를 구동해 생성</figcaption>
+</figure>
+</div>
 <p><code>examples/charshape_bold.py</code> 에서 이식.</p>
 <section id="스코프-기반-일반적인-경우" class="level1">
 <h1>1. 스코프 기반 — 일반적인 경우</h1>
-<div id="a812eb53" class="cell" data-execution_count="1">
+<div id="1c64ac20" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.context <span class="im">import</span> charshape_scope</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> units <span class="im">as</span> U</span>
@@ -509,7 +515,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="요소-기반-특정-문단에-대해" class="level1">
 <h1>2. 요소 기반 — 특정 문단에 대해</h1>
-<div id="1b28fdba" class="cell" data-execution_count="2">
+<div id="e3d60bff" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.low.parametersets <span class="im">import</span> CharShape</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -522,7 +528,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="단일-속성-변경" class="level1">
 <h1>3. 단일 속성 변경</h1>
-<div id="7cd91ebe" class="cell" data-execution_count="3">
+<div id="f920e1ad" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
@@ -536,7 +542,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="clone-을-이용한-스냅샷-복원" class="level1">
 <h1>4. clone 을 이용한 스냅샷 / 복원</h1>
-<div id="e560ab55" class="cell" data-execution_count="4">
+<div id="232da5cd" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
@@ -566,7 +572,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="실행-없이-인트로스펙트" class="level1">
 <h1>5. 실행 없이 인트로스펙트</h1>
-<div id="07d74fef" class="cell" data-execution_count="5">
+<div id="a458b926" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>

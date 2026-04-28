@@ -489,10 +489,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="../_assets/img/v2/data_to_table.png" class="img-fluid figure-img" style="width:80.0%"></p>
+<figcaption>샘플 출력 — <code>tests/generate_v2_doc_artifacts.py</code> 가 실제 HWP 를 구동해 생성</figcaption>
+</figure>
+</div>
 <p><code>nbs/01_tutorials/06_usecase_data_to_table.ipynb</code> 에서 이식.</p>
 <section id="dict-의-list-로부터" class="level1">
 <h1>1. dict 의 list 로부터</h1>
-<div id="be053883" class="cell" data-execution_count="1">
+<div id="88920fc4" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> [</span>
@@ -524,7 +530,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="pandas-dataframe-으로부터" class="level1">
 <h1>2. pandas DataFrame 으로부터</h1>
-<div id="af4fd6b5" class="cell" data-execution_count="2">
+<div id="ed17d1c5" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -553,7 +559,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="헤더-행-서식-지정" class="level1">
 <h1>3. 헤더 행 서식 지정</h1>
-<div id="e4fd7702" class="cell" data-execution_count="3">
+<div id="bec44bd4" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.low.parametersets <span class="im">import</span> CharShape</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -576,7 +582,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="라운드트립-표-다시-읽기" class="level1">
 <h1>4. 라운드트립: 표 다시 읽기</h1>
-<div id="b00857b4" class="cell" data-execution_count="4">
+<div id="acabde5b" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
