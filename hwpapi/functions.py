@@ -9,14 +9,27 @@ import importlib.resources
 import os
 import shutil
 import sys
-import winreg
 from pathlib import Path
 import re
-import win32com.client as win32 
-import pythoncom 
-import pywintypes
-from win32com.client import Dispatch
-from win32com import client
+
+# Windows-only imports — guarded so the package can be imported on
+# Linux/macOS for docs generation (quartodoc/griffe). Runtime calls
+# that actually use these will fail with AttributeError on non-Windows,
+# which is the intended behavior (HWP COM is Windows-only).
+try:
+    import winreg
+    import win32com.client as win32
+    import pythoncom
+    import pywintypes
+    from win32com.client import Dispatch
+    from win32com import client
+except ImportError:
+    winreg = None
+    win32 = None
+    pythoncom = None
+    pywintypes = None
+    Dispatch = None
+    client = None
 
 from .constants import char_fields, para_fields
 from .logging import get_logger
