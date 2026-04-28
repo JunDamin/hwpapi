@@ -1,0 +1,94 @@
+project:
+  type: website
+  output-dir: ../_site/ko
+  preview:
+    port: 4201
+    browser: false
+
+lang: ko
+
+website:
+  title: "hwpapi"
+  description: "HWP (한컴오피스 한글) 자동화 — 슬림한 App facade, dict 형 컬렉션, raw action escape hatch."
+  site-url: https://JunDamin.github.io/hwpapi/ko
+  repo-url: https://github.com/JunDamin/hwpapi
+  repo-actions: [edit, issue]
+  page-navigation: true
+  back-to-top-navigation: true
+  search:
+    location: navbar
+    type: overlay
+  navbar:
+    background: primary
+    pinned: true
+    logo: ../_assets/logo.png
+    left:
+      - text: 홈
+        file: index.qmd
+      - text: 시작하기
+        file: getting-started/install.qmd
+      - text: 가이드
+        href: ../guide/app-and-document.html
+      - text: 레시피
+        href: ../recipes/index.html
+      - text: 레퍼런스
+        href: ../reference/index.html
+      - text: 디자인
+        href: ../design/index.html
+    right:
+      - text: "🇬🇧 English"
+        href: ../index.html
+      - icon: github
+        href: https://github.com/JunDamin/hwpapi
+        aria-label: GitHub
+  sidebar:
+    - title: "시작하기"
+      style: docked
+      align: left
+      contents:
+        - getting-started/install.qmd
+        - getting-started/quickstart.qmd
+        - getting-started/migration-v1-to-v2.qmd
+    - title: "영문 전용 (번역 진행 중)"
+      style: docked
+      align: left
+      contents:
+        - text: "Guide → app & document (영문)"
+          href: ../guide/app-and-document.html
+        - text: "Recipes (영문)"
+          href: ../recipes/index.html
+        - text: "Reference (영문)"
+          href: ../reference/index.html
+        - text: "Design (영문)"
+          href: ../design/index.html
+  page-footer:
+    left: "hwpapi v2.0 · HWP COM 자동화 Python 라이브러리"
+    right:
+      - text: "GitHub"
+        href: https://github.com/JunDamin/hwpapi
+      - text: "PyPI"
+        href: https://pypi.org/project/hwpapi/
+
+format:
+  html:
+    theme:
+      light: cosmo
+      dark: darkly
+    css: ../_assets/styles.css
+    toc: true
+    toc-depth: 3
+    toc-location: right
+    code-copy: true
+    code-overflow: wrap
+    code-block-bg: true
+    code-block-border-left: "#4582EC"
+    highlight-style: github
+    link-external-newwindow: true
+    anchor-sections: true
+    smooth-scroll: true
+
+execute:
+  freeze: auto
+  echo: true
+  warning: false
+  error: false

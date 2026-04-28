@@ -4,11 +4,15 @@ project:
   preview:
     port: 4200
     browser: false
-  # Exclude legacy v1 docs from render. They live here as a historical
-  # reference only — not part of the v2 navigation tree.
+  # Exclude legacy v1 docs and Korean subproject from this render.
+  # Korean site is rendered separately from `docs/ko/_quarto.yml`
+  # into `_site/ko/`.
   render:
     - "*.qmd"
     - "!archive/"
+    - "!ko/"
+
+lang: en
 
 website:
   title: "hwpapi"
@@ -39,6 +43,8 @@ website:
       - text: Design
         file: design/index.qmd
     right:
+      - text: "🇰🇷 한국어"
+        href: ko/index.html
       - icon: github
         href: https://github.com/JunDamin/hwpapi
         aria-label: GitHub

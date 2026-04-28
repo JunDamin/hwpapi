@@ -1,0 +1,388 @@
+---
+title: "hwpapi v1.x → v2.0 마이그레이션"
+date: 2026-04-19
+---
+
+# 개요
+
+hwpapi v2.0 은 public API 를 두 층 모델로 재설계했습니다 — lifecycle 만
+책임지는 슬림한 `App` facade (public 멤버 ≤ 15개) 와, 열린 문서에 속한
+모든 작업을 소유하는 `Document` 객체 (`app.doc`). 컬렉션 (`fields`,
+`bookmarks`, `images` 등) 은 `Document` 아래 first-class dict 형 객체가
+됩니다. 요소 단위 상태 (글자 서식, 단락 서식, 표 셀) 는 `hwpapi.elements`
+의 `Run`, `Paragraph`, `Cell` 객체로 이동합니다. v1 의 `App` 클래스는
+2년간 누적된 106개 public 멤버를 안고 있었지만, v2 에서는 14개로 줄였고
+제거된 모든 심볼은 명시적인 이전지 또는 삭제 사유가 문서화되어 있습니다.
+
+# 호환성 정책
+
+hwpapi 2.0 은 **clean-cut break** 입니다. **deprecation shim 이 없습니다**.
+
+- 제거된 `App` 멤버를 호출하는 v1 코드는 `AttributeError` 를 던집니다.
+- 런타임 경고 없음. 호환 레이어 없음. import 시점 alias 없음.
+- 사유: v1 `App` surface 는 106개 public 멤버 (패키지 전체로는 244개
+  public 심볼) 에 도달했고, document state / element state / collection
+  accessor / 단위 변환 / lifecycle 메소드가 한 클래스에 뒤섞여 있었습니다.
+  shim 을 만들면 그 surface 전체를 import 가능하게 유지해야 하므로
+  슬림 facade 목표가 무산되고, 타입 레벨에서 "App lifecycle" 과
+  "Document operation" 을 구분할 수 없게 됩니다. clean break 가 모든
+  사용자에게 영구적인 호환 레이어보다 비용이 적습니다.
+- 즉시 마이그레이션이 어려운 v1.x 사용자는 `hwpapi==1.*` 로 pinning 하세요
+  — 해당 라인은 `v1.x` 브랜치에 동결되었고 `v1.0.0` 태그가 붙어 있습니다.
+
+# 새 형태 (v2)
+
+```
+hwpapi.App
+├── open(path)          # .hwp / .hwpx 파일 열기
+├── new()               # 빈 문서 생성
+├── close()             # 활성 문서 닫기
+├── save()              # 제자리 저장
+├── save_as(path)       # 새 경로로 저장
+├── reload()            # 기존 COM 엔진에 재bind
+├── quit()              # COM 엔진 프로세스 종료
+├── visible (property)  # 창 가시성 — bool r/w
+├── doc  ──────────────────────────────── hwpapi.Document
+│   ├── .text                  # 전체 문서 텍스트 (r/w property)
+│   ├── .page_count            # 전체 페이지 수
+│   ├── .current_page          # 커서 페이지 번호
+│   ├── .get_filepath()        # 열린 파일 경로
+│   ├── .get_hwnd()            # 창 핸들
+│   ├── .select_all()
+│   ├── .selection             # 선택 텍스트 (alias)
+│   ├── .get_selected_text()
+│   ├── .get_text()
+│   ├── .insert_text(s)
+│   ├── .insert_line_break()
+│   ├── .insert_page_break()
+│   ├── .insert_paragraph_break()
+│   ├── .insert_tab()
+│   ├── .insert_heading(level, text)
+│   ├── .insert_file(path)
+│   ├── .insert_picture(path)
+│   ├── .highlight(color)
+│   ├── .copy() / .cut() / .paste()
+│   ├── .delete()
+│   ├── .clear()
+│   ├── .undo() / .redo()
+│   ├── .find_text(query)
+│   ├── .replace_all(find, replace)
+│   ├── .select_text(start, end)
+│   ├── .read_table()
+│   ├── .create_field(name, direction)
+│   ├── .scan(...)             # 단락/줄 스캐너 context manager
+│   ├── .cursor
+│   │   ├── .goto_page(n)
+│   │   ├── .move_to_field(name)
+│   │   ├── .in_table()
+│   │   ├── .get_charshape()
+│   │   └── .get_parashape()
+│   ├── .page
+│   │   └── .setup(...)        # 페이지 레이아웃 설정
+│   ├── .fields   → FieldCollection
+│   ├── .bookmarks → BookmarkCollection
+│   ├── .hyperlinks → HyperlinkCollection
+│   ├── .images   → ImageCollection
+│   ├── .styles   → StyleCollection
+│   ├── .controls → ControlCollection
+│   └── .tables   → TableCollection (Phase 3)
+├── engine              # Engine escape hatch (가급적 hwpapi.low.* 사용)
+└── api                 # raw COM 핸들 escape hatch
+```
+
+v1 에서 App 의 메소드였던 context manager 는 이제 모듈 레벨 함수입니다:
+
+```
+hwpapi.context.scopes
+├── charshape_scope(...)   # 구 app.charshape_scope()
+├── parashape_scope(...)   # 구 app.parashape_scope()
+├── styled_text(...)       # 구 app.styled_text()
+├── batch_mode(app)        # 구 app.batch_mode()
+├── silenced(app)          # 구 app.silenced()
+├── suppress_errors(app)   # 구 app.suppress_errors()
+└── undo_group(app)        # 구 app.undo_group()
+```
+
+# 1:1 마이그레이션 표
+
+대상 위치별로 그룹화. audit 의 `keep_in_App` 이 아닌 모든 멤버가 정확히
+한 번씩 등장합니다.
+
+## 이름만 변경 — App 에 유지
+
+| v1 호출 | v2 대응 | 비고 |
+|---|---|---|
+| `app.new_document()` | `App.new()` | classmethod; `open`/`close`/`save` 와 이름 통일 |
+| `app.save_block(path)` | `app.save_as(path, *, as_block=False)` | 시그니처 확장; `save_block` 이름이 모호했음 |
+| `app.set_visible(flag)` | `app.visible = flag` | property assignment 가 메소드 대체 |
+
+## `app.doc` (Document) 로 이동
+
+| v1 호출 | v2 대응 | 비고 |
+|---|---|---|
+| `app.clear()` | `app.doc.clear()` | |
+| `app.copy()` | `app.doc.copy()` | |
+| `app.create_field(name, dir)` | `app.doc.create_field(name, dir)` | `app.doc.fields` 와 보완 |
+| `app.current_page` | `app.doc.current_page` | |
+| `app.cut()` | `app.doc.cut()` | |
+| `app.delete()` | `app.doc.delete()` | |
+| `app.find_text(query)` | `app.doc.find_text(query)` | |
+| `app.get_charshape()` | `app.doc.cursor.get_charshape()` | |
+| `app.get_filepath()` | `app.doc.get_filepath()` | |
+| `app.get_hwnd()` | `app.doc.get_hwnd()` | |
+| `app.get_parashape()` | `app.doc.cursor.get_parashape()` | |
+| `app.get_selected_text()` | `app.doc.get_selected_text()` | |
+| `app.get_text()` | `app.doc.get_text()` | |
+| `app.goto_page(n)` | `app.doc.cursor.goto_page(n)` | |
+| `app.highlight(color)` | `app.doc.highlight(color)` | |
+| `app.in_table()` | `app.doc.cursor.in_table()` | |
+| `app.insert_file(path)` | `app.doc.insert_file(path)` | |
+| `app.insert_heading(level, text)` | `app.doc.insert_heading(level, text)` | |
+| `app.insert_line_break()` | `app.doc.insert_line_break()` | |
+| `app.insert_page_break()` | `app.doc.insert_page_break()` | |
+| `app.insert_paragraph_break()` | `app.doc.insert_paragraph_break()` | |
+| `app.insert_picture(path)` | `app.doc.insert_picture(path)` | |
+| `app.insert_tab()` | `app.doc.insert_tab()` | |
+| `app.insert_text(s)` | `app.doc.insert_text(s)` | |
+| `app.move_to_field(name)` | `app.doc.cursor.move_to_field(name)` | |
+| `app.page_count` | `app.doc.page_count` | |
+| `app.paste()` | `app.doc.paste()` | |
+| `app.read_table()` | `app.doc.read_table()` | |
+| `app.redo()` | `app.doc.redo()` | |
+| `app.replace_all(find, replace)` | `app.doc.replace_all(find, replace)` | |
+| `app.scan(...)` | `app.doc.scan(...)` | context manager; 인터페이스 동일 |
+| `app.select_all()` | `app.doc.select_all()` | |
+| `app.select_text(start, end)` | `app.doc.select_text(start, end)` | |
+| `app.selection` | `app.doc.selection` | |
+| `app.setup_page(...)` | `app.doc.page.setup(...)` | |
+| `app.text` | `app.doc.text` | r/w property; `app.text` 는 사라짐 |
+| `app.undo()` | `app.doc.undo()` | |
+
+## Collections 로 이동 (`app.doc.*` 경유)
+
+| v1 호출 | v2 대응 | 비고 |
+|---|---|---|
+| `app.bookmarks` | `app.doc.bookmarks` | `BookmarkCollection` — dict 형 |
+| `app.controls` | `app.doc.controls` | `ControlCollection` — iterable |
+| `app.delete_all_fields()` | `app.doc.fields.clear()` | |
+| `app.delete_field(name)` | `del app.doc.fields[name]` | |
+| `app.field_exists(name)` | `name in app.doc.fields` | |
+| `app.field_names` | `app.doc.fields.names()` | |
+| `app.fields` | `app.doc.fields` | `FieldCollection` — dict 형 |
+| `app.hyperlinks` | `app.doc.hyperlinks` | `HyperlinkCollection` — dict 형 |
+| `app.images` | `app.doc.images` | `ImageCollection` — dict 형 |
+| `app.rename_field(old, new)` | `app.doc.fields.rename(old, new)` | |
+| `app.styles` | `app.doc.styles` | `StyleCollection` — dict 형 |
+
+## Elements 로 이동
+
+| v1 호출 | v2 대응 | 비고 |
+|---|---|---|
+| `app.cell` | `app.doc.tables[i].cell(r, c)` | `Cell` element |
+| `app.charshape` | `run.charshape` | `Run` element 의 property |
+| `app.charshape_scope(...)` | `hwpapi.context.scopes.charshape_scope(...)` | 모듈 레벨 context manager |
+| `app.insert_bookmark(name)` | `app.doc.bookmarks.add(name)` | |
+| `app.insert_hyperlink(url)` | `app.doc.hyperlinks.add(url)` | |
+| `app.insert_table(rows, cols)` | `app.doc.tables.add(rows, cols)` | Phase 3 목표 |
+| `app.parashape` | `paragraph.parashape` | `Paragraph` element 의 property |
+| `app.parashape_scope(...)` | `hwpapi.context.scopes.parashape_scope(...)` | 모듈 레벨 context manager |
+| `app.set_cell_border(...)` | `cell.border = ...` | `Cell.border` setter |
+| `app.set_cell_color(...)` | `cell.fill = ...` | `Cell.fill` setter |
+| `app.set_charshape(...)` | `run.charshape = CharShape(...)` | element 레벨 assignment |
+| `app.set_parashape(...)` | `paragraph.parashape = ParaShape(...)` | element 레벨 assignment |
+| `app.styled_text(...)` | `hwpapi.context.scopes.styled_text(...)` | 모듈 레벨 context manager |
+| `app.table` | `app.doc.tables[i]` | collection 경유 `Table` element |
+
+## `hwpapi.low` 로 이동
+
+| v1 호출 | v2 대응 | 비고 |
+|---|---|---|
+| `app.actions` | `hwpapi.low.actions` 또는 `app.engine.actions` | 여전히 접근 가능; low-layer namespace |
+| `app.create_action(name)` | `hwpapi.low.actions._Action(name)` | raw action factory |
+| `app.create_parameterset(...)` | `hwpapi.low.parametersets` factory | raw parameterset factory |
+| `app.parameters` | `hwpapi.low.parametersets` | `HParameterSet` alias |
+
+## 삭제 — 직접 대응 없음
+
+다음 멤버는 public surface 에서 제거되었습니다. 후속 멤버가 있으면 표시했고,
+그렇지 않으면 `app.api` 또는 `app.engine` 을 통한 raw COM 접근이 escape
+hatch 입니다.
+
+| v1 멤버 | 사유 | 후속 / escape hatch |
+|---|---|---|
+| `app._ACCESSOR_MAP` | discovery 메타데이터 — Quarto 레퍼런스 + IDE 자동완성으로 대체 | — |
+| `app._CONTEXT_MANAGERS` | 위와 동일 | — |
+| `app.__repr__` / `app.__str__` | 슬림 클래스의 최소 `__repr__` 로 대체 | — |
+| `app.batch_mode()` | context manager 가 모듈 레벨로 이동 | `hwpapi.context.scopes.batch_mode(app)` |
+| `app.config` | preferences accessor 는 App 에서 제외 | — (필요 시 향후 릴리스에서 재등장) |
+| `app.convert` | accessor cluster 해체 | `hwpapi.io` 의 utility 함수 |
+| `app.debug` | debug cluster | `hwpapi.debug` 모듈 |
+| `app.documents` | multi-doc collection 은 v2.1 로 연기 | — (활성 문서는 `app.doc`) |
+| `app.field_names_internal()` | 내부 leak; collection 으로 대체 | `app.doc.fields.names()` |
+| `app.fields_dict` | `dict(app.doc.fields)` 의 중복 | `dict(app.doc.fields)` |
+| `app.get_field(name)` | `FieldCollection.__getitem__` 의 중복 | `app.doc.fields[name]` |
+| `app.get_font_list()` | utility 메소드 | `hwpapi.fonts.list_used()` (유지 시) |
+| `app.get_message_box_mode()` | low-level dialog config | `app.engine` / `hwpapi.low.engine` |
+| `app.help()` | discovery 는 Quarto 사이트로 대체 | — |
+| `app.hwpunit_to_mm(v)` | 모듈 레벨 함수의 중복 | `hwpapi.units.hwpunit_to_mm(v)` |
+| `app.hwpunit_to_point(v)` | 모듈 레벨 함수의 중복 | `hwpapi.units.hwpunit_to_point(v)` |
+| `app.lint` | lint cluster | `hwpapi.lint` 모듈 |
+| `app.logger` | 내부 attribute; public 이면 안 됨 | — |
+| `app.mm_to_hwpunit(v)` | 모듈 레벨 함수의 중복 | `hwpapi.units.mm_to_hwpunit(v)` |
+| `app.move` | `MoveAccessor` 가 `Document.cursor` 로 흡수 | `app.doc.cursor` |
+| `app.page` | `PageAccessor` 가 `Document.page` 로 흡수 | `app.doc.page` |
+| `app.point_to_hwpunit(v)` | 모듈 레벨 함수의 중복 | `hwpapi.units.point_to_hwpunit(v)` |
+| `app.preset` | presets 레이어는 sibling 패키지 | `hwpapi.presets` (별도 패키지) |
+| `app.register_security_module(path)` | init 시점 config | `hwpapi.low.engine` setup |
+| `app.replace_brackets_with_fields()` | mail-merge 매크로 helper | `hwpapi.recipes` 또는 `FieldCollection.from_brackets()` (Phase 3) |
+| `app.rgb_color(r, g, b)` | 모듈 레벨 함수의 중복 | `hwpapi.units.rgb_color(r, g, b)` |
+| `app.save_all_page_images(...)` | export helper | `hwpapi.io.export.pages_to_images(app, ...)` |
+| `app.save_page_image(...)` | export helper | `hwpapi.io.export.page_to_image(app, ...)` |
+| `app.sel` | selection accessor | `app.doc.selection` |
+| `app.set_field(name, value)` | `FieldCollection.__setitem__` 의 중복 | `app.doc.fields[name] = value` |
+| `app.set_message_box_mode(mode)` | 삭제된 getter 와 짝 | `hwpapi.low.engine` |
+| `app.set_visible(flag)` | `visible` property 의 명시적 중복 — plan 2.4 에 따라 삭제 | `app.visible = flag` |
+| `app.silenced()` | context manager 가 모듈 레벨로 이동 | `hwpapi.context.scopes.silenced(app)` |
+| `app.status` | discovery aid — Quarto 레퍼런스로 대체 | — |
+| `app.suppress_errors()` | context manager 가 모듈 레벨로 이동 | `hwpapi.context.scopes.suppress_errors(app)` |
+| `app.template` | template cluster | `hwpapi.templates` 모듈 |
+| `app.undo_group()` | context manager 가 모듈 레벨로 이동 | `hwpapi.context.scopes.undo_group(app)` |
+| `app.use_document()` | multi-doc 전환은 v2.1 로 연기 | — |
+| `app.version` | engine / document property | `app.engine.version` 또는 `app.doc.version` |
+| `app.view` | view accessor | 전용 모듈 (TBD) |
+
+# 예제
+
+## 예제 1 — 파일 열기, 텍스트 삽입, 저장
+
+```python
+# v1.x
+from hwpapi import App
+app = App()
+app.open("report.hwp")
+app.insert_text("Hello, world.")
+app.save()
+app.quit()
+
+# v2.0
+from hwpapi import App
+app = App()
+app.open("report.hwp")
+app.doc.insert_text("Hello, world.")
+app.save()
+app.quit()
+```
+
+context manager 형태 (양쪽 버전 모두 지원):
+
+```python
+# v2.0 — 스크립트에 권장
+from hwpapi import App
+with App() as app:
+    app.open("report.hwp")
+    app.doc.insert_text("Hello, world.")
+    app.save()
+# 종료 시 app.close() 자동 호출
+```
+
+## 예제 2 — Field 작업
+
+```python
+# v1.x
+names = app.field_names                     # list
+app.create_field("author", "direction")
+exists = app.field_exists("author")
+app.delete_field("author")
+app.delete_all_fields()
+
+# v2.0
+names = app.doc.fields.names()              # FieldCollection 메소드
+app.doc.create_field("author", "direction") # 또는 app.doc.fields.add("author", "direction")
+exists = "author" in app.doc.fields         # __contains__
+del app.doc.fields["author"]                # __delitem__
+app.doc.fields.clear()                      # delete_all_fields() 대체
+```
+
+## 예제 3 — 글자 서식
+
+```python
+# v1.x
+app.set_charshape(bold=True, size=12)
+
+with app.charshape_scope(bold=True):
+    app.insert_text("bold text")
+
+# v2.0 — element 기반 assignment
+from hwpapi.parametersets import CharShape
+
+run = app.doc.cursor.run
+run.charshape = CharShape(bold=True, size=12)
+
+# context manager 형태 — 이제 모듈 레벨 함수
+from hwpapi.context.scopes import charshape_scope
+
+with charshape_scope(bold=True):
+    app.doc.insert_text("bold text")
+```
+
+## 예제 4 — 단위 변환 (App 에서 삭제됨)
+
+```python
+# v1.x
+mm_value = app.hwpunit_to_mm(59430)
+pt_value = app.hwpunit_to_point(1200)
+hwp = app.mm_to_hwpunit(210)
+
+# v2.0 — hwpapi.units 직접 사용
+from hwpapi.units import hwpunit_to_mm, hwpunit_to_point, mm_to_hwpunit
+
+mm_value = hwpunit_to_mm(59430)     # 210.0
+pt_value = hwpunit_to_point(1200)   # 12.0
+hwp = mm_to_hwpunit(210)            # 59430
+```
+
+# FAQ
+
+**"내 스크립트에서 `app.bookmarks['x']` 를 쓰는데, 이게 그대로 작동하나요?"**
+v2 에서는 `app.doc.bookmarks['x']` 로 사용하세요. dict 형 인터페이스는
+보존되었고 (Phase 3) 확장되었습니다.
+
+**"`app.charshape()` 는 어떻게 됐나요?"**
+삭제됐습니다. 글자 단위 서식은 이제 `Run` element 에 있습니다 (예제 3 참고).
+context manager 형태 (`charshape_scope`) 는 `hwpapi.context.scopes` 로
+이동했습니다.
+
+**"`app.api` (raw COM 핸들) 가 필요한데요."**
+여전히 `app.api` 로 접근 가능합니다 — 명시적인 escape hatch 입니다.
+대부분의 경우 더 구조화된 인터페이스인 `hwpapi.low.*` 를 권장합니다.
+
+**"배치 스크립트에서 출력을 끄려면?"**
+`app.visible = False` — `set_visible()` 메소드는 제거됐고 property 를
+직접 사용하세요.
+
+**"`app.silenced()` / `app.suppress_errors()` / `app.undo_group()` 에
+의존하고 있었습니다."**
+이 context manager 들은 모듈 레벨 함수로 살아남았습니다:
+`from hwpapi.context.scopes import silenced, suppress_errors, undo_group`.
+첫 번째 인자로 `app` 을 넘기세요.
+
+**"multi-document 워크플로우 (`app.documents`, `app.use_document()`) 는?"**
+multi-document collection 은 v2.1 로 연기됐습니다 (plan section 12).
+v2.0 에서 `app.doc` 은 항상 활성 문서를 가리킵니다. multi-doc 이 당장
+필요하면 `hwpapi==1.*` 로 pinning 하세요.
+
+**"`save_block` 시그니처가 바뀌었는데, 새 시그니처는?"**
+`save_as(path: str | Path, *, as_block: bool = False)`. `as_block=True` 로
+설정하면 원래 동작이 보존됩니다.
+
+**"mail merge 에 `app.replace_brackets_with_fields()` 를 썼는데요."**
+이 helper 는 `App` 에서 제거됐습니다. `FieldCollection.from_brackets(text)`
+또는 Phase 3 의 `hwpapi.recipes` 모듈로 재등장할 예정입니다. 당분간은
+`app.api` + raw action 직접 호출, 또는 v1 구현을 본인 코드에 복사해 사용하세요.
+
+# 참고
+
+- [Low-level escape hatch (영문)](../guide/low-level-escape-hatch.html) — v1 `app.api` 호출이 어디로 이동하는지
+- [API Reference (영문)](../reference/index.html) — 렌더된 v2 surface
+- [ADR-001: Two-layer API (영문)](../design/adr/adr-001-v2-redesign.html) — v2 가 이렇게 분할된 이유
+- 공식 plan: `.omc/plans/hwpapi_v2_redesign.md`

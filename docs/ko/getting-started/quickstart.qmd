@@ -1,0 +1,171 @@
+---
+title: "퀵스타트"
+subtitle: "5분 안에 작성하는 첫 hwpapi 스크립트"
+---
+
+이 페이지는 가장 작지만 유용한 hwpapi 워크플로우를 따라갑니다 — 문서 열기,
+텍스트 변경, 컬렉션 조회, PDF 저장. 모든 코드 블록은 `eval: false` 로
+표시되어 있습니다 (HWP COM 서버를 직접 구동하기 때문) — 본인의 HWP 환경에서
+직접 실행해보세요.
+
+# 1. HWP 에 연결
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+app = App()             # HWP 가 없으면 실행, 있으면 재사용
+print(app)              # repr — engine id 와 visible 상태 표시
+```
+
+`is_visible=False` 를 넘기면 HWP 창이 숨겨진 채 실행됩니다 (서버 스크립트
+용도로 유용):
+
+```{python}
+#| eval: false
+app = App(is_visible=False)
+```
+
+context manager 형태는 `close()` 와 `quit()` 을 자동으로 호출합니다:
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.new()
+    app.doc.insert_text("hwpapi 안녕\n")
+    app.save_as("hello.hwp")
+```
+
+# 2. 문서 열기 또는 새로 만들기
+
+```{python}
+#| eval: false
+app.open("report.hwp")                 # 기존 파일 열기
+app.new()                              # 빈 문서 생성
+app.save()                             # 제자리 저장
+app.save_as("report_final.hwp")        # 새 파일로 저장
+app.save_as("report.pdf")              # 확장자로 포맷 추론
+app.close()                            # 활성 문서 닫기
+app.quit()                             # COM 엔진 종료
+```
+
+# 3. `app.doc` 으로 텍스트 다루기
+
+문서 단위 작업은 모두 `app.doc` 아래에 모여 있습니다
+([`Document`](../../reference/Document.html) 인스턴스):
+
+```{python}
+#| eval: false
+# 전체 문서 텍스트
+print(app.doc.text)
+
+# 전체 텍스트 일괄 교체
+app.doc.text = "완전히 새로운 내용"
+
+# 커서 위치에 삽입
+app.doc.insert_text("새로 추가한 줄\n")
+
+# 탐색
+app.doc.cursor.goto_page(3)
+app.doc.cursor.in_table()              # → bool
+
+# 복사 / 잘라내기 / 붙여넣기 / 선택 / 삭제
+app.doc.select_all()
+selected = app.doc.get_selected_text()
+```
+
+# 4. 컬렉션은 dict 처럼
+
+`app.doc.*` 아래 모든 컬렉션이 `[]`, `in`, `for`, `len`, `names()`,
+`filter(...)` 를 지원합니다:
+
+```{python}
+#| eval: false
+# Fields (누름틀) — 이름으로 읽고 쓰기
+names = app.doc.fields.names()         # → list[str]
+for name in names:
+    print(name, "=", app.doc.fields[name].value)
+
+app.doc.fields["author"] = "홍길동"
+"author" in app.doc.fields             # → True
+del app.doc.fields["author"]           # 하나 제거
+app.doc.fields.clear()                 # 전체 제거
+
+# Bookmarks (책갈피)
+app.doc.bookmarks.add("chapter-1")
+for bm in app.doc.bookmarks:
+    print(bm.name)
+
+# Tables
+tbl = app.doc.tables[0]                # 첫 번째 표
+tbl.cell(1, 1).text = "Q1"
+```
+
+# 5. Context scope 으로 서식 적용
+
+v1 의 `app.set_charshape(...)` / `app.charshape_scope(...)` 는 사라졌고,
+모듈 레벨 scope 을 사용합니다:
+
+```{python}
+#| eval: false
+from hwpapi.context import charshape_scope, parashape_scope, styled_text
+
+# 블록 — 여러 작업이 같은 스타일 공유, 종료 시 복원
+with charshape_scope(app, bold=True, size=14, color="#C0392B"):
+    app.doc.insert_text("제목\n")
+    app.doc.insert_text("계속 굵은 빨강\n")
+# ← 여기서 커서 스타일 복원
+
+# 단락 단위 — 정렬과 줄간격
+with parashape_scope(app, align="center", line_spacing=180):
+    app.doc.insert_text("가운데 정렬, 180% 줄간격\n")
+
+# 일회성 — 인라인 스타일 텍스트 삽입
+styled_text(app, "긴급", bold=True, color="#E74C3C")
+```
+
+# 6. 친숙한 단위
+
+```{python}
+from hwpapi import units as U
+
+U.mm(210)       # → HWPUNIT
+U.pt(12)        # → HWPUNIT
+U.inch(8.27)    # → HWPUNIT (210mm 와 거의 동일)
+
+U.to_mm(59430)  # → ~210.0
+U.to_pt(1200)   # → 12.0
+
+U.parse("210mm")
+U.parse("12pt")
+U.parse("8.27in")
+```
+
+# 7. Escape hatch
+
+facade 가 노출하지 않는 기능이 필요하면
+[`hwpapi.low`](../../guide/low-level-escape-hatch.html) 로 내려가세요:
+
+```{python}
+#| eval: false
+from hwpapi.low import actions, parametersets
+
+# 이름으로 raw action 호출
+charshape = actions._Action("CharShape")
+charshape.pset.Bold = True
+charshape.pset.Height = 1400           # 14pt 를 HWPUNIT 으로 (100/pt)
+charshape.run()
+
+# ParameterSet 클래스 카탈로그
+list(parametersets.__dict__.keys())[:5]
+```
+
+raw COM 핸들은 `app.api`, 엔진은 `app.engine` 으로 접근 가능합니다.
+
+# 다음 단계
+
+- v1 스크립트를 변환해야 한다면 → [마이그레이션 가이드](migration-v1-to-v2.qmd)
+- 실전 예제가 더 필요하면 → [Recipes (영문)](../recipes/index.html)
+- 특정 클래스를 찾고 싶다면 → [Reference (영문)](../reference/index.html)

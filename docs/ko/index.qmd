@@ -1,0 +1,134 @@
+---
+title: "hwpapi"
+subtitle: "한컴오피스 한글(HWP) 자동화를 위한 Pythonic 라이브러리"
+format:
+  html:
+    toc: false
+    page-layout: full
+---
+
+::: {.hwpapi-hero}
+# hwpapi
+
+<p class="tagline">
+HWP 의 COM 자동화 인터페이스를 감싼 슬림한 Python facade — dict 형 컬렉션,
+context 로 관리되는 서식, 그리고 raw action 레이어로 안전하게 내려가는
+escape hatch 까지.
+</p>
+
+```bash
+pip install hwpapi
+```
+:::
+
+## 5분 둘러보기
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+# 1. 파일 열기 — `App` 은 lifecycle 만 책임집니다.
+with App() as app:
+    app.open("report.hwp")
+
+    # 2. 문서 단위 작업은 `app.doc` 아래에 모두 모여 있습니다.
+    app.doc.insert_text("안녕, 한글!\n")
+
+    # 3. 컬렉션은 dict 처럼 사용합니다.
+    app.doc.fields["author"] = "홍길동"
+    for name in app.doc.fields.names():
+        print(name, "->", app.doc.fields[name].value)
+
+    # 4. 서식은 context scope 으로 적용합니다.
+    from hwpapi.context import charshape_scope
+    with charshape_scope(app, bold=True, size=14, color="#C0392B"):
+        app.doc.insert_text("강조할 줄\n")
+
+    # 5. raw action 이 필요하면 `hwpapi.low` 로 내려갑니다.
+    from hwpapi.low import actions
+    # 예: actions._Action("MovePos")(...)
+
+    app.save_as("report.pdf")
+```
+
+위 블록은 `eval: false` 로 표시되어 있습니다 — Windows 의 HWP COM
+서버를 직접 구동하기 때문입니다. HWP 가 필요 없는 다른 코드 블록은
+사이트 렌더 시점에 실제로 실행됩니다.
+
+## 무엇이 담겨 있나
+
+::: {.feature-grid}
+
+::: {.feature-card}
+### 두 층 API
+
+`App` → `app.doc` 으로 일상적인 스크립트 작성. raw action / ParameterSet
+조작이 필요할 땐 `hwpapi.low.*` 로 내려갑니다.
+
+[가이드(영문) →](../guide/app-and-document.html){.card-link}
+:::
+
+::: {.feature-card}
+### Dict 형 컬렉션
+
+`fields`, `bookmarks`, `hyperlinks`, `images`, `styles`, `paragraphs`,
+`tables` — 모든 컬렉션이 `[]`, `in`, `for`, `len`, `filter`, `names`
+를 지원합니다.
+
+[가이드(영문) →](../guide/collections.html){.card-link}
+:::
+
+::: {.feature-card}
+### Context 로 관리되는 서식
+
+`charshape_scope`, `parashape_scope`, `styled_text` 는 진입 시 커서
+서식을 snapshot 하고 종료 시 복원합니다 — 예외가 발생해도 원상복구.
+
+[가이드(영문) →](../guide/context-scopes.html){.card-link}
+:::
+
+::: {.feature-card}
+### 친숙한 단위
+
+`hwpapi.units.mm(210)`, `pt(12)`, `inch(8.27)` — HWPUNIT 산수 안 해도
+됩니다.
+
+[가이드(영문) →](../guide/units.html){.card-link}
+:::
+
+::: {.feature-card}
+### 진짜 예외
+
+모든 public 호출이 `pywintypes.com_error` 를 의미 있는 메시지의
+`HwpApiError` 하위 클래스로 감싸 던집니다.
+
+[레퍼런스(영문) →](../reference/errors.html){.card-link}
+:::
+
+::: {.feature-card}
+### 문서화된 escape hatch
+
+`hwpapi.low.actions`, `hwpapi.low.parametersets`, `hwpapi.low.engine`
+— 900+ action wrapper 와 130+ ParameterSet 클래스가 깔끔히 namespace
+되어 있습니다.
+
+[가이드(영문) →](../guide/low-level-escape-hatch.html){.card-link}
+:::
+
+:::
+
+## 어디로 갈까
+
+- **처음이면**: [설치](getting-started/install.qmd) → [퀵스타트](getting-started/quickstart.qmd).
+- **v1 에서 올라오면**: [마이그레이션 가이드](getting-started/migration-v1-to-v2.qmd) — v1 `App` 멤버 1:1 대응표 포함.
+- **레시피가 필요하면**: [Recipes index (영문)](../recipes/index.html).
+- **심볼 찾기**: [API Reference (영문)](../reference/index.html).
+- **왜 이렇게 설계됐나**: [ADRs (영문)](../design/adr/adr-001-v2-redesign.html).
+
+::: {.callout-note}
+## 번역 안내
+
+현재 한국어로 번역된 페이지는 4개 (홈 · 설치 · 퀵스타트 · 마이그레이션)
+입니다. 나머지는 영문 사이트로 자연스럽게 연결됩니다. 번역 기여는
+[GitHub Issues](https://github.com/JunDamin/hwpapi/issues) 환영합니다.
+:::

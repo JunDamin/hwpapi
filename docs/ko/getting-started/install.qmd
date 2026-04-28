@@ -1,0 +1,105 @@
+---
+title: "설치"
+subtitle: "Windows 환경에 hwpapi 설치하기"
+---
+
+# 요구사항
+
+hwpapi 는 한컴오피스 한글(HWP)의 Windows COM 자동화 인터페이스를
+구동합니다. 따라서:
+
+- **OS**: Windows 10 이상
+- **HWP**: 한글 2018 / 2020 / 2022 / 2024 (한컴오피스). **뷰어 에디션은
+  지원하지 않습니다** — 자동화 서버가 노출되지 않기 때문입니다.
+- **Python**: 3.9 이상
+- **pywin32**: `pip install hwpapi` 로 자동 설치됩니다.
+
+macOS / Linux 는 지원되지 않습니다 (HWP COM 서버가 Windows 전용).
+다만 hwpapi 의 단위 테스트는 Linux 에서도 실행 가능합니다 — COM 레이어를
+mock 으로 stub 하기 때문입니다. 실제 HWP 인스턴스에 접근하는 코드는
+반드시 Windows 에서 실행해야 합니다.
+
+# PyPI 에서 설치
+
+```bash
+pip install hwpapi
+```
+
+이 명령으로 `hwpapi` 와 `pywin32` 가 함께 설치됩니다. 설치 확인:
+
+```{python}
+import hwpapi
+print(hwpapi.__version__)
+```
+
+# 소스에서 설치
+
+```bash
+git clone https://github.com/JunDamin/hwpapi.git
+cd hwpapi
+pip install -e .
+```
+
+이 사이트(문서)를 로컬에서 빌드하려면 `docs` extra 를 추가:
+
+```bash
+pip install -e ".[docs]"
+# 또는 명시적으로:
+pip install quartodoc griffe jupyter
+```
+
+`docs` extra 는 `quartodoc` (자동 API 페이지 생성) 과 `griffe`
+(quartodoc 이 사용하는 Python AST 백엔드) 를 가져옵니다.
+
+# FilePathCheckerModuleExample DLL
+
+HWP 는 `FilePathCheckerModuleExample.dll` 이라는 작은 DLL 을
+제공합니다 — `App.open(path)` 호출 시 "이 파일을 열어도 안전합니까?"
+대화상자를 자동 억제해줍니다. hwpapi 는 `check_dll()` 로 자동 탐색하지만,
+파일 열 때마다 OS 대화상자가 뜨면 HWP 설치 프로그램에서 해당 모듈을
+설치하거나, 명시적으로 경로를 지정하세요:
+
+```{python}
+#| eval: false
+from hwpapi import App
+app = App(dll_path="C:/hwpapi/FilePathCheckerModuleExample.dll")
+```
+
+# 설치 검증
+
+가장 단순한 smoke 테스트 — HWP 를 실행하고, 빈 문서를 열고, 버전을
+출력한 뒤 깔끔하게 닫습니다:
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.new()
+    print("HWP 버전:", app.engine.version)
+    print("문서 텍스트:", repr(app.doc.text))
+```
+
+HWP 버전이 출력되고 텍스트가 `''` 로 나오면 정상 설치입니다.
+
+[퀵스타트](quickstart.qmd) 로 이동하세요.
+
+# 트러블슈팅
+
+**`ModuleNotFoundError: No module named 'win32com'`** — pywin32 가
+제대로 설치되지 않았습니다. `pip install --force-reinstall pywin32` 후
+관리자 권한으로 `python Scripts\pywin32_postinstall.py -install` 를
+실행하세요.
+
+**파일 열 때마다 보안 대화상자가 뜸** —
+`FilePathCheckerModuleExample.dll` 이 등록되지 않은 상태입니다. 위
+설명대로 `dll_path=` 를 명시하거나, hwpapi 설치 디렉터리에 DLL 을
+복사하세요.
+
+**`ConnectionError: can't dispatch HwpObject`** — HWP 가 설치되지
+않았거나, 뷰어 에디션을 사용 중이거나, COM 등록이 손상된 상태입니다.
+HWP 를 재설치하고 다시 시도하세요.
+
+**HWP 종료 시 Ruby/Tk 에러** — `app.quit()` 전에 `app.close()` 를
+호출하거나, context manager (`with App() as app:`) 를 쓰세요 — 후자가
+자동으로 처리합니다.

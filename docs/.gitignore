@@ -1,3 +1,4 @@
 /.quarto/
-/_site/
+# _site/ is now committed — deploy-docs.yaml uploads it as static
+# Pages artifact (Linux runner cannot run quartodoc due to win32com).
 **/*.quarto_ipynb
