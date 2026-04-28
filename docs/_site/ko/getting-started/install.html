@@ -306,19 +306,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="menu-text">시작하기</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../guide/app-and-document.html"> 
+    <a class="nav-link" href="../guide/app-and-document.html"> 
 <span class="menu-text">가이드</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../recipes/index.html"> 
+    <a class="nav-link" href="../recipes/index.html"> 
 <span class="menu-text">레시피</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../reference/index.html"> 
+    <a class="nav-link" href="../reference/index.html"> 
 <span class="menu-text">레퍼런스</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../../design/index.html"> 
+    <a class="nav-link" href="../design/index.html"> 
 <span class="menu-text">디자인</span></a>
   </li>  
 </ul>
@@ -432,40 +432,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>PyPI 에서 설치</h1>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install hwpapi</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
 <p>이 명령으로 <code>hwpapi</code> 와 <code>pywin32</code> 가 함께 설치됩니다. 설치 확인:</p>
-<div id="94ad39fe" class="cell">
+<div id="bee9461b" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> hwpapi</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(hwpapi.__version__)</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>2.0.0</code></pre>
+</div>
 </div>
 </section>
 <section id="소스에서-설치" class="level1">
 <h1>소스에서 설치</h1>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/JunDamin/hwpapi.git</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> hwpapi</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-e</span> .</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/JunDamin/hwpapi.git</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> hwpapi</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-e</span> .</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
 <p>이 사이트(문서)를 로컬에서 빌드하려면 <code>docs</code> extra 를 추가:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-e</span> <span class="st">".[docs]"</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 또는 명시적으로:</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install quartodoc griffe jupyter</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-e</span> <span class="st">".[docs]"</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 또는 명시적으로:</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install quartodoc griffe jupyter</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
 <p><code>docs</code> extra 는 <code>quartodoc</code> (자동 API 페이지 생성) 과 <code>griffe</code> (quartodoc 이 사용하는 Python AST 백엔드) 를 가져옵니다.</p>
 </section>
 <section id="filepathcheckermoduleexample-dll" class="level1">
 <h1>FilePathCheckerModuleExample DLL</h1>
 <p>HWP 는 <code>FilePathCheckerModuleExample.dll</code> 이라는 작은 DLL 을 제공합니다 — <code>App.open(path)</code> 호출 시 “이 파일을 열어도 안전합니까?” 대화상자를 자동 억제해줍니다. hwpapi 는 <code>check_dll()</code> 로 자동 탐색하지만, 파일 열 때마다 OS 대화상자가 뜨면 HWP 설치 프로그램에서 해당 모듈을 설치하거나, 명시적으로 경로를 지정하세요:</p>
-<div id="3fef8754" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App(dll_path<span class="op">=</span><span class="st">"C:/hwpapi/FilePathCheckerModuleExample.dll"</span>)</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="81b7e1df" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App(dll_path<span class="op">=</span><span class="st">"C:/hwpapi/FilePathCheckerModuleExample.dll"</span>)</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="설치-검증" class="level1">
 <h1>설치 검증</h1>
 <p>가장 단순한 smoke 테스트 — HWP 를 실행하고, 빈 문서를 열고, 버전을 출력한 뒤 깔끔하게 닫습니다:</p>
-<div id="121a32c0" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    app.new()</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"HWP 버전:"</span>, app.engine.version)</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"문서 텍스트:"</span>, <span class="bu">repr</span>(app.doc.text))</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="aea4260a" class="cell" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    app.new()</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"HWP 버전:"</span>, app.engine.version)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"문서 텍스트:"</span>, <span class="bu">repr</span>(app.doc.text))</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>HWP 버전이 출력되고 텍스트가 <code>''</code> 로 나오면 정상 설치입니다.</p>
 <p><a href="../getting-started/quickstart.html">퀵스타트</a> 로 이동하세요.</p>

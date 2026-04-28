@@ -1,0 +1,103 @@
+---
+title: "글자 서식"
+subtitle: "굵게, 색상, 크기 — 스코프와 ParameterSet 을 통해"
+---
+
+`examples/charshape_bold.py` 에서 이식.
+
+# 1. 스코프 기반 — 일반적인 경우
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.context import charshape_scope
+from hwpapi import units as U
+
+with App() as app:
+    app.new()
+
+    with charshape_scope(app, bold=True, size=U.pt(14), color="#C0392B"):
+        app.doc.insert_text("This line is bold 14pt red\n")
+    # 여기서 커서 스타일이 복원됨
+    app.doc.insert_text("Back to default\n")
+```
+
+# 2. 요소 기반 — 특정 문단에 대해
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.low.parametersets import CharShape
+
+with App() as app:
+    app.open("report.hwp")
+
+    para0 = app.doc.paragraphs[0]
+    para0.charshape = CharShape(Bold=True, Height=1800, TextColor="#000080")
+```
+
+# 3. 단일 속성 변경
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.open("report.hwp")
+
+    # 현재 모양을 읽고, 한 키만 바꿔서 다시 쓰기
+    cs = app.doc.paragraphs[0].charshape
+    cs.Italic = True
+    app.doc.paragraphs[0].charshape = cs
+```
+
+# 4. clone 을 이용한 스냅샷 / 복원
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.new()
+    app.doc.insert_text("Snapshot test.\n")
+    app.doc.select_all()
+
+    action = app.actions.CharShape
+    ps = action.pset
+
+    # 스냅샷 — 네이티브 pset.Clone()
+    original = ps.clone()
+    print(f"Snapshot: Bold={original.Bold}, Italic={original.Italic}")
+
+    # 임시 변경 적용
+    ps.Bold = True
+    ps.Italic = True
+    ps.TextColor = "#00FF00"
+    action.run()
+    print("Applied temporary formatting.")
+
+    # 스냅샷에서 복원
+    ps.update_from(original)
+    action.run()
+    print("Restored original formatting.")
+```
+
+# 5. 실행 없이 인트로스펙트
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    cls = app.actions.get_pset_class("CharShape")
+    desc = app.actions.get_description("CharShape")
+    print(f"CharShape → {cls.__name__}: {desc}")
+    print(f"Has {len(cls._property_registry)} properties")
+    print(f"First 5: {list(cls._property_registry.keys())[:5]}")
+```
+
+# 함께 보기
+
+- [Guide: context scopes](../guide/context-scopes.qmd)
+- [Reference: context.scopes](../../reference/context/scopes.html)
+- [Reference: low.parametersets](../../reference/low/parametersets.html)

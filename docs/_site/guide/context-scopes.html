@@ -457,7 +457,7 @@ Paragraph alignment/line-spacing block?   → with parashape_scope(app, …):</c
 </section>
 <section id="charshape_scope-block-level-char-formatting" class="level1">
 <h1><code>charshape_scope</code> — block-level char formatting</h1>
-<div id="ad3aaf0d" class="cell">
+<div id="8655d487" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.context <span class="im">import</span> charshape_scope</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> charshape_scope(app, bold<span class="op">=</span><span class="va">True</span>, size<span class="op">=</span><span class="dv">14</span>, color<span class="op">=</span><span class="st">"#C0392B"</span>):</span>
@@ -509,7 +509,7 @@ Paragraph alignment/line-spacing block?   → with parashape_scope(app, …):</c
 </section>
 <section id="parashape_scope-block-level-paragraph-formatting" class="level1">
 <h1><code>parashape_scope</code> — block-level paragraph formatting</h1>
-<div id="1b0f7c27" class="cell">
+<div id="c1f135e9" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.context <span class="im">import</span> parashape_scope</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> parashape_scope(app, align<span class="op">=</span><span class="st">"center"</span>, line_spacing<span class="op">=</span><span class="dv">180</span>):</span>
@@ -559,7 +559,7 @@ Paragraph alignment/line-spacing block?   → with parashape_scope(app, …):</c
 </section>
 <section id="styled_text-one-shot-inline-insertion" class="level1">
 <h1><code>styled_text</code> — one-shot inline insertion</h1>
-<div id="7de010f8" class="cell">
+<div id="3ea92ef1" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.context <span class="im">import</span> styled_text</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>app.doc.insert_text(<span class="st">"This word is "</span>)</span>
@@ -579,7 +579,7 @@ Paragraph alignment/line-spacing block?   → with parashape_scope(app, …):</c
 <section id="exception-safety" class="level1">
 <h1>Exception safety</h1>
 <p>All three scopes use <code>contextlib.contextmanager</code> and wrap the body in <code>try/finally</code>. If your block raises, the cursor’s shape is still restored before the exception propagates.</p>
-<div id="d0c8ab0b" class="cell">
+<div id="ec451f8a" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> charshape_scope(app, bold<span class="op">=</span><span class="va">True</span>):</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>        app.doc.insert_text(<span class="st">"this works</span><span class="ch">\n</span><span class="st">"</span>)</span>

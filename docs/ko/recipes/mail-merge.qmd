@@ -1,0 +1,99 @@
+---
+title: "메일 머지"
+subtitle: "템플릿 + CSV → N개의 출력 파일"
+---
+
+`nbs/01_tutorials/09_usecase_mail_merge.ipynb` 에서 이식했으며, v2
+컬렉션 API 에 맞게 다시 작성되었습니다.
+
+# 형태
+
+1. 이름 있는 필드(누름틀)가 포함된 템플릿 `.hwp` 파일을 엽니다.
+2. 데이터 소스(CSV, dict 의 list, 데이터베이스 쿼리)의 행을
+   순회합니다.
+3. 각 컬럼을 해당 필드에 할당합니다.
+4. 행마다 출력 파일(`.hwp` 또는 `.pdf`)로 다른 이름으로 저장합니다.
+
+# 최소 구현
+
+```{python}
+#| eval: false
+import csv
+from pathlib import Path
+from hwpapi import App
+
+
+def mail_merge(template: Path, data: Path, output_dir: Path):
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    with App(is_visible=False) as app:
+        app.open(str(template))
+
+        with open(data, newline="", encoding="utf-8-sig") as f:
+            reader = csv.DictReader(f)
+            for i, row in enumerate(reader, 1):
+                for name, value in row.items():
+                    if name in app.doc.fields:
+                        app.doc.fields[name] = value
+
+                out = output_dir / f"letter-{i:03d}.pdf"
+                app.save_as(str(out))
+                print(f"[{i}] wrote {out}")
+
+
+if __name__ == "__main__":
+    mail_merge(
+        template=Path("templates/letter.hwp"),
+        data=Path("data/recipients.csv"),
+        output_dir=Path("out"),
+    )
+```
+
+# 샘플 CSV
+
+```
+id,name,title,date
+001,홍길동,사원,2026-04-19
+002,김영희,대리,2026-04-19
+003,이철수,과장,2026-04-20
+```
+
+템플릿에는 `id`, `name`, `title`, `date` 라는 이름의 필드가 있어야
+합니다 — 템플릿에 없는 필드는 hwpapi 가 조용히 건너뜁니다.
+
+# 잘못된 행 건너뛰기
+
+```{python}
+#| eval: false
+required = {"name", "date"}
+
+for i, row in enumerate(reader, 1):
+    missing = required - set(k for k, v in row.items() if v)
+    if missing:
+        print(f"[skip row {i}] missing: {missing}")
+        continue
+    # ... 일반 머지
+```
+
+# 배치 작업 시 HWP 숨기기
+
+`App(is_visible=False)` 는 `save_as` 마다 발생하는 윈도우 깜박임을
+억제합니다. 대량 배치에서는 눈에 띄게 빨라지고, 포커스도 빼앗기지
+않습니다.
+
+# PDF vs. HWP 로 내보내기
+
+`save_as(path)` 의 확장자가 포맷을 결정합니다.
+
+- `save_as("letter.hwp")` — 네이티브 HWP
+- `save_as("letter.pdf")` — PDF 내보내기 (HWP 의 내장 익스포터 사용)
+- `save_as("letter.docx")` — Word 내보내기 (HWP 에 변환기가 설치되어
+  있는 경우)
+
+해상도, 페이지 범위 등 더 세밀한 제어는
+[`hwpapi.io.export_pdf`](../../reference/io/export.html) 를 참고하세요.
+
+# 함께 보기
+
+- [Recipe: fill-fields](fill-fields.qmd) — 빌딩 블록
+- [Reference: collections/fields](../../reference/collections/fields.html)

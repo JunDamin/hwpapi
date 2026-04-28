@@ -1,0 +1,89 @@
+---
+title: "프리셋 갤러리"
+subtitle: "사전 제작된 서식 매크로 — 형광펜, 음영, 가로줄"
+---
+
+`nbs/01_tutorials/11_presets_gallery.ipynb` 에서 이식.
+
+`hwpapi.presets` 는 매 스크립트마다 다시 작성하기에는 가치가 크지
+않은 작은 헬퍼들을 한 곳에 모아둔 모음입니다. 모두 `App` 을 첫 번째
+인자로 받습니다.
+
+# Highlight (형광펜)
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.presets import highlight_yellow, highlight_cyan, highlight_green
+
+with App() as app:
+    app.open("report.hwp")
+
+    # 구문으로 이동 → 선택 → 형광펜 적용
+    app.doc.find_text("important")
+    app.doc.select_text(start=None, end=None)   # 일치 단어 선택
+    highlight_yellow(app)
+```
+
+`presets.highlight_yellow` / `highlight_cyan` / `highlight_green` 는
+모두 동일한 기반 액션을 구동합니다 — 단지 `ShadeColor` 를 미리
+채워둔 것뿐입니다.
+
+# 셀 음영
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.presets import shade_cell_light_grey, shade_cell_accent
+
+with App() as app:
+    app.open("report.hwp")
+    tbl = app.doc.tables[0]
+
+    # 헤더 행 — 강조색
+    for c in range(tbl.cols):
+        tbl.cell(0, c).goto()
+        shade_cell_accent(app)
+
+    # 데이터 행 격행 줄무늬
+    for r in range(1, tbl.rows, 2):
+        for c in range(tbl.cols):
+            tbl.cell(r, c).goto()
+            shade_cell_light_grey(app)
+```
+
+# 가로줄 삽입
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.presets import rule_line_thin, rule_line_thick
+
+with App() as app:
+    app.new()
+    app.doc.insert_text("Section A\n")
+    rule_line_thin(app)
+    app.doc.insert_text("\nSection B\n")
+    rule_line_thick(app)
+```
+
+# 프리셋이 별도 모듈인 이유
+
+프리셋은 퍼사드 위에 있는 레이어입니다. 각각은 `hwpapi.context.scopes`
++ `hwpapi.low.actions` 의 몇 줄짜리 코드입니다. 다음과 같은 목적으로
+존재합니다.
+
+- 팀 공통 컨벤션을 한 곳에 캡처 (어디서든 동일한 강조색, 동일한
+  선 두께)
+- 모든 호출 지점에서 십여 개의 parameter-set 조정을 반복하지 않도록
+- 현재 HWP 버전에서 어떤 파라미터 조합이 "검증됨"인지 문서화
+  (highlight 에는 bleed-safe fallback 이 있음 — 모듈 docstring 참고)
+
+프리셋이 맞지 않으면 소스를 읽어보세요 — 기반 액션을 직접 호출하는
+방법에 대한 가장 짧은 튜토리얼입니다.
+
+# 함께 보기
+
+- [Reference: hwpapi.presets](../../reference/index.html) (패키지가
+  성장하면 자동 발견을 통해 나열됨)
+- [Recipe: charshape-formatting](charshape-formatting.qmd)

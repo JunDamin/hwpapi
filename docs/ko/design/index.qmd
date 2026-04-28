@@ -1,0 +1,33 @@
+---
+title: "설계"
+subtitle: "아키텍처 노트, ADR, 감사 자료"
+---
+
+# 이 섹션의 내용
+
+이 섹션은 코드 뒤의 *왜* 를 설명합니다. [가이드](../guide/app-and-document.qmd)
+가 hwpapi 의 사용법을 알려준다면, 설계 섹션은 지금의 형태로 다듬어진
+과정을 알려줍니다.
+
+# 아키텍처
+
+- [아키텍처 개요](architecture.qmd) — v2 import tree, 두 층 모델,
+  collection 프로토콜, 그리고 이들이 어떻게 맞물리는지를 다룹니다.
+
+# 아키텍처 결정 기록 (ADR)
+
+각 ADR 은 하나의 채택된 결정과 그 맥락, 대안, 결과를 기록합니다.
+v2 설계 선택에 대한 1차 역사 기록입니다.
+
+- [ADR-001: 두 층 API (`hwpapi.low` + `App.doc.*`)](adr/adr-001-v2-redesign.qmd)
+- [ADR-002: Quarto 단일 파이프라인 문서화](adr/adr-002-quarto-docs.qmd)
+
+# 감사 및 설계 노트 (보관용)
+
+다음 문서들은 v2 재설계로 이어진 v2 이전 자료입니다. 출처 보존을 위해
+유지되며 — 현재 권위 있는 사양은 ADR 과 살아 있는 코드베이스입니다.
+
+- [`baseline-v1.0.md`](../design/baseline-v1.0.md) — v1 성능 베이스라인
+- [`public-api-v1.0.txt`](../design/public-api-v1.0.txt) — v1 공개 심볼 덤프
+- [`app-public-v2.txt`](../design/app-public-v2.txt) — v2 `dir(App)` 스냅샷
+- [`app-member-audit.md`](../design/app-member-audit.md) — 82 개 멤버의 분류 매트릭스

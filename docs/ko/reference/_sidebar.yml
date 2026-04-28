@@ -1,0 +1,37 @@
+website:
+  sidebar:
+  - contents:
+    - reference/index.qmd
+    - contents:
+      - reference/App.qmd
+      - reference/Document.qmd
+      section: Top-level facade
+    - contents:
+      - reference/collections/fields.qmd
+      - reference/collections/bookmarks.qmd
+      - reference/collections/hyperlinks.qmd
+      - reference/collections/images.qmd
+      - reference/collections/paragraphs.qmd
+      - reference/collections/styles.qmd
+      - reference/collections/tables.qmd
+      section: Collections
+    - contents:
+      - reference/context/scopes.qmd
+      section: Context managers
+    - contents:
+      - reference/io/open.qmd
+      - reference/io/export.qmd
+      section: I/O and export
+    - contents:
+      - reference/errors.qmd
+      section: Errors
+    - contents:
+      - reference/units.qmd
+      section: Units
+    - contents:
+      - reference/low/actions.qmd
+      - reference/low/engine.qmd
+      - reference/low/parametersets.qmd
+      section: Low-level escape hatch
+    id: reference
+  - id: dummy-sidebar

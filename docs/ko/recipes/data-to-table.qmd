@@ -1,0 +1,120 @@
+---
+title: "데이터를 표로"
+subtitle: "DataFrame / dict 의 list → HWP 표"
+---
+
+`nbs/01_tutorials/06_usecase_data_to_table.ipynb` 에서 이식.
+
+# 1. dict 의 list 로부터
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+rows = [
+    {"name": "홍길동", "dept": "R&D", "score": 91},
+    {"name": "김영희", "dept": "Sales", "score": 88},
+    {"name": "이철수", "dept": "R&D", "score": 95},
+]
+
+with App() as app:
+    app.new()
+
+    # 표 삽입: (행 + 헤더, 열)
+    cols = list(rows[0].keys())
+    app.doc.tables.add(rows=len(rows) + 1, cols=len(cols))
+
+    tbl = app.doc.tables[-1]   # 방금 삽입된 표
+
+    # 헤더 행
+    for c, name in enumerate(cols):
+        tbl.cell(0, c).text = name
+
+    # 데이터 행
+    for r, row in enumerate(rows, start=1):
+        for c, key in enumerate(cols):
+            tbl.cell(r, c).text = str(row[key])
+
+    app.save_as("report.hwp")
+```
+
+# 2. pandas DataFrame 으로부터
+
+```{python}
+#| eval: false
+import pandas as pd
+from hwpapi import App
+
+df = pd.DataFrame({
+    "name": ["홍길동", "김영희", "이철수"],
+    "dept": ["R&D", "Sales", "R&D"],
+    "score": [91, 88, 95],
+})
+
+with App() as app:
+    app.new()
+    rows, cols = df.shape
+    app.doc.tables.add(rows=rows + 1, cols=cols)
+
+    tbl = app.doc.tables[-1]
+
+    for c, name in enumerate(df.columns):
+        tbl.cell(0, c).text = str(name)
+
+    for r, row in enumerate(df.itertuples(index=False), start=1):
+        for c, value in enumerate(row):
+            tbl.cell(r, c).text = str(value)
+
+    app.save_as("report.hwp")
+```
+
+# 3. 헤더 행 서식 지정
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.low.parametersets import CharShape
+
+with App() as app:
+    # ... (위와 같이 표 삽입)
+
+    header_shape = CharShape(Bold=True, TextColor="#FFFFFF")
+    header_fill = "#1F4E79"
+
+    for c in range(tbl.cols):
+        cell = tbl.cell(0, c)
+        cell.text = cols[c]
+        cell.fill = header_fill
+        # 셀별 charshape 가 항상 노출되는 것은 아님; 선택 영역으로 대체:
+        cell.goto()
+        app.doc.select_all_in_cell()   # 사용 중인 버전이 이걸 노출하면
+        app.actions.CharShape.pset = header_shape
+        app.actions.CharShape.run()
+```
+
+# 4. 라운드트립: 표 다시 읽기
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.open("report.hwp")
+
+    tbl = app.doc.tables[0]
+    data = [
+        [tbl.cell(r, c).text for c in range(tbl.cols)]
+        for r in range(tbl.rows)
+    ]
+
+    header, *rows = data
+    print("columns:", header)
+    for row in rows:
+        print(dict(zip(header, row)))
+```
+
+# 함께 보기
+
+- [Reference: TableCollection](../../reference/collections/tables.html)
+- [Recipe: report-generation](report-generation.qmd) — 더 큰 문서 안의
+  표

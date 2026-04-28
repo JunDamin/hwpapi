@@ -506,7 +506,7 @@ Note
 <section id="가장-간단-app.api.insertpicture...-직접-호출" class="level1">
 <h1>1. 가장 간단 — <code>app.api.InsertPicture(...)</code> 직접 호출</h1>
 <p><code>app.api</code> 는 raw <code>HwpObject</code> COM 핸들이라, HWP COM 메서드를 그대로 부를 수 있습니다.</p>
-<div id="1c2f762b" class="cell">
+<div id="f61a1a31" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -542,7 +542,7 @@ Warning
 <section id="v2-액션-escape-hatch-app.actions.insertpicture" class="level1">
 <h1>2. v2 액션 escape hatch — <code>app.actions.InsertPicture</code></h1>
 <p><code>hwpapi.low.actions</code> 의 액션 형태로도 호출 가능합니다. pset 으로 파라미터를 넘기는 패턴이라 다른 액션과 일관됩니다.</p>
-<div id="65962b7f" class="cell">
+<div id="bbf28602" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
@@ -560,7 +560,7 @@ Warning
 <section id="정확한-위치에-삽입하기" class="level1">
 <h1>3. 정확한 위치에 삽입하기</h1>
 <p>먼저 필드/북마크/표 셀로 커서를 이동시킨 다음 호출합니다.</p>
-<div id="86adfd3d" class="cell">
+<div id="05a617b8" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
@@ -579,7 +579,7 @@ Warning
 </section>
 <section id="폴더의-모든-이미지-일괄-삽입" class="level1">
 <h1>4. 폴더의 모든 이미지 일괄 삽입</h1>
-<div id="d88c9627" class="cell">
+<div id="e0eeb1ff" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>

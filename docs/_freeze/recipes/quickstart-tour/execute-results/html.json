@@ -1,0 +1,12 @@
+{
+  "hash": "089c0e29d4b3ebb19528b553285e3597",
+  "result": {
+    "engine": "jupyter",
+    "markdown": "---\ntitle: \"Quickstart tour\"\nsubtitle: \"The seven moves every hwpapi script uses\"\n---\n\nRun the shortest useful script: open/new, insert text, format, find,\nsave. Ported from `examples/quickstart.py` to the v2 surface.\n\n::: {#eb45dfb4 .cell execution_count=1}\n``` {.python .cell-code}\nfrom hwpapi import App\nfrom hwpapi.context import charshape_scope\nfrom hwpapi import units as U\n\n\ndef main():\n    with App(is_visible=True) as app:\n        app.new()\n\n        # 1. Insert text\n        app.doc.insert_text(\"hwpapi 테스트 문서\\n\\n\")\n        app.doc.insert_text(\"이 문서는 hwpapi로 자동 생성되었습니다.\\n\")\n\n        # 2. Format: jump to top, select first line, apply heading style\n        app.doc.cursor.goto_page(1)\n        app.doc.select_text(0, len(\"hwpapi 테스트 문서\"))\n\n        with charshape_scope(app, bold=True, size=U.pt(18)):\n            app.doc.insert_text(\"hwpapi 테스트 문서\")\n\n        # 3. Navigate and insert more\n        app.doc.cursor.goto_end()\n        app.doc.insert_text(\"\\n\")\n        for i in range(3):\n            app.doc.insert_text(f\"• 항목 {i + 1}\\n\")\n\n        # 4. Find / Replace\n        count = app.doc.replace_all(\"항목\", \"list item\")\n        print(f\"Replaced {count} occurrences\")\n\n        # 5. Action introspection (no COM calls beyond a listing)\n        actions = app.actions\n        print(f\"\\nAvailable actions: {len(actions.list_actions())}\")\n\n        # 6. Raw COM access (escape hatch)\n        print(f\"\\nRaw HWP COM: {app.api.CLSID}\")\n\n        # 7. Save\n        app.save_as(\"quickstart-output.hwp\")\n\n\nif __name__ == \"__main__\":\n    main()\n```\n:::\n\n\n# What changed from v1\n\n| v1 | v2 |\n|---|---|\n| `app.insert_text(...)` | `app.doc.insert_text(...)` |\n| `app.move.top_of_file()` | `app.doc.cursor.goto_page(1)` |\n| `app.select_text()` | `app.doc.select_text(...)` |\n| `app.set_charshape(bold=True, height=1800)` | `charshape_scope(app, bold=True, size=U.pt(18))` |\n| `app.replace_all(...)` | `app.doc.replace_all(...)` |\n| `app.api.CLSID` | `app.api.CLSID` (unchanged — `api` is still on App) |\n\n",
+    "supporting": [
+      "quickstart-tour_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

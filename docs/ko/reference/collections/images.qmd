@@ -1,0 +1,23 @@
+# images
+
+이미지 컬렉션.
+
+:::{.callout-note}
+API 시그니처와 docstring 은 Python 소스에서 자동 생성되어 영문으로 표시됩니다.
+:::
+
+# images.ImageCollection { #hwpapi.collections.images.ImageCollection }
+
+```python
+collections.images.ImageCollection(app)
+```
+
+``doc.images`` — image controls in document order.
+
+# images.Image { #hwpapi.collections.images.Image }
+
+```python
+collections.images.Image(app, ctrl, index)
+```
+
+Value object for a single image control.

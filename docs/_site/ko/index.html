@@ -305,19 +305,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span class="menu-text">시작하기</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./../guide/app-and-document.html"> 
+    <a class="nav-link" href="./guide/app-and-document.html"> 
 <span class="menu-text">가이드</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./../recipes/index.html"> 
+    <a class="nav-link" href="./recipes/index.html"> 
 <span class="menu-text">레시피</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./../reference/index.html"> 
+    <a class="nav-link" href="./reference/index.html"> 
 <span class="menu-text">레퍼런스</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./../design/index.html"> 
+    <a class="nav-link" href="./design/index.html"> 
 <span class="menu-text">디자인</span></a>
   </li>  
 </ul>
@@ -377,7 +377,7 @@ HWP 의 COM 자동화 인터페이스를 감싼 슬림한 Python facade — dict
 </section>
 <section id="분-둘러보기" class="level2">
 <h2 class="anchored" data-anchor-id="분-둘러보기">5분 둘러보기</h2>
-<div id="faae5466" class="cell">
+<div id="4d568da4" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. 파일 열기 — `App` 은 lifecycle 만 책임집니다.</span></span>
@@ -411,32 +411,32 @@ HWP 의 COM 자동화 인터페이스를 감싼 슬림한 Python facade — dict
 <section id="두-층-api" class="level3 feature-card">
 <h3 class="anchored" data-anchor-id="두-층-api">두 층 API</h3>
 <p><code>App</code> → <code>app.doc</code> 으로 일상적인 스크립트 작성. raw action / ParameterSet 조작이 필요할 땐 <code>hwpapi.low.*</code> 로 내려갑니다.</p>
-<p><a href="../guide/app-and-document.html" class="card-link">가이드(영문) →</a></p>
+<p><a href="./guide/app-and-document.html" class="card-link">가이드 →</a></p>
 </section>
 <section id="dict-형-컬렉션" class="level3 feature-card">
 <h3 class="anchored" data-anchor-id="dict-형-컬렉션">Dict 형 컬렉션</h3>
 <p><code>fields</code>, <code>bookmarks</code>, <code>hyperlinks</code>, <code>images</code>, <code>styles</code>, <code>paragraphs</code>, <code>tables</code> — 모든 컬렉션이 <code>[]</code>, <code>in</code>, <code>for</code>, <code>len</code>, <code>filter</code>, <code>names</code> 를 지원합니다.</p>
-<p><a href="../guide/collections.html" class="card-link">가이드(영문) →</a></p>
+<p><a href="./guide/collections.html" class="card-link">가이드 →</a></p>
 </section>
 <section id="context-로-관리되는-서식" class="level3 feature-card">
 <h3 class="anchored" data-anchor-id="context-로-관리되는-서식">Context 로 관리되는 서식</h3>
 <p><code>charshape_scope</code>, <code>parashape_scope</code>, <code>styled_text</code> 는 진입 시 커서 서식을 snapshot 하고 종료 시 복원합니다 — 예외가 발생해도 원상복구.</p>
-<p><a href="../guide/context-scopes.html" class="card-link">가이드(영문) →</a></p>
+<p><a href="./guide/context-scopes.html" class="card-link">가이드 →</a></p>
 </section>
 <section id="친숙한-단위" class="level3 feature-card">
 <h3 class="anchored" data-anchor-id="친숙한-단위">친숙한 단위</h3>
 <p><code>hwpapi.units.mm(210)</code>, <code>pt(12)</code>, <code>inch(8.27)</code> — HWPUNIT 산수 안 해도 됩니다.</p>
-<p><a href="../guide/units.html" class="card-link">가이드(영문) →</a></p>
+<p><a href="./guide/units.html" class="card-link">가이드 →</a></p>
 </section>
 <section id="진짜-예외" class="level3 feature-card">
 <h3 class="anchored" data-anchor-id="진짜-예외">진짜 예외</h3>
 <p>모든 public 호출이 <code>pywintypes.com_error</code> 를 의미 있는 메시지의 <code>HwpApiError</code> 하위 클래스로 감싸 던집니다.</p>
-<p><a href="../reference/errors.html" class="card-link">레퍼런스(영문) →</a></p>
+<p><a href="./reference/errors.html" class="card-link">레퍼런스 →</a></p>
 </section>
 <section id="문서화된-escape-hatch" class="level3 feature-card">
 <h3 class="anchored" data-anchor-id="문서화된-escape-hatch">문서화된 escape hatch</h3>
 <p><code>hwpapi.low.actions</code>, <code>hwpapi.low.parametersets</code>, <code>hwpapi.low.engine</code> — 900+ action wrapper 와 130+ ParameterSet 클래스가 깔끔히 namespace 되어 있습니다.</p>
-<p><a href="../guide/low-level-escape-hatch.html" class="card-link">가이드(영문) →</a></p>
+<p><a href="./guide/low-level-escape-hatch.html" class="card-link">가이드 →</a></p>
 </section>
 </div>
 </section>
@@ -445,9 +445,9 @@ HWP 의 COM 자동화 인터페이스를 감싼 슬림한 Python facade — dict
 <ul>
 <li><strong>처음이면</strong>: <a href="./getting-started/install.html">설치</a> → <a href="./getting-started/quickstart.html">퀵스타트</a>.</li>
 <li><strong>v1 에서 올라오면</strong>: <a href="./getting-started/migration-v1-to-v2.html">마이그레이션 가이드</a> — v1 <code>App</code> 멤버 1:1 대응표 포함.</li>
-<li><strong>레시피가 필요하면</strong>: <a href="../recipes/index.html">Recipes index (영문)</a>.</li>
-<li><strong>심볼 찾기</strong>: <a href="../reference/index.html">API Reference (영문)</a>.</li>
-<li><strong>왜 이렇게 설계됐나</strong>: <a href="../design/adr/adr-001-v2-redesign.html">ADRs (영문)</a>.</li>
+<li><strong>레시피가 필요하면</strong>: <a href="./recipes/index.html">레시피 인덱스</a>.</li>
+<li><strong>심볼 찾기</strong>: <a href="./reference/index.html">API 레퍼런스</a>.</li>
+<li><strong>왜 이렇게 설계됐나</strong>: <a href="./design/adr/adr-001-v2-redesign.html">ADR-001</a>.</li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -455,11 +455,11 @@ HWP 의 COM 자동화 인터페이스를 감싼 슬림한 Python facade — dict
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">노트</span>번역 안내
+<span class="screen-reader-only">노트</span>언어 안내
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>현재 한국어로 번역된 페이지는 4개 (홈 · 설치 · 퀵스타트 · 마이그레이션) 입니다. 나머지는 영문 사이트로 자연스럽게 연결됩니다. 번역 기여는 <a href="https://github.com/JunDamin/hwpapi/issues">GitHub Issues</a> 환영합니다.</p>
+<p>영문판은 우측 상단 🇬🇧 English 로 전환하거나 <code>/hwpapi/</code> 로 이동하세요. API 레퍼런스의 함수 시그니처와 docstring 은 Python 소스에서 자동 생성되어 영문으로 표시됩니다 (코드 자체가 영문).</p>
 </div>
 </div>
 

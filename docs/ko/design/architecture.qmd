@@ -1,0 +1,128 @@
+---
+title: "아키텍처"
+subtitle: "v2 import tree 한눈에 보기"
+---
+
+# Import tree
+
+```
+hwpapi
+├── App                  # core.app.App   — 슬림 facade (공개 멤버 ≤15)
+├── Document             # document.Document — 문서별 surface (app.doc)
+├── collections/         # app.doc.* 아래의 dict 형태 집합
+│   ├── Collection       # Protocol: __getitem__, __iter__, __len__,
+│   │                    #            __contains__, names, filter
+│   ├── fields           # FieldCollection + Field
+│   ├── bookmarks        # BookmarkCollection + Bookmark
+│   ├── hyperlinks
+│   ├── images
+│   ├── paragraphs       # ParagraphCollection + Paragraph + Run
+│   ├── styles
+│   └── tables           # TableCollection + Table + Cell
+├── context/
+│   └── scopes           # charshape_scope, parashape_scope, styled_text
+├── io/
+│   ├── open             # open_file, new_document
+│   └── export           # export_pdf, export_image, export_text
+├── errors               # HwpApiError 계층 + wrap_com_error
+├── units                # mm, cm, inch, pt, parse, to_mm, ...
+├── logging              # get_logger, HWPAPI_LOG_LEVEL
+└── low/                 # 탈출구
+    ├── actions          # _Actions, _Action (900+ 액션 래퍼)
+    ├── engine           # Engine, Engines, Apps
+    └── parametersets    # ParameterSet 클래스 (CharShape, ParaShape, ...)
+```
+
+# 두 층 모델
+
+hwpapi v2 는 *계층화된* 것이 아니라 **층화된** API 입니다. 두 층 모두
+1급 시민입니다.
+
+- **High layer** (`hwpapi.App` → `app.doc.*`) — 기본 surface 입니다.
+  의견이 반영되어 있고, collection 중심이며, 각 작업을 수행하는
+  방법은 하나입니다.
+- **Low layer** (`hwpapi.low.*`) — 원시 액션 + ParameterSet + engine
+  primitive 입니다. 공식적으로 지원됩니다. high layer 는 low layer
+  *위에서* 구현되며, 별도로 존재하지 않습니다.
+
+자세한 사유는 [ADR-001](adr/adr-001-v2-redesign.qmd) 을 참고하세요.
+
+# Collection 프로토콜
+
+`app.doc.*` 아래의 모든 dict 형태 집합은
+`hwpapi.collections.Collection` 을 구현합니다.
+
+```python
+from typing import Callable, Iterator, Protocol, runtime_checkable
+
+@runtime_checkable
+class Collection(Protocol):
+    def __getitem__(self, key): ...
+    def __iter__(self) -> Iterator: ...
+    def __len__(self) -> int: ...
+    def __contains__(self, key) -> bool: ...
+    def names(self) -> list[str]: ...
+    def filter(self, predicate: Callable[..., bool]) -> list: ...
+```
+
+이는 명목적(nominal) 계약이 아니라 *구조적(structural)* 계약입니다 —
+collection 클래스들은 `Collection` 을 상속하지 않습니다. `@runtime_checkable`
+덕분에 런타임 검사는 `isinstance(coll, Collection)` 으로 이루어집니다.
+
+변경을 지원하는 collection 은 `__setitem__`, `__delitem__`, `clear()` 를
+추가합니다. 일부 collection 은 읽기 전용이므로(예: `paragraphs` — 인덱스로
+문단을 삭제하면 주변에 영향이 가므로) 이 집합은 Protocol 의 일부가
+**아닙니다**.
+
+# 요소 값-객체 패턴
+
+collection 을 인덱싱하면 가벼운 요소가 반환됩니다 — `(app, identifier)` 를
+지니고 underlying state 를 lazily 조회하는 참조 객체입니다. 요소들은:
+
+- 생성 비용이 저렴합니다 (COM 호출 없음)
+- 속성을 읽는 시점에 COM 을 호출합니다
+- 절대 캐시하지 않습니다 (두 번 읽으면 COM 도 두 번 호출됩니다)
+
+왜 dataclass 가 아닌가요? HWP 상태가 사용자 모르게 바뀔 수 있고(사용자
+undo, 동시 스크립트), 스냅샷을 캐시하면 거짓이 되기 때문입니다. 스냅샷이
+필요할 때는 명시적으로 취하세요(예: ParameterSet 의 `pset.clone()`,
+요소 상태를 위한 일반 dict).
+
+# 소유권과 라이프사이클
+
+```
+App
+ └── Engine              (app.engine 를 통해)
+      └── HwpObject      (raw COM; app.api 또는 app.engine.impl 을 통해)
+ └── Document            (app.doc; cached_property)
+      └── Collections    (collection 별, cached_property)
+```
+
+- `App` 이 `Engine` 을 소유합니다.
+- `Document` 는 COM 핸들을 **소유하지 않습니다**. 자신을 소유한 `App` 에
+  대한 참조를 가지고, 사용 시점에 `app.engine.impl` 을 가져옵니다.
+- collection 도 마찬가지로 호출 때마다 `self._app.engine.impl` 에
+  접근합니다 — HWP 의 살아 있는 상태에 대한 stateless 래퍼입니다.
+
+이는 곧 다음을 의미합니다. `app.close()` 가 실행된 뒤에는, 캐시된
+`Document` 나 캐시된 collection 에서 읽으면 예외가 발생합니다 —
+`app.engine.impl` 을 통한 우회가 invalidation 을 드러냅니다.
+
+# Facade 경계
+
+v2 facade (`App` + `Document` + collections + context + io + errors +
+units) 는 의도적으로 작습니다. "facade 에 무엇이 속하는가" 의 시험은
+다음과 같습니다.
+
+> 이 심볼을 제거하면 한 화면짜리 `dir(App)` 보장이 깨지는가, 아니면
+> 명료한 high-level affordance 를 low-level 호출과 맞바꾸는가?
+
+답이 "보장이 깨진다" 또는 "명료한 affordance 를 맞바꾼다" 라면 남깁니다.
+그 외에는 모두 `hwpapi.low` 또는 형제 패키지로 이동합니다.
+
+# 관련 문서
+
+- [ADR-001: 두 층 API](adr/adr-001-v2-redesign.qmd)
+- [ADR-002: Quarto 단일 파이프라인 문서화](adr/adr-002-quarto-docs.qmd)
+- [`docs/design/app-member-audit.md`](../design/app-member-audit.md) — 원래의 82 개 `App` 멤버에 대한 분류
+- [`docs/design/app-public-v2.txt`](../design/app-public-v2.txt) — 최종 `dir(App)` 스냅샷

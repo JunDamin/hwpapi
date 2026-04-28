@@ -1,0 +1,128 @@
+---
+title: "단위(Units)"
+subtitle: "mm / cm / inch / pt ↔ HWPUNIT"
+---
+
+# 왜 모듈로 분리했나
+
+HWP 는 거의 모든 측정값(페이지 너비, 여백, 줄 간격, 글꼴 크기, 셀 너비)을 **HWPUNIT** 이라는 내부 단위로 저장합니다. 변환표는 다음과 같습니다.
+
+| 사용자 단위 | HWPUNIT |
+|---|---|
+| 1 mm | 283 HWPUNIT |
+| 1 cm | 2,834 HWPUNIT |
+| 1 inch | 7,200 HWPUNIT |
+| 1 pt | 100 HWPUNIT |
+
+스크립트에 `Height = 1200  # 12pt` 라고 쓰고 싶은 사람은 없습니다. `hwpapi.units` 모듈은 양방향 변환과 문자열 파서를 함께 제공합니다.
+
+# 다섯 개의 진입점
+
+```{python}
+from hwpapi import units as U
+
+# → HWPUNIT (int)
+U.mm(210)          # A4 너비
+U.cm(21.0)         # 같은 값, 다른 단위
+U.inch(8.27)       # 같은 값, 인치
+U.pt(12)           # 12pt 글꼴
+
+# HWPUNIT → 사용자 단위 (float)
+U.to_mm(59430)     # ≈ 210.0
+U.to_cm(59430)     # ≈ 21.0
+U.to_inch(59430)   # ≈ 8.27
+U.to_pt(1200)      # 12.0
+
+# 문자열 파서 — "210mm" / "21cm" / "8.27in" / "12pt" 허용
+U.parse("210mm")
+U.parse("12pt")
+```
+
+`U.parse` 가 가장 일반적입니다 — 사용자(CLI 인자, 설정 파일, YAML)로부터 측정값을 받으면서 단위에 무관하게 두고 싶을 때 사용하세요. HWPUNIT 을 `int` 로 반환합니다.
+
+# 어디에 사용하는가
+
+## 페이지 설정
+
+```{python}
+#| eval: false
+app.doc.page.setup(
+    width=U.mm(210),
+    height=U.mm(297),
+    left_margin=U.mm(25),
+    right_margin=U.mm(25),
+    top_margin=U.mm(30),
+    bottom_margin=U.mm(30),
+)
+```
+
+## scope 안의 글꼴 크기
+
+```{python}
+#| eval: false
+from hwpapi.context import charshape_scope
+from hwpapi import units as U
+
+with charshape_scope(app, size=U.pt(14)):
+    app.doc.insert_text("14pt 제목\n")
+```
+
+`charshape_scope` 의 `size` alias 는 HWP 의 `Height` 프로퍼티에 매핑되며, 이는 HWPUNIT 을 기대합니다. `U.pt(14)` 호출은 "14 포인트" 를 표현하는 가장 명확한 방법입니다.
+
+## 표 셀 너비
+
+```{python}
+#| eval: false
+# 의사 코드; 정확한 API 는 Phase 3 표면입니다
+cell = app.doc.tables[0].cell(0, 0)
+cell.width = U.mm(30)
+```
+
+# 사용자 문자열 파싱
+
+스크립트가 설정으로부터 치수를 받는 경우.
+
+```{python}
+#| eval: false
+from hwpapi import units as U
+
+page_size = U.parse("A4")        # ValueError — parse 는 단위 문자열만 처리함
+```
+
+```{python}
+from hwpapi import units as U
+
+# 일반적인 형태
+for value in ("210mm", "21cm", "8.27in", "12pt"):
+    print(value, "=", U.parse(value), "HWPUNIT")
+```
+
+`U.parse` 는 해석할 수 없는 입력에 대해 `ValueError` 를 발생시킵니다 — 이를 잡아 사용자 친화적인 오류로 만드세요.
+
+```{python}
+from hwpapi import units as U
+
+try:
+    U.parse("A4")
+except ValueError as e:
+    print("죄송합니다, 210mm 또는 8.27in 형식을 사용하세요:", e)
+```
+
+# v2 가 `App` 에서 제거한 것
+
+v1 `App` 은 같은 변환을 위한 4개의 중복 메서드를 가지고 있었습니다.
+
+| v1 | v2 |
+|---|---|
+| `app.mm_to_hwpunit(v)` | `U.mm(v)` |
+| `app.cm_to_hwpunit(v)` | `U.cm(v)` |
+| `app.hwpunit_to_mm(v)` | `U.to_mm(v)` |
+| `app.hwpunit_to_point(v)` | `U.to_pt(v)` |
+| `app.point_to_hwpunit(v)` | `U.pt(v)` |
+
+이들은 `App` 에서 제거되었습니다 — 모듈 함수가 이를 대체하고 `App` 인스턴스 없이도 동작합니다.
+
+# 더 보기
+
+- [Reference: units](../../reference/units.html) — 전체 심볼 목록
+- [App 과 Document](app-and-document.qmd) — `App` 이 슬림한 이유

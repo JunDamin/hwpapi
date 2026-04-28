@@ -1,0 +1,168 @@
+---
+title: "ADR-001: 두 층 API"
+subtitle: "v2 공개 surface 로서의 hwpapi.low + App.doc.*"
+---
+
+# 상태
+
+**Accepted** — 2026-04-18
+
+v2 재설계 계획(`.omc/plans/hwpapi_v2_redesign.md`)의 Phase 1–5 에 걸쳐
+구현되었습니다.
+
+# 맥락
+
+hwpapi v1.0 은 `__init__.py` 의 네 개 wildcard import 를 통해 최상위에
+144 개 이상의 심볼을 노출했습니다.
+
+```python
+from .core import *
+from .actions import *
+from .functions import *
+from .parametersets import *
+```
+
+`App` 클래스 하나만 해도 82 개의 공개 멤버를 가졌으며, 다음을 뒤섞고
+있었습니다.
+
+- 라이프사이클 (open/save/close/quit)
+- 문서 상태 (text, cursor, selection)
+- 문서별 collection (fields, bookmarks, images, styles)
+- 요소 상태 (charshape, parashape)
+- 서식 scope (charshape_scope, parashape_scope)
+- 단위 변환 (mm_to_hwpunit 등)
+- low-level COM 유틸리티 (actions, parameters, register_security_module)
+
+결과적으로 단일한 멘탈 모델이 없었고, 모든 작업에 두세 가지 방법이
+있었으며, `core/app.py` 는 3,290 줄에 달했고, 사용자가 실제로 탐색하기
+어려운 import surface 가 만들어졌습니다.
+
+# 결정
+
+공개 API 를 명시적이고 동등한 두 층으로 재구성합니다.
+
+1. **High layer** — `hwpapi.App` → `app.doc.*`. 의견이 반영되어 있고
+   작으며 collection 중심입니다. 멤버 ≤15 인 `App` 이 라이프사이클을
+   소유하고, `Document` 가 문서별 상태를 소유하며, collection 은 하나의
+   프로토콜을 따르고, 요소는 값 객체입니다.
+2. **Low layer** — `hwpapi.low.actions`, `hwpapi.low.parametersets`,
+   `hwpapi.low.engine`. 원시 액션 래퍼와 ParameterSet 클래스입니다.
+   **공식적으로 지원되며**, deprecated 가 아닙니다. high layer 는 low
+   layer 의 용어로 표현되며 — 결코 그것과 독립적이지 않습니다.
+
+`__init__.py` 는 정확히 세 개의 이름만 export 합니다: `App`, `Document`,
+`__version__`.
+
+# 결정 동인
+
+1. **일관성** — 모든 사용자 경로는 같은 몇 개의 진입점을 거치며,
+   collection 은 한 가지 형태, context scope 도 한 가지 형태입니다.
+2. **학습 가능성** — `app.`, `app.doc.`, `app.doc.fields[...]` 의 IDE
+   탭 자동완성으로 일상 작업의 95% 가 문서를 열지 않고 해결되어야
+   합니다.
+3. **유지보수성** — 작은 공개 surface 는 모든 변경의 비용을 줄입니다.
+   명확한 layer 경계는 기능 표류(feature drift)를 막습니다.
+
+# 검토한 대안들
+
+## Option A — 계층적 도메인 모델 (Office Automation 스타일)
+
+```
+app.doc.paragraphs[i].runs[j].charshape.bold = True
+```
+
+장점: Word/Excel 자동화 사용자에게 친숙하며, collection 일관성이
+최대화됩니다.
+
+단점: HWP 는 내부적으로 근본적으로 위치 기반이라 — 일부 drill-down
+경로(runs)는 가상화가 필요합니다. 이는 **high layer 의 형태**가 되었지만
+*전체* API 는 아닙니다.
+
+## Option B — 평면 동사형 API
+
+```
+app.fill_field(), app.set_charshape(), app.goto_bookmark()
+```
+
+장점: 하나의 namespace, 최소한의 계층.
+
+단점: 새로운 이름으로 v1 의 `App`-as-god-object 문제를 재현합니다.
+슬림 facade 목표를 무력화합니다.
+
+**기각.**
+
+## Option C — 두 층 (low + high)  ← **선택됨**
+
+Django ORM 패턴: `Model.objects` 가 의견이 반영된 공개 surface 이고
+`django.db.connection` 이 탈출구이며, 두 가지가 모두 1급 API 로
+공존합니다.
+
+v2 의 형태로 채택되었습니다. Option A 의 계층적 도메인 모델은
+`App.doc.*` 안에 살고, Option D 의 술어 필터링은 `Collection.filter(predicate)`
+를 통해 부분적으로 채택되었습니다.
+
+## Option D — 쿼리 중심 (pandas 스타일)
+
+```
+doc.paragraphs.where(style="제목").set(bold=True)
+```
+
+장점: 강력한 일괄 연산.
+
+단점: HWP 는 stream 기반입니다 — `where` 는 eager iteration 으로
+귀결되며, 큰 문서에서 성능 절벽이 발생합니다.
+
+**부분 채택** — `collection.filter(predicate)` 가 쿼리 모델의
+부분집합입니다.
+
+## Option E — deprecation shim 유지
+
+장점: v1 사용자에게 끊김 없는 마이그레이션.
+
+단점: 유지보수 surface 가 두 배가 되고(공개 API 두 개, 문서 경로 두 개),
+슬림 facade 목표를 무력화하며, 타입 수준에서 "App 수준 vs. Document
+수준" 구분이 불가능해집니다. 82 멤버 footprint 를 영원히 보존하게
+됩니다.
+
+**기각** — 사용자 동의에 따라. v2 는 깔끔한 단절이며, v1 은 `v1.x`
+브랜치에 동결됩니다.
+
+# 결과
+
+## 긍정적
+
+- 문서 IA 가 코드 구조와 1:1 로 일치 — sidebar 항목이 import tree
+  노드와 대응됩니다.
+- 새 기능은 추가되기 전에 *"어느 layer 인가?"* 에 답해야 하므로,
+  v1 식 표류를 방지합니다.
+- `hwpapi.low` 는 추출 가능합니다 — 너무 커지면 high-level API 를
+  깨뜨리지 않고 별도 패키지로 출시할 수 있습니다.
+- `dir(app)` 가 한 화면에 들어갑니다.
+
+## 부정적
+
+- v1 스크립트가 깨집니다. 완화책: [마이그레이션 가이드](../../getting-started/migration-v1-to-v2.qmd)
+  가 제거된 모든 멤버에 대해 v2 후속 또는 탈출구 포인터를 한 행씩
+  제공합니다.
+- layer 정책에는 경계가 필요합니다. 완화책: `docs/design/architecture.qmd`
+  가 "이것이 facade 에 속하는가?" 시험을 정의하며, 공개 심볼을 추가하는
+  모든 PR 은 layer 선택을 정당화해야 합니다.
+
+## 중립
+
+- 이제 문서는 단일 source 입니다(`docs/` Quarto). 이전의 nbs/ +
+  examples/ + docs/*.md 분리는 통합되었습니다.
+
+# 후속 작업
+
+- **v2.1**: Option D 의 일부 — 일괄 편집을 위한
+  `app.doc.paragraphs.where(style=...).update(...)` 를 Collection 확장으로
+  검토.
+- **v2.x**: `hwpapi.low.parametersets` 가 계속 커지면 별도 출시 sub-package
+  로 분리.
+
+# 참고
+
+- `.omc/plans/hwpapi_v2_redesign.md` — 이 ADR 이 추출된 계획서
+- `docs/design/app-member-audit.md` — v1 `App` 의 82 개 멤버 분류
+- `docs/design/baseline-v1.0.md` — 회귀 검사용 v1 성능 베이스라인

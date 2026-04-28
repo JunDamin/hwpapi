@@ -1,0 +1,155 @@
+---
+title: "ADR-002: Quarto 단일 파이프라인 문서화"
+subtitle: "docs/ 가 유일한 진실의 원천"
+---
+
+# 상태
+
+**Accepted** — 2026-04-18
+
+v2 재설계 계획의 Phase 6 에서 구현되었습니다.
+
+# 맥락
+
+hwpapi v1 은 세 개의 평행한 출처에서 문서를 생성했습니다.
+
+1. `nbs/` — Quarto + nbdev.yml (legacy, 13 개 튜토리얼 노트북 + 5 개
+   API 노트북)
+2. `examples/` — 직접 작성한 7 개의 `.py` 스크립트
+3. `docs/` — 11 개의 Markdown 기획/감사 문서
+
+README 는 각각의 일부를 링크했습니다. 렌더된 API 레퍼런스는 없었으며 —
+코드를 읽는 사용자는 `__init__.py` 의 wildcard 를 grep 으로 뒤져야
+했습니다.
+
+이 파편화된 저작 모델에는 두 가지 비용이 있었습니다.
+
+1. **단일 진실의 원천 부재.** "필드 채우는 법" 을 검색하는 사용자는
+   nbs/ 노트북에서 한 가지 답을, examples/ 에서 또 다른 답을, README
+   인라인 스니펫에서 세 번째 답을 받았으며, 그 어느 것도 서로 연결되어
+   있지 않았습니다.
+2. **유지보수 발산.** API 가 변경될 때 일부 출처는 갱신되고 다른
+   출처는 표류했습니다.
+
+# 결정
+
+단일 `docs/` Quarto 웹사이트를 표준 문서 출처로 채택합니다.
+
+- `docs/_quarto.yml` — import tree 와 1:1 로 대응되는 navbar 섹션을
+  가진 사이트 설정 (Home / Getting Started / Guide / Recipes /
+  Reference / Design).
+- `docs/index.qmd` — 히어로 페이지 + 5분 둘러보기.
+- `docs/getting-started/` — 설치, 빠른 시작, v1→v2 마이그레이션.
+- `docs/guide/` — 6 개의 개념 페이지 (app-and-document, collections,
+  elements, context-scopes, units, low-level-escape-hatch).
+- `docs/recipes/` — nbs/ 와 examples/ 에서 이식한 작업 중심 스니펫.
+- `docs/reference/` — `hwpapi` 패키지의 docstring 으로부터 quartodoc 이
+  **자동 생성**. 트리는 import tree 를 그대로 따릅니다.
+- `docs/design/` — 아키텍처 노트와 ADR (이 문서 포함).
+
+v2 이전 문서는 보관 후 삭제합니다.
+
+- `docs/*.md` — `docs/archive/` 로 이동.
+- `nbs/` 와 `examples/` — Phase 7 release 작업에서 보관(이 ADR 의
+  범위는 아님).
+- `nbs/nbdev.yml` — 삭제.
+
+# 결정 동인
+
+1. **API 레퍼런스 중심 사이트** — 사용자의 직접 요청. 렌더된
+   레퍼런스가 없으면 사용자는 surface 를 둘러볼 수 없습니다.
+2. **IA ↔ 코드 구조 1:1** — 문서 sidebar 항목은 import tree 노드에
+   대응되어야 합니다. v2 설계 원칙 "문서는 코드의 형태이다" 를
+   뒷받침합니다.
+3. **유지보수 부담 단일화** — 단일 진실의 원천은 "어느 문서가
+   표준인가?" 라는 질문을 0 으로 줄입니다.
+
+# 검토한 대안들
+
+## MkDocs Material
+
+장점: Python 네이티브, 널리 보급, 훌륭한 기본 테마.
+
+단점: 기존 Quarto 자산(nbs/ 콘텐츠)을 잃습니다. 계산 가능한 페이지
+지원이 더 약합니다(nbs/ 는 Jupyter 커널 실행을 사용했고, Quarto 는
+이를 네이티브로 보존).
+
+자산 보존을 이유로 **기각**.
+
+## 두 사이트 병행 (nbs/ → 튜토리얼, docs/ → 레퍼런스)
+
+장점: 마이그레이션 노력 최소화.
+
+단점: "단일 진실의 원천" 원칙 위반. v1 상태에서 보았던 같은 표류를
+유발합니다.
+
+**기각.**
+
+## Sphinx + autodoc + sphinx_book_theme
+
+장점: 성숙한 Python 도구체인.
+
+단점: `myst_parser` 를 통한 Markdown 우선 저작은 여전히 Quarto 에 비해
+세련되지 못합니다. 어차피 Quarto 를 대체해야 합니다. 부품 수가 더
+많습니다.
+
+레포에 이미 Quarto 가 채택되어 있다는 점을 고려해 **기각**.
+
+# 결과
+
+## 긍정적
+
+- 한 번의 `quarto render docs/` 가 전체 사이트를 생성합니다.
+- `quartodoc build` 가 docstring 으로부터 레퍼런스 layer 를 재생성합니다 —
+  레퍼런스가 코드와 표류할 수 없습니다.
+- `docs/recipes/*.qmd` 는 HWP 의존 코드 블록을 실행하지 않고도(`eval: false`
+  로 표시) 가독성을 유지(Markdown 표, inline code)할 수 있습니다.
+- ADR 과 아키텍처 노트가 사용자 문서 옆에 살게 됩니다 — `design/` 은
+  또 하나의 sidebar 섹션일 뿐입니다.
+
+## 부정적
+
+- `quarto` 와 `quartodoc` 은 사이트를 다시 렌더링하는 누구에게나
+  빌드 타임 의존성입니다. 완화책: `pip install -e ".[docs]"` 가 둘 다
+  포함합니다.
+- `quartodoc` 은 Protocol 클래스와 `cached_property` 디스크립터에서
+  가끔 quirk 가 있습니다. 완화책: 핵심 클래스에 대해 자동 발견에
+  의존하는 대신 `_quarto.yml` 에 명시적 `contents:` 목록으로 모든
+  페이지 이름을 적습니다.
+
+## 중립
+
+- 사용자는 더 이상 `examples/` 아래의 예제 스크립트를 받지 못합니다 —
+  이제는 recipe 페이지로 존재합니다. `nbs/` 튜토리얼도 마찬가지로
+  `docs/recipes/` 로 통합됩니다. 최종 보관 이동은 Phase 7 (release)
+  의 책임입니다.
+
+# 구현 노트
+
+- **테마**: cosmo light / darkly dark, Quarto 내장 Bootstrap Bootswatch
+  세트 사용.
+- **Navbar**: sidebar 섹션과 일치하는 6 개 최상위 항목을 가진 고정
+  상단 바.
+- **Sidebar**: 섹션별 도킹 sidebar; `reference/` 는 `auto: "reference"`
+  를 사용하여 새로 quartodoc 으로 생성된 페이지가 자동으로 나타나도록
+  합니다.
+- **Search**: Quarto 내장 Lunr 검색, overlay 모드.
+- **Build**: `quartodoc build --config docs/_quarto.yml` 이 레퍼런스
+  페이지를 작성하고, `quarto render docs/` 가 전체 사이트를 컴파일합니다.
+- **실행 정책**: 사이트 수준에서 `freeze: auto`. HWP 의존 코드 블록은
+  명시적으로 `eval: false` 를 사용합니다 — 실행 가능한 셀이 아니라
+  문서 스니펫입니다.
+
+# 후속 작업
+
+- Lunr 가 부족하면 Algolia 기반 검색.
+- GitHub Actions 를 통한 자동 배포 (`deploy-docs.yaml`).
+- 페이지 간 interlink — 레퍼런스가 안정되면 quartodoc 에서
+  `render_interlinks: true` 활성화.
+
+# 참고
+
+- `.omc/plans/hwpapi_v2_redesign.md` — Phase 6 "Quarto 문서 사이트 신규"
+- [Quarto 문서](https://quarto.org)
+- [quartodoc 문서](https://machow.github.io/quartodoc/)
+- ADR-001 — 이 문서가 형태를 따르는 두 층 API

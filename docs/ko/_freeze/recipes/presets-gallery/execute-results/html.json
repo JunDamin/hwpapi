@@ -1,0 +1,12 @@
+{
+  "hash": "d997212e3cfe371a4040c1e82094f295",
+  "result": {
+    "engine": "jupyter",
+    "markdown": "---\ntitle: \"프리셋 갤러리\"\nsubtitle: \"사전 제작된 서식 매크로 — 형광펜, 음영, 가로줄\"\n---\n\n`nbs/01_tutorials/11_presets_gallery.ipynb` 에서 이식.\n\n`hwpapi.presets` 는 매 스크립트마다 다시 작성하기에는 가치가 크지\n않은 작은 헬퍼들을 한 곳에 모아둔 모음입니다. 모두 `App` 을 첫 번째\n인자로 받습니다.\n\n# Highlight (형광펜)\n\n::: {#693d379c .cell execution_count=1}\n``` {.python .cell-code}\nfrom hwpapi import App\nfrom hwpapi.presets import highlight_yellow, highlight_cyan, highlight_green\n\nwith App() as app:\n    app.open(\"report.hwp\")\n\n    # 구문으로 이동 → 선택 → 형광펜 적용\n    app.doc.find_text(\"important\")\n    app.doc.select_text(start=None, end=None)   # 일치 단어 선택\n    highlight_yellow(app)\n```\n:::\n\n\n`presets.highlight_yellow` / `highlight_cyan` / `highlight_green` 는\n모두 동일한 기반 액션을 구동합니다 — 단지 `ShadeColor` 를 미리\n채워둔 것뿐입니다.\n\n# 셀 음영\n\n::: {#3e8cc9cd .cell execution_count=2}\n``` {.python .cell-code}\nfrom hwpapi import App\nfrom hwpapi.presets import shade_cell_light_grey, shade_cell_accent\n\nwith App() as app:\n    app.open(\"report.hwp\")\n    tbl = app.doc.tables[0]\n\n    # 헤더 행 — 강조색\n    for c in range(tbl.cols):\n        tbl.cell(0, c).goto()\n        shade_cell_accent(app)\n\n    # 데이터 행 격행 줄무늬\n    for r in range(1, tbl.rows, 2):\n        for c in range(tbl.cols):\n            tbl.cell(r, c).goto()\n            shade_cell_light_grey(app)\n```\n:::\n\n\n# 가로줄 삽입\n\n::: {#3648bb14 .cell execution_count=3}\n``` {.python .cell-code}\nfrom hwpapi import App\nfrom hwpapi.presets import rule_line_thin, rule_line_thick\n\nwith App() as app:\n    app.new()\n    app.doc.insert_text(\"Section A\\n\")\n    rule_line_thin(app)\n    app.doc.insert_text(\"\\nSection B\\n\")\n    rule_line_thick(app)\n```\n:::\n\n\n# 프리셋이 별도 모듈인 이유\n\n프리셋은 퍼사드 위에 있는 레이어입니다. 각각은 `hwpapi.context.scopes`\n+ `hwpapi.low.actions` 의 몇 줄짜리 코드입니다. 다음과 같은 목적으로\n존재합니다.\n\n- 팀 공통 컨벤션을 한 곳에 캡처 (어디서든 동일한 강조색, 동일한\n  선 두께)\n- 모든 호출 지점에서 십여 개의 parameter-set 조정을 반복하지 않도록\n- 현재 HWP 버전에서 어떤 파라미터 조합이 \"검증됨\"인지 문서화\n  (highlight 에는 bleed-safe fallback 이 있음 — 모듈 docstring 참고)\n\n프리셋이 맞지 않으면 소스를 읽어보세요 — 기반 액션을 직접 호출하는\n방법에 대한 가장 짧은 튜토리얼입니다.\n\n# 함께 보기\n\n- [Reference: hwpapi.presets](../../reference/index.html) (패키지가\n  성장하면 자동 발견을 통해 나열됨)\n- [Recipe: charshape-formatting](charshape-formatting.qmd)\n\n",
+    "supporting": [
+      "presets-gallery_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

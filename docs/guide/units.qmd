@@ -91,9 +91,14 @@ cell.width = U.mm(30)
 If your script accepts dimensions from a config:
 
 ```{python}
+#| eval: false
 from hwpapi import units as U
 
 page_size = U.parse("A4")        # ValueError — parse only does unit strings
+```
+
+```{python}
+from hwpapi import units as U
 
 # Typical form
 for value in ("210mm", "21cm", "8.27in", "12pt"):

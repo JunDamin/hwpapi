@@ -28,13 +28,13 @@ website:
       - text: 시작하기
         file: getting-started/install.qmd
       - text: 가이드
-        href: ../guide/app-and-document.html
+        file: guide/app-and-document.qmd
       - text: 레시피
-        href: ../recipes/index.html
+        file: recipes/index.qmd
       - text: 레퍼런스
-        href: ../reference/index.html
+        file: reference/index.qmd
       - text: 디자인
-        href: ../design/index.html
+        file: design/index.qmd
     right:
       - text: "🇬🇧 English"
         href: ../index.html
@@ -49,18 +49,51 @@ website:
         - getting-started/install.qmd
         - getting-started/quickstart.qmd
         - getting-started/migration-v1-to-v2.qmd
-    - title: "영문 전용 (번역 진행 중)"
+    - title: "가이드"
       style: docked
       align: left
       contents:
-        - text: "Guide → app & document (영문)"
-          href: ../guide/app-and-document.html
-        - text: "Recipes (영문)"
-          href: ../recipes/index.html
-        - text: "Reference (영문)"
-          href: ../reference/index.html
-        - text: "Design (영문)"
-          href: ../design/index.html
+        - guide/app-and-document.qmd
+        - guide/collections.qmd
+        - guide/elements.qmd
+        - guide/context-scopes.qmd
+        - guide/units.qmd
+        - guide/low-level-escape-hatch.qmd
+    - title: "레시피"
+      style: docked
+      align: left
+      contents:
+        - recipes/index.qmd
+        - recipes/quickstart-tour.qmd
+        - recipes/find-replace.qmd
+        - recipes/fill-fields.qmd
+        - recipes/charshape-formatting.qmd
+        - recipes/mail-merge.qmd
+        - recipes/bulk-edit.qmd
+        - recipes/data-to-table.qmd
+        - recipes/report-generation.qmd
+        - recipes/export-formats.qmd
+        - recipes/insert-picture.qmd
+        - recipes/batch-processing.qmd
+        - recipes/headers-and-footers.qmd
+        - recipes/presets-gallery.qmd
+        - recipes/debugging-tools.qmd
+    - title: "레퍼런스"
+      style: docked
+      align: left
+      contents:
+        - reference/index.qmd
+        - auto: "reference"
+    - title: "디자인"
+      style: docked
+      align: left
+      contents:
+        - design/index.qmd
+        - design/architecture.qmd
+        - section: "ADRs"
+          contents:
+            - design/adr/adr-001-v2-redesign.qmd
+            - design/adr/adr-002-quarto-docs.qmd
   page-footer:
     left: "hwpapi v2.0 · HWP COM 자동화 Python 라이브러리"
     right:

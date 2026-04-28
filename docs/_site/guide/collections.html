@@ -505,7 +505,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="the-common-moves" class="level1">
 <h1>The common moves</h1>
 <p>Because every collection implements the same six methods, the same five operations work on all of them:</p>
-<div id="b69ca13e" class="cell">
+<div id="e1d16e52" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>coll <span class="op">=</span> app.doc.fields                 <span class="co"># or bookmarks, images, ...</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(coll)                             <span class="co"># count</span></span>
@@ -516,7 +516,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>coll.<span class="bu">filter</span>(<span class="kw">lambda</span> f: <span class="st">"head"</span> <span class="kw">in</span> f.name)   <span class="co"># list[Element] where predicate holds</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Collections that support mutation add <code>__setitem__</code>, <code>__delitem__</code>, and <code>clear()</code>:</p>
-<div id="7ab1c895" class="cell">
+<div id="eab68567" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>app.doc.fields[<span class="st">"author"</span>] <span class="op">=</span> <span class="st">"홍길동"</span>    <span class="co"># write</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">del</span> app.doc.fields[<span class="st">"author"</span>]          <span class="co"># remove one</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>app.doc.fields.clear()                <span class="co"># remove all</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -540,7 +540,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1>Recipes</h1>
 <section id="bulk-fill-form-fields-from-a-dict" class="level2">
 <h2 class="anchored" data-anchor-id="bulk-fill-form-fields-from-a-dict">Bulk-fill form fields from a dict</h2>
-<div id="0f5280ce" class="cell">
+<div id="84341339" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> {<span class="st">"author"</span>: <span class="st">"홍길동"</span>, <span class="st">"date"</span>: <span class="st">"2026-04-19"</span>, <span class="st">"title"</span>: <span class="st">"보고서"</span>}</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, value <span class="kw">in</span> data.items():</span>
@@ -550,21 +550,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="find-all-paragraphs-that-use-a-specific-style" class="level2">
 <h2 class="anchored" data-anchor-id="find-all-paragraphs-that-use-a-specific-style">Find all paragraphs that use a specific style</h2>
-<div id="74e7b48d" class="cell">
+<div id="9cbd807e" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>para <span class="op">=</span> app.doc.paragraphs.<span class="bu">filter</span>(<span class="kw">lambda</span> p: p.style <span class="op">==</span> <span class="st">"Heading 1"</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="bu">len</span>(para)<span class="sc">}</span><span class="ss"> heading 1 paragraphs"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="rename-a-bookmark" class="level2">
 <h2 class="anchored" data-anchor-id="rename-a-bookmark">Rename a bookmark</h2>
-<div id="4c0277c5" class="cell">
+<div id="72a2d071" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">"old-name"</span> <span class="kw">in</span> app.doc.bookmarks:</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    app.doc.bookmarks.rename(<span class="st">"old-name"</span>, <span class="st">"new-name"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="list-every-image-in-the-document" class="level2">
 <h2 class="anchored" data-anchor-id="list-every-image-in-the-document">List every image in the document</h2>
-<div id="404e9180" class="cell">
+<div id="423bc0c0" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> img <span class="kw">in</span> app.doc.images:</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(img.name, img.width, img.height)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>

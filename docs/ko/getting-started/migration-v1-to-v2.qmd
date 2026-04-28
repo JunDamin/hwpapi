@@ -382,7 +382,7 @@ v2.0 에서 `app.doc` 은 항상 활성 문서를 가리킵니다. multi-doc 이
 
 # 참고
 
-- [Low-level escape hatch (영문)](../guide/low-level-escape-hatch.html) — v1 `app.api` 호출이 어디로 이동하는지
-- [API Reference (영문)](../reference/index.html) — 렌더된 v2 surface
-- [ADR-001: Two-layer API (영문)](../design/adr/adr-001-v2-redesign.html) — v2 가 이렇게 분할된 이유
+- [Low-level escape hatch](../guide/low-level-escape-hatch.qmd) — v1 `app.api` 호출이 어디로 이동하는지
+- [API 레퍼런스](../reference/index.qmd) — 렌더된 v2 surface
+- [ADR-001: Two-layer API](../design/adr/adr-001-v2-redesign.qmd) — v2 가 이렇게 분할된 이유
 - 공식 plan: `.omc/plans/hwpapi_v2_redesign.md`

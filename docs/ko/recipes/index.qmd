@@ -1,0 +1,36 @@
+---
+title: "레시피"
+subtitle: "작업 중심의 복사-붙여넣기 가능한 스니펫"
+listing:
+  type: table
+  fields: [title, subtitle]
+  contents:
+    - quickstart-tour.qmd
+    - find-replace.qmd
+    - fill-fields.qmd
+    - charshape-formatting.qmd
+    - mail-merge.qmd
+    - bulk-edit.qmd
+    - data-to-table.qmd
+    - report-generation.qmd
+    - export-formats.qmd
+    - insert-picture.qmd
+    - batch-processing.qmd
+    - headers-and-footers.qmd
+    - presets-gallery.qmd
+    - debugging-tools.qmd
+  sort: "title asc"
+  filter-ui: false
+  sort-ui: false
+---
+
+# 레시피 인덱스
+
+아래의 각 레시피는 Python 세션에 그대로 붙여넣어 실제 HWP 인스턴스에
+대해 실행할 수 있는 자기-완결적인 스크립트입니다. HWP COM 서버가
+필요한 스니펫은 `eval: false` 로 표시되어 있으므로, 본인의 스크립트로
+복사해 Windows 환경에서 실행하세요.
+
+이 레시피들은 v1 노트북 튜토리얼(`nbs/01_tutorials/*.ipynb`)과 예제
+스크립트(`examples/*.py`)에서 이식되었으며, v2 API 표면(`App.doc.*` +
+컬렉션 + 컨텍스트 스코프)에 맞게 다시 작성되었습니다.

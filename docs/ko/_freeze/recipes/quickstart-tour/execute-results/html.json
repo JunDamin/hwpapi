@@ -1,0 +1,12 @@
+{
+  "hash": "bb12085bd8b140a27402945442b2ca4c",
+  "result": {
+    "engine": "jupyter",
+    "markdown": "---\ntitle: \"퀵스타트 투어\"\nsubtitle: \"모든 hwpapi 스크립트가 사용하는 7가지 동작\"\n---\n\n가장 짧고 유용한 스크립트 — 열기/새로 만들기, 텍스트 삽입, 서식\n지정, 찾기, 저장 — 을 실행해봅니다. `examples/quickstart.py` 를 v2\n표면에 맞게 이식한 것입니다.\n\n::: {#cd8afb30 .cell execution_count=1}\n``` {.python .cell-code}\nfrom hwpapi import App\nfrom hwpapi.context import charshape_scope\nfrom hwpapi import units as U\n\n\ndef main():\n    with App(is_visible=True) as app:\n        app.new()\n\n        # 1. 텍스트 삽입\n        app.doc.insert_text(\"hwpapi 테스트 문서\\n\\n\")\n        app.doc.insert_text(\"이 문서는 hwpapi로 자동 생성되었습니다.\\n\")\n\n        # 2. 서식 지정: 맨 위로 이동, 첫 줄 선택, 제목 스타일 적용\n        app.doc.cursor.goto_page(1)\n        app.doc.select_text(0, len(\"hwpapi 테스트 문서\"))\n\n        with charshape_scope(app, bold=True, size=U.pt(18)):\n            app.doc.insert_text(\"hwpapi 테스트 문서\")\n\n        # 3. 이동 후 추가 삽입\n        app.doc.cursor.goto_end()\n        app.doc.insert_text(\"\\n\")\n        for i in range(3):\n            app.doc.insert_text(f\"• 항목 {i + 1}\\n\")\n\n        # 4. 찾기 / 바꾸기\n        count = app.doc.replace_all(\"항목\", \"list item\")\n        print(f\"Replaced {count} occurrences\")\n\n        # 5. 액션 인트로스펙션 (목록 조회 외에는 COM 호출 없음)\n        actions = app.actions\n        print(f\"\\nAvailable actions: {len(actions.list_actions())}\")\n\n        # 6. Raw COM 접근 (escape hatch)\n        print(f\"\\nRaw HWP COM: {app.api.CLSID}\")\n\n        # 7. 저장\n        app.save_as(\"quickstart-output.hwp\")\n\n\nif __name__ == \"__main__\":\n    main()\n```\n:::\n\n\n# v1 에서 무엇이 바뀌었는가\n\n| v1 | v2 |\n|---|---|\n| `app.insert_text(...)` | `app.doc.insert_text(...)` |\n| `app.move.top_of_file()` | `app.doc.cursor.goto_page(1)` |\n| `app.select_text()` | `app.doc.select_text(...)` |\n| `app.set_charshape(bold=True, height=1800)` | `charshape_scope(app, bold=True, size=U.pt(18))` |\n| `app.replace_all(...)` | `app.doc.replace_all(...)` |\n| `app.api.CLSID` | `app.api.CLSID` (변경 없음 — `api` 는 여전히 App 에 있음) |\n\n",
+    "supporting": [
+      "quickstart-tour_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

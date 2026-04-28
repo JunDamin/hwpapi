@@ -1,0 +1,81 @@
+# API 레퍼런스 {.doc .doc-index}
+
+:::{.callout-note}
+API 시그니처와 docstring 은 Python 소스에서 자동 생성되어 영문으로 표시됩니다.
+:::
+
+## 최상위 facade
+
+모든 사용자가 시작점으로 삼는 두 클래스입니다. `App` 은 COM 엔진의
+라이프사이클을 관리하고, `Document` 는 `app.doc` 를 통해 문서별 상태를 관리합니다.
+
+
+| | |
+| --- | --- |
+| [App](App.qmd) | 슬림 facade — 라이프사이클 + 윈도우 수준 관심사. |
+| [Document](Document.qmd) | 문서별 facade — 텍스트, 커서, 컬렉션. |
+
+## 컬렉션
+
+`app.doc.*` 아래의 dict-like + iterable + filterable 컬렉션입니다.
+모든 컬렉션은 `Collection` Protocol 을 구현합니다.
+
+
+| | |
+| --- | --- |
+| [fields](collections/fields.qmd) | 누름틀 (Field) 컬렉션. |
+| [bookmarks](collections/bookmarks.qmd) | 책갈피 (Bookmark) 컬렉션. |
+| [hyperlinks](collections/hyperlinks.qmd) | 하이퍼링크 컬렉션. |
+| [images](collections/images.qmd) | 이미지 컬렉션. |
+| [paragraphs](collections/paragraphs.qmd) | Run 요소를 포함한 문단 컬렉션. |
+| [styles](collections/styles.qmd) | 스타일 컬렉션. |
+| [tables](collections/tables.qmd) | Table/Cell 요소를 포함한 표 컬렉션. |
+
+## 컨텍스트 매니저
+
+v1 App 에서 추출한 서식 스코프입니다. 셋 다 모듈 레벨에 위치하므로
+어떤 `App` 인스턴스에서도 호출할 수 있습니다.
+
+
+| | |
+| --- | --- |
+| [context.scopes](context/scopes.qmd) | charshape_scope / parashape_scope / styled_text. |
+
+## I/O 와 내보내기
+
+원시 COM open/save 호출 위에 얇게 감싼, 에러를 래핑하는 단축 함수입니다.
+
+
+| | |
+| --- | --- |
+| [io.open](io/open.qmd) | open_file / new_document. |
+| [io.export](io/export.qmd) | export_pdf / export_image / export_text. |
+
+## 예외
+
+모든 public 호출이 발생을 보장하는 예외 계층입니다.
+
+| | |
+| --- | --- |
+| [errors](errors.qmd) | HwpApiError 와 그 서브클래스들. |
+
+## 단위
+
+mm / cm / inch / pt ↔ HWPUNIT 변환 헬퍼입니다.
+
+| | |
+| --- | --- |
+| [units](units.qmd) | 단위 변환 모듈. |
+
+## 저수준 escape hatch
+
+원시 액션 래퍼, ParameterSet 클래스, COM 엔진입니다.
+facade 가 아직 노출하지 않는 기능이 필요한 경우가 아니라면
+최상위 facade 를 우선 사용하세요.
+
+
+| | |
+| --- | --- |
+| [low.actions](low/actions.qmd) | 900+ HWP 액션 래퍼. |
+| [low.engine](low/engine.qmd) | Engine / Engines / Apps. |
+| [low.parametersets](low/parametersets.qmd) | ParameterSet 클래스 (CharShape, ParaShape, ...). |

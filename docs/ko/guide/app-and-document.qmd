@@ -1,0 +1,106 @@
+---
+title: "App 과 Document"
+subtitle: "v2 의 두 클래스 facade"
+---
+
+# 두 클래스로 분리
+
+hwpapi v2 는 공개 표면을 두 개의 최상위 클래스로 나눕니다.
+
+| 클래스 | 담당 영역 | 획득 방법 |
+|---|---|---|
+| [`App`](../../reference/App.html) | COM 엔진 lifecycle, 창 표시 여부, 열기/저장/닫기/종료 | `App()` |
+| [`Document`](../../reference/Document.html) | 열려 있는 *하나의* 문서에 한정된 모든 것 — 텍스트, 커서, 컬렉션, 페이지 레이아웃 | `app.doc` |
+
+이것이 v2 의 핵심 설계 결정입니다. v1 의 `App` 은 82개 이상의 공개 멤버를 가지고 있었지만, v2 의 `App` 은 **15개 이하**입니다. 문서 단위의 모든 멤버는 `Document` 로 이동했습니다.
+
+# 어떤 것을 언제 사용해야 하나
+
+- **App** — 연결/해제, 파일 열기, 저장 또는 내보내기, 창 표시 여부 토글, escape hatch 접근.
+- **Document** (`app.doc`) — 텍스트 읽기/쓰기, 커서 이동, 객체 삽입, 컬렉션(`fields`, `bookmarks`, `images`, …) 접근, 페이지 레이아웃 설정.
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+app = App()
+
+# Lifecycle 은 App 에서
+app.open("report.hwp")
+app.save()
+app.save_as("report.pdf")
+
+# 콘텐츠는 app.doc 에서
+text = app.doc.text
+app.doc.insert_text("새 문단\n")
+app.doc.fields["author"] = "홍길동"
+app.doc.page.setup(width="210mm", height="297mm")
+
+app.close()
+app.quit()
+```
+
+# `App` — lifecycle 계층
+
+v2 `App` 의 전체 공개 표면은 다음과 같습니다.
+
+| 멤버 | 종류 | 목적 |
+|---|---|---|
+| `App(new_app=False, is_visible=True, dll_path=None, engine=None)` | 생성자 | HWP 에 연결 |
+| `open(path)` | 메서드 | `.hwp` / `.hwpx` 파일 열기 |
+| `new()` | 메서드 | 빈 문서 생성 |
+| `close()` | 메서드 | 활성 문서 닫기 |
+| `save()` | 메서드 | 제자리 저장 |
+| `save_as(path, *, as_block=False)` | 메서드 | 새 파일로 저장 (확장자에서 형식 추론) |
+| `reload()` | 메서드 | 기존 COM 엔진에 재바인딩 |
+| `quit()` | 메서드 | COM 엔진 해제 |
+| `visible` | 프로퍼티 (r/w) | 창 표시 여부 |
+| `doc` | 프로퍼티 | 활성 [`Document`](../../reference/Document.html) |
+| `engine` | 프로퍼티 | [`Engine`](../../reference/low/engine.html) — escape hatch |
+| `api` | 프로퍼티 | raw HWP COM 핸들 — 궁극의 escape hatch |
+| `actions` | 프로퍼티 | 액션 카탈로그 — escape hatch |
+| `__enter__` / `__exit__` | context manager | 종료 시 자동 close |
+
+context manager 사용 시 정리는 알아서 처리됩니다.
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.open("template.hwp")
+    app.doc.insert_text("hwpapi 로 생성됨\n")
+    app.save_as("generated.pdf")
+# 예외가 발생해도 여기서 app.close() + app.quit() 이 실행됩니다
+```
+
+# `Document` — 문서 단위 계층
+
+`app.doc` 는 매 접근마다 동일한 `Document` 인스턴스를 반환합니다 (`@cached_property`). 다음을 담당합니다.
+
+- **텍스트** — `doc.text` (read/write), `doc.get_text()`, `doc.insert_text(s)`, `doc.get_selected_text()`, `doc.selection`
+- **내비게이션** — `doc.cursor.goto_page(n)`, `doc.cursor.move_to_field(name)`, `doc.cursor.in_table()`, `doc.cursor.get_charshape()`, `doc.cursor.get_parashape()`
+- **클립보드** — `doc.copy()`, `doc.cut()`, `doc.paste()`, `doc.delete()`
+- **실행 취소** — `doc.undo()`, `doc.redo()`
+- **검색** — `doc.find_text(q)`, `doc.replace_all(find, replace)`
+- **구조** — `doc.insert_page_break()`, `doc.insert_line_break()`, `doc.insert_paragraph_break()`, `doc.insert_tab()`, `doc.insert_heading(level, text)`
+- **삽입** — `doc.insert_file(path)`, `doc.insert_picture(path)`
+- **페이지 설정** — `doc.page.setup(...)`
+- **카운터** — `doc.page_count`, `doc.current_page`, `doc.get_filepath()`, `doc.get_hwnd()`
+- **컬렉션** (dict 형) — `doc.fields`, `doc.bookmarks`, `doc.hyperlinks`, `doc.images`, `doc.styles`, `doc.paragraphs`, `doc.tables`
+- **스캐너** — `doc.scan(...)` context manager
+
+# 왜 합치지 않았나
+
+v1 의 `App` 은 신(god) 객체였습니다. lifecycle, 콘텐츠, 서식, 내비게이션, 저수준 유틸리티가 뒤섞여 82개의 공개 멤버를 가지고 있었습니다. 이 분리는 세 가지 목표를 달성합니다.
+
+1. **발견성.** `dir(app)` 이 이제 한 화면에 들어가고, 나머지는 모두 IDE 탭 자동 완성과 함께 `app.doc.*` 아래에 있습니다.
+2. **수명.** 하부 파일이 닫히면 `Document` 는 더 이상 유용하지 않습니다. 표면을 분리하면 무효화 경계가 명시적이 됩니다 — 향후 v2.1 의 다중 문서 지원 작업은 `App` 을 건드리지 않고 `app.documents[…]` 가 새로운 `Document` 를 반환하도록 하는 방향입니다.
+3. **학습성.** "App = COM 엔진, Document = 콘텐츠" 는 한 문장입니다. "App = HWP 와 관련된 모든 것" 은 한 문단이었습니다.
+
+# 더 보기
+
+- [Collections 가이드](collections.qmd) — `app.doc.*` 아래의 dict 형 접근자
+- [Context scopes](context-scopes.qmd) — `charshape_scope`, `parashape_scope`, `styled_text`
+- [Low-level escape hatch](low-level-escape-hatch.qmd) — `hwpapi.low.*`
+- [v1 → v2 마이그레이션](../getting-started/migration-v1-to-v2.qmd) — 전체 1:1 표

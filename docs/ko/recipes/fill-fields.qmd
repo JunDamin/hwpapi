@@ -1,0 +1,111 @@
+---
+title: "필드 채우기"
+subtitle: "dict 또는 CSV 로부터 누름틀 필드 일괄 채우기"
+---
+
+필드(누름틀)는 템플릿 기반 문서 워크플로를 구축하는 가장 깔끔한
+방법입니다. 모든 필드는 안정적인 이름을 가지고 있으며, dict 할당으로
+값을 채울 수 있습니다.
+
+# 1. 기초
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.open("template.hwp")
+
+    # 필드 개수는? 이름은 무엇인가?
+    print(len(app.doc.fields), "fields:")
+    for name in app.doc.fields.names():
+        print(" ", name, "=", app.doc.fields[name].value)
+
+    # 한 개 쓰기
+    app.doc.fields["author"] = "홍길동"
+
+    # 존재 여부 확인
+    assert "author" in app.doc.fields
+
+    # 다시 읽기
+    print(app.doc.fields["author"].value)
+```
+
+# 2. dict 로부터 일괄 채우기
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+data = {
+    "title": "2026 Q1 Report",
+    "author": "홍길동",
+    "date": "2026-04-19",
+    "department": "R&D",
+}
+
+with App() as app:
+    app.open("template.hwp")
+
+    for name, value in data.items():
+        if name in app.doc.fields:
+            app.doc.fields[name] = value
+        else:
+            print(f"[warn] template has no field named {name!r}")
+
+    app.save_as("reports/2026-q1.hwp")
+```
+
+# 3. CSV 로부터 일괄 채우기
+
+```{python}
+#| eval: false
+import csv
+from pathlib import Path
+from hwpapi import App
+
+with App() as app:
+    app.open("template.hwp")
+
+    with open("employees.csv", newline="", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            for name, value in row.items():
+                if name in app.doc.fields:
+                    app.doc.fields[name] = value
+
+            out = Path("out") / f"report-{row['id']}.hwp"
+            out.parent.mkdir(parents=True, exist_ok=True)
+            app.save_as(str(out))
+            print("wrote", out)
+```
+
+# 4. 필드로 이동
+
+```{python}
+#| eval: false
+# 필드로 커서 이동 (필드 주변에 무언가를 삽입하고 싶을 때 유용)
+app.doc.fields["author"].goto()
+
+# 그런 다음 삽입, 서식 지정 등
+app.doc.insert_text("  (작성자)")
+```
+
+# 5. 필드 비우기 또는 삭제
+
+```{python}
+#| eval: false
+# 한 개 제거
+del app.doc.fields["author"]
+
+# 모두 제거
+app.doc.fields.clear()
+
+# 이름 변경 (값은 보존됨)
+app.doc.fields.rename("old", "new")
+```
+
+# 함께 보기
+
+- [Reference: collections/fields](../../reference/collections/fields.html)
+- [Migration: field helpers](../getting-started/migration-v1-to-v2.qmd)

@@ -1,0 +1,128 @@
+---
+title: "PDF, HTML, 이미지, 텍스트로 내보내기"
+subtitle: "활성 문서를 HWP가 지원하는 어떤 포맷으로든 저장"
+---
+
+`app.save(path)` 한 줄이면 확장자에 따라 적절한 포맷으로 저장됩니다.
+명시적으로 `format=` 을 줄 수도 있고, `hwpapi.io.export_*` 의 형식별
+헬퍼를 쓸 수도 있습니다. 이 레시피는 세 갈래의 차이와 사용 시점을
+정리합니다.
+
+# 1. 확장자가 알아서 포맷을 정하는 경우
+
+`hwpapi.App.save()` 의 매핑(`_SAVE_FORMAT_MAP`)에 등록된 확장자라면
+`format=` 인자 없이 그대로 됩니다.
+
+| 확장자 | HWP 포맷 문자열 |
+|--------|-----------------|
+| `.hwp` | `HWP` |
+| `.pdf` | `PDF` |
+| `.hwpx` | `HWPX` |
+| `.hml` | `HWPML2X` |
+| `.png` | `PNG` |
+| `.txt` | `TEXT` |
+| `.docx` | `MSWORD` |
+| `.html` | `HTML+` |
+| `.htm` | `HTML` |
+
+```{python}
+#| eval: false
+from hwpapi import App
+
+with App() as app:
+    app.open("report.hwp")
+
+    app.save("out/report.pdf")     # → PDF
+    app.save("out/report.html")    # → HTML+ (한글2007 신형 HTML)
+    app.save("out/report.htm")     # → HTML  (구형 HTML)
+    app.save("out/report.png")     # → PNG
+    app.save("out/report.txt")     # → 평문 텍스트
+    app.save("out/report.docx")    # → Microsoft Word
+```
+
+::: {.callout-note}
+**HTML 두 종류** — `.html` 은 한글2007 이후의 향상된 HTML 출력
+(`HTML+`), `.htm` 은 구형 HTML 입니다. 호환성이 중요한 곳(레거시
+브라우저, 외부 변환 파이프라인) 에서만 `.htm` 을 쓰세요.
+:::
+
+# 2. 확장자를 못 잡거나 강제하고 싶을 때
+
+확장자 매핑에 없는 포맷, 또는 `.hwp` 인데 다른 포맷으로 저장하고
+싶을 때는 `format=` 으로 직접 지정합니다.
+
+```{python}
+#| eval: false
+# 확장자가 .data 같은 비표준이지만 PDF 로 저장하고 싶을 때
+app.save("snapshot.data", format="PDF")
+
+# 확장자는 .html 인데 구형 HTML 로 강제
+app.save("legacy.html", format="HTML")
+```
+
+# 3. `hwpapi.io.export_*` 헬퍼 — `FileIOError` 자동 변환
+
+`hwpapi.io` 의 형식별 헬퍼는 내부적으로 `app.save_as()` 를 호출하면서
+`pywintypes.com_error` 를 `FileIOError` 로 감쌉니다. 호출자가 항상
+패키지 고유 예외만 잡으면 되도록 만들어주는 얇은 래퍼입니다.
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.io import export_pdf, export_image, export_text
+from hwpapi.errors import FileIOError
+
+with App() as app:
+    app.open("report.hwp")
+
+    try:
+        export_pdf(app, "out/report.pdf")
+        export_image(app, "out/report.png")
+        export_text(app, "out/report.txt")
+    except FileIOError as exc:
+        print(f"export failed: {exc}")
+```
+
+| 헬퍼 | 포맷 |
+|------|------|
+| `export_pdf(app, path)` | PDF |
+| `export_image(app, path)` | 확장자 sniff — `.png` → PNG, 그 외 → BMP |
+| `export_text(app, path)` | TEXT (평문) |
+
+::: {.callout-tip}
+HTML 전용 헬퍼는 아직 없지만, 패턴은 동일합니다 — `export_pdf` 를 본떠
+10줄 정도로 쉽게 만들 수 있습니다 (`hwpapi/io/export.py` 참고).
+:::
+
+# 4. `app.save()` vs `app.save_as()`
+
+| 메서드 | 사용 시점 |
+|--------|-----------|
+| `app.save()` (인자 없음) | 현재 파일 위치에 in-place 저장 (`HwpObject.Save`) |
+| `app.save(path)` | `HwpObject.SaveAs` 로 저장 — 활성 문서를 통째로 저장 |
+| `app.save_as(path)` | v1 의 `save_block` 에 해당 — 선택 영역(블록)만 저장. 일반 사용에서는 `save()` 면 충분 |
+
+# 5. 폴더 일괄 변환
+
+```{python}
+#| eval: false
+from pathlib import Path
+from hwpapi import App
+
+src = Path("input")           # *.hwp 들이 있는 폴더
+dst = Path("output_pdf")
+dst.mkdir(exist_ok=True)
+
+with App() as app:
+    for hwp in src.glob("*.hwp"):
+        app.open(str(hwp.absolute()))
+        app.save(str(dst / hwp.with_suffix(".pdf").name))
+        app.close()
+        print(f"converted {hwp.name}")
+```
+
+# 함께 보기
+
+- [Reference: App.save](../../reference/App.html#hwpapi.App.save)
+- [Reference: io/export](../../reference/io/export.html)
+- [Recipe: batch-processing](batch-processing.qmd)

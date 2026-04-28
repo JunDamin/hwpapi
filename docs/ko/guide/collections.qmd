@@ -1,0 +1,127 @@
+---
+title: "Collections"
+subtitle: "Document 안의 모든 list-of-things 에 적용되는 하나의 패턴"
+---
+
+# 패턴
+
+hwpapi v2 의 모든 문서 단위 집합체는 **하나의** 인터페이스를 따릅니다 — dict 형, 순회 가능, 크기 조회 가능, 멤버십 검사 가능, 이름 노출, 그리고 predicate 필터링 가능. 계약은 [`hwpapi.collections.Collection`](../../reference/index.html) 에 `typing.Protocol` 로 정의되어 있습니다.
+
+```python
+from typing import Callable, Iterator, Protocol, runtime_checkable
+
+@runtime_checkable
+class Collection(Protocol):
+    def __getitem__(self, key): ...
+    def __iter__(self) -> Iterator: ...
+    def __len__(self) -> int: ...
+    def __contains__(self, key) -> bool: ...
+    def names(self) -> list[str]: ...
+    def filter(self, predicate: Callable[..., bool]) -> list: ...
+```
+
+`app.doc.*` 아래의 모든 구체 컬렉션이 이를 구현합니다.
+
+| `app.doc.*` | 반환 타입 | 요소 키 |
+|---|---|---|
+| `fields` | `FieldCollection` | 필드 이름 |
+| `bookmarks` | `BookmarkCollection` | 북마크 이름 |
+| `hyperlinks` | `HyperlinkCollection` | URL 또는 인덱스 |
+| `images` | `ImageCollection` | 이미지 이름 또는 인덱스 |
+| `styles` | `StyleCollection` | 스타일 이름 |
+| `paragraphs` | `ParagraphCollection` | 인덱스 (`int`) |
+| `tables` | `TableCollection` | 표 이름 또는 인덱스 |
+
+# 공통 동작
+
+모든 컬렉션이 같은 6개 메서드를 구현하므로, 같은 5가지 작업이 모두에 동일하게 적용됩니다.
+
+```{python}
+#| eval: false
+coll = app.doc.fields                 # 또는 bookmarks, images, ...
+
+len(coll)                             # 개수
+"author" in coll                      # 멤버십
+for item in coll: ...                 # 순회
+coll["author"]                        # 키 → 요소
+coll.names()                          # 키 목록
+coll.filter(lambda f: "head" in f.name)   # predicate 가 참인 list[Element]
+```
+
+변경을 지원하는 컬렉션은 `__setitem__`, `__delitem__`, `clear()` 를 추가로 가집니다.
+
+```{python}
+#| eval: false
+app.doc.fields["author"] = "홍길동"    # 쓰기
+del app.doc.fields["author"]          # 하나 제거
+app.doc.fields.clear()                # 전체 제거
+```
+
+# Element 값 객체
+
+컬렉션을 subscript 하면 가벼운 **element** 객체를 반환합니다.
+
+- `fields[name]` → [`Field`](../../reference/collections/fields.html) — `.name`, `.value`, `.goto()`
+- `bookmarks[name]` → [`Bookmark`](../../reference/collections/bookmarks.html) — `.name`, `.goto()`
+- `hyperlinks[key]` → [`Hyperlink`](../../reference/collections/hyperlinks.html)
+- `images[key]` → [`Image`](../../reference/collections/images.html)
+- `paragraphs[i]` → [`Paragraph`](../../reference/collections/paragraphs.html) — `.text`, `.style`, `.charshape`, `.parashape`, `.runs`
+- `styles[name]` → [`Style`](../../reference/collections/styles.html)
+- `tables[key]` → [`Table`](../../reference/collections/tables.html) — `.cell(row, col)`, `.rows`, `.cols`
+
+Element 는 *값 객체* 입니다. 생성 자체는 COM 을 건드리지 않습니다. `field.value` 나 `paragraph.text` 같은 프로퍼티를 읽을 때 비로소 COM 호출이 일어납니다. 순회할 때 이 점이 중요합니다 — `for p in app.doc.paragraphs: p.text` 는 생성당이 아니라 `text` 읽기당 1번의 COM 호출 비용을 치릅니다.
+
+# 레시피
+
+## dict 로부터 form field 일괄 채우기
+
+```{python}
+#| eval: false
+data = {"author": "홍길동", "date": "2026-04-19", "title": "보고서"}
+
+for name, value in data.items():
+    if name in app.doc.fields:
+        app.doc.fields[name] = value
+```
+
+## 특정 스타일을 사용하는 모든 문단 찾기
+
+```{python}
+#| eval: false
+para = app.doc.paragraphs.filter(lambda p: p.style == "Heading 1")
+print(f"{len(para)}개의 Heading 1 문단")
+```
+
+## 북마크 이름 변경
+
+```{python}
+#| eval: false
+if "old-name" in app.doc.bookmarks:
+    app.doc.bookmarks.rename("old-name", "new-name")
+```
+
+## 문서의 모든 이미지 나열
+
+```{python}
+#| eval: false
+for img in app.doc.images:
+    print(img.name, img.width, img.height)
+```
+
+# 마이그레이션 노트
+
+v1 에서는 이것들이 `App` 에 직접 있었습니다.
+
+| v1 | v2 |
+|---|---|
+| `app.fields` | `app.doc.fields` |
+| `app.bookmarks` | `app.doc.bookmarks` |
+| `app.hyperlinks` | `app.doc.hyperlinks` |
+| `app.images` | `app.doc.images` |
+| `app.styles` | `app.doc.styles` |
+| `app.field_names` | `app.doc.fields.names()` |
+| `app.field_exists(n)` | `n in app.doc.fields` |
+| `app.delete_field(n)` | `del app.doc.fields[n]` |
+| `app.delete_all_fields()` | `app.doc.fields.clear()` |
+
+전체 표는 [마이그레이션 가이드](../getting-started/migration-v1-to-v2.qmd) 를 참고하세요.

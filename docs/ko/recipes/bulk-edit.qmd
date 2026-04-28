@@ -1,0 +1,110 @@
+---
+title: "일괄 편집"
+subtitle: "N개의 문단 서식 지정 / M개의 파일에 걸쳐 바꾸기"
+---
+
+`nbs/01_tutorials/05_usecase_bulk_edit.ipynb` 에서 이식.
+
+# 1. 모든 제목 문단에 스타일 적용
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.low.parametersets import CharShape
+
+with App() as app:
+    app.open("document.hwp")
+
+    headings = app.doc.paragraphs.filter(lambda p: p.style.startswith("제목"))
+    print(f"Found {len(headings)} headings")
+
+    shape = CharShape(Bold=True, TextColor="#1F4E79")
+    for h in headings:
+        h.charshape = shape
+
+    app.save()
+```
+
+# 2. 폴더의 모든 `.hwp` 에서 구문 바꾸기
+
+```{python}
+#| eval: false
+from pathlib import Path
+from hwpapi import App
+
+
+def replace_across(folder: Path, find: str, replace: str):
+    with App(is_visible=False) as app:
+        for hwp in sorted(folder.glob("*.hwp")):
+            app.open(str(hwp))
+            count = app.doc.replace_all(find, replace)
+            if count:
+                app.save()
+                print(f"{hwp.name}: {count} replacements")
+            app.close()
+
+
+replace_across(Path("reports"), "FY2025", "FY2026")
+```
+
+# 3. 실행 취소 그룹화로 charshape 일괄 적용
+
+HWP 의 실행 취소 스택은 문서별로 관리됩니다. 루프를 실행 취소
+그룹으로 감싸면, 사용자가 Ctrl+Z 한 번으로 배치 전체를 되돌릴 수
+있습니다.
+
+```{python}
+#| eval: false
+from hwpapi import App
+from hwpapi.context import charshape_scope
+
+with App() as app:
+    app.open("document.hwp")
+
+    # 모든 하위 편집이 단일 실행 취소 항목으로 합쳐짐
+    with app.doc.scan() as scope:
+        for p in app.doc.paragraphs:
+            if "DRAFT" in p.text:
+                with charshape_scope(app, color="#E74C3C", bold=True):
+                    app.doc.select_text(p.start, p.end)
+                    # 스코프의 모양을 선택 영역에 다시 적용
+                    app.actions.CharShape.run()
+
+    app.save()
+```
+
+# 4. 통계 집계
+
+```{python}
+#| eval: false
+from collections import Counter
+from hwpapi import App
+
+with App() as app:
+    app.open("document.hwp")
+
+    styles = Counter(p.style for p in app.doc.paragraphs)
+    print("Most common styles:")
+    for style, n in styles.most_common(10):
+        print(f"  {n:5d}  {style}")
+
+    word_count = sum(len(p.text.split()) for p in app.doc.paragraphs)
+    print(f"\nTotal words: {word_count}")
+```
+
+# 성능 팁
+
+- **HWP 숨기기** — `App(is_visible=False)` 로 창 깜박임 오버헤드를
+  피합니다.
+- **인덱싱 대신 순회** — `for p in app.doc.paragraphs` 가
+  `for i in range(len(app.doc.paragraphs)): app.doc.paragraphs[i]` 보다
+  저렴합니다. 컬렉션이 매번 다시 해석하지 않고 스트리밍할 수 있기
+  때문입니다.
+- **저장 일괄화** — 문단마다 저장하지 말고, 파일당 한 번씩 저장하세요.
+- **읽기 전용 vs. 쓰기** — 1만 문단 읽기는 약 1초; 1만 문단 쓰기는 그
+  10배입니다. 먼저 필터링한 뒤 변경된 것만 쓰세요.
+
+# 함께 보기
+
+- [Recipe: batch-format](charshape-formatting.qmd) — 더 작은 범위의 서식
+- [Reference: ParagraphCollection](../../reference/collections/paragraphs.html)

@@ -1,0 +1,137 @@
+---
+title: "보고서 생성"
+subtitle: "엔드투엔드: 제목 + 텍스트 + 표 + 이미지 + PDF 내보내기"
+---
+
+`nbs/01_tutorials/07_usecase_report_generation.ipynb` 에서 이식.
+
+# 형태
+
+1. 새 빈 문서를 만듭니다.
+2. 페이지 설정을 구성합니다 (A4, 여백).
+3. 제목 charshape 로 제목을 삽입합니다.
+4. 본문 문단을 삽입합니다.
+5. 데이터가 들어간 표를 삽입합니다.
+6. 이미지를 삽입합니다.
+7. HWP + PDF 로 저장합니다.
+
+# 전체 스크립트
+
+```{python}
+#| eval: false
+from pathlib import Path
+from hwpapi import App
+from hwpapi.context import charshape_scope, parashape_scope
+from hwpapi import units as U
+
+
+def build_report(output_dir: Path, title: str, rows: list[dict], image: Path | None = None):
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    with App(is_visible=False) as app:
+        app.new()
+
+        # 1. 페이지 설정 (A4 세로, 25mm 여백)
+        app.doc.page.setup(
+            width=U.mm(210),
+            height=U.mm(297),
+            left_margin=U.mm(25),
+            right_margin=U.mm(25),
+            top_margin=U.mm(30),
+            bottom_margin=U.mm(30),
+        )
+
+        # 2. 제목
+        with parashape_scope(app, align="center"):
+            with charshape_scope(app, bold=True, size=U.pt(20), color="#1F4E79"):
+                app.doc.insert_text(title + "\n")
+        app.doc.insert_paragraph_break()
+
+        # 3. 본문
+        app.doc.insert_text(
+            "본 보고서는 hwpapi로 자동 생성되었습니다. 아래 표는 "
+            "주요 지표를 요약한 것입니다.\n\n"
+        )
+
+        # 4. 표
+        cols = list(rows[0].keys())
+        app.doc.tables.add(rows=len(rows) + 1, cols=len(cols))
+        tbl = app.doc.tables[-1]
+
+        for c, col in enumerate(cols):
+            tbl.cell(0, c).text = col
+        for r, row in enumerate(rows, start=1):
+            for c, key in enumerate(cols):
+                tbl.cell(r, c).text = str(row[key])
+
+        app.doc.cursor.goto_end()
+        app.doc.insert_paragraph_break()
+
+        # 5. 이미지 (선택)
+        if image is not None:
+            app.doc.insert_picture(str(image))
+            app.doc.insert_paragraph_break()
+
+        # 6. 저장
+        hwp_path = output_dir / "report.hwp"
+        pdf_path = output_dir / "report.pdf"
+        app.save_as(str(hwp_path))
+        app.save_as(str(pdf_path))
+        print(f"wrote {hwp_path} and {pdf_path}")
+
+
+if __name__ == "__main__":
+    data = [
+        {"지표": "매출", "Q1": 120, "Q2": 135, "Q3": 140},
+        {"지표": "비용", "Q1": 80, "Q2": 90, "Q3": 88},
+        {"지표": "이익", "Q1": 40, "Q2": 45, "Q3": 52},
+    ]
+    build_report(
+        output_dir=Path("out"),
+        title="2026년 1–3분기 실적 보고서",
+        rows=data,
+        image=Path("chart.png"),
+    )
+```
+
+# 변형
+
+## 다중 섹션 보고서
+
+```{python}
+#| eval: false
+sections = [
+    ("1. 개요",    "본 보고서의 목적은 …"),
+    ("2. 방법론",  "데이터는 …"),
+    ("3. 결과",    "Q1 대비 …"),
+    ("4. 결론",    "전사 차원에서 …"),
+]
+
+with App(is_visible=False) as app:
+    app.new()
+    for i, (heading, body) in enumerate(sections):
+        with charshape_scope(app, bold=True, size=U.pt(14)):
+            app.doc.insert_text(heading + "\n")
+        app.doc.insert_text(body + "\n\n")
+        if i < len(sections) - 1:
+            app.doc.insert_page_break()
+    app.save_as("report.hwp")
+```
+
+## 각 페이지를 이미지로 내보내기
+
+```{python}
+#| eval: false
+from hwpapi.io import export_image
+
+with App(is_visible=False) as app:
+    app.open("report.hwp")
+    for page in range(1, app.doc.page_count + 1):
+        export_image(app, f"out/page-{page:03d}.png", page=page)
+```
+
+# 함께 보기
+
+- [Recipe: data-to-table](data-to-table.qmd) — 삽입 빌딩 블록
+- [Guide: units](../guide/units.qmd) — `U.mm(…)` 가 중요한 이유
+- [Reference: io.export](../../reference/io/export.html)

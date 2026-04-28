@@ -493,7 +493,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>머리말(header) 과 꼬리말(footer) 은 HWP 의 컨트롤(<code>HeaderFooter</code>) 이라, 일반 문단 텍스트가 아닌 액션을 통해 만들어집니다. 이 레시피는 가장 자주 쓰는 머리말/꼬리말 시나리오 4가지를 묶어 보여줍니다.</p>
 <section id="본문-상단에-머리말-텍스트-한-줄" class="level1">
 <h1>1. 본문 상단에 머리말 텍스트 한 줄</h1>
-<div id="5e66f308" class="cell">
+<div id="5f28668b" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
@@ -516,7 +516,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="페이지-번호가-들어간-꼬리말" class="level1">
 <h1>2. 페이지 번호가 들어간 꼬리말</h1>
-<div id="0b918965" class="cell">
+<div id="25107257" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
@@ -543,7 +543,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="짝수홀수쪽-다른-머리말" class="level1">
 <h1>3. 짝수/홀수쪽 다른 머리말</h1>
 <p>양면 인쇄에서 흔한 패턴 — 짝수쪽엔 책 제목, 홀수쪽엔 장 제목.</p>
-<div id="59ed7f3a" class="cell">
+<div id="a7ffc7c4" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> insert_header(app, text: <span class="bu">str</span>, <span class="op">*</span>, type_: <span class="bu">int</span>) <span class="op">-&gt;</span> <span class="va">None</span>:</span>
@@ -570,7 +570,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="모든-머리말꼬리말-지우기" class="level1">
 <h1>4. 모든 머리말/꼬리말 지우기</h1>
-<div id="d863198a" class="cell">
+<div id="2413637f" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>

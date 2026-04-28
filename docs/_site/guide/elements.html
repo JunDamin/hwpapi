@@ -497,7 +497,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="paragraphs-and-runs" class="level1">
 <h1>Paragraphs and runs</h1>
 <p>A <code>Paragraph</code> is one block of text separated by HWP’s paragraph separator. Its <code>runs</code> are contiguous slices sharing one CharShape — so “<strong>bold</strong> and italic” is two runs on one paragraph.</p>
-<div id="edd34b99" class="cell">
+<div id="a3cea57e" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> app.doc.paragraphs[<span class="dv">0</span>]</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>p.text                  <span class="co"># → str (whole paragraph)</span></span>
@@ -511,7 +511,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="setting-a-shape" class="level2">
 <h2 class="anchored" data-anchor-id="setting-a-shape">Setting a shape</h2>
 <p>Assigning to <code>.charshape</code> or <code>.parashape</code> applies formatting to the whole paragraph (or run):</p>
-<div id="7e8b51a3" class="cell">
+<div id="a396fe9a" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.low.parametersets <span class="im">import</span> CharShape, ParaShape</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> app.doc.paragraphs[<span class="dv">0</span>]</span>
@@ -529,7 +529,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="iterating-selectively" class="level2">
 <h2 class="anchored" data-anchor-id="iterating-selectively">Iterating selectively</h2>
 <p><code>ParagraphCollection</code> supports <code>.filter(predicate)</code>:</p>
-<div id="3b41dca9" class="cell">
+<div id="0819b57c" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>headings <span class="op">=</span> app.doc.paragraphs.<span class="bu">filter</span>(<span class="kw">lambda</span> p: p.style.startswith(<span class="st">"제목"</span>))</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> h <span class="kw">in</span> headings:</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(h.text)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -539,7 +539,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="tables-and-cells" class="level1">
 <h1>Tables and cells</h1>
 <p>A <code>Table</code> element exposes row/column geometry; a <code>Cell</code> element is addressed by (row, col):</p>
-<div id="a98a7b80" class="cell">
+<div id="b8bab9ea" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>tbl <span class="op">=</span> app.doc.tables[<span class="dv">0</span>]</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>tbl.rows, tbl.cols</span>
@@ -554,7 +554,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="value-vs.-reference-semantics" class="level1">
 <h1>Value vs.&nbsp;reference semantics</h1>
 <p>Elements are always <strong>references</strong> to document state, never snapshots:</p>
-<div id="5798ba5b" class="cell">
+<div id="34f90a83" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>p <span class="op">=</span> app.doc.paragraphs[<span class="dv">0</span>]</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>p.text                     <span class="co"># "hello"</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>

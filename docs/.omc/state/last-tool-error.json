@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd docs/ko && quarto render --no-execute 2>&1 | tail -10\",\"timeout\":180000,\"description\":\"Render Korean subsite\"}",
+  "error": "Exit code 1\n/usr/bin/bash: line 1: cd: docs/ko: No such file or directory",
+  "timestamp": "2026-04-28T13:15:05.838Z",
+  "retry_count": 1
+}

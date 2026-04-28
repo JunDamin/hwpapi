@@ -540,7 +540,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<div id="771c92ca" class="cell">
+<div id="9f352a21" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
@@ -570,7 +570,7 @@ Note
 <section id="확장자를-못-잡거나-강제하고-싶을-때" class="level1">
 <h1>2. 확장자를 못 잡거나 강제하고 싶을 때</h1>
 <p>확장자 매핑에 없는 포맷, 또는 <code>.hwp</code> 인데 다른 포맷으로 저장하고 싶을 때는 <code>format=</code> 으로 직접 지정합니다.</p>
-<div id="8aa3c331" class="cell">
+<div id="0274fa3a" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 확장자가 .data 같은 비표준이지만 PDF 로 저장하고 싶을 때</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>app.save(<span class="st">"snapshot.data"</span>, <span class="bu">format</span><span class="op">=</span><span class="st">"PDF"</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -581,7 +581,7 @@ Note
 <section id="hwpapi.io.export_-헬퍼-fileioerror-자동-변환" class="level1">
 <h1>3. <code>hwpapi.io.export_*</code> 헬퍼 — <code>FileIOError</code> 자동 변환</h1>
 <p><code>hwpapi.io</code> 의 형식별 헬퍼는 내부적으로 <code>app.save_as()</code> 를 호출하면서 <code>pywintypes.com_error</code> 를 <code>FileIOError</code> 로 감쌉니다. 호출자가 항상 패키지 고유 예외만 잡으면 되도록 만들어주는 얇은 래퍼입니다.</p>
-<div id="ea132854" class="cell">
+<div id="94af0c1b" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.io <span class="im">import</span> export_pdf, export_image, export_text</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.errors <span class="im">import</span> FileIOError</span>
@@ -663,7 +663,7 @@ Tip
 </section>
 <section id="폴더-일괄-변환" class="level1">
 <h1>5. 폴더 일괄 변환</h1>
-<div id="73b24b8e" class="cell">
+<div id="7c34aab8" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
