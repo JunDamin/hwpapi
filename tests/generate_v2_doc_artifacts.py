@@ -250,12 +250,18 @@ with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
 app.save(pdf_path)
 time.sleep(0.7)
 
-# 문서 닫기 — v2 facade 의 close() 사용. SetMessageBoxMode 로
-# "저장하시겠습니까?" 등 native HWP 다이얼로그는 자동 Yes 응답.
+# 문서 닫기 — XHwpDocuments.Item(0).Close(False) 로 직접 호출.
+# 인자 False = "변경사항을 저장하지 않고 닫기" — dialog 자체가 안 뜸.
+# (FileClose 는 dialog 를 띄우고 message-box-mode 의 Yes 가 적용되어
+#  의도치 않게 저장하게 됨. 이것을 회피.)
 try:
-    app.close()
+    app.api.XHwpDocuments.Item(0).Close(False)
 except Exception:
-    pass
+    # 문서가 이미 닫혔거나 한 번 더 시도해야 하는 경우 fallback
+    try:
+        app.api.Run("FileClose")
+    except Exception:
+        pass
 time.sleep(0.2)
 
 # PDF → cropped PNG
