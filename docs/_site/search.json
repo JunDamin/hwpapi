@@ -999,6 +999,678 @@
     ]
   },
   {
+    "objectID": "design/adr/adr-006-python-docx-patterns.html",
+    "href": "design/adr/adr-006-python-docx-patterns.html",
+    "title": "ADR-006: python-docx 패턴 — 차용/배제 후보",
+    "section": "",
+    "text": "ADR-005 가 xlwings 모델을 mining 했다면, 이 ADR 은 python-docx (Word 자동화의 사실상 표준 라이브러리) 구조를 정밀 비교하여 hwpapi 가 가져갈 만한 패턴을 추가로 발굴합니다. xlwings 가 “표 처리” 관점이라면 python-docx 는 워드프로세서 본연의 구조 (단락/Run/표/섹션/스타일) 에 더 가깝고, HWP 와 도메인이 더 유사합니다.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-006: python-docx 패턴 — 차용/배제 후보"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-006-python-docx-patterns.html#a.-권장-도입-검토",
+    "href": "design/adr/adr-006-python-docx-patterns.html#a.-권장-도입-검토",
+    "title": "ADR-006: python-docx 패턴 — 차용/배제 후보",
+    "section": "A. 권장 (도입 검토)",
+    "text": "A. 권장 (도입 검토)\n\nA.1 Section first-class — 페이지 설정 / 머리말 / 꼬리말\npython-docx 에서 가장 잘 설계된 부분. HWP 도 섹션 개념이 있고 현재 app.actions.PageSetup / app.actions.HeaderFooter 로 raw 접근 가능하지만 사용자에게 보이지 않음.\n제안:\ndoc.sections                        # SectionCollection\ndoc.sections.add(start=\"new_page\")  # 새 섹션\nsec = doc.sections[0]\nsec.page_width = U.mm(210)\nsec.page_height = U.mm(297)\nsec.orientation = \"portrait\"        # | \"landscape\"\nsec.margin_top = U.mm(25)\nsec.margin_bottom = U.mm(25)\n\n# 머리말 / 꼬리말\nsec.header.text = \"기밀 — 외부 유출 금지\"\nsec.footer.text = \"Page 1 of N\"     # 자동 페이지 번호\nsec.different_first_page = True\n우선순위: v3.3 (ADR-005 의 페이지/인쇄 단계).\n\n\nA.2 Style 을 객체로 (단순 string 아님)\npython-docx 의 paragraph.style = doc.styles[\"Heading 1\"] — Style 은 풀 객체. hwpapi 의 doc.styles 는 이미 컬렉션이지만 element 에 적용하는 syntax 가 약함.\n제안:\nheading_style = doc.styles[\"제목 1\"]\nheading_style.charshape = {\"bold\": True, \"height\": 2400}\nheading_style.parashape = {\"align\": \"center\"}\n\npara = doc.paragraphs[0]\npara.style = heading_style          # Style 객체로 설정\npara.style = \"제목 1\"               # str 도 호환\n\n# 새 스타일 정의\nmy_style = doc.styles.add(\n    \"강조 본문\",\n    based_on=\"본문\",\n    charshape={\"bold\": True, \"text_color\": \"#E74C3C\"},\n)\n우선순위: v3.4 (Element API 가 정착한 다음).\n\n\nA.3 Tri-state 서식 property (True/False/None)\npython-docx 의 run.bold = None 은 “스타일에서 상속” 의미. hwpapi 는 현재 True/False 만 지원 — None 으로 명시적 reset 불가.\n제안:\nrun.charshape.bold = None           # 부모 스타일 상속\nrun.charshape.bold = True           # 명시적 굵게\nrun.charshape.bold = False          # 명시적 굵지 않게\n\n# 차이:\n# False — 스타일이 굵음이어도 이 run 은 안 굵음\n# None  — 스타일에 따름\n우선순위: v3.4 (스타일 시스템과 함께).\n\n\nA.4 단위 클래스 (현재 함수)\npython-docx: Inches(1), Pt(12), Mm(210), Cm(21), Emu(914400) — 산술 연산 가능 (Mm(210) - Mm(25)*2).\n제안:\nfrom hwpapi.units import Mm, Pt, Inch, Hwp\n\nw = Mm(210) - Mm(25) * 2            # = Mm(160)\nprint(w)                            # \"160 mm\"\nprint(int(w))                       # → HWPUNIT (45280)\nprint(w.mm)                         # 160.0\n\n# 기존 함수도 호환\nU.mm(210) == Mm(210)                # True\n우선순위: v3.2 (Element API 와 함께 — Element setter 가 단위 인자를 자주 받음).\n\n\nA.5 Document core_properties (메타데이터 정식화)\npython-docx 의 core_properties 가 가장 깔끔. ADR-005 에서도 언급했지만 python-docx 패턴이 reference.\n제안:\ncp = doc.metadata                   # CoreProperties 객체\n\n# Word/HWP 모두 OOXML core 속성 (~15 개) 매핑:\ncp.title = \"1분기 보고\"\ncp.author = \"홍길동\"\ncp.subject = \"기획팀\"\ncp.keywords = \"보고서, 1분기\"\ncp.created                          # datetime (read-only)\ncp.modified                         # datetime\ncp.last_modified_by = \"이영희\"\ncp.revision = 3                     # int\ncp.category = \"회의록\"\ncp.comments = \"...\"\n우선순위: v3.3.\n\n\nA.6 body.iter() — 문서 순서대로 paragraph + table 순회\npython-docx: for child in doc.element.body.iter_inner_content(): 가 단락과 표를 문서 순서 로 돌려줌. hwpapi 는 현재 paragraphs 와 tables 가 별도 컬렉션 — 어떤 단락 다음에 어떤 표가 있는지 알기 어려움.\n제안:\n# 문서 순서대로 모든 element 순회\nfor elem in doc.contents():\n    if isinstance(elem, Paragraph):\n        print(\"p:\", elem.text)\n    elif isinstance(elem, Table):\n        print(\"table:\", elem.rows, \"x\", elem.cols)\n\n# 또는 generator 형태\nfor elem in doc.iter_contents(skip_empty=True):\n    ...\n우선순위: v3.4 (문서 변환 / 분석 use case 가 늘어날 때).\n\n\nA.7 add_X 의 일관 반환 — 만든 객체 돌려주기\npython-docx 의 모든 add_X 는 만든 element 반환. 사용자가 곧바로 설정 가능:\npara = doc.add_paragraph(\"본문\", style=\"본문\")\npara.alignment = WD_ALIGN_PARAGRAPH.CENTER\n\ncell = table.add_row().cells[0]\ncell.text = \"...\"\n\nimg = doc.add_picture(\"logo.png\", width=Inches(2))\nimg.height                           # 자동 계산된 값\nhwpapi 적용: ADR-004 의 element + ADR-005 의 컬렉션 일관성에 이미 포함되어 있음. 재확인 차원.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-006: python-docx 패턴 — 차용/배제 후보"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-006-python-docx-patterns.html#b.-보류-해보고-결정",
+    "href": "design/adr/adr-006-python-docx-patterns.html#b.-보류-해보고-결정",
+    "title": "ADR-006: python-docx 패턴 — 차용/배제 후보",
+    "section": "B. 보류 (해보고 결정)",
+    "text": "B. 보류 (해보고 결정)\n\nB.1 Run 의 boolean property API (run.bold = True)\npython-docx: run.bold = True 직접 setter. hwpapi 는 현재 run.charshape = {\"bold\": True} 또는 run.charshape.bold = True 형태 (ADR-004).\n직접 setter (run.bold = True) 는 편하지만 attribute 폭증 위험 (bold/italic/underline/strike/sub/super/font_name/font_size/color/… 한 element 에 30+ attr).\n제안: partial 만 허용. - run.bold, run.italic, run.underline (가장 흔한 3개) 만 직접 property - 나머지는 run.charshape.X 로 접근\n우선순위: spike 후 결정 (v3.4).\n\n\nB.2 paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER (enum import)\npython-docx 는 enum 을 모듈에서 import 해서 씀. hwpapi 는 v0.0.25 부터 문자열 호환 채택 (align=\"center\"). 사용자 친화적이라 유지.\n판정: 차용 안 함 (현재 hwpapi 패턴이 더 나음).",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-006: python-docx 패턴 — 차용/배제 후보"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-006-python-docx-patterns.html#c.-기각-hwpapi-도메인에-부적합",
+    "href": "design/adr/adr-006-python-docx-patterns.html#c.-기각-hwpapi-도메인에-부적합",
+    "title": "ADR-006: python-docx 패턴 — 차용/배제 후보",
+    "section": "C. 기각 (hwpapi 도메인에 부적합)",
+    "text": "C. 기각 (hwpapi 도메인에 부적합)\n\nC.1 OOXML lxml element 접근\npython-docx: paragraph._p 가 raw lxml &lt;w:p&gt; element. .docx 파일 구조에 직접 접근.\nHWP 의 .hwp 는 OOXML 이 아니라 HWPML 또는 binary. 직접 접근은 HWP COM API 를 통해야 함 — 이미 app.api / doc.raw escape hatch 로 제공됨.\n판정: hwpapi 의 app.api / doc.raw 가 동등 역할.\n\n\nC.2 WD_* 같은 enum 접두 모듈\npython-docx: WD_ALIGN_PARAGRAPH, WD_BREAK_TYPE, WD_LINE_SPACING 등 수많은 enum 이 별도 모듈에 분산. import 가 verbose.\nhwpapi 는 mappings.py 에 한 곳에 모든 enum/MAP 통합 + 문자열 호환. 더 좋음.\n판정: 차용 안 함.\n\n\nC.3 Document(path) 생성자에 파일 경로\npython-docx: from docx import Document; doc = Document(\"file.docx\") 바로 객체 반환.\nhwpapi 는 다중 문서 지원 — app.docs.open(path) 가 옳음. 단순화는 오히려 후퇴.\n판정: 차용 안 함 (hwpapi 의 lifecycle 이 더 정확).",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-006: python-docx 패턴 — 차용/배제 후보"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-006-python-docx-patterns.html#d.-python-docx-의-단점-hwpapi-가-이미-해결",
+    "href": "design/adr/adr-006-python-docx-patterns.html#d.-python-docx-의-단점-hwpapi-가-이미-해결",
+    "title": "ADR-006: python-docx 패턴 — 차용/배제 후보",
+    "section": "D. python-docx 의 단점 — hwpapi 가 이미 해결",
+    "text": "D. python-docx 의 단점 — hwpapi 가 이미 해결\n\n\n\npython-docx 한계\nhwpapi v3 의 해법\n\n\n\n\n단일 문서만\napp.docs[i] — 다중 문서\n\n\n라이브 편집 불가 (.docx 파일만)\nHWP COM 로 라이브 자동화\n\n\ncontext manager 없음\nwith charshape_scope(...):\n\n\n다중 프로세스 격리 없음\nApp() 인스턴스 분리 가능\n\n\nraw 데이터 변환 없음\npandas.DataFrame 양방향 (ADR-005)",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-006: python-docx 패턴 — 차용/배제 후보"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-006-python-docx-patterns.html#긍정",
+    "href": "design/adr/adr-006-python-docx-patterns.html#긍정",
+    "title": "ADR-006: python-docx 패턴 — 차용/배제 후보",
+    "section": "긍정",
+    "text": "긍정\n\n워드프로세서 표준 패턴 정렬 — Word/HWP 사용자 모두 친숙\nSection 도입으로 페이지 설계 정식화 — 실제 보고서/회의록 자동화의 핵심\n단위 클래스로 산술 자연스러움 — 마진 계산, 폭 분배 등이 직관적\n메타데이터 정식화 — RPA / archive 워크플로우 지원",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-006: python-docx 패턴 — 차용/배제 후보"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-006-python-docx-patterns.html#부정-위험",
+    "href": "design/adr/adr-006-python-docx-patterns.html#부정-위험",
+    "title": "ADR-006: python-docx 패턴 — 차용/배제 후보",
+    "section": "부정 / 위험",
+    "text": "부정 / 위험\n\nSection 구현 비용 — HWP 의 섹션 모델이 OOXML 과 다름. spike 필요 (~200 LOC).\nTri-state 도입의 cascading 복잡도 — 스타일 상속 체인 검증 로직 필요. v3.4 까지 미룬 이유.\n단위 클래스의 backward compat — 기존 U.mm(210) 함수와 공존하면서 어느 쪽을 권장할지 명시 필요.\nadd_X 패턴 통일은 큰 변경 — 현재 app.docs.add() 등 일부만 return — 전 컬렉션 통일 시 일부 시그니처 변경.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-006: python-docx 패턴 — 차용/배제 후보"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html",
+    "href": "design/adr/adr-004-element-api.html",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "",
+    "text": "v3 의 ADR-003 으로 다중 문서가 깔끔히 정착했고, 각 Document 에 7개 컬렉션 (fields, bookmarks, hyperlinks, images, paragraphs, styles, tables) 이 자리잡았 습니다. 그러나 컬렉션이 반환하는 개별 element 들은 여전히 빈약합니다:\n\ndoc.paragraphs[0] → Paragraph — 현재 text, index 정도만\ndoc.tables[0] → Table — cell(r, c) 정도만\ndoc.tables[0].cell(1, 1) → Cell — text, border, fill setter 가 약속만 있음 (migration v1→v2 가이드 참조)\nRun (글자 단위 형식 단위) 클래스 자체가 없음\n\n결과적으로 사용자가 “이 단락의 정렬을 바꾸고 글자 색만 바꾸고 싶다” 같은 작업을 할 때 여전히 doc.actions.X.run() raw 로 내려가야 합니다. v3 의 doc.X 일관성이 element 레벨에서 깨지는 셈입니다.\nxlwings 와 비교:\n# xlwings — element 까지 풀 API\nsheet.range(\"A1:B5\").value = [[1,2],[3,4]]\nsheet.range(\"A1\").color = (255, 200, 200)\nsheet.range(\"A1\").font.bold = True\nhwpapi 가 도달해야 할 비슷한 수준:\n# 목표 (v3.x — 이 ADR)\npara = doc.paragraphs[0]\npara.text = \"새 본문\"\npara.parashape.align = \"center\"\nfor run in para.runs:\n    run.charshape.bold = True\n\ncell = doc.tables[0].cell(1, 1)\ncell.text = \"Q1\"\ncell.fill = \"#FFE0E0\"\ncell.border = {\"top\": \"double\", \"bottom\": \"solid\"}",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html#element-매트릭스",
+    "href": "design/adr/adr-004-element-api.html#element-매트릭스",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "Element 매트릭스",
+    "text": "Element 매트릭스\n\n\n\n\n\n\n\n\nElement\n컬렉션 진입\n책임\n\n\n\n\nParagraph\ndoc.paragraphs[i]\n단락 텍스트, ParaShape, runs 컬렉션\n\n\nRun\nparagraph.runs[i]\n한 글자형식 구간의 text, CharShape\n\n\nTable\ndoc.tables[i]\nrows/cols, cell(r,c), 표 단위 BorderFill\n\n\nCell\ntable.cell(r, c)\ntext, fill, border, charshape, parashape\n\n\nSection (보류)\ndoc.sections[i]\n페이지 설정, 머리말/꼬리말 (v3.1)",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html#표면-각-element-의-핵심-surface",
+    "href": "design/adr/adr-004-element-api.html#표면-각-element-의-핵심-surface",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "표면 (각 element 의 핵심 surface)",
+    "text": "표면 (각 element 의 핵심 surface)\nclass Paragraph:\n    index           # 단락 번호 (0-based)\n    text            # r/w property\n    parashape       # ParaShape (r/w)\n    charshape       # 단락 시작 글자의 CharShape (r/w convenience)\n    runs            # RunCollection\n    insert_text(s)  # 이 단락 끝에 추가\n    delete()        # 이 단락 제거\n    activate()      # 커서를 이 단락으로\n\nclass Run:\n    paragraph       # owning Paragraph\n    text            # r/w\n    charshape       # CharShape (r/w)\n    start, end      # 단락 안의 글자 위치 범위\n\nclass Table:\n    index, rows, cols\n    cell(r, c) → Cell\n    iter_cells()    # row-major\n    delete()\n    border_fill     # 표 전체 BorderFill\n    activate()\n\nclass Cell:\n    table           # owning Table\n    row, col, address (e.g. \"B2\")\n    text            # r/w\n    charshape / parashape   # r/w\n    fill            # str | Color | None — 셀 배경\n    border          # dict 형 setter ({\"top\": \"solid\", ...})\n    width / height  # r/w (HWPUNIT)\n    activate()      # 이 셀로 커서 이동",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html#doc-activate-패턴-적용",
+    "href": "design/adr/adr-004-element-api.html#doc-activate-패턴-적용",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "doc-activate 패턴 적용",
+    "text": "doc-activate 패턴 적용\n모든 element 는 owning doc 의 reference 를 갖고, 자기 메소드/setter 진입 시 doc.activate() 를 호출합니다 (ADR-003 의 _DocActions 와 동일 패턴):\nclass Paragraph:\n    def __init__(self, doc, index):\n        self._doc = doc\n        self._index = index\n\n    @property\n    def text(self):\n        self._doc.activate()\n        # ... GetTextFile + 범위 추출\n        return ...\n\n    @text.setter\n    def text(self, value):\n        self._doc.activate()\n        # ... select range + insert_text\n다중 문서 환경에서 for p in doc1.paragraphs: p.text 와 for p in doc2.paragraphs: p.text 가 자동 doc-switching 되면서 안전하게 동작.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html#charshape-parashape-기존-parameterset-재사용",
+    "href": "design/adr/adr-004-element-api.html#charshape-parashape-기존-parameterset-재사용",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "CharShape / ParaShape — 기존 ParameterSet 재사용",
+    "text": "CharShape / ParaShape — 기존 ParameterSet 재사용\nv2 에서 이미 hwpapi.low.parametersets.CharShape / ParaShape 가 있음. element 의 .charshape / .parashape 는 이들의 인스턴스를 반환/할당. 사용자는 익숙한 dict-like 접근:\ncs = run.charshape      # CharShape 인스턴스\ncs.bold = True\ncs.height = 1400\nrun.charshape = cs      # setter — 적용\n\n# 또는 dict 한방\nrun.charshape = {\"bold\": True, \"height\": 1400}",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html#사용자-멘탈-모델",
+    "href": "design/adr/adr-004-element-api.html#사용자-멘탈-모델",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "사용자 멘탈 모델",
+    "text": "사용자 멘탈 모델\nApp (process)\n└── Document (per-doc)\n    ├── 컬렉션 (fields, bookmarks, ...)\n    ├── paragraphs : Collection[Paragraph]\n    │   └── runs   : Collection[Run]\n    └── tables : Collection[Table]\n        └── cell(r, c) : Cell\n각 레이어는 자기 책임만 — App 은 lifecycle, Document 는 doc-scoped ops, Element 는 element-scoped ops.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html#phase-1-paragraph-run",
+    "href": "design/adr/adr-004-element-api.html#phase-1-paragraph-run",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "Phase 1 — Paragraph + Run",
+    "text": "Phase 1 — Paragraph + Run\n\nParagraph.text getter/setter\nParagraph.parashape getter/setter\nParagraph.runs (RunCollection)\nRun.text, Run.charshape getter/setter\n테스트: tests/test_paragraph.py, tests/test_run.py",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html#phase-2-table-cell",
+    "href": "design/adr/adr-004-element-api.html#phase-2-table-cell",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "Phase 2 — Table + Cell",
+    "text": "Phase 2 — Table + Cell\n\nTable.cell(r, c) 가 Cell 반환\nCell.text, Cell.fill, Cell.border (border dict 형)\nCell.charshape, Cell.parashape\nCell.activate() 가 커서를 셀로\n테스트: tests/test_table.py, tests/test_cell.py",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html#phase-3-runcollection-iter_cells",
+    "href": "design/adr/adr-004-element-api.html#phase-3-runcollection-iter_cells",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "Phase 3 — RunCollection + iter_cells",
+    "text": "Phase 3 — RunCollection + iter_cells\n\nparagraph.runs 의 iteration / 인덱싱\nTable.iter_cells() row-major + filter\n테스트 추가",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html#phase-4-section-보류",
+    "href": "design/adr/adr-004-element-api.html#phase-4-section-보류",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "Phase 4 — Section (보류)",
+    "text": "Phase 4 — Section (보류)\n\n페이지 설정, 머리말/꼬리말 — v3.1 또는 별도 ADR",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html#단락-run",
+    "href": "design/adr/adr-004-element-api.html#단락-run",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "단락 / Run",
+    "text": "단락 / Run\ndoc = app.docs.open(\"report.hwp\")\n\n# 1단락 텍스트와 정렬\npara = doc.paragraphs[0]\npara.text = \"1분기 보고\"\npara.parashape = {\"align\": \"center\", \"line_spacing\": 180}\n\n# 안에 있는 모든 run 을 굵게\nfor run in para.runs:\n    run.charshape = {\"bold\": True}\n\n# 또는 한 단락 안의 일부만\npara.runs[0].charshape = {\"text_color\": \"#E74C3C\"}",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html#table-cell",
+    "href": "design/adr/adr-004-element-api.html#table-cell",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "Table / Cell",
+    "text": "Table / Cell\ndoc.insert_table(rows=4, cols=4)\ntable = doc.tables[-1]                  # 방금 만든 표\n\ntable.cell(0, 0).text = \"제품\"\ntable.cell(0, 1).text = \"Q1\"\ntable.cell(0, 2).text = \"Q2\"\ntable.cell(0, 3).text = \"Q3\"\n\n# 헤더 셀 일괄 서식\nfor c in range(4):\n    cell = table.cell(0, c)\n    cell.fill = \"#34495E\"\n    cell.charshape = {\"bold\": True, \"text_color\": \"#FFFFFF\"}\n\n# 첫 열만 굵은 테두리\nfor r in range(1, 4):\n    table.cell(r, 0).border = {\"right\": \"double\"}",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html#다중-문서-element",
+    "href": "design/adr/adr-004-element-api.html#다중-문서-element",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "다중 문서 + element",
+    "text": "다중 문서 + element\nsrc = app.docs.open(\"source.hwp\")\ndst = app.docs.add()\n\n# doc-activate 자동 — element 가 owning doc 으로 자동 전환\nfor para in src.paragraphs:\n    if para.text.startswith(\"□\"):\n        # 이 시점엔 src 활성, src.paragraphs[i].text 는 정상\n        pass\n\n# dst 작업 — 자동 전환\nfor row in [[\"A\", \"B\"], [\"C\", \"D\"]]:\n    dst.insert_table(rows=1, cols=2)\n    for c, val in enumerate(row):\n        dst.tables[-1].cell(0, c).text = val",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html#긍정",
+    "href": "design/adr/adr-004-element-api.html#긍정",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "긍정",
+    "text": "긍정\n\nAPI 일관성 — doc.X, paragraph.X, cell.X 모두 같은 패턴\n다중 문서 안전 — element 도 doc-activate 자동\nraw action 의존도 감소 — Cell 서식 등 일상 작업이 element 메소드로 가능\nxlwings/openpyxl 사용자 친숙 — sheet.range, cell.font 등과 동형\n테스트 가능 — Mock 으로 element 단위 검증",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-004-element-api.html#부정-위험",
+    "href": "design/adr/adr-004-element-api.html#부정-위험",
+    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
+    "section": "부정 / 위험",
+    "text": "부정 / 위험\n\n클래스 수 증가 — Paragraph/Run/Table/Cell 4개 신규. 컬렉션 포함 8개 (RunCollection, CellCollection 도) 이미 늘어남.\nHWP 의 element 인덱싱 불안정 — 문서 편집 중 paragraph index 가 밀릴 수 있음. cell 도 표 행/열 추가 시 변동. 안정적 식별자가 필요한 경우 사용자가 reload 해야 함 (xlwings 도 동일).\nCharShape/ParaShape 의 process-wide pset 문제 — element 마다 자기 pset 을 보유하지 않고 process 레벨 공유. doc-activate 와 결합해 안전하나, 동시성은 여전히 보장 안 됨 (Python GIL 가정).\nPhase 1/2 구현 비용 — 각 element 에 대해 텍스트 범위 추적, selection 관리, charshape 적용/읽기 인프라 필요. 약 600~1000 LOC 추정.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html",
+    "href": "design/adr/adr-002-quarto-docs.html",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "",
+    "text": "Accepted — 2026-04-18\nImplemented in Phase 6 of the v2 redesign plan.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#mkdocs-material",
+    "href": "design/adr/adr-002-quarto-docs.html#mkdocs-material",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "MkDocs Material",
+    "text": "MkDocs Material\nPro: Python-native, widely deployed, excellent default theme.\nCon: Loses existing Quarto assets (nbs/ content). Worse support for computational pages (nbs/ used Jupyter kernel execution; Quarto preserves that natively).\nRejected on asset-preservation grounds.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#two-sites-in-parallel-nbs-tutorials-docs-reference",
+    "href": "design/adr/adr-002-quarto-docs.html#two-sites-in-parallel-nbs-tutorials-docs-reference",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Two sites in parallel (nbs/ → tutorials, docs/ → reference)",
+    "text": "Two sites in parallel (nbs/ → tutorials, docs/ → reference)\nPro: Minimum migration effort.\nCon: Violates the “single source of truth” principle. Invites the same drift the v1 state showed.\nRejected.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#sphinx-autodoc-sphinx_book_theme",
+    "href": "design/adr/adr-002-quarto-docs.html#sphinx-autodoc-sphinx_book_theme",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Sphinx + autodoc + sphinx_book_theme",
+    "text": "Sphinx + autodoc + sphinx_book_theme\nPro: Mature Python toolchain.\nCon: Markdown-first authoring via myst_parser is still less polished than Quarto’s. Would require replacing Quarto anyway. More moving parts.\nRejected given Quarto’s existing adoption in the repo.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#positive",
+    "href": "design/adr/adr-002-quarto-docs.html#positive",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Positive",
+    "text": "Positive\n\nOne quarto render docs/ produces the entire site.\nquartodoc build regenerates the reference layer from docstrings — the reference cannot drift from the code.\ndocs/recipes/*.qmd can stay readable (Markdown tables, inline code) without executing HWP-dependent code blocks (marked eval: false).\nADRs and architecture notes live alongside user documentation — design/ is just another sidebar section.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#negative",
+    "href": "design/adr/adr-002-quarto-docs.html#negative",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Negative",
+    "text": "Negative\n\nquarto and quartodoc are build-time dependencies for anyone re-rendering the site. Mitigation: pip install -e \".[docs]\" captures both.\nquartodoc has occasional quirks with Protocol classes and cached_property descriptors. Mitigation: explicit contents: listings in _quarto.yml name every page, rather than relying on auto-discovery for core classes.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#neutral",
+    "href": "design/adr/adr-002-quarto-docs.html#neutral",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Neutral",
+    "text": "Neutral\n\nUsers no longer get example scripts under examples/ — those now live as recipe pages. nbs/ tutorials similarly consolidate into docs/recipes/. Phase 7 (release) is responsible for the final archival move.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html",
+    "href": "design/adr/adr-001-v2-redesign.html",
+    "title": "ADR-001: Two-layer API",
+    "section": "",
+    "text": "Accepted — 2026-04-18\nImplemented across Phases 1–5 of the v2 redesign plan (.omc/plans/hwpapi_v2_redesign.md).",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-a-hierarchical-domain-model-office-automation-style",
+    "href": "design/adr/adr-001-v2-redesign.html#option-a-hierarchical-domain-model-office-automation-style",
+    "title": "ADR-001: Two-layer API",
+    "section": "Option A — hierarchical domain model (Office Automation style)",
+    "text": "Option A — hierarchical domain model (Office Automation style)\napp.doc.paragraphs[i].runs[j].charshape.bold = True\nPro: familiar to Word/Excel automation users; maximum collection consistency.\nCon: HWP is fundamentally position-based internally — some drill-down paths (runs) require virtualization. This became the shape of the high layer but not the whole API.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-b-flat-verb-api",
+    "href": "design/adr/adr-001-v2-redesign.html#option-b-flat-verb-api",
+    "title": "ADR-001: Two-layer API",
+    "section": "Option B — flat verb API",
+    "text": "Option B — flat verb API\napp.fill_field(), app.set_charshape(), app.goto_bookmark()\nPro: one namespace, minimal hierarchy.\nCon: reproduces the v1 App-as-god-object problem with new names. Defeats the slim-facade goal.\nRejected.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-c-two-layer-low-high-chosen",
+    "href": "design/adr/adr-001-v2-redesign.html#option-c-two-layer-low-high-chosen",
+    "title": "ADR-001: Two-layer API",
+    "section": "Option C — two-layer (low + high) ← chosen",
+    "text": "Option C — two-layer (low + high) ← chosen\nDjango ORM pattern: Model.objects is the opinionated public surface, django.db.connection is the escape hatch, both coexist as first-class APIs.\nAdopted as the v2 shape. Option A’s hierarchical domain model lives inside App.doc.*; Option D’s predicate filtering is partially adopted via Collection.filter(predicate).",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-d-query-centric-pandas-style",
+    "href": "design/adr/adr-001-v2-redesign.html#option-d-query-centric-pandas-style",
+    "title": "ADR-001: Two-layer API",
+    "section": "Option D — query-centric (pandas-style)",
+    "text": "Option D — query-centric (pandas-style)\ndoc.paragraphs.where(style=\"제목\").set(bold=True)\nPro: powerful bulk operations.\nCon: HWP is stream-based — where devolves to eager iteration, with performance cliffs on large documents.\nPartially adopted — collection.filter(predicate) is a subset of the query model.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-e-keep-a-deprecation-shim",
+    "href": "design/adr/adr-001-v2-redesign.html#option-e-keep-a-deprecation-shim",
+    "title": "ADR-001: Two-layer API",
+    "section": "Option E — keep a deprecation shim",
+    "text": "Option E — keep a deprecation shim\nPro: unbroken migration for v1 users.\nCon: doubles the maintenance surface (two public APIs, two doc paths), defeats the slim-facade goal, makes type-level “App-level vs. Document-level” distinctions impossible. Would preserve the 82-member footprint forever.\nRejected — per user acceptance. v2 is a clean-cut; v1 is frozen on the v1.x branch.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#positive",
+    "href": "design/adr/adr-001-v2-redesign.html#positive",
+    "title": "ADR-001: Two-layer API",
+    "section": "Positive",
+    "text": "Positive\n\nDocumentation IA matches code structure 1:1 — sidebar items correspond to import tree nodes.\nNew features are forced to answer “which layer?” before being added, preventing the v1-style drift.\nhwpapi.low is extractable — if it ever grows too large, it can ship as a separate package without breaking the high-level API.\ndir(app) fits on one screen.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#negative",
+    "href": "design/adr/adr-001-v2-redesign.html#negative",
+    "title": "ADR-001: Two-layer API",
+    "section": "Negative",
+    "text": "Negative\n\nv1 scripts break. Mitigation: the migration guide provides a row for every removed member with a v2 successor or escape-hatch pointer.\nThe layer policy requires vigilance. Mitigation: docs/design/architecture.qmd defines the “does this belong on the facade?” test, and every PR adding a public symbol must justify its layer choice.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#neutral",
+    "href": "design/adr/adr-001-v2-redesign.html#neutral",
+    "title": "ADR-001: Two-layer API",
+    "section": "Neutral",
+    "text": "Neutral\n\nDocumentation is a single source now (docs/ Quarto). The old nbs/ + examples/ + docs/*.md split is consolidated.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-001: Two-layer API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html",
+    "href": "design/adr/adr-003-multi-document.html",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "",
+    "text": "Tip채택 (2026-04-29)\n\n\n\n이 ADR 은 채택 되어 v3.0 으로 구현됨. - 버전: v3.0 (semver 정직, clean break) - Document.activate(): 모든 doc-scoped 메소드 시작 시 자동 호출 - v2 호환 shim: 없음 — App.open/save/save_as/close/doc 즉시 제거 - 사용자 마이그레이션: v2→v3 가이드",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#같은-자원을-두-위치에-노출",
+    "href": "design/adr/adr-003-multi-document.html#같은-자원을-두-위치에-노출",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "같은 자원을 두 위치에 노출",
+    "text": "같은 자원을 두 위치에 노출\n\n\n\n\n\n\n\n\n자원\nApp 레벨 (raw)\nDocument 레벨 (doc-scoped)\n\n\n\n\nactions\napp.actions.X\ndoc.actions.X — run() 직전 doc.activate() 자동\n\n\nparametersets\napp.engine.parametersets (raw 클래스)\ndoc.create_parameterset(...) — auto-activate\n\n\napi (COM 핸들)\napp.api — IHwpObject (process)\ndoc.api — IXHwpDocument (per-doc)\n\n\nengine\napp.engine — Engine 객체\n(그대로 — process 자원)",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#binding-의미",
+    "href": "design/adr/adr-003-multi-document.html#binding-의미",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "binding 의미",
+    "text": "binding 의미\n\n\n\n\n\n\n\n\n진입점\n활성화 책임\n추천 사용처\n\n\n\n\napp.actions.X\n사용자 (doc.activate() 수동)\nescape hatch / 단일 doc\n\n\ndoc.actions.X\n자동 (run 시점)\n일반 사용 / 다중 doc",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#구현-얇은-proxy",
+    "href": "design/adr/adr-003-multi-document.html#구현-얇은-proxy",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "구현 — 얇은 proxy",
+    "text": "구현 — 얇은 proxy\nclass _DocActions:\n    \"\"\"Document-scoped actions proxy.\"\"\"\n    def __init__(self, doc):\n        self._doc = doc\n        self._app = doc._app\n\n    def __getattr__(self, name):\n        action = getattr(self._app.actions, name)\n        return _ScopedAction(action, self._doc)\n\n\nclass _ScopedAction:\n    def __init__(self, action, doc):\n        self._action = action\n        self._doc = doc\n\n    @property\n    def pset(self):\n        return self._action.pset\n\n    def run(self, *a, **kw):\n        self._doc.activate()              # 핵심\n        return self._action.run(*a, **kw)\n\n\nclass Document:\n    @property\n    def actions(self):\n        return _DocActions(self)",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#사용자-멘탈-모델",
+    "href": "design/adr/adr-003-multi-document.html#사용자-멘탈-모델",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "사용자 멘탈 모델",
+    "text": "사용자 멘탈 모델\ndoc.actions.X.run()    →  \"doc 에 X 적용\" (안전)\napp.actions.X.run()    →  \"현재 활성 doc 에 X 적용 (사용자 책임)\"\nxlwings 의 book.api vs app.api 와 의미 동일.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#오버헤드",
+    "href": "design/adr/adr-003-multi-document.html#오버헤드",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "오버헤드",
+    "text": "오버헤드\nDocument.activate() = COM 호출 1 회 (~µs). 단일 doc 일 땐 noop (이미 활성). 다중 doc 일 때만 실질 비용 발생, 이마저도 사용자가 연속해서 같은 doc 을 다루는 경우 캐싱으로 0 으로 축소 가능.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#단일-문서-v2-와-거의-동일",
+    "href": "design/adr/adr-003-multi-document.html#단일-문서-v2-와-거의-동일",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "단일 문서 — v2 와 거의 동일",
+    "text": "단일 문서 — v2 와 거의 동일\nfrom hwpapi import App\n\nwith App() as app:\n    doc = app.docs.open(\"report.hwp\")\n    doc.insert_text(\"새 줄\\n\")\n    doc.save()\n    doc.close()",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#두-문서를-동시에-다루기-현재-불가능했던-것",
+    "href": "design/adr/adr-003-multi-document.html#두-문서를-동시에-다루기-현재-불가능했던-것",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "두 문서를 동시에 다루기 (현재 불가능했던 것)",
+    "text": "두 문서를 동시에 다루기 (현재 불가능했던 것)\nfrom hwpapi import App\n\nwith App() as app:\n    src = app.docs.open(\"source.hwp\")\n    dst = app.docs.add()                    # 빈 새 문서\n\n    for para in src.paragraphs:\n        dst.insert_text(para.text + \"\\n\")\n\n    dst.save_as(\"merged.hwp\")\n    src.close(save=False)                   # 원본은 그대로\n    dst.close()",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#일괄-변환-한-app-에서-n개-파일",
+    "href": "design/adr/adr-003-multi-document.html#일괄-변환-한-app-에서-n개-파일",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "일괄 변환 — 한 App 에서 N개 파일",
+    "text": "일괄 변환 — 한 App 에서 N개 파일\nfrom hwpapi import App\nfrom pathlib import Path\n\nwith App() as app:\n    for hwp in Path(\"inbox\").glob(\"*.hwp\"):\n        doc = app.docs.open(hwp)\n        doc.save_as(hwp.with_suffix(\".pdf\"))\n        doc.close()                         # 메모리 해제, 다음 파일로",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#활성-문서-전환",
+    "href": "design/adr/adr-003-multi-document.html#활성-문서-전환",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "활성 문서 전환",
+    "text": "활성 문서 전환\ndocs = app.docs                              # collection\nprint(len(docs))                             # 열린 문서 개수\nfor d in docs:\n    print(d.name)\ndocs[0].activate()                           # 첫 문서를 forefront 로",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#phase-0-명세-동결",
+    "href": "design/adr/adr-003-multi-document.html#phase-0-명세-동결",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "Phase 0 — 명세 동결",
+    "text": "Phase 0 — 명세 동결\n이 ADR 채택 후 v2.x 라인은 frozen. v2 사용자는 hwpapi==2.* pin. v3 (또는 v2.1) 은 새 minor 로 출시.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#phase-1-documents-collection-신설",
+    "href": "design/adr/adr-003-multi-document.html#phase-1-documents-collection-신설",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "Phase 1 — Documents collection 신설",
+    "text": "Phase 1 — Documents collection 신설\n\nhwpapi.collections.documents.DocumentCollection 작성\nApp 에 app.docs property 추가, app.doc 은 app.docs.active 로 내부 alias (v2.x 호환 임시).\napp.docs.open(path) 가 Document 인스턴스를 반환 (현재는 Document 가 빈 facade 라도 collection 만 일단 노출).",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#phase-2-document-에-메소드-이식",
+    "href": "design/adr/adr-003-multi-document.html#phase-2-document-에-메소드-이식",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "Phase 2 — Document 에 메소드 이식",
+    "text": "Phase 2 — Document 에 메소드 이식\n\nApp.open/save/save_as/close → Document.open/save/save_as/close 로 이동. App 메소드는 일단 deprecation shim 으로 남겨 active doc 으로 위임 (app.save() → app.docs.active.save()).\ntext I/O — insert_text, find_text, replace_all, select_all, get_selected_text, text (property), clear 를 Document 에 신설. 내부 구현은 raw actions.InsertText 등을 사용.\ncursor — Document.cursor.goto_page(...), move_to_field, in_table 등.\n7 개 collection accessor 는 그대로 (이미 Document 에 있음).",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#phase-3-app-의-lifecycle-정리",
+    "href": "design/adr/adr-003-multi-document.html#phase-3-app-의-lifecycle-정리",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "Phase 3 — App 의 lifecycle 정리",
+    "text": "Phase 3 — App 의 lifecycle 정리\n\nApp 에 남는 메소드: quit, visible, version, docs, engine, api. 그 외는 deprecated → v3.1 에서 제거.\nApp() __enter__/__exit__ 가 quit() 만 책임. 열린 문서는 자동 닫지 않음 (사용자가 명시적으로 close 또는 with-Document 사용).",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#phase-4-document-의-context-manager",
+    "href": "design/adr/adr-003-multi-document.html#phase-4-document-의-context-manager",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "Phase 4 — Document 의 context manager",
+    "text": "Phase 4 — Document 의 context manager\nwith app.docs.open(\"a.hwp\") as doc:\n    doc.insert_text(\"...\")\n    # exit 시 자동 close (저장 여부는 docs.open(..., save_on_close=) 로 제어)",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#phase-5-호환-shim-제거",
+    "href": "design/adr/adr-003-multi-document.html#phase-5-호환-shim-제거",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "Phase 5 — 호환 shim 제거",
+    "text": "Phase 5 — 호환 shim 제거\napp.open/save/close/doc 등 v2 호환 alias 를 제거하고 v3.0 stable release. v2 사용자는 migration 가이드 (이 ADR 의 부록) 따라 마이그레 이션.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#긍정",
+    "href": "design/adr/adr-003-multi-document.html#긍정",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "긍정",
+    "text": "긍정\n\n다중 문서 워크플로우 가능 — 일괄 변환, 병합, 비교 등\n저장/닫기 의도 명확 — doc.save() 는 “이 문서” 가 명확\nDocument 책임 범위 명확 — 7 collection + text I/O + cursor + save/close. App 은 process lifecycle 만.\nxlwings 사용자 친숙 — Python 데이터 분석가에게 mental model 동일\n테스트 격리 깔끔 — 각 테스트가 자기 Document 를 명시적으로 소유, race 없음",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#부정-위험",
+    "href": "design/adr/adr-003-multi-document.html#부정-위험",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "부정 / 위험",
+    "text": "부정 / 위험\n\nAPI 표면이 커짐 — Document 가 v2 의 거의 모든 App 메소드를 흡수. 슬림 facade 정신은 일부 후퇴 (다만 슬림한 것은 App 만).\nwin32com 의 active doc 추적과의 충돌 가능성 — HWP COM 은 명시적인 doc 핸들 전달이 일관되지 않음 (HAction.Run 은 항상 활성 문서 대상). 이 부분은 Document.activate() 를 모든 doc-scoped 메소 드 시작 시 자동 호출하는 방식으로 우회 (xlwings 도 동일 패턴).\n마이그레이션 비용 — v2 사용자에게 두 번째 breaking change (v1→v2→v3). 이 비용을 줄이려고 v3.0 에 deprecation shim 포함.\nHWP 의 다중 문서 지원이 완전하지 않을 수 있음 — XHwpDocuments 자체는 있지만 일부 action 은 활성 문서에만 적용됨. Document.api 를 통한 per-doc COM 호출이 가능한지 검증 필요 (Phase 1 spike).",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
     "objectID": "design/adr/adr-005-api-ergonomics.html",
     "href": "design/adr/adr-005-api-ergonomics.html",
     "title": "ADR-005: API ergonomics — refactoring + 직접 setter + 신규 메소드",
@@ -1296,594 +1968,6 @@
       "Design",
       "ADRs",
       "ADR-005: API ergonomics — refactoring + 직접 setter + 신규 메소드"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html",
-    "href": "design/adr/adr-003-multi-document.html",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "",
-    "text": "Tip채택 (2026-04-29)\n\n\n\n이 ADR 은 채택 되어 v3.0 으로 구현됨. - 버전: v3.0 (semver 정직, clean break) - Document.activate(): 모든 doc-scoped 메소드 시작 시 자동 호출 - v2 호환 shim: 없음 — App.open/save/save_as/close/doc 즉시 제거 - 사용자 마이그레이션: v2→v3 가이드",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#같은-자원을-두-위치에-노출",
-    "href": "design/adr/adr-003-multi-document.html#같은-자원을-두-위치에-노출",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "같은 자원을 두 위치에 노출",
-    "text": "같은 자원을 두 위치에 노출\n\n\n\n\n\n\n\n\n자원\nApp 레벨 (raw)\nDocument 레벨 (doc-scoped)\n\n\n\n\nactions\napp.actions.X\ndoc.actions.X — run() 직전 doc.activate() 자동\n\n\nparametersets\napp.engine.parametersets (raw 클래스)\ndoc.create_parameterset(...) — auto-activate\n\n\napi (COM 핸들)\napp.api — IHwpObject (process)\ndoc.api — IXHwpDocument (per-doc)\n\n\nengine\napp.engine — Engine 객체\n(그대로 — process 자원)",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#binding-의미",
-    "href": "design/adr/adr-003-multi-document.html#binding-의미",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "binding 의미",
-    "text": "binding 의미\n\n\n\n\n\n\n\n\n진입점\n활성화 책임\n추천 사용처\n\n\n\n\napp.actions.X\n사용자 (doc.activate() 수동)\nescape hatch / 단일 doc\n\n\ndoc.actions.X\n자동 (run 시점)\n일반 사용 / 다중 doc",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#구현-얇은-proxy",
-    "href": "design/adr/adr-003-multi-document.html#구현-얇은-proxy",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "구현 — 얇은 proxy",
-    "text": "구현 — 얇은 proxy\nclass _DocActions:\n    \"\"\"Document-scoped actions proxy.\"\"\"\n    def __init__(self, doc):\n        self._doc = doc\n        self._app = doc._app\n\n    def __getattr__(self, name):\n        action = getattr(self._app.actions, name)\n        return _ScopedAction(action, self._doc)\n\n\nclass _ScopedAction:\n    def __init__(self, action, doc):\n        self._action = action\n        self._doc = doc\n\n    @property\n    def pset(self):\n        return self._action.pset\n\n    def run(self, *a, **kw):\n        self._doc.activate()              # 핵심\n        return self._action.run(*a, **kw)\n\n\nclass Document:\n    @property\n    def actions(self):\n        return _DocActions(self)",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#사용자-멘탈-모델",
-    "href": "design/adr/adr-003-multi-document.html#사용자-멘탈-모델",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "사용자 멘탈 모델",
-    "text": "사용자 멘탈 모델\ndoc.actions.X.run()    →  \"doc 에 X 적용\" (안전)\napp.actions.X.run()    →  \"현재 활성 doc 에 X 적용 (사용자 책임)\"\nxlwings 의 book.api vs app.api 와 의미 동일.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#오버헤드",
-    "href": "design/adr/adr-003-multi-document.html#오버헤드",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "오버헤드",
-    "text": "오버헤드\nDocument.activate() = COM 호출 1 회 (~µs). 단일 doc 일 땐 noop (이미 활성). 다중 doc 일 때만 실질 비용 발생, 이마저도 사용자가 연속해서 같은 doc 을 다루는 경우 캐싱으로 0 으로 축소 가능.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#단일-문서-v2-와-거의-동일",
-    "href": "design/adr/adr-003-multi-document.html#단일-문서-v2-와-거의-동일",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "단일 문서 — v2 와 거의 동일",
-    "text": "단일 문서 — v2 와 거의 동일\nfrom hwpapi import App\n\nwith App() as app:\n    doc = app.docs.open(\"report.hwp\")\n    doc.insert_text(\"새 줄\\n\")\n    doc.save()\n    doc.close()",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#두-문서를-동시에-다루기-현재-불가능했던-것",
-    "href": "design/adr/adr-003-multi-document.html#두-문서를-동시에-다루기-현재-불가능했던-것",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "두 문서를 동시에 다루기 (현재 불가능했던 것)",
-    "text": "두 문서를 동시에 다루기 (현재 불가능했던 것)\nfrom hwpapi import App\n\nwith App() as app:\n    src = app.docs.open(\"source.hwp\")\n    dst = app.docs.add()                    # 빈 새 문서\n\n    for para in src.paragraphs:\n        dst.insert_text(para.text + \"\\n\")\n\n    dst.save_as(\"merged.hwp\")\n    src.close(save=False)                   # 원본은 그대로\n    dst.close()",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#일괄-변환-한-app-에서-n개-파일",
-    "href": "design/adr/adr-003-multi-document.html#일괄-변환-한-app-에서-n개-파일",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "일괄 변환 — 한 App 에서 N개 파일",
-    "text": "일괄 변환 — 한 App 에서 N개 파일\nfrom hwpapi import App\nfrom pathlib import Path\n\nwith App() as app:\n    for hwp in Path(\"inbox\").glob(\"*.hwp\"):\n        doc = app.docs.open(hwp)\n        doc.save_as(hwp.with_suffix(\".pdf\"))\n        doc.close()                         # 메모리 해제, 다음 파일로",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#활성-문서-전환",
-    "href": "design/adr/adr-003-multi-document.html#활성-문서-전환",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "활성 문서 전환",
-    "text": "활성 문서 전환\ndocs = app.docs                              # collection\nprint(len(docs))                             # 열린 문서 개수\nfor d in docs:\n    print(d.name)\ndocs[0].activate()                           # 첫 문서를 forefront 로",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#phase-0-명세-동결",
-    "href": "design/adr/adr-003-multi-document.html#phase-0-명세-동결",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "Phase 0 — 명세 동결",
-    "text": "Phase 0 — 명세 동결\n이 ADR 채택 후 v2.x 라인은 frozen. v2 사용자는 hwpapi==2.* pin. v3 (또는 v2.1) 은 새 minor 로 출시.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#phase-1-documents-collection-신설",
-    "href": "design/adr/adr-003-multi-document.html#phase-1-documents-collection-신설",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "Phase 1 — Documents collection 신설",
-    "text": "Phase 1 — Documents collection 신설\n\nhwpapi.collections.documents.DocumentCollection 작성\nApp 에 app.docs property 추가, app.doc 은 app.docs.active 로 내부 alias (v2.x 호환 임시).\napp.docs.open(path) 가 Document 인스턴스를 반환 (현재는 Document 가 빈 facade 라도 collection 만 일단 노출).",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#phase-2-document-에-메소드-이식",
-    "href": "design/adr/adr-003-multi-document.html#phase-2-document-에-메소드-이식",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "Phase 2 — Document 에 메소드 이식",
-    "text": "Phase 2 — Document 에 메소드 이식\n\nApp.open/save/save_as/close → Document.open/save/save_as/close 로 이동. App 메소드는 일단 deprecation shim 으로 남겨 active doc 으로 위임 (app.save() → app.docs.active.save()).\ntext I/O — insert_text, find_text, replace_all, select_all, get_selected_text, text (property), clear 를 Document 에 신설. 내부 구현은 raw actions.InsertText 등을 사용.\ncursor — Document.cursor.goto_page(...), move_to_field, in_table 등.\n7 개 collection accessor 는 그대로 (이미 Document 에 있음).",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#phase-3-app-의-lifecycle-정리",
-    "href": "design/adr/adr-003-multi-document.html#phase-3-app-의-lifecycle-정리",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "Phase 3 — App 의 lifecycle 정리",
-    "text": "Phase 3 — App 의 lifecycle 정리\n\nApp 에 남는 메소드: quit, visible, version, docs, engine, api. 그 외는 deprecated → v3.1 에서 제거.\nApp() __enter__/__exit__ 가 quit() 만 책임. 열린 문서는 자동 닫지 않음 (사용자가 명시적으로 close 또는 with-Document 사용).",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#phase-4-document-의-context-manager",
-    "href": "design/adr/adr-003-multi-document.html#phase-4-document-의-context-manager",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "Phase 4 — Document 의 context manager",
-    "text": "Phase 4 — Document 의 context manager\nwith app.docs.open(\"a.hwp\") as doc:\n    doc.insert_text(\"...\")\n    # exit 시 자동 close (저장 여부는 docs.open(..., save_on_close=) 로 제어)",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#phase-5-호환-shim-제거",
-    "href": "design/adr/adr-003-multi-document.html#phase-5-호환-shim-제거",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "Phase 5 — 호환 shim 제거",
-    "text": "Phase 5 — 호환 shim 제거\napp.open/save/close/doc 등 v2 호환 alias 를 제거하고 v3.0 stable release. v2 사용자는 migration 가이드 (이 ADR 의 부록) 따라 마이그레 이션.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#긍정",
-    "href": "design/adr/adr-003-multi-document.html#긍정",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "긍정",
-    "text": "긍정\n\n다중 문서 워크플로우 가능 — 일괄 변환, 병합, 비교 등\n저장/닫기 의도 명확 — doc.save() 는 “이 문서” 가 명확\nDocument 책임 범위 명확 — 7 collection + text I/O + cursor + save/close. App 은 process lifecycle 만.\nxlwings 사용자 친숙 — Python 데이터 분석가에게 mental model 동일\n테스트 격리 깔끔 — 각 테스트가 자기 Document 를 명시적으로 소유, race 없음",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-003-multi-document.html#부정-위험",
-    "href": "design/adr/adr-003-multi-document.html#부정-위험",
-    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
-    "section": "부정 / 위험",
-    "text": "부정 / 위험\n\nAPI 표면이 커짐 — Document 가 v2 의 거의 모든 App 메소드를 흡수. 슬림 facade 정신은 일부 후퇴 (다만 슬림한 것은 App 만).\nwin32com 의 active doc 추적과의 충돌 가능성 — HWP COM 은 명시적인 doc 핸들 전달이 일관되지 않음 (HAction.Run 은 항상 활성 문서 대상). 이 부분은 Document.activate() 를 모든 doc-scoped 메소 드 시작 시 자동 호출하는 방식으로 우회 (xlwings 도 동일 패턴).\n마이그레이션 비용 — v2 사용자에게 두 번째 breaking change (v1→v2→v3). 이 비용을 줄이려고 v3.0 에 deprecation shim 포함.\nHWP 의 다중 문서 지원이 완전하지 않을 수 있음 — XHwpDocuments 자체는 있지만 일부 action 은 활성 문서에만 적용됨. Document.api 를 통한 per-doc COM 호출이 가능한지 검증 필요 (Phase 1 spike).",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html",
-    "href": "design/adr/adr-001-v2-redesign.html",
-    "title": "ADR-001: Two-layer API",
-    "section": "",
-    "text": "Accepted — 2026-04-18\nImplemented across Phases 1–5 of the v2 redesign plan (.omc/plans/hwpapi_v2_redesign.md).",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-001: Two-layer API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#option-a-hierarchical-domain-model-office-automation-style",
-    "href": "design/adr/adr-001-v2-redesign.html#option-a-hierarchical-domain-model-office-automation-style",
-    "title": "ADR-001: Two-layer API",
-    "section": "Option A — hierarchical domain model (Office Automation style)",
-    "text": "Option A — hierarchical domain model (Office Automation style)\napp.doc.paragraphs[i].runs[j].charshape.bold = True\nPro: familiar to Word/Excel automation users; maximum collection consistency.\nCon: HWP is fundamentally position-based internally — some drill-down paths (runs) require virtualization. This became the shape of the high layer but not the whole API.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-001: Two-layer API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#option-b-flat-verb-api",
-    "href": "design/adr/adr-001-v2-redesign.html#option-b-flat-verb-api",
-    "title": "ADR-001: Two-layer API",
-    "section": "Option B — flat verb API",
-    "text": "Option B — flat verb API\napp.fill_field(), app.set_charshape(), app.goto_bookmark()\nPro: one namespace, minimal hierarchy.\nCon: reproduces the v1 App-as-god-object problem with new names. Defeats the slim-facade goal.\nRejected.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-001: Two-layer API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#option-c-two-layer-low-high-chosen",
-    "href": "design/adr/adr-001-v2-redesign.html#option-c-two-layer-low-high-chosen",
-    "title": "ADR-001: Two-layer API",
-    "section": "Option C — two-layer (low + high) ← chosen",
-    "text": "Option C — two-layer (low + high) ← chosen\nDjango ORM pattern: Model.objects is the opinionated public surface, django.db.connection is the escape hatch, both coexist as first-class APIs.\nAdopted as the v2 shape. Option A’s hierarchical domain model lives inside App.doc.*; Option D’s predicate filtering is partially adopted via Collection.filter(predicate).",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-001: Two-layer API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#option-d-query-centric-pandas-style",
-    "href": "design/adr/adr-001-v2-redesign.html#option-d-query-centric-pandas-style",
-    "title": "ADR-001: Two-layer API",
-    "section": "Option D — query-centric (pandas-style)",
-    "text": "Option D — query-centric (pandas-style)\ndoc.paragraphs.where(style=\"제목\").set(bold=True)\nPro: powerful bulk operations.\nCon: HWP is stream-based — where devolves to eager iteration, with performance cliffs on large documents.\nPartially adopted — collection.filter(predicate) is a subset of the query model.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-001: Two-layer API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#option-e-keep-a-deprecation-shim",
-    "href": "design/adr/adr-001-v2-redesign.html#option-e-keep-a-deprecation-shim",
-    "title": "ADR-001: Two-layer API",
-    "section": "Option E — keep a deprecation shim",
-    "text": "Option E — keep a deprecation shim\nPro: unbroken migration for v1 users.\nCon: doubles the maintenance surface (two public APIs, two doc paths), defeats the slim-facade goal, makes type-level “App-level vs. Document-level” distinctions impossible. Would preserve the 82-member footprint forever.\nRejected — per user acceptance. v2 is a clean-cut; v1 is frozen on the v1.x branch.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-001: Two-layer API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#positive",
-    "href": "design/adr/adr-001-v2-redesign.html#positive",
-    "title": "ADR-001: Two-layer API",
-    "section": "Positive",
-    "text": "Positive\n\nDocumentation IA matches code structure 1:1 — sidebar items correspond to import tree nodes.\nNew features are forced to answer “which layer?” before being added, preventing the v1-style drift.\nhwpapi.low is extractable — if it ever grows too large, it can ship as a separate package without breaking the high-level API.\ndir(app) fits on one screen.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-001: Two-layer API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#negative",
-    "href": "design/adr/adr-001-v2-redesign.html#negative",
-    "title": "ADR-001: Two-layer API",
-    "section": "Negative",
-    "text": "Negative\n\nv1 scripts break. Mitigation: the migration guide provides a row for every removed member with a v2 successor or escape-hatch pointer.\nThe layer policy requires vigilance. Mitigation: docs/design/architecture.qmd defines the “does this belong on the facade?” test, and every PR adding a public symbol must justify its layer choice.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-001: Two-layer API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#neutral",
-    "href": "design/adr/adr-001-v2-redesign.html#neutral",
-    "title": "ADR-001: Two-layer API",
-    "section": "Neutral",
-    "text": "Neutral\n\nDocumentation is a single source now (docs/ Quarto). The old nbs/ + examples/ + docs/*.md split is consolidated.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-001: Two-layer API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-002-quarto-docs.html",
-    "href": "design/adr/adr-002-quarto-docs.html",
-    "title": "ADR-002: Quarto single-pipeline documentation",
-    "section": "",
-    "text": "Accepted — 2026-04-18\nImplemented in Phase 6 of the v2 redesign plan.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-002: Quarto single-pipeline documentation"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-002-quarto-docs.html#mkdocs-material",
-    "href": "design/adr/adr-002-quarto-docs.html#mkdocs-material",
-    "title": "ADR-002: Quarto single-pipeline documentation",
-    "section": "MkDocs Material",
-    "text": "MkDocs Material\nPro: Python-native, widely deployed, excellent default theme.\nCon: Loses existing Quarto assets (nbs/ content). Worse support for computational pages (nbs/ used Jupyter kernel execution; Quarto preserves that natively).\nRejected on asset-preservation grounds.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-002: Quarto single-pipeline documentation"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-002-quarto-docs.html#two-sites-in-parallel-nbs-tutorials-docs-reference",
-    "href": "design/adr/adr-002-quarto-docs.html#two-sites-in-parallel-nbs-tutorials-docs-reference",
-    "title": "ADR-002: Quarto single-pipeline documentation",
-    "section": "Two sites in parallel (nbs/ → tutorials, docs/ → reference)",
-    "text": "Two sites in parallel (nbs/ → tutorials, docs/ → reference)\nPro: Minimum migration effort.\nCon: Violates the “single source of truth” principle. Invites the same drift the v1 state showed.\nRejected.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-002: Quarto single-pipeline documentation"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-002-quarto-docs.html#sphinx-autodoc-sphinx_book_theme",
-    "href": "design/adr/adr-002-quarto-docs.html#sphinx-autodoc-sphinx_book_theme",
-    "title": "ADR-002: Quarto single-pipeline documentation",
-    "section": "Sphinx + autodoc + sphinx_book_theme",
-    "text": "Sphinx + autodoc + sphinx_book_theme\nPro: Mature Python toolchain.\nCon: Markdown-first authoring via myst_parser is still less polished than Quarto’s. Would require replacing Quarto anyway. More moving parts.\nRejected given Quarto’s existing adoption in the repo.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-002: Quarto single-pipeline documentation"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-002-quarto-docs.html#positive",
-    "href": "design/adr/adr-002-quarto-docs.html#positive",
-    "title": "ADR-002: Quarto single-pipeline documentation",
-    "section": "Positive",
-    "text": "Positive\n\nOne quarto render docs/ produces the entire site.\nquartodoc build regenerates the reference layer from docstrings — the reference cannot drift from the code.\ndocs/recipes/*.qmd can stay readable (Markdown tables, inline code) without executing HWP-dependent code blocks (marked eval: false).\nADRs and architecture notes live alongside user documentation — design/ is just another sidebar section.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-002: Quarto single-pipeline documentation"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-002-quarto-docs.html#negative",
-    "href": "design/adr/adr-002-quarto-docs.html#negative",
-    "title": "ADR-002: Quarto single-pipeline documentation",
-    "section": "Negative",
-    "text": "Negative\n\nquarto and quartodoc are build-time dependencies for anyone re-rendering the site. Mitigation: pip install -e \".[docs]\" captures both.\nquartodoc has occasional quirks with Protocol classes and cached_property descriptors. Mitigation: explicit contents: listings in _quarto.yml name every page, rather than relying on auto-discovery for core classes.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-002: Quarto single-pipeline documentation"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-002-quarto-docs.html#neutral",
-    "href": "design/adr/adr-002-quarto-docs.html#neutral",
-    "title": "ADR-002: Quarto single-pipeline documentation",
-    "section": "Neutral",
-    "text": "Neutral\n\nUsers no longer get example scripts under examples/ — those now live as recipe pages. nbs/ tutorials similarly consolidate into docs/recipes/. Phase 7 (release) is responsible for the final archival move.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-002: Quarto single-pipeline documentation"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html",
-    "href": "design/adr/adr-004-element-api.html",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "",
-    "text": "v3 의 ADR-003 으로 다중 문서가 깔끔히 정착했고, 각 Document 에 7개 컬렉션 (fields, bookmarks, hyperlinks, images, paragraphs, styles, tables) 이 자리잡았 습니다. 그러나 컬렉션이 반환하는 개별 element 들은 여전히 빈약합니다:\n\ndoc.paragraphs[0] → Paragraph — 현재 text, index 정도만\ndoc.tables[0] → Table — cell(r, c) 정도만\ndoc.tables[0].cell(1, 1) → Cell — text, border, fill setter 가 약속만 있음 (migration v1→v2 가이드 참조)\nRun (글자 단위 형식 단위) 클래스 자체가 없음\n\n결과적으로 사용자가 “이 단락의 정렬을 바꾸고 글자 색만 바꾸고 싶다” 같은 작업을 할 때 여전히 doc.actions.X.run() raw 로 내려가야 합니다. v3 의 doc.X 일관성이 element 레벨에서 깨지는 셈입니다.\nxlwings 와 비교:\n# xlwings — element 까지 풀 API\nsheet.range(\"A1:B5\").value = [[1,2],[3,4]]\nsheet.range(\"A1\").color = (255, 200, 200)\nsheet.range(\"A1\").font.bold = True\nhwpapi 가 도달해야 할 비슷한 수준:\n# 목표 (v3.x — 이 ADR)\npara = doc.paragraphs[0]\npara.text = \"새 본문\"\npara.parashape.align = \"center\"\nfor run in para.runs:\n    run.charshape.bold = True\n\ncell = doc.tables[0].cell(1, 1)\ncell.text = \"Q1\"\ncell.fill = \"#FFE0E0\"\ncell.border = {\"top\": \"double\", \"bottom\": \"solid\"}",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html#element-매트릭스",
-    "href": "design/adr/adr-004-element-api.html#element-매트릭스",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "Element 매트릭스",
-    "text": "Element 매트릭스\n\n\n\n\n\n\n\n\nElement\n컬렉션 진입\n책임\n\n\n\n\nParagraph\ndoc.paragraphs[i]\n단락 텍스트, ParaShape, runs 컬렉션\n\n\nRun\nparagraph.runs[i]\n한 글자형식 구간의 text, CharShape\n\n\nTable\ndoc.tables[i]\nrows/cols, cell(r,c), 표 단위 BorderFill\n\n\nCell\ntable.cell(r, c)\ntext, fill, border, charshape, parashape\n\n\nSection (보류)\ndoc.sections[i]\n페이지 설정, 머리말/꼬리말 (v3.1)",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html#표면-각-element-의-핵심-surface",
-    "href": "design/adr/adr-004-element-api.html#표면-각-element-의-핵심-surface",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "표면 (각 element 의 핵심 surface)",
-    "text": "표면 (각 element 의 핵심 surface)\nclass Paragraph:\n    index           # 단락 번호 (0-based)\n    text            # r/w property\n    parashape       # ParaShape (r/w)\n    charshape       # 단락 시작 글자의 CharShape (r/w convenience)\n    runs            # RunCollection\n    insert_text(s)  # 이 단락 끝에 추가\n    delete()        # 이 단락 제거\n    activate()      # 커서를 이 단락으로\n\nclass Run:\n    paragraph       # owning Paragraph\n    text            # r/w\n    charshape       # CharShape (r/w)\n    start, end      # 단락 안의 글자 위치 범위\n\nclass Table:\n    index, rows, cols\n    cell(r, c) → Cell\n    iter_cells()    # row-major\n    delete()\n    border_fill     # 표 전체 BorderFill\n    activate()\n\nclass Cell:\n    table           # owning Table\n    row, col, address (e.g. \"B2\")\n    text            # r/w\n    charshape / parashape   # r/w\n    fill            # str | Color | None — 셀 배경\n    border          # dict 형 setter ({\"top\": \"solid\", ...})\n    width / height  # r/w (HWPUNIT)\n    activate()      # 이 셀로 커서 이동",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html#doc-activate-패턴-적용",
-    "href": "design/adr/adr-004-element-api.html#doc-activate-패턴-적용",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "doc-activate 패턴 적용",
-    "text": "doc-activate 패턴 적용\n모든 element 는 owning doc 의 reference 를 갖고, 자기 메소드/setter 진입 시 doc.activate() 를 호출합니다 (ADR-003 의 _DocActions 와 동일 패턴):\nclass Paragraph:\n    def __init__(self, doc, index):\n        self._doc = doc\n        self._index = index\n\n    @property\n    def text(self):\n        self._doc.activate()\n        # ... GetTextFile + 범위 추출\n        return ...\n\n    @text.setter\n    def text(self, value):\n        self._doc.activate()\n        # ... select range + insert_text\n다중 문서 환경에서 for p in doc1.paragraphs: p.text 와 for p in doc2.paragraphs: p.text 가 자동 doc-switching 되면서 안전하게 동작.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html#charshape-parashape-기존-parameterset-재사용",
-    "href": "design/adr/adr-004-element-api.html#charshape-parashape-기존-parameterset-재사용",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "CharShape / ParaShape — 기존 ParameterSet 재사용",
-    "text": "CharShape / ParaShape — 기존 ParameterSet 재사용\nv2 에서 이미 hwpapi.low.parametersets.CharShape / ParaShape 가 있음. element 의 .charshape / .parashape 는 이들의 인스턴스를 반환/할당. 사용자는 익숙한 dict-like 접근:\ncs = run.charshape      # CharShape 인스턴스\ncs.bold = True\ncs.height = 1400\nrun.charshape = cs      # setter — 적용\n\n# 또는 dict 한방\nrun.charshape = {\"bold\": True, \"height\": 1400}",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html#사용자-멘탈-모델",
-    "href": "design/adr/adr-004-element-api.html#사용자-멘탈-모델",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "사용자 멘탈 모델",
-    "text": "사용자 멘탈 모델\nApp (process)\n└── Document (per-doc)\n    ├── 컬렉션 (fields, bookmarks, ...)\n    ├── paragraphs : Collection[Paragraph]\n    │   └── runs   : Collection[Run]\n    └── tables : Collection[Table]\n        └── cell(r, c) : Cell\n각 레이어는 자기 책임만 — App 은 lifecycle, Document 는 doc-scoped ops, Element 는 element-scoped ops.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html#phase-1-paragraph-run",
-    "href": "design/adr/adr-004-element-api.html#phase-1-paragraph-run",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "Phase 1 — Paragraph + Run",
-    "text": "Phase 1 — Paragraph + Run\n\nParagraph.text getter/setter\nParagraph.parashape getter/setter\nParagraph.runs (RunCollection)\nRun.text, Run.charshape getter/setter\n테스트: tests/test_paragraph.py, tests/test_run.py",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html#phase-2-table-cell",
-    "href": "design/adr/adr-004-element-api.html#phase-2-table-cell",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "Phase 2 — Table + Cell",
-    "text": "Phase 2 — Table + Cell\n\nTable.cell(r, c) 가 Cell 반환\nCell.text, Cell.fill, Cell.border (border dict 형)\nCell.charshape, Cell.parashape\nCell.activate() 가 커서를 셀로\n테스트: tests/test_table.py, tests/test_cell.py",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html#phase-3-runcollection-iter_cells",
-    "href": "design/adr/adr-004-element-api.html#phase-3-runcollection-iter_cells",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "Phase 3 — RunCollection + iter_cells",
-    "text": "Phase 3 — RunCollection + iter_cells\n\nparagraph.runs 의 iteration / 인덱싱\nTable.iter_cells() row-major + filter\n테스트 추가",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html#phase-4-section-보류",
-    "href": "design/adr/adr-004-element-api.html#phase-4-section-보류",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "Phase 4 — Section (보류)",
-    "text": "Phase 4 — Section (보류)\n\n페이지 설정, 머리말/꼬리말 — v3.1 또는 별도 ADR",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html#단락-run",
-    "href": "design/adr/adr-004-element-api.html#단락-run",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "단락 / Run",
-    "text": "단락 / Run\ndoc = app.docs.open(\"report.hwp\")\n\n# 1단락 텍스트와 정렬\npara = doc.paragraphs[0]\npara.text = \"1분기 보고\"\npara.parashape = {\"align\": \"center\", \"line_spacing\": 180}\n\n# 안에 있는 모든 run 을 굵게\nfor run in para.runs:\n    run.charshape = {\"bold\": True}\n\n# 또는 한 단락 안의 일부만\npara.runs[0].charshape = {\"text_color\": \"#E74C3C\"}",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html#table-cell",
-    "href": "design/adr/adr-004-element-api.html#table-cell",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "Table / Cell",
-    "text": "Table / Cell\ndoc.insert_table(rows=4, cols=4)\ntable = doc.tables[-1]                  # 방금 만든 표\n\ntable.cell(0, 0).text = \"제품\"\ntable.cell(0, 1).text = \"Q1\"\ntable.cell(0, 2).text = \"Q2\"\ntable.cell(0, 3).text = \"Q3\"\n\n# 헤더 셀 일괄 서식\nfor c in range(4):\n    cell = table.cell(0, c)\n    cell.fill = \"#34495E\"\n    cell.charshape = {\"bold\": True, \"text_color\": \"#FFFFFF\"}\n\n# 첫 열만 굵은 테두리\nfor r in range(1, 4):\n    table.cell(r, 0).border = {\"right\": \"double\"}",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html#다중-문서-element",
-    "href": "design/adr/adr-004-element-api.html#다중-문서-element",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "다중 문서 + element",
-    "text": "다중 문서 + element\nsrc = app.docs.open(\"source.hwp\")\ndst = app.docs.add()\n\n# doc-activate 자동 — element 가 owning doc 으로 자동 전환\nfor para in src.paragraphs:\n    if para.text.startswith(\"□\"):\n        # 이 시점엔 src 활성, src.paragraphs[i].text 는 정상\n        pass\n\n# dst 작업 — 자동 전환\nfor row in [[\"A\", \"B\"], [\"C\", \"D\"]]:\n    dst.insert_table(rows=1, cols=2)\n    for c, val in enumerate(row):\n        dst.tables[-1].cell(0, c).text = val",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html#긍정",
-    "href": "design/adr/adr-004-element-api.html#긍정",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "긍정",
-    "text": "긍정\n\nAPI 일관성 — doc.X, paragraph.X, cell.X 모두 같은 패턴\n다중 문서 안전 — element 도 doc-activate 자동\nraw action 의존도 감소 — Cell 서식 등 일상 작업이 element 메소드로 가능\nxlwings/openpyxl 사용자 친숙 — sheet.range, cell.font 등과 동형\n테스트 가능 — Mock 으로 element 단위 검증",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-004-element-api.html#부정-위험",
-    "href": "design/adr/adr-004-element-api.html#부정-위험",
-    "title": "ADR-004: Element-level API — Run / Paragraph / Cell / Section",
-    "section": "부정 / 위험",
-    "text": "부정 / 위험\n\n클래스 수 증가 — Paragraph/Run/Table/Cell 4개 신규. 컬렉션 포함 8개 (RunCollection, CellCollection 도) 이미 늘어남.\nHWP 의 element 인덱싱 불안정 — 문서 편집 중 paragraph index 가 밀릴 수 있음. cell 도 표 행/열 추가 시 변동. 안정적 식별자가 필요한 경우 사용자가 reload 해야 함 (xlwings 도 동일).\nCharShape/ParaShape 의 process-wide pset 문제 — element 마다 자기 pset 을 보유하지 않고 process 레벨 공유. doc-activate 와 결합해 안전하나, 동시성은 여전히 보장 안 됨 (Python GIL 가정).\nPhase 1/2 구현 비용 — 각 element 에 대해 텍스트 범위 추적, selection 관리, charshape 적용/읽기 인프라 필요. 약 600~1000 LOC 추정.",
-    "crumbs": [
-      "Design",
-      "ADRs",
-      "ADR-004: Element-level API — Run / Paragraph / Cell / Section"
     ]
   },
   {

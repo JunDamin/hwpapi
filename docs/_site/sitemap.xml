@@ -93,24 +93,28 @@
     <lastmod>2026-04-28T09:15:12.242Z</lastmod>
   </url>
   <url>
-    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-005-api-ergonomics.html</loc>
-    <lastmod>2026-04-29T05:35:36.126Z</lastmod>
+    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-006-python-docx-patterns.html</loc>
+    <lastmod>2026-04-29T05:48:10.236Z</lastmod>
   </url>
   <url>
-    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-003-multi-document.html</loc>
-    <lastmod>2026-04-29T05:17:29.251Z</lastmod>
-  </url>
-  <url>
-    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-001-v2-redesign.html</loc>
-    <lastmod>2026-04-28T09:15:12.230Z</lastmod>
+    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-004-element-api.html</loc>
+    <lastmod>2026-04-29T05:19:15.568Z</lastmod>
   </url>
   <url>
     <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-002-quarto-docs.html</loc>
     <lastmod>2026-04-28T09:15:12.231Z</lastmod>
   </url>
   <url>
-    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-004-element-api.html</loc>
-    <lastmod>2026-04-29T05:19:15.568Z</lastmod>
+    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-001-v2-redesign.html</loc>
+    <lastmod>2026-04-28T09:15:12.230Z</lastmod>
+  </url>
+  <url>
+    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-003-multi-document.html</loc>
+    <lastmod>2026-04-29T05:17:29.251Z</lastmod>
+  </url>
+  <url>
+    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-005-api-ergonomics.html</loc>
+    <lastmod>2026-04-29T05:35:36.126Z</lastmod>
   </url>
   <url>
     <loc>https://JunDamin.github.io/hwpapi/design/architecture.html</loc>

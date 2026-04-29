@@ -8,7 +8,7 @@
 
 <meta name="dcterms.date" content="2026-04-29">
 
-<title>ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document – hwpapi</title>
+<title>ADR-006: python-docx 패턴 — 차용/배제 후보 – hwpapi</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -68,8 +68,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
-<link href="../../design/adr/adr-004-element-api.html" rel="next">
-<link href="../../design/adr/adr-002-quarto-docs.html" rel="prev">
+<link href="../../design/adr/adr-005-api-ergonomics.html" rel="prev">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
@@ -346,7 +345,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../design/adr/adr-001-v2-redesign.html">ADRs</a></li><li class="breadcrumb-item"><a href="../../design/adr/adr-003-multi-document.html">ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../design/adr/adr-001-v2-redesign.html">ADRs</a></li><li class="breadcrumb-item"><a href="../../design/adr/adr-006-python-docx-patterns.html">ADR-006: python-docx 패턴 — 차용/배제 후보</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -393,7 +392,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../design/adr/adr-003-multi-document.html" class="sidebar-item-text sidebar-link active">
+  <a href="../../design/adr/adr-003-multi-document.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document</span></a>
   </div>
 </li>
@@ -411,7 +410,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../design/adr/adr-006-python-docx-patterns.html" class="sidebar-item-text sidebar-link">
+  <a href="../../design/adr/adr-006-python-docx-patterns.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">ADR-006: python-docx 패턴 — 차용/배제 후보</span></a>
   </div>
 </li>
@@ -428,51 +427,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#맥락-context" id="toc-맥락-context" class="nav-link active" data-scroll-target="#맥락-context">맥락 (Context)</a></li>
-  <li><a href="#영감-inspiration-xlwings" id="toc-영감-inspiration-xlwings" class="nav-link" data-scroll-target="#영감-inspiration-xlwings">영감 (Inspiration) — xlwings</a></li>
-  <li><a href="#결정-decision" id="toc-결정-decision" class="nav-link" data-scroll-target="#결정-decision">결정 (Decision)</a></li>
-  <li><a href="#process-level-자원-binding-정책-actions-parametersets-api" id="toc-process-level-자원-binding-정책-actions-parametersets-api" class="nav-link" data-scroll-target="#process-level-자원-binding-정책-actions-parametersets-api">Process-level 자원 binding 정책 (Actions / ParameterSets / API)</a>
+  <li><a href="#python-docx-의-핵심-구조" id="toc-python-docx-의-핵심-구조" class="nav-link" data-scroll-target="#python-docx-의-핵심-구조">python-docx 의 핵심 구조</a></li>
+  <li><a href="#비교-표-hwpapiv3-xlwings-python-docx" id="toc-비교-표-hwpapiv3-xlwings-python-docx" class="nav-link" data-scroll-target="#비교-표-hwpapiv3-xlwings-python-docx">비교 표 — hwpapi(v3) / xlwings / python-docx</a></li>
+  <li><a href="#차용-후보-python-docx-에서" id="toc-차용-후보-python-docx-에서" class="nav-link" data-scroll-target="#차용-후보-python-docx-에서">차용 후보 — python-docx 에서</a>
   <ul class="collapse">
-  <li><a href="#같은-자원을-두-위치에-노출" id="toc-같은-자원을-두-위치에-노출" class="nav-link" data-scroll-target="#같은-자원을-두-위치에-노출">같은 자원을 두 위치에 노출</a></li>
-  <li><a href="#binding-의미" id="toc-binding-의미" class="nav-link" data-scroll-target="#binding-의미">binding 의미</a></li>
-  <li><a href="#구현-얇은-proxy" id="toc-구현-얇은-proxy" class="nav-link" data-scroll-target="#구현-얇은-proxy">구현 — 얇은 proxy</a></li>
-  <li><a href="#사용자-멘탈-모델" id="toc-사용자-멘탈-모델" class="nav-link" data-scroll-target="#사용자-멘탈-모델">사용자 멘탈 모델</a></li>
-  <li><a href="#오버헤드" id="toc-오버헤드" class="nav-link" data-scroll-target="#오버헤드">오버헤드</a></li>
-  </ul></li>
-  <li><a href="#사용-예-examples" id="toc-사용-예-examples" class="nav-link" data-scroll-target="#사용-예-examples">사용 예 (Examples)</a>
+  <li><a href="#a.-권장-도입-검토" id="toc-a.-권장-도입-검토" class="nav-link" data-scroll-target="#a.-권장-도입-검토">A. 권장 (도입 검토)</a>
   <ul class="collapse">
-  <li><a href="#단일-문서-v2-와-거의-동일" id="toc-단일-문서-v2-와-거의-동일" class="nav-link" data-scroll-target="#단일-문서-v2-와-거의-동일">단일 문서 — v2 와 거의 동일</a></li>
-  <li><a href="#두-문서를-동시에-다루기-현재-불가능했던-것" id="toc-두-문서를-동시에-다루기-현재-불가능했던-것" class="nav-link" data-scroll-target="#두-문서를-동시에-다루기-현재-불가능했던-것">두 문서를 동시에 다루기 (현재 불가능했던 것)</a></li>
-  <li><a href="#일괄-변환-한-app-에서-n개-파일" id="toc-일괄-변환-한-app-에서-n개-파일" class="nav-link" data-scroll-target="#일괄-변환-한-app-에서-n개-파일">일괄 변환 — 한 App 에서 N개 파일</a></li>
-  <li><a href="#활성-문서-전환" id="toc-활성-문서-전환" class="nav-link" data-scroll-target="#활성-문서-전환">활성 문서 전환</a></li>
+  <li><a href="#a.1-section-first-class-페이지-설정-머리말-꼬리말" id="toc-a.1-section-first-class-페이지-설정-머리말-꼬리말" class="nav-link" data-scroll-target="#a.1-section-first-class-페이지-설정-머리말-꼬리말">A.1 Section first-class — 페이지 설정 / 머리말 / 꼬리말</a></li>
+  <li><a href="#a.2-style-을-객체로-단순-string-아님" id="toc-a.2-style-을-객체로-단순-string-아님" class="nav-link" data-scroll-target="#a.2-style-을-객체로-단순-string-아님">A.2 Style 을 객체로 (단순 string 아님)</a></li>
+  <li><a href="#a.3-tri-state-서식-property-truefalsenone" id="toc-a.3-tri-state-서식-property-truefalsenone" class="nav-link" data-scroll-target="#a.3-tri-state-서식-property-truefalsenone">A.3 Tri-state 서식 property (True/False/None)</a></li>
+  <li><a href="#a.4-단위-클래스-현재-함수" id="toc-a.4-단위-클래스-현재-함수" class="nav-link" data-scroll-target="#a.4-단위-클래스-현재-함수">A.4 단위 클래스 (현재 함수)</a></li>
+  <li><a href="#a.5-document-core_properties-메타데이터-정식화" id="toc-a.5-document-core_properties-메타데이터-정식화" class="nav-link" data-scroll-target="#a.5-document-core_properties-메타데이터-정식화">A.5 Document core_properties (메타데이터 정식화)</a></li>
+  <li><a href="#a.6-body.iter-문서-순서대로-paragraph-table-순회" id="toc-a.6-body.iter-문서-순서대로-paragraph-table-순회" class="nav-link" data-scroll-target="#a.6-body.iter-문서-순서대로-paragraph-table-순회">A.6 <code>body.iter()</code> — 문서 순서대로 paragraph + table 순회</a></li>
+  <li><a href="#a.7-add_x-의-일관-반환-만든-객체-돌려주기" id="toc-a.7-add_x-의-일관-반환-만든-객체-돌려주기" class="nav-link" data-scroll-target="#a.7-add_x-의-일관-반환-만든-객체-돌려주기">A.7 <code>add_X</code> 의 일관 반환 — 만든 객체 돌려주기</a></li>
   </ul></li>
-  <li><a href="#마이그레이션-단계-phases" id="toc-마이그레이션-단계-phases" class="nav-link" data-scroll-target="#마이그레이션-단계-phases">마이그레이션 단계 (Phases)</a>
+  <li><a href="#b.-보류-해보고-결정" id="toc-b.-보류-해보고-결정" class="nav-link" data-scroll-target="#b.-보류-해보고-결정">B. 보류 (해보고 결정)</a>
   <ul class="collapse">
-  <li><a href="#phase-0-명세-동결" id="toc-phase-0-명세-동결" class="nav-link" data-scroll-target="#phase-0-명세-동결">Phase 0 — 명세 동결</a></li>
-  <li><a href="#phase-1-documents-collection-신설" id="toc-phase-1-documents-collection-신설" class="nav-link" data-scroll-target="#phase-1-documents-collection-신설">Phase 1 — <code>Documents</code> collection 신설</a></li>
-  <li><a href="#phase-2-document-에-메소드-이식" id="toc-phase-2-document-에-메소드-이식" class="nav-link" data-scroll-target="#phase-2-document-에-메소드-이식">Phase 2 — <code>Document</code> 에 메소드 이식</a></li>
-  <li><a href="#phase-3-app-의-lifecycle-정리" id="toc-phase-3-app-의-lifecycle-정리" class="nav-link" data-scroll-target="#phase-3-app-의-lifecycle-정리">Phase 3 — App 의 lifecycle 정리</a></li>
-  <li><a href="#phase-4-document-의-context-manager" id="toc-phase-4-document-의-context-manager" class="nav-link" data-scroll-target="#phase-4-document-의-context-manager">Phase 4 — Document 의 context manager</a></li>
-  <li><a href="#phase-5-호환-shim-제거" id="toc-phase-5-호환-shim-제거" class="nav-link" data-scroll-target="#phase-5-호환-shim-제거">Phase 5 — 호환 shim 제거</a></li>
+  <li><a href="#b.1-run-의-boolean-property-api-run.bold-true" id="toc-b.1-run-의-boolean-property-api-run.bold-true" class="nav-link" data-scroll-target="#b.1-run-의-boolean-property-api-run.bold-true">B.1 Run 의 boolean property API (<code>run.bold = True</code>)</a></li>
+  <li><a href="#b.2-paragraph.alignment-wd_align_paragraph.center-enum-import" id="toc-b.2-paragraph.alignment-wd_align_paragraph.center-enum-import" class="nav-link" data-scroll-target="#b.2-paragraph.alignment-wd_align_paragraph.center-enum-import">B.2 <code>paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER</code> (enum import)</a></li>
   </ul></li>
-  <li><a href="#v2-v3-변환-표-요약" id="toc-v2-v3-변환-표-요약" class="nav-link" data-scroll-target="#v2-v3-변환-표-요약">v2 → v3 변환 표 (요약)</a></li>
-  <li><a href="#호환성-정책-compatibility" id="toc-호환성-정책-compatibility" class="nav-link" data-scroll-target="#호환성-정책-compatibility">호환성 정책 (Compatibility)</a></li>
+  <li><a href="#c.-기각-hwpapi-도메인에-부적합" id="toc-c.-기각-hwpapi-도메인에-부적합" class="nav-link" data-scroll-target="#c.-기각-hwpapi-도메인에-부적합">C. 기각 (hwpapi 도메인에 부적합)</a>
+  <ul class="collapse">
+  <li><a href="#c.1-ooxml-lxml-element-접근" id="toc-c.1-ooxml-lxml-element-접근" class="nav-link" data-scroll-target="#c.1-ooxml-lxml-element-접근">C.1 OOXML lxml element 접근</a></li>
+  <li><a href="#c.2-wd_-같은-enum-접두-모듈" id="toc-c.2-wd_-같은-enum-접두-모듈" class="nav-link" data-scroll-target="#c.2-wd_-같은-enum-접두-모듈">C.2 <code>WD_*</code> 같은 enum 접두 모듈</a></li>
+  <li><a href="#c.3-documentpath-생성자에-파일-경로" id="toc-c.3-documentpath-생성자에-파일-경로" class="nav-link" data-scroll-target="#c.3-documentpath-생성자에-파일-경로">C.3 <code>Document(path)</code> 생성자에 파일 경로</a></li>
+  </ul></li>
+  <li><a href="#d.-python-docx-의-단점-hwpapi-가-이미-해결" id="toc-d.-python-docx-의-단점-hwpapi-가-이미-해결" class="nav-link" data-scroll-target="#d.-python-docx-의-단점-hwpapi-가-이미-해결">D. python-docx 의 단점 — hwpapi 가 이미 해결</a></li>
+  </ul></li>
+  <li><a href="#통합-결과-adr-005-보강" id="toc-통합-결과-adr-005-보강" class="nav-link" data-scroll-target="#통합-결과-adr-005-보강">통합 결과 — ADR-005 보강</a></li>
   <li><a href="#결과-consequences" id="toc-결과-consequences" class="nav-link" data-scroll-target="#결과-consequences">결과 (Consequences)</a>
   <ul class="collapse">
   <li><a href="#긍정" id="toc-긍정" class="nav-link" data-scroll-target="#긍정">긍정</a></li>
   <li><a href="#부정-위험" id="toc-부정-위험" class="nav-link" data-scroll-target="#부정-위험">부정 / 위험</a></li>
   </ul></li>
-  <li><a href="#결정-이전-미해결-질문" id="toc-결정-이전-미해결-질문" class="nav-link" data-scroll-target="#결정-이전-미해결-질문">결정 (이전 미해결 질문)</a></li>
+  <li><a href="#미해결-질문" id="toc-미해결-질문" class="nav-link" data-scroll-target="#미해결-질문">미해결 질문</a></li>
   <li><a href="#참고" id="toc-참고" class="nav-link" data-scroll-target="#참고">참고</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/design/adr/adr-003-multi-document.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/design/adr/adr-006-python-docx-patterns.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../design/adr/adr-001-v2-redesign.html">ADRs</a></li><li class="breadcrumb-item"><a href="../../design/adr/adr-003-multi-document.html">ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../design/adr/adr-001-v2-redesign.html">ADRs</a></li><li class="breadcrumb-item"><a href="../../design/adr/adr-006-python-docx-patterns.html">ADR-006: python-docx 패턴 — 차용/배제 후보</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document</h1>
+<h1 class="title">ADR-006: python-docx 패턴 — 차용/배제 후보</h1>
 </div>
 
 
@@ -495,382 +494,416 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>채택 (2026-04-29)
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>이 ADR 은 <strong>채택</strong> 되어 v3.0 으로 구현됨. - 버전: <strong>v3.0</strong> (semver 정직, clean break) - <code>Document.activate()</code>: 모든 doc-scoped 메소드 시작 시 <strong>자동 호출</strong> - v2 호환 shim: <strong>없음</strong> — App.open/save/save_as/close/doc 즉시 제거 - 사용자 마이그레이션: <a href="../../getting-started/migration-v2-to-v3.html">v2→v3 가이드</a></p>
-</div>
-</div>
 <section id="맥락-context" class="level1">
 <h1>맥락 (Context)</h1>
-<p>v2.0 의 슬림 facade 는 한 번에 한 문서만 다루는 모델로 출발했습니다. <code>App</code> 이 lifecycle 과 단일 활성 문서 (<code>app.doc</code>) 를 모두 책임지고, 대부분의 작업이 <code>app.open()</code> / <code>app.save()</code> / <code>app.close()</code> 와 같이 <strong>App 메소드</strong> 로 노출됩니다. 이 모델은 다음과 같은 본질적 한계를 드러냈습니다:</p>
-<ol type="1">
-<li><p><strong>다중 문서 부재</strong>. HWP 는 한 프로세스에 여러 문서를 동시에 열 수 있지만 (<code>XHwpDocuments</code>), v2 surface 는 그 collection 을 노출하지 않습니다. <code>app.documents</code> 는 v1 에서 사용되었으나 v2 redesign 시 “Phase 3 으로 연기” 로 표시되며 제거되었습니다 (migration guide 참조). 결과적으로 사용자가 한 번에 두 파일을 비교/병합/복사 하려면 raw COM (<code>app.api.XHwpDocuments</code>) 으로 내려가야 합니다.</p></li>
-<li><p><strong>lifecycle 책임의 잘못된 위치</strong>. <code>app.save()</code> 는 “어느 문서를?” 가 모호합니다 — 현재는 활성 문서를 저장하지만, 사용자가 문서 A 를 처리하다 background 에서 문서 B 가 활성화되면 의도와 다른 문서가 저장됩니다. <strong>저장/닫기는 문서 단위 작업</strong> 이 자연스럽습 니다.</p></li>
-<li><p><strong>Document 메소드가 비어 있음</strong>. <code>app.doc</code> 은 7개 collection (<code>fields/bookmarks/hyperlinks/images/paragraphs/styles/tables</code>) 만 가지고 있고, migration 가이드가 약속하는 <code>insert_text</code> / <code>text</code> / <code>cursor</code> / <code>find_text</code> / <code>replace_all</code> 등은 <strong>존재하지 않습니다</strong>. 사용자가 문서대로 따라 코딩하면 즉시 <code>AttributeError</code>. 이는 단순 누락이 아니라 <strong>Document 의 책임 범위가 정해지지 않은</strong> 결과 입니다 — App 에서 빼긴 했지만 어디에도 두지 않음.</p></li>
-<li><p><strong>테스트 격리 어려움</strong>. v2 의 <code>App()</code> 은 resident HWP 인스턴스 에 attach 합니다 — 문서 1개만 열리는 모델이라 테스트 사이의 문서 누적이 잘 안 보였지만, 다중 문서 워크플로우 추가 시 “어느 문서가 활성?” 의 race 가 즉시 드러날 것입니다.</p></li>
-</ol>
+<p><a href="../../design/adr/adr-005-api-ergonomics.html">ADR-005</a> 가 xlwings 모델을 mining 했다면, 이 ADR 은 <strong>python-docx</strong> (Word 자동화의 사실상 표준 라이브러리) 구조를 정밀 비교하여 hwpapi 가 가져갈 만한 패턴을 추가로 발굴합니다. xlwings 가 “표 처리” 관점이라면 python-docx 는 <strong>워드프로세서 본연의 구조</strong> (단락/Run/표/섹션/스타일) 에 더 가깝고, HWP 와 도메인이 더 유사합니다.</p>
 </section>
-<section id="영감-inspiration-xlwings" class="level1">
-<h1>영감 (Inspiration) — xlwings</h1>
-<p><a href="https://docs.xlwings.org/">xlwings</a> 는 Excel 자동화에 동일한 deep COM 자동화 문제를 풀었고, 다음과 같은 3-tier 구조를 정착시켰습니다:</p>
-<pre><code>xw.App                       # Excel application instance
-├── books                    # Books collection (workbook 들)
-│   ├── open(path) → Book    # 파일 열기 → Book 반환
-│   ├── add() → Book         # 새 빈 workbook
-│   ├── active → Book        # 현재 활성 workbook
-│   ├── [i] / [name]         # index 또는 이름 접근
-│   └── for wb in books      # 순회 가능
-├── apps                     # 사이블링 — 다른 Excel 프로세스
-└── quit()                   # Excel 자체 종료
+<section id="python-docx-의-핵심-구조" class="level1">
+<h1>python-docx 의 핵심 구조</h1>
+<pre><code>Document (top-level)
+├── paragraphs : list[Paragraph]
+├── tables     : list[Table]
+├── sections   : list[Section]      # ← HWP 도 동일 개념
+├── styles     : Styles              # 스타일 정의 (Word 의 .docx 와 동일)
+├── inline_shapes : InlineShapes     # ← HWP 의 그림/도형
+├── core_properties : CoreProperties # title, author, created, ...
+├── add_paragraph(text, style) → Paragraph
+├── add_heading(text, level)   → Paragraph
+├── add_table(rows, cols, style) → Table
+├── add_picture(path, width=, height=) → InlineShape
+├── add_page_break()
+├── add_section(start_type) → Section
+├── element / part   # raw OOXML escape
+└── save(path)
 
-Book (= 개별 workbook 인스턴스)
-├── name / fullname / path
-├── sheets                   # Sheet collection (per-Book)
-├── save() / save_as(path)   # 문서 단위 저장
-├── close(save=False)        # 문서 단위 닫기
-├── activate()               # 이 workbook 을 활성화
-└── selection                # 현재 선택</code></pre>
-<p><strong>핵심 원칙</strong>:</p>
-<ul>
-<li><code>App</code> = 프로세스 lifecycle 만 (start, quit). 문서 자체에 대한 메소드 없음.</li>
-<li><code>App.books</code> = workbook collection. 이 collection 의 메소드 (<code>open</code>, <code>add</code>) 가 <strong>Book 인스턴스를 반환</strong> 하고, 사용자는 그 인스턴스를 변수로 잡아서 작업합니다.</li>
-<li><code>Book</code> = 한 workbook 의 모든 책임 (저장, 닫기, sheet 접근, 셀 조작). 같은 App 안에 여러 Book 이 동시에 있을 수 있고 서로 독립적.</li>
-</ul>
-</section>
-<section id="결정-decision" class="level1">
-<h1>결정 (Decision)</h1>
-<p><strong>hwpapi v3 (또는 v2.1) 은 xlwings 의 3-tier 구조를 차용합니다.</strong></p>
-<pre><code>hwpapi.App                   # HWP COM 엔진 lifecycle 만
-├── docs                     # Documents collection
-│   ├── open(path) → Document
-│   ├── add() → Document         # 새 빈 문서
-│   ├── active → Document        # 현재 활성 문서
-│   ├── [i] / [name]
-│   └── for d in docs
-├── visible (property)
-├── version (property)
-├── engine                   # raw escape hatch
-└── quit()                   # HWP 프로세스 종료
+Paragraph
+├── text            # full plain text
+├── runs : list[Run]
+├── style : ParagraphStyle  # 스타일 객체
+├── alignment : WD_ALIGN_PARAGRAPH  # enum (LEFT/CENTER/...)
+├── paragraph_format : PF
+├── add_run(text, style) → Run
+├── insert_paragraph_before(text, style) → Paragraph
 
-hwpapi.Document              # 한 .hwp 파일에 대한 모든 책임
-├── name / path / saved      # 메타 (수정 여부 포함)
-├── text (r/w property)
-├── insert_text(...)
-├── insert_picture(...) / insert_table(...) / ...
-├── find_text(...) / replace_all(...)
-├── select_all() / get_selected_text()
-├── fields / bookmarks / hyperlinks / images /
-│   paragraphs / styles / tables / controls
-├── cursor                   # per-Document 커서
-├── page                     # per-Document 페이지 설정
-├── save() / save_as(path)   # 문서 단위 저장
-├── close(save=False)        # 문서 단위 닫기 — App 영향 없음
-├── activate()               # 이 문서를 HWP 창에서 활성화
-└── api / engine             # per-doc 의 COM 핸들 (XHwpDocument)</code></pre>
+Run
+├── text
+├── bold, italic, underline   # tri-state property (True/False/None)
+├── font : Font               # name, size, color, highlight
+├── style
+├── add_text(text), add_break(type), add_picture(path), add_tab()
+
+Table
+├── rows, columns : iterable
+├── cell(row, col) → _Cell
+├── add_row(), add_column(width)
+├── style, alignment
+
+_Cell
+├── text                 # 모든 텍스트 합본
+├── paragraphs           # 셀 안의 단락
+├── tables               # 중첩 표
+├── width
+├── add_paragraph(text, style)
+
+Section
+├── page_height, page_width, orientation
+├── top/bottom/left/right_margin
+├── header, footer : _Header / _Footer
+├── different_first_page_header_footer
+├── start_type</code></pre>
 </section>
-<section id="process-level-자원-binding-정책-actions-parametersets-api" class="level1">
-<h1>Process-level 자원 binding 정책 (Actions / ParameterSets / API)</h1>
-<p>HWP 의 raw <code>HAction</code>, <code>HParameterSet</code>, <code>XHwpDocuments</code> 같은 자원은 <strong>프로세스 전역</strong> 이고 <strong>항상 활성 문서</strong> 에 작동합니다. 다중 문서 상황에서 어느 doc 에 명령이 갈지 모호해지므로, 다음 정책을 정합니다:</p>
-<section id="같은-자원을-두-위치에-노출" class="level2">
-<h2 class="anchored" data-anchor-id="같은-자원을-두-위치에-노출">같은 자원을 두 위치에 노출</h2>
+<section id="비교-표-hwpapiv3-xlwings-python-docx" class="level1">
+<h1>비교 표 — hwpapi(v3) / xlwings / python-docx</h1>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>자원</th>
-<th>App 레벨 (raw)</th>
-<th>Document 레벨 (doc-scoped)</th>
+<th>패턴</th>
+<th>hwpapi v3 (현재)</th>
+<th>xlwings</th>
+<th>python-docx</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>actions</code></td>
-<td><code>app.actions.X</code></td>
-<td><code>doc.actions.X</code> — <code>run()</code> 직전 <code>doc.activate()</code> 자동</td>
+<td>다중 문서</td>
+<td><code>app.docs[i]</code> ✅</td>
+<td><code>app.books[i]</code> ✅</td>
+<td>(단일 doc)</td>
 </tr>
 <tr class="even">
-<td><code>parametersets</code></td>
-<td><code>app.engine.parametersets</code> (raw 클래스)</td>
-<td><code>doc.create_parameterset(...)</code> — auto-activate</td>
+<td>컬렉션 패턴</td>
+<td><code>add/[]/iter/in</code> ✅</td>
+<td>동일 ✅</td>
+<td><code>add_X</code> 메소드</td>
 </tr>
 <tr class="odd">
-<td><code>api</code> (COM 핸들)</td>
-<td><code>app.api</code> — IHwpObject (process)</td>
-<td><code>doc.api</code> — IXHwpDocument (per-doc)</td>
+<td>Element 책임</td>
+<td>ADR-004 (proposed)</td>
+<td><code>Range</code>/<code>Cell</code> ✅</td>
+<td><code>Paragraph/Run/Cell</code> ✅</td>
 </tr>
 <tr class="even">
-<td><code>engine</code></td>
-<td><code>app.engine</code> — Engine 객체</td>
-<td>(그대로 — process 자원)</td>
+<td>스타일</td>
+<td>(string)</td>
+<td><code>Range.style</code> (string)</td>
+<td><code>paragraph.style</code> (객체)</td>
+</tr>
+<tr class="odd">
+<td>Section/페이지</td>
+<td>(없음)</td>
+<td>(워크북에 없음)</td>
+<td><code>Section</code> ✅</td>
+</tr>
+<tr class="even">
+<td>메타데이터</td>
+<td>(없음, ADR-005)</td>
+<td><code>BuiltInProperties</code> (raw)</td>
+<td><code>core_properties</code> ✅</td>
+</tr>
+<tr class="odd">
+<td>단위</td>
+<td><code>units.mm(v)</code> 함수</td>
+<td>직접 정수</td>
+<td><code>Inches</code>, <code>Pt</code>, <code>Mm</code> 클래스</td>
+</tr>
+<tr class="even">
+<td>헤더/푸터</td>
+<td>(없음)</td>
+<td>(없음)</td>
+<td><code>section.header.paragraphs[0]</code> ✅</td>
+</tr>
+<tr class="odd">
+<td>Tri-state 서식</td>
+<td>(없음 — 기본값)</td>
+<td>(없음)</td>
+<td><code>True/False/None</code> ✅</td>
+</tr>
+<tr class="even">
+<td>Iter in document order</td>
+<td>(없음)</td>
+<td>sheet 순회만</td>
+<td><code>body.iter()</code> ✅</td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="binding-의미" class="level2">
-<h2 class="anchored" data-anchor-id="binding-의미">binding 의미</h2>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>진입점</th>
-<th>활성화 책임</th>
-<th>추천 사용처</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>app.actions.X</code></td>
-<td>사용자 (<code>doc.activate()</code> 수동)</td>
-<td>escape hatch / 단일 doc</td>
-</tr>
-<tr class="even">
-<td><code>doc.actions.X</code></td>
-<td>자동 (run 시점)</td>
-<td>일반 사용 / 다중 doc</td>
-</tr>
-</tbody>
-</table>
+<section id="차용-후보-python-docx-에서" class="level1">
+<h1>차용 후보 — python-docx 에서</h1>
+<p>ADR-005 에 없거나 부분만 다룬 영역. 각 항목에 <strong>권장 / 보류 / 기각</strong> 판정.</p>
+<section id="a.-권장-도입-검토" class="level2">
+<h2 class="anchored" data-anchor-id="a.-권장-도입-검토">A. 권장 (도입 검토)</h2>
+<section id="a.1-section-first-class-페이지-설정-머리말-꼬리말" class="level3">
+<h3 class="anchored" data-anchor-id="a.1-section-first-class-페이지-설정-머리말-꼬리말">A.1 Section first-class — 페이지 설정 / 머리말 / 꼬리말</h3>
+<p>python-docx 에서 가장 잘 설계된 부분. HWP 도 섹션 개념이 있고 현재 <code>app.actions.PageSetup</code> / <code>app.actions.HeaderFooter</code> 로 raw 접근 가능하지만 사용자에게 보이지 않음.</p>
+<p><strong>제안</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>doc.sections                        <span class="co"># SectionCollection</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>doc.sections.add(start<span class="op">=</span><span class="st">"new_page"</span>)  <span class="co"># 새 섹션</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>sec <span class="op">=</span> doc.sections[<span class="dv">0</span>]</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>sec.page_width <span class="op">=</span> U.mm(<span class="dv">210</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>sec.page_height <span class="op">=</span> U.mm(<span class="dv">297</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>sec.orientation <span class="op">=</span> <span class="st">"portrait"</span>        <span class="co"># | "landscape"</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>sec.margin_top <span class="op">=</span> U.mm(<span class="dv">25</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>sec.margin_bottom <span class="op">=</span> U.mm(<span class="dv">25</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 머리말 / 꼬리말</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>sec.header.text <span class="op">=</span> <span class="st">"기밀 — 외부 유출 금지"</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>sec.footer.text <span class="op">=</span> <span class="st">"Page 1 of N"</span>     <span class="co"># 자동 페이지 번호</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>sec.different_first_page <span class="op">=</span> <span class="va">True</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>우선순위</strong>: v3.3 (ADR-005 의 페이지/인쇄 단계).</p>
 </section>
-<section id="구현-얇은-proxy" class="level2">
-<h2 class="anchored" data-anchor-id="구현-얇은-proxy">구현 — 얇은 proxy</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _DocActions:</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Document-scoped actions proxy."""</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, doc):</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._doc <span class="op">=</span> doc</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._app <span class="op">=</span> doc._app</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__getattr__</span>(<span class="va">self</span>, name):</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        action <span class="op">=</span> <span class="bu">getattr</span>(<span class="va">self</span>._app.actions, name)</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> _ScopedAction(action, <span class="va">self</span>._doc)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _ScopedAction:</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, action, doc):</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._action <span class="op">=</span> action</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._doc <span class="op">=</span> doc</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">@property</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> pset(<span class="va">self</span>):</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>._action.pset</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> run(<span class="va">self</span>, <span class="op">*</span>a, <span class="op">**</span>kw):</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._doc.activate()              <span class="co"># 핵심</span></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>._action.run(<span class="op">*</span>a, <span class="op">**</span>kw)</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Document:</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">@property</span></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> actions(<span class="va">self</span>):</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> _DocActions(<span class="va">self</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="a.2-style-을-객체로-단순-string-아님" class="level3">
+<h3 class="anchored" data-anchor-id="a.2-style-을-객체로-단순-string-아님">A.2 Style 을 객체로 (단순 string 아님)</h3>
+<p>python-docx 의 <code>paragraph.style = doc.styles["Heading 1"]</code> — Style 은 풀 객체. hwpapi 의 <code>doc.styles</code> 는 이미 컬렉션이지만 element 에 적용하는 syntax 가 약함.</p>
+<p><strong>제안</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>heading_style <span class="op">=</span> doc.styles[<span class="st">"제목 1"</span>]</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>heading_style.charshape <span class="op">=</span> {<span class="st">"bold"</span>: <span class="va">True</span>, <span class="st">"height"</span>: <span class="dv">2400</span>}</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>heading_style.parashape <span class="op">=</span> {<span class="st">"align"</span>: <span class="st">"center"</span>}</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>para <span class="op">=</span> doc.paragraphs[<span class="dv">0</span>]</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>para.style <span class="op">=</span> heading_style          <span class="co"># Style 객체로 설정</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>para.style <span class="op">=</span> <span class="st">"제목 1"</span>               <span class="co"># str 도 호환</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 새 스타일 정의</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>my_style <span class="op">=</span> doc.styles.add(</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"강조 본문"</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    based_on<span class="op">=</span><span class="st">"본문"</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    charshape<span class="op">=</span>{<span class="st">"bold"</span>: <span class="va">True</span>, <span class="st">"text_color"</span>: <span class="st">"#E74C3C"</span>},</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>우선순위</strong>: v3.4 (Element API 가 정착한 다음).</p>
 </section>
-<section id="사용자-멘탈-모델" class="level2">
-<h2 class="anchored" data-anchor-id="사용자-멘탈-모델">사용자 멘탈 모델</h2>
-<pre><code>doc.actions.X.run()    →  "doc 에 X 적용" (안전)
-app.actions.X.run()    →  "현재 활성 doc 에 X 적용 (사용자 책임)"</code></pre>
-<p>xlwings 의 <code>book.api</code> vs <code>app.api</code> 와 의미 동일.</p>
+<section id="a.3-tri-state-서식-property-truefalsenone" class="level3">
+<h3 class="anchored" data-anchor-id="a.3-tri-state-서식-property-truefalsenone">A.3 Tri-state 서식 property (True/False/None)</h3>
+<p>python-docx 의 <code>run.bold = None</code> 은 “스타일에서 상속” 의미. hwpapi 는 현재 <code>True/False</code> 만 지원 — <code>None</code> 으로 명시적 reset 불가.</p>
+<p><strong>제안</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>run.charshape.bold <span class="op">=</span> <span class="va">None</span>           <span class="co"># 부모 스타일 상속</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>run.charshape.bold <span class="op">=</span> <span class="va">True</span>           <span class="co"># 명시적 굵게</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>run.charshape.bold <span class="op">=</span> <span class="va">False</span>          <span class="co"># 명시적 굵지 않게</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># 차이:</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># False — 스타일이 굵음이어도 이 run 은 안 굵음</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># None  — 스타일에 따름</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>우선순위</strong>: v3.4 (스타일 시스템과 함께).</p>
 </section>
-<section id="오버헤드" class="level2">
-<h2 class="anchored" data-anchor-id="오버헤드">오버헤드</h2>
-<p><code>Document.activate()</code> = COM 호출 1 회 (~µs). 단일 doc 일 땐 noop (이미 활성). 다중 doc 일 때만 실질 비용 발생, 이마저도 사용자가 연속해서 같은 doc 을 다루는 경우 캐싱으로 0 으로 축소 가능.</p>
-</section>
-</section>
-<section id="사용-예-examples" class="level1">
-<h1>사용 예 (Examples)</h1>
-<section id="단일-문서-v2-와-거의-동일" class="level2">
-<h2 class="anchored" data-anchor-id="단일-문서-v2-와-거의-동일">단일 문서 — v2 와 거의 동일</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<section id="a.4-단위-클래스-현재-함수" class="level3">
+<h3 class="anchored" data-anchor-id="a.4-단위-클래스-현재-함수">A.4 단위 클래스 (현재 함수)</h3>
+<p>python-docx: <code>Inches(1)</code>, <code>Pt(12)</code>, <code>Mm(210)</code>, <code>Cm(21)</code>, <code>Emu(914400)</code> — 산술 연산 가능 (<code>Mm(210) - Mm(25)*2</code>).</p>
+<p><strong>제안</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi.units <span class="im">import</span> Mm, Pt, Inch, Hwp</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    doc <span class="op">=</span> app.docs.<span class="bu">open</span>(<span class="st">"report.hwp"</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    doc.insert_text(<span class="st">"새 줄</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    doc.save()</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    doc.close()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> Mm(<span class="dv">210</span>) <span class="op">-</span> Mm(<span class="dv">25</span>) <span class="op">*</span> <span class="dv">2</span>            <span class="co"># = Mm(160)</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(w)                            <span class="co"># "160 mm"</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">int</span>(w))                       <span class="co"># → HWPUNIT (45280)</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(w.mm)                         <span class="co"># 160.0</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 기존 함수도 호환</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>U.mm(<span class="dv">210</span>) <span class="op">==</span> Mm(<span class="dv">210</span>)                <span class="co"># True</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>우선순위</strong>: v3.2 (Element API 와 함께 — Element setter 가 단위 인자를 자주 받음).</p>
 </section>
-<section id="두-문서를-동시에-다루기-현재-불가능했던-것" class="level2">
-<h2 class="anchored" data-anchor-id="두-문서를-동시에-다루기-현재-불가능했던-것">두 문서를 동시에 다루기 (현재 불가능했던 것)</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<section id="a.5-document-core_properties-메타데이터-정식화" class="level3">
+<h3 class="anchored" data-anchor-id="a.5-document-core_properties-메타데이터-정식화">A.5 Document core_properties (메타데이터 정식화)</h3>
+<p>python-docx 의 <code>core_properties</code> 가 가장 깔끔. ADR-005 에서도 언급했지만 python-docx 패턴이 reference.</p>
+<p><strong>제안</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>cp <span class="op">=</span> doc.metadata                   <span class="co"># CoreProperties 객체</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    src <span class="op">=</span> app.docs.<span class="bu">open</span>(<span class="st">"source.hwp"</span>)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    dst <span class="op">=</span> app.docs.add()                    <span class="co"># 빈 새 문서</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> para <span class="kw">in</span> src.paragraphs:</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        dst.insert_text(para.text <span class="op">+</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    dst.save_as(<span class="st">"merged.hwp"</span>)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    src.close(save<span class="op">=</span><span class="va">False</span>)                   <span class="co"># 원본은 그대로</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    dst.close()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Word/HWP 모두 OOXML core 속성 (~15 개) 매핑:</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>cp.title <span class="op">=</span> <span class="st">"1분기 보고"</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>cp.author <span class="op">=</span> <span class="st">"홍길동"</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>cp.subject <span class="op">=</span> <span class="st">"기획팀"</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>cp.keywords <span class="op">=</span> <span class="st">"보고서, 1분기"</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>cp.created                          <span class="co"># datetime (read-only)</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>cp.modified                         <span class="co"># datetime</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>cp.last_modified_by <span class="op">=</span> <span class="st">"이영희"</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>cp.revision <span class="op">=</span> <span class="dv">3</span>                     <span class="co"># int</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>cp.category <span class="op">=</span> <span class="st">"회의록"</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>cp.comments <span class="op">=</span> <span class="st">"..."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>우선순위</strong>: v3.3.</p>
 </section>
-<section id="일괄-변환-한-app-에서-n개-파일" class="level2">
-<h2 class="anchored" data-anchor-id="일괄-변환-한-app-에서-n개-파일">일괄 변환 — 한 App 에서 N개 파일</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> hwp <span class="kw">in</span> Path(<span class="st">"inbox"</span>).glob(<span class="st">"*.hwp"</span>):</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        doc <span class="op">=</span> app.docs.<span class="bu">open</span>(hwp)</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        doc.save_as(hwp.with_suffix(<span class="st">".pdf"</span>))</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        doc.close()                         <span class="co"># 메모리 해제, 다음 파일로</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="a.6-body.iter-문서-순서대로-paragraph-table-순회" class="level3">
+<h3 class="anchored" data-anchor-id="a.6-body.iter-문서-순서대로-paragraph-table-순회">A.6 <code>body.iter()</code> — 문서 순서대로 paragraph + table 순회</h3>
+<p>python-docx: <code>for child in doc.element.body.iter_inner_content():</code> 가 단락과 표를 <strong>문서 순서</strong> 로 돌려줌. hwpapi 는 현재 <code>paragraphs</code> 와 <code>tables</code> 가 별도 컬렉션 — 어떤 단락 다음에 어떤 표가 있는지 알기 어려움.</p>
+<p><strong>제안</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 문서 순서대로 모든 element 순회</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> elem <span class="kw">in</span> doc.contents():</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">isinstance</span>(elem, Paragraph):</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"p:"</span>, elem.text)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span> <span class="bu">isinstance</span>(elem, Table):</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"table:"</span>, elem.rows, <span class="st">"x"</span>, elem.cols)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 또는 generator 형태</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> elem <span class="kw">in</span> doc.iter_contents(skip_empty<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    ...</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>우선순위</strong>: v3.4 (문서 변환 / 분석 use case 가 늘어날 때).</p>
 </section>
-<section id="활성-문서-전환" class="level2">
-<h2 class="anchored" data-anchor-id="활성-문서-전환">활성 문서 전환</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>docs <span class="op">=</span> app.docs                              <span class="co"># collection</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(docs))                             <span class="co"># 열린 문서 개수</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> d <span class="kw">in</span> docs:</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(d.name)</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>docs[<span class="dv">0</span>].activate()                           <span class="co"># 첫 문서를 forefront 로</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-</section>
-<section id="마이그레이션-단계-phases" class="level1">
-<h1>마이그레이션 단계 (Phases)</h1>
-<section id="phase-0-명세-동결" class="level2">
-<h2 class="anchored" data-anchor-id="phase-0-명세-동결">Phase 0 — 명세 동결</h2>
-<p>이 ADR 채택 후 <strong>v2.x 라인은 frozen</strong>. v2 사용자는 <code>hwpapi==2.*</code> pin. v3 (또는 v2.1) 은 새 minor 로 출시.</p>
-</section>
-<section id="phase-1-documents-collection-신설" class="level2">
-<h2 class="anchored" data-anchor-id="phase-1-documents-collection-신설">Phase 1 — <code>Documents</code> collection 신설</h2>
-<ul>
-<li><code>hwpapi.collections.documents.DocumentCollection</code> 작성</li>
-<li>App 에 <code>app.docs</code> property 추가, <code>app.doc</code> 은 <code>app.docs.active</code> 로 내부 alias (v2.x 호환 임시).</li>
-<li><code>app.docs.open(path)</code> 가 <code>Document</code> 인스턴스를 반환 (현재는 Document 가 빈 facade 라도 collection 만 일단 노출).</li>
-</ul>
-</section>
-<section id="phase-2-document-에-메소드-이식" class="level2">
-<h2 class="anchored" data-anchor-id="phase-2-document-에-메소드-이식">Phase 2 — <code>Document</code> 에 메소드 이식</h2>
-<ul>
-<li><code>App.open/save/save_as/close</code> → <code>Document.open/save/save_as/close</code> 로 이동. App 메소드는 일단 <strong>deprecation shim</strong> 으로 남겨 active doc 으로 위임 (<code>app.save()</code> → <code>app.docs.active.save()</code>).</li>
-<li>text I/O — <code>insert_text</code>, <code>find_text</code>, <code>replace_all</code>, <code>select_all</code>, <code>get_selected_text</code>, <code>text</code> (property), <code>clear</code> 를 Document 에 신설. 내부 구현은 raw <code>actions.InsertText</code> 등을 사용.</li>
-<li>cursor — <code>Document.cursor.goto_page(...)</code>, <code>move_to_field</code>, <code>in_table</code> 등.</li>
-<li>7 개 collection accessor 는 그대로 (이미 Document 에 있음).</li>
-</ul>
-</section>
-<section id="phase-3-app-의-lifecycle-정리" class="level2">
-<h2 class="anchored" data-anchor-id="phase-3-app-의-lifecycle-정리">Phase 3 — App 의 lifecycle 정리</h2>
-<ul>
-<li>App 에 남는 메소드: <code>quit</code>, <code>visible</code>, <code>version</code>, <code>docs</code>, <code>engine</code>, <code>api</code>. 그 외는 deprecated → v3.1 에서 제거.</li>
-<li><code>App() __enter__/__exit__</code> 가 <code>quit()</code> 만 책임. 열린 문서는 자동 닫지 않음 (사용자가 명시적으로 close 또는 with-Document 사용).</li>
-</ul>
-</section>
-<section id="phase-4-document-의-context-manager" class="level2">
-<h2 class="anchored" data-anchor-id="phase-4-document-의-context-manager">Phase 4 — Document 의 context manager</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> app.docs.<span class="bu">open</span>(<span class="st">"a.hwp"</span>) <span class="im">as</span> doc:</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    doc.insert_text(<span class="st">"..."</span>)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># exit 시 자동 close (저장 여부는 docs.open(..., save_on_close=) 로 제어)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="phase-5-호환-shim-제거" class="level2">
-<h2 class="anchored" data-anchor-id="phase-5-호환-shim-제거">Phase 5 — 호환 shim 제거</h2>
-<p><code>app.open/save/close/doc</code> 등 v2 호환 alias 를 제거하고 v3.0 stable release. v2 사용자는 migration 가이드 (이 ADR 의 부록) 따라 마이그레 이션.</p>
+<section id="a.7-add_x-의-일관-반환-만든-객체-돌려주기" class="level3">
+<h3 class="anchored" data-anchor-id="a.7-add_x-의-일관-반환-만든-객체-돌려주기">A.7 <code>add_X</code> 의 일관 반환 — 만든 객체 돌려주기</h3>
+<p>python-docx 의 모든 <code>add_X</code> 는 만든 element 반환. 사용자가 곧바로 설정 가능:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>para <span class="op">=</span> doc.add_paragraph(<span class="st">"본문"</span>, style<span class="op">=</span><span class="st">"본문"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>para.alignment <span class="op">=</span> WD_ALIGN_PARAGRAPH.CENTER</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>cell <span class="op">=</span> table.add_row().cells[<span class="dv">0</span>]</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>cell.text <span class="op">=</span> <span class="st">"..."</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>img <span class="op">=</span> doc.add_picture(<span class="st">"logo.png"</span>, width<span class="op">=</span>Inches(<span class="dv">2</span>))</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>img.height                           <span class="co"># 자동 계산된 값</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>hwpapi 적용</strong>: ADR-004 의 element + ADR-005 의 컬렉션 일관성에 이미 포함되어 있음. <strong>재확인</strong> 차원.</p>
 </section>
 </section>
-<section id="v2-v3-변환-표-요약" class="level1">
-<h1>v2 → v3 변환 표 (요약)</h1>
+<section id="b.-보류-해보고-결정" class="level2">
+<h2 class="anchored" data-anchor-id="b.-보류-해보고-결정">B. 보류 (해보고 결정)</h2>
+<section id="b.1-run-의-boolean-property-api-run.bold-true" class="level3">
+<h3 class="anchored" data-anchor-id="b.1-run-의-boolean-property-api-run.bold-true">B.1 Run 의 boolean property API (<code>run.bold = True</code>)</h3>
+<p>python-docx: <code>run.bold = True</code> 직접 setter. hwpapi 는 현재 <code>run.charshape = {"bold": True}</code> 또는 <code>run.charshape.bold = True</code> 형태 (ADR-004).</p>
+<p>직접 setter (<code>run.bold = True</code>) 는 편하지만 attribute 폭증 위험 (bold/italic/underline/strike/sub/super/font_name/font_size/color/… 한 element 에 30+ attr).</p>
+<p><strong>제안</strong>: <strong>partial</strong> 만 허용. - <code>run.bold</code>, <code>run.italic</code>, <code>run.underline</code> (가장 흔한 3개) 만 직접 property - 나머지는 <code>run.charshape.X</code> 로 접근</p>
+<p><strong>우선순위</strong>: spike 후 결정 (v3.4).</p>
+</section>
+<section id="b.2-paragraph.alignment-wd_align_paragraph.center-enum-import" class="level3">
+<h3 class="anchored" data-anchor-id="b.2-paragraph.alignment-wd_align_paragraph.center-enum-import">B.2 <code>paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER</code> (enum import)</h3>
+<p>python-docx 는 enum 을 모듈에서 import 해서 씀. hwpapi 는 v0.0.25 부터 <strong>문자열 호환</strong> 채택 (<code>align="center"</code>). 사용자 친화적이라 유지.</p>
+<p><strong>판정</strong>: 차용 안 함 (현재 hwpapi 패턴이 더 나음).</p>
+</section>
+</section>
+<section id="c.-기각-hwpapi-도메인에-부적합" class="level2">
+<h2 class="anchored" data-anchor-id="c.-기각-hwpapi-도메인에-부적합">C. 기각 (hwpapi 도메인에 부적합)</h2>
+<section id="c.1-ooxml-lxml-element-접근" class="level3">
+<h3 class="anchored" data-anchor-id="c.1-ooxml-lxml-element-접근">C.1 OOXML lxml element 접근</h3>
+<p>python-docx: <code>paragraph._p</code> 가 raw lxml <code>&lt;w:p&gt;</code> element. .docx 파일 구조에 직접 접근.</p>
+<p>HWP 의 .hwp 는 OOXML 이 아니라 <strong>HWPML</strong> 또는 binary. 직접 접근은 HWP COM API 를 통해야 함 — 이미 <code>app.api</code> / <code>doc.raw</code> escape hatch 로 제공됨.</p>
+<p><strong>판정</strong>: hwpapi 의 <code>app.api</code> / <code>doc.raw</code> 가 동등 역할.</p>
+</section>
+<section id="c.2-wd_-같은-enum-접두-모듈" class="level3">
+<h3 class="anchored" data-anchor-id="c.2-wd_-같은-enum-접두-모듈">C.2 <code>WD_*</code> 같은 enum 접두 모듈</h3>
+<p>python-docx: <code>WD_ALIGN_PARAGRAPH</code>, <code>WD_BREAK_TYPE</code>, <code>WD_LINE_SPACING</code> 등 수많은 enum 이 별도 모듈에 분산. import 가 verbose.</p>
+<p>hwpapi 는 <strong>mappings.py</strong> 에 한 곳에 모든 enum/MAP 통합 + 문자열 호환. 더 좋음.</p>
+<p><strong>판정</strong>: 차용 안 함.</p>
+</section>
+<section id="c.3-documentpath-생성자에-파일-경로" class="level3">
+<h3 class="anchored" data-anchor-id="c.3-documentpath-생성자에-파일-경로">C.3 <code>Document(path)</code> 생성자에 파일 경로</h3>
+<p>python-docx: <code>from docx import Document; doc = Document("file.docx")</code> 바로 객체 반환.</p>
+<p>hwpapi 는 다중 문서 지원 — <code>app.docs.open(path)</code> 가 옳음. 단순화는 오히려 후퇴.</p>
+<p><strong>판정</strong>: 차용 안 함 (hwpapi 의 lifecycle 이 더 정확).</p>
+</section>
+</section>
+<section id="d.-python-docx-의-단점-hwpapi-가-이미-해결" class="level2">
+<h2 class="anchored" data-anchor-id="d.-python-docx-의-단점-hwpapi-가-이미-해결">D. python-docx 의 단점 — hwpapi 가 이미 해결</h2>
 <table class="caption-top table">
 <thead>
 <tr class="header">
-<th>v2</th>
-<th>v3</th>
+<th>python-docx 한계</th>
+<th>hwpapi v3 의 해법</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>app.open(path)</code></td>
-<td><code>doc = app.docs.open(path)</code></td>
+<td>단일 문서만</td>
+<td><code>app.docs[i]</code> — 다중 문서</td>
 </tr>
 <tr class="even">
-<td><code>app.new()</code></td>
-<td><code>doc = app.docs.add()</code></td>
+<td>라이브 편집 불가 (.docx 파일만)</td>
+<td>HWP COM 로 라이브 자동화</td>
 </tr>
 <tr class="odd">
-<td><code>app.save()</code></td>
-<td><code>doc.save()</code></td>
+<td>context manager 없음</td>
+<td><code>with charshape_scope(...):</code></td>
 </tr>
 <tr class="even">
-<td><code>app.save_as(path)</code></td>
-<td><code>doc.save_as(path)</code></td>
+<td>다중 프로세스 격리 없음</td>
+<td><code>App()</code> 인스턴스 분리 가능</td>
 </tr>
 <tr class="odd">
-<td><code>app.close()</code></td>
-<td><code>doc.close()</code></td>
-</tr>
-<tr class="even">
-<td><code>app.doc</code></td>
-<td><code>app.docs.active</code></td>
-</tr>
-<tr class="odd">
-<td>(없음 — multi-doc)</td>
-<td><code>for d in app.docs:</code></td>
-</tr>
-<tr class="even">
-<td>(없음 — 다중 문서간 비교)</td>
-<td><code>app.docs["a.hwp"]</code>, <code>app.docs[0]</code></td>
+<td>raw 데이터 변환 없음</td>
+<td><code>pandas.DataFrame</code> 양방향 (ADR-005)</td>
 </tr>
 </tbody>
 </table>
 </section>
-<section id="호환성-정책-compatibility" class="level1">
-<h1>호환성 정책 (Compatibility)</h1>
-<ul>
-<li>v2.x: 동결 (bug fix 만)</li>
-<li>v3.0: deprecation shim 포함, v2 코드 대부분 작동</li>
-<li>v3.1: shim 제거, clean cut</li>
-</ul>
-<p>v2 → v3 마이그레이션은 v1 → v2 보다 <strong>훨씬 작음</strong> — 주로 <code>app.X</code> 를 <code>doc = app.docs.open(...)</code> + <code>doc.X</code> 로 바꾸는 것. find/replace 가능한 패턴.</p>
+</section>
+<section id="통합-결과-adr-005-보강" class="level1">
+<h1>통합 결과 — ADR-005 보강</h1>
+<p>ADR-005 의 roadmap 에 다음을 추가:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>분기</th>
+<th>ADR-005 항목</th>
+<th>python-docx 기반 추가</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>v3.2</td>
+<td>DataFrame, csv, Element Phase1+2</td>
+<td><strong>단위 클래스</strong> (Mm/Pt/…)</td>
+</tr>
+<tr class="even">
+<td>v3.3</td>
+<td>metadata, statistics, zoom, print</td>
+<td><strong>Section first-class</strong> + <strong>core_properties</strong></td>
+</tr>
+<tr class="odd">
+<td>v3.4</td>
+<td>outline, compare, protect</td>
+<td><strong>Style 객체 시스템</strong> + <strong>Tri-state property</strong> + <strong>body.iter</strong></td>
+</tr>
+<tr class="even">
+<td>v3.4</td>
+<td>(위와 동일)</td>
+<td><strong>Run 의 bold/italic/underline 직접 property</strong> (선택적)</td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="결과-consequences" class="level1">
 <h1>결과 (Consequences)</h1>
 <section id="긍정" class="level2">
 <h2 class="anchored" data-anchor-id="긍정">긍정</h2>
 <ul>
-<li><strong>다중 문서 워크플로우 가능</strong> — 일괄 변환, 병합, 비교 등</li>
-<li><strong>저장/닫기 의도 명확</strong> — <code>doc.save()</code> 는 “이 문서” 가 명확</li>
-<li><strong>Document 책임 범위 명확</strong> — 7 collection + text I/O + cursor + save/close. App 은 process lifecycle 만.</li>
-<li><strong>xlwings 사용자 친숙</strong> — Python 데이터 분석가에게 mental model 동일</li>
-<li><strong>테스트 격리 깔끔</strong> — 각 테스트가 자기 Document 를 명시적으로 소유, race 없음</li>
+<li><strong>워드프로세서 표준 패턴 정렬</strong> — Word/HWP 사용자 모두 친숙</li>
+<li><strong>Section 도입으로 페이지 설계 정식화</strong> — 실제 보고서/회의록 자동화의 핵심</li>
+<li><strong>단위 클래스로 산술 자연스러움</strong> — 마진 계산, 폭 분배 등이 직관적</li>
+<li><strong>메타데이터 정식화</strong> — RPA / archive 워크플로우 지원</li>
 </ul>
 </section>
 <section id="부정-위험" class="level2">
 <h2 class="anchored" data-anchor-id="부정-위험">부정 / 위험</h2>
 <ul>
-<li><strong>API 표면이 커짐</strong> — Document 가 v2 의 거의 모든 App 메소드를 흡수. 슬림 facade 정신은 일부 후퇴 (다만 슬림한 것은 App 만).</li>
-<li><strong>win32com 의 active doc 추적과의 충돌 가능성</strong> — HWP COM 은 명시적인 doc 핸들 전달이 일관되지 않음 (<code>HAction.Run</code> 은 항상 활성 문서 대상). 이 부분은 <code>Document.activate()</code> 를 모든 doc-scoped 메소 드 시작 시 자동 호출하는 방식으로 우회 (xlwings 도 동일 패턴).</li>
-<li><strong>마이그레이션 비용</strong> — v2 사용자에게 두 번째 breaking change (v1→v2→v3). 이 비용을 줄이려고 v3.0 에 deprecation shim 포함.</li>
-<li><strong>HWP 의 다중 문서 지원이 완전하지 않을 수 있음</strong> — XHwpDocuments 자체는 있지만 일부 action 은 활성 문서에만 적용됨. <code>Document.api</code> 를 통한 per-doc COM 호출이 가능한지 검증 필요 (Phase 1 spike).</li>
+<li><strong>Section 구현 비용</strong> — HWP 의 섹션 모델이 OOXML 과 다름. spike 필요 (~200 LOC).</li>
+<li><strong>Tri-state 도입의 cascading 복잡도</strong> — 스타일 상속 체인 검증 로직 필요. v3.4 까지 미룬 이유.</li>
+<li><strong>단위 클래스의 backward compat</strong> — 기존 <code>U.mm(210)</code> 함수와 공존하면서 어느 쪽을 권장할지 명시 필요.</li>
+<li><strong><code>add_X</code> 패턴 통일은 큰 변경</strong> — 현재 <code>app.docs.add()</code> 등 일부만 return — 전 컬렉션 통일 시 일부 시그니처 변경.</li>
 </ul>
 </section>
 </section>
-<section id="결정-이전-미해결-질문" class="level1">
-<h1>결정 (이전 미해결 질문)</h1>
+<section id="미해결-질문" class="level1">
+<h1>미해결 질문</h1>
 <ol type="1">
-<li>✅ <strong>버전 — v3.0</strong> (semver 정직, clean break)</li>
-<li>✅ <strong><code>Document.activate()</code> 자동 호출</strong> — 모든 doc-scoped 메소드 진입 시 자동 (<code>_DocActions.__getattr__</code> 시점에도 자동). xlwings 와 동일 패턴. COM 호출 1회/메소드 — 단일 doc 일 땐 noop 비용.</li>
-<li>✅ <strong><code>app.docs.add()</code></strong> — 새 빈 문서를 만들고 active 로 설정 후 해당 <code>Document</code> 반환.</li>
-<li>✅ <strong><code>app.doc</code> shim 제거 시점</strong> — <strong>즉시 (v3.0)</strong>. 사용자 명시 결정 — 무엇이 doc 객체로 가는지 명확하므로 deprecation 사이클 불필요.</li>
+<li><strong>Section 의 단위는?</strong> HWP 가 1 문서 = 1+ 섹션 모델. 새 섹션 삽입은 <code>app.api.Run("BreakSection")</code> 가능. 사용자 API 는 <code>doc.sections.add()</code> vs <code>doc.add_section()</code> ? (xlwings 쪽 vs python-docx 쪽) — <code>doc.sections.add(...)</code> 권장.</li>
+<li><strong>단위 클래스 vs 함수의 trade-off</strong> — <code>Mm(210) * 2</code> 는 자연스럽지만 <code>U.mm(210) * 2</code> 는 정수 산술. 클래스 도입 시 import 부담.</li>
+<li><strong>Tri-state 의 default 표기</strong> — <code>bold=None</code> 명시는 verbose. <code>bold=...</code> 같은 sentinel 또는 <code>bold='inherit'</code> 문자열 등 후보.</li>
+<li><strong>Run-level 직접 property 의 scope</strong> — 3개만? 더 많이?</li>
+<li><strong><code>body.iter()</code> 의 명칭</strong> — <code>doc.contents()</code>? <code>doc.iter()</code>? <code>doc.elements()</code>? — Pythonic 한 게 best.</li>
 </ol>
 </section>
 <section id="참고" class="level1">
 <h1>참고</h1>
 <ul>
-<li><a href="https://docs.xlwings.org/en/stable/api.html">xlwings API reference</a></li>
-<li><a href="https://www.hancom.com/board/devforumList.do">HWP XHwpDocuments COM 인터페이스</a></li>
-<li><a href="../../design/adr/adr-001-v2-redesign.html">ADR-001: v2 두 층 API 결정</a> — 이 ADR 의 토대가 된 단일-doc 모델</li>
-<li>v2 migration 가이드: <a href="../../getting-started/migration-v1-to-v2.html">Migrating from v1 to v2</a></li>
-<li>(예정) v3 migration 가이드: <code>getting-started/migration-v2-to-v3.qmd</code></li>
+<li><a href="../../design/adr/adr-003-multi-document.html">ADR-003: Multi-document</a></li>
+<li><a href="../../design/adr/adr-004-element-api.html">ADR-004: Element API</a></li>
+<li><a href="../../design/adr/adr-005-api-ergonomics.html">ADR-005: API ergonomics</a> — xlwings 기반</li>
+<li><a href="https://python-docx.readthedocs.io/">python-docx documentation</a></li>
+<li><a href="https://python-docx.readthedocs.io/en/latest/api/document.html">python-docx API reference</a></li>
+<li><a href="http://officeopenxml.com/anatomyofOOXML.php">Word OOXML reference</a></li>
 </ul>
 
 
@@ -1297,14 +1330,11 @@ app.actions.X.run()    →  "현재 활성 doc 에 X 적용 (사용자 책임)"<
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../../design/adr/adr-002-quarto-docs.html" class="pagination-link" aria-label="ADR-002: Quarto single-pipeline documentation">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">ADR-002: Quarto single-pipeline documentation</span>
+      <a href="../../design/adr/adr-005-api-ergonomics.html" class="pagination-link" aria-label="ADR-005: API ergonomics — refactoring + 직접 setter + 신규 메소드">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">ADR-005: API ergonomics — refactoring + 직접 setter + 신규 메소드</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../../design/adr/adr-004-element-api.html" class="pagination-link" aria-label="ADR-004: Element-level API — Run / Paragraph / Cell / Section">
-        <span class="nav-page-text">ADR-004: Element-level API — Run / Paragraph / Cell / Section</span> <i class="bi bi-arrow-right-short"></i>
-      </a>
   </div>
 </nav>
 </div> <!-- /content -->
@@ -1315,7 +1345,7 @@ app.actions.X.run()    →  "현재 활성 doc 에 X 적용 (사용자 책임)"<
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/design/adr/adr-003-multi-document.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/design/adr/adr-006-python-docx-patterns.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item">

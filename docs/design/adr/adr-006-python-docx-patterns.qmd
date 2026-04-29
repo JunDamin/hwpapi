@@ -1,0 +1,372 @@
+---
+title: "ADR-006: python-docx 패턴 — 차용/배제 후보"
+date: 2026-04-29
+status: proposed
+---
+
+# 맥락 (Context)
+
+[ADR-005](adr-005-api-ergonomics.qmd) 가 xlwings 모델을 mining 했다면,
+이 ADR 은 **python-docx** (Word 자동화의 사실상 표준 라이브러리)
+구조를 정밀 비교하여 hwpapi 가 가져갈 만한 패턴을 추가로 발굴합니다.
+xlwings 가 "표 처리" 관점이라면 python-docx 는 **워드프로세서 본연의
+구조** (단락/Run/표/섹션/스타일) 에 더 가깝고, HWP 와 도메인이 더
+유사합니다.
+
+# python-docx 의 핵심 구조
+
+```
+Document (top-level)
+├── paragraphs : list[Paragraph]
+├── tables     : list[Table]
+├── sections   : list[Section]      # ← HWP 도 동일 개념
+├── styles     : Styles              # 스타일 정의 (Word 의 .docx 와 동일)
+├── inline_shapes : InlineShapes     # ← HWP 의 그림/도형
+├── core_properties : CoreProperties # title, author, created, ...
+├── add_paragraph(text, style) → Paragraph
+├── add_heading(text, level)   → Paragraph
+├── add_table(rows, cols, style) → Table
+├── add_picture(path, width=, height=) → InlineShape
+├── add_page_break()
+├── add_section(start_type) → Section
+├── element / part   # raw OOXML escape
+└── save(path)
+
+Paragraph
+├── text            # full plain text
+├── runs : list[Run]
+├── style : ParagraphStyle  # 스타일 객체
+├── alignment : WD_ALIGN_PARAGRAPH  # enum (LEFT/CENTER/...)
+├── paragraph_format : PF
+├── add_run(text, style) → Run
+├── insert_paragraph_before(text, style) → Paragraph
+
+Run
+├── text
+├── bold, italic, underline   # tri-state property (True/False/None)
+├── font : Font               # name, size, color, highlight
+├── style
+├── add_text(text), add_break(type), add_picture(path), add_tab()
+
+Table
+├── rows, columns : iterable
+├── cell(row, col) → _Cell
+├── add_row(), add_column(width)
+├── style, alignment
+
+_Cell
+├── text                 # 모든 텍스트 합본
+├── paragraphs           # 셀 안의 단락
+├── tables               # 중첩 표
+├── width
+├── add_paragraph(text, style)
+
+Section
+├── page_height, page_width, orientation
+├── top/bottom/left/right_margin
+├── header, footer : _Header / _Footer
+├── different_first_page_header_footer
+├── start_type
+```
+
+# 비교 표 — hwpapi(v3) / xlwings / python-docx
+
+| 패턴 | hwpapi v3 (현재) | xlwings | python-docx |
+|---|---|---|---|
+| 다중 문서 | `app.docs[i]` ✅ | `app.books[i]` ✅ | (단일 doc) |
+| 컬렉션 패턴 | `add/[]/iter/in` ✅ | 동일 ✅ | `add_X` 메소드 |
+| Element 책임 | ADR-004 (proposed) | `Range`/`Cell` ✅ | `Paragraph/Run/Cell` ✅ |
+| 스타일 | (string) | `Range.style` (string) | `paragraph.style` (객체) |
+| Section/페이지 | (없음) | (워크북에 없음) | `Section` ✅ |
+| 메타데이터 | (없음, ADR-005) | `BuiltInProperties` (raw) | `core_properties` ✅ |
+| 단위 | `units.mm(v)` 함수 | 직접 정수 | `Inches`, `Pt`, `Mm` 클래스 |
+| 헤더/푸터 | (없음) | (없음) | `section.header.paragraphs[0]` ✅ |
+| Tri-state 서식 | (없음 — 기본값) | (없음) | `True/False/None` ✅ |
+| Iter in document order | (없음) | sheet 순회만 | `body.iter()` ✅ |
+
+# 차용 후보 — python-docx 에서
+
+ADR-005 에 없거나 부분만 다룬 영역. 각 항목에 **권장 / 보류 / 기각**
+판정.
+
+## A. 권장 (도입 검토)
+
+### A.1 Section first-class — 페이지 설정 / 머리말 / 꼬리말
+
+python-docx 에서 가장 잘 설계된 부분. HWP 도 섹션 개념이 있고
+현재 `app.actions.PageSetup` / `app.actions.HeaderFooter` 로 raw 접근
+가능하지만 사용자에게 보이지 않음.
+
+**제안**:
+```python
+doc.sections                        # SectionCollection
+doc.sections.add(start="new_page")  # 새 섹션
+sec = doc.sections[0]
+sec.page_width = U.mm(210)
+sec.page_height = U.mm(297)
+sec.orientation = "portrait"        # | "landscape"
+sec.margin_top = U.mm(25)
+sec.margin_bottom = U.mm(25)
+
+# 머리말 / 꼬리말
+sec.header.text = "기밀 — 외부 유출 금지"
+sec.footer.text = "Page 1 of N"     # 자동 페이지 번호
+sec.different_first_page = True
+```
+
+**우선순위**: v3.3 (ADR-005 의 페이지/인쇄 단계).
+
+### A.2 Style 을 객체로 (단순 string 아님)
+
+python-docx 의 `paragraph.style = doc.styles["Heading 1"]` — Style 은
+풀 객체. hwpapi 의 `doc.styles` 는 이미 컬렉션이지만 element 에
+적용하는 syntax 가 약함.
+
+**제안**:
+```python
+heading_style = doc.styles["제목 1"]
+heading_style.charshape = {"bold": True, "height": 2400}
+heading_style.parashape = {"align": "center"}
+
+para = doc.paragraphs[0]
+para.style = heading_style          # Style 객체로 설정
+para.style = "제목 1"               # str 도 호환
+
+# 새 스타일 정의
+my_style = doc.styles.add(
+    "강조 본문",
+    based_on="본문",
+    charshape={"bold": True, "text_color": "#E74C3C"},
+)
+```
+
+**우선순위**: v3.4 (Element API 가 정착한 다음).
+
+### A.3 Tri-state 서식 property (True/False/None)
+
+python-docx 의 `run.bold = None` 은 "스타일에서 상속" 의미. hwpapi
+는 현재 `True/False` 만 지원 — `None` 으로 명시적 reset 불가.
+
+**제안**:
+```python
+run.charshape.bold = None           # 부모 스타일 상속
+run.charshape.bold = True           # 명시적 굵게
+run.charshape.bold = False          # 명시적 굵지 않게
+
+# 차이:
+# False — 스타일이 굵음이어도 이 run 은 안 굵음
+# None  — 스타일에 따름
+```
+
+**우선순위**: v3.4 (스타일 시스템과 함께).
+
+### A.4 단위 클래스 (현재 함수)
+
+python-docx: `Inches(1)`, `Pt(12)`, `Mm(210)`, `Cm(21)`, `Emu(914400)`
+— 산술 연산 가능 (`Mm(210) - Mm(25)*2`).
+
+**제안**:
+```python
+from hwpapi.units import Mm, Pt, Inch, Hwp
+
+w = Mm(210) - Mm(25) * 2            # = Mm(160)
+print(w)                            # "160 mm"
+print(int(w))                       # → HWPUNIT (45280)
+print(w.mm)                         # 160.0
+
+# 기존 함수도 호환
+U.mm(210) == Mm(210)                # True
+```
+
+**우선순위**: v3.2 (Element API 와 함께 — Element setter 가 단위
+인자를 자주 받음).
+
+### A.5 Document core_properties (메타데이터 정식화)
+
+python-docx 의 `core_properties` 가 가장 깔끔. ADR-005 에서도
+언급했지만 python-docx 패턴이 reference.
+
+**제안**:
+```python
+cp = doc.metadata                   # CoreProperties 객체
+
+# Word/HWP 모두 OOXML core 속성 (~15 개) 매핑:
+cp.title = "1분기 보고"
+cp.author = "홍길동"
+cp.subject = "기획팀"
+cp.keywords = "보고서, 1분기"
+cp.created                          # datetime (read-only)
+cp.modified                         # datetime
+cp.last_modified_by = "이영희"
+cp.revision = 3                     # int
+cp.category = "회의록"
+cp.comments = "..."
+```
+
+**우선순위**: v3.3.
+
+### A.6 `body.iter()` — 문서 순서대로 paragraph + table 순회
+
+python-docx: `for child in doc.element.body.iter_inner_content():` 가
+단락과 표를 **문서 순서** 로 돌려줌. hwpapi 는 현재 `paragraphs` 와
+`tables` 가 별도 컬렉션 — 어떤 단락 다음에 어떤 표가 있는지 알기
+어려움.
+
+**제안**:
+```python
+# 문서 순서대로 모든 element 순회
+for elem in doc.contents():
+    if isinstance(elem, Paragraph):
+        print("p:", elem.text)
+    elif isinstance(elem, Table):
+        print("table:", elem.rows, "x", elem.cols)
+
+# 또는 generator 형태
+for elem in doc.iter_contents(skip_empty=True):
+    ...
+```
+
+**우선순위**: v3.4 (문서 변환 / 분석 use case 가 늘어날 때).
+
+### A.7 `add_X` 의 일관 반환 — 만든 객체 돌려주기
+
+python-docx 의 모든 `add_X` 는 만든 element 반환. 사용자가 곧바로
+설정 가능:
+
+```python
+para = doc.add_paragraph("본문", style="본문")
+para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+cell = table.add_row().cells[0]
+cell.text = "..."
+
+img = doc.add_picture("logo.png", width=Inches(2))
+img.height                           # 자동 계산된 값
+```
+
+**hwpapi 적용**: ADR-004 의 element + ADR-005 의 컬렉션 일관성에
+이미 포함되어 있음. **재확인** 차원.
+
+## B. 보류 (해보고 결정)
+
+### B.1 Run 의 boolean property API (`run.bold = True`)
+
+python-docx: `run.bold = True` 직접 setter. hwpapi 는 현재
+`run.charshape = {"bold": True}` 또는 `run.charshape.bold = True`
+형태 (ADR-004).
+
+직접 setter (`run.bold = True`) 는 편하지만 attribute 폭증 위험
+(bold/italic/underline/strike/sub/super/font_name/font_size/color/...
+한 element 에 30+ attr).
+
+**제안**: **partial** 만 허용.
+- `run.bold`, `run.italic`, `run.underline` (가장 흔한 3개) 만 직접
+  property
+- 나머지는 `run.charshape.X` 로 접근
+
+**우선순위**: spike 후 결정 (v3.4).
+
+### B.2 `paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER` (enum import)
+
+python-docx 는 enum 을 모듈에서 import 해서 씀. hwpapi 는 v0.0.25 부터
+**문자열 호환** 채택 (`align="center"`). 사용자 친화적이라 유지.
+
+**판정**: 차용 안 함 (현재 hwpapi 패턴이 더 나음).
+
+## C. 기각 (hwpapi 도메인에 부적합)
+
+### C.1 OOXML lxml element 접근
+
+python-docx: `paragraph._p` 가 raw lxml `<w:p>` element. .docx 파일
+구조에 직접 접근.
+
+HWP 의 .hwp 는 OOXML 이 아니라 **HWPML** 또는 binary. 직접 접근은
+HWP COM API 를 통해야 함 — 이미 `app.api` / `doc.raw` escape hatch 로
+제공됨.
+
+**판정**: hwpapi 의 `app.api` / `doc.raw` 가 동등 역할.
+
+### C.2 `WD_*` 같은 enum 접두 모듈
+
+python-docx: `WD_ALIGN_PARAGRAPH`, `WD_BREAK_TYPE`, `WD_LINE_SPACING`
+등 수많은 enum 이 별도 모듈에 분산. import 가 verbose.
+
+hwpapi 는 **mappings.py** 에 한 곳에 모든 enum/MAP 통합 + 문자열
+호환. 더 좋음.
+
+**판정**: 차용 안 함.
+
+### C.3 `Document(path)` 생성자에 파일 경로
+
+python-docx: `from docx import Document; doc = Document("file.docx")`
+바로 객체 반환.
+
+hwpapi 는 다중 문서 지원 — `app.docs.open(path)` 가 옳음. 단순화는
+오히려 후퇴.
+
+**판정**: 차용 안 함 (hwpapi 의 lifecycle 이 더 정확).
+
+## D. python-docx 의 단점 — hwpapi 가 이미 해결
+
+| python-docx 한계 | hwpapi v3 의 해법 |
+|---|---|
+| 단일 문서만 | `app.docs[i]` — 다중 문서 |
+| 라이브 편집 불가 (.docx 파일만) | HWP COM 로 라이브 자동화 |
+| context manager 없음 | `with charshape_scope(...):` |
+| 다중 프로세스 격리 없음 | `App()` 인스턴스 분리 가능 |
+| raw 데이터 변환 없음 | `pandas.DataFrame` 양방향 (ADR-005) |
+
+# 통합 결과 — ADR-005 보강
+
+ADR-005 의 roadmap 에 다음을 추가:
+
+| 분기 | ADR-005 항목 | python-docx 기반 추가 |
+|---|---|---|
+| v3.2 | DataFrame, csv, Element Phase1+2 | **단위 클래스** (Mm/Pt/...) |
+| v3.3 | metadata, statistics, zoom, print | **Section first-class** + **core_properties** |
+| v3.4 | outline, compare, protect | **Style 객체 시스템** + **Tri-state property** + **body.iter** |
+| v3.4 | (위와 동일) | **Run 의 bold/italic/underline 직접 property** (선택적) |
+
+# 결과 (Consequences)
+
+## 긍정
+
+- **워드프로세서 표준 패턴 정렬** — Word/HWP 사용자 모두 친숙
+- **Section 도입으로 페이지 설계 정식화** — 실제 보고서/회의록
+  자동화의 핵심
+- **단위 클래스로 산술 자연스러움** — 마진 계산, 폭 분배 등이 직관적
+- **메타데이터 정식화** — RPA / archive 워크플로우 지원
+
+## 부정 / 위험
+
+- **Section 구현 비용** — HWP 의 섹션 모델이 OOXML 과 다름. spike
+  필요 (~200 LOC).
+- **Tri-state 도입의 cascading 복잡도** — 스타일 상속 체인 검증
+  로직 필요. v3.4 까지 미룬 이유.
+- **단위 클래스의 backward compat** — 기존 `U.mm(210)` 함수와
+  공존하면서 어느 쪽을 권장할지 명시 필요.
+- **`add_X` 패턴 통일은 큰 변경** — 현재 `app.docs.add()` 등 일부만
+  return — 전 컬렉션 통일 시 일부 시그니처 변경.
+
+# 미해결 질문
+
+1. **Section 의 단위는?** HWP 가 1 문서 = 1+ 섹션 모델. 새 섹션
+   삽입은 `app.api.Run("BreakSection")` 가능. 사용자 API 는
+   `doc.sections.add()` vs `doc.add_section()` ? (xlwings 쪽 vs
+   python-docx 쪽) — `doc.sections.add(...)` 권장.
+2. **단위 클래스 vs 함수의 trade-off** — `Mm(210) * 2` 는 자연스럽지만
+   `U.mm(210) * 2` 는 정수 산술. 클래스 도입 시 import 부담.
+3. **Tri-state 의 default 표기** — `bold=None` 명시는 verbose.
+   `bold=...` 같은 sentinel 또는 `bold='inherit'` 문자열 등 후보.
+4. **Run-level 직접 property 의 scope** — 3개만? 더 많이?
+5. **`body.iter()` 의 명칭** — `doc.contents()`? `doc.iter()`?
+   `doc.elements()`? — Pythonic 한 게 best.
+
+# 참고
+
+- [ADR-003: Multi-document](adr-003-multi-document.qmd)
+- [ADR-004: Element API](adr-004-element-api.qmd)
+- [ADR-005: API ergonomics](adr-005-api-ergonomics.qmd) — xlwings 기반
+- [python-docx documentation](https://python-docx.readthedocs.io/)
+- [python-docx API reference](https://python-docx.readthedocs.io/en/latest/api/document.html)
+- [Word OOXML reference](http://officeopenxml.com/anatomyofOOXML.php)

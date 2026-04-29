@@ -105,6 +105,7 @@ website:
             - design/adr/adr-003-multi-document.qmd
             - design/adr/adr-004-element-api.qmd
             - design/adr/adr-005-api-ergonomics.qmd
+            - design/adr/adr-006-python-docx-patterns.qmd
   page-footer:
     left: "hwpapi v2.0 · Python COM wrapper for HWP"
     right:
