@@ -85,28 +85,32 @@
     <lastmod>2026-04-28T13:55:27.678Z</lastmod>
   </url>
   <url>
-    <loc>https://JunDamin.github.io/hwpapi/ko/getting-started/install.html</loc>
-    <lastmod>2026-04-28T13:09:09.387Z</lastmod>
-  </url>
-  <url>
-    <loc>https://JunDamin.github.io/hwpapi/ko/design/architecture.html</loc>
-    <lastmod>2026-04-28T13:49:02.165Z</lastmod>
-  </url>
-  <url>
-    <loc>https://JunDamin.github.io/hwpapi/ko/design/adr/adr-001-v2-redesign.html</loc>
-    <lastmod>2026-04-28T13:50:08.657Z</lastmod>
-  </url>
-  <url>
-    <loc>https://JunDamin.github.io/hwpapi/ko/design/adr/adr-002-quarto-docs.html</loc>
-    <lastmod>2026-04-28T13:50:56.131Z</lastmod>
+    <loc>https://JunDamin.github.io/hwpapi/ko/getting-started/migration-v1-to-v2.html</loc>
+    <lastmod>2026-04-28T13:55:37.548Z</lastmod>
   </url>
   <url>
     <loc>https://JunDamin.github.io/hwpapi/ko/design/index.html</loc>
     <lastmod>2026-04-28T13:48:21.250Z</lastmod>
   </url>
   <url>
-    <loc>https://JunDamin.github.io/hwpapi/ko/getting-started/migration-v1-to-v2.html</loc>
-    <lastmod>2026-04-28T13:55:37.548Z</lastmod>
+    <loc>https://JunDamin.github.io/hwpapi/ko/design/adr/adr-002-quarto-docs.html</loc>
+    <lastmod>2026-04-28T13:50:56.131Z</lastmod>
+  </url>
+  <url>
+    <loc>https://JunDamin.github.io/hwpapi/ko/design/adr/adr-001-v2-redesign.html</loc>
+    <lastmod>2026-04-28T13:50:08.657Z</lastmod>
+  </url>
+  <url>
+    <loc>https://JunDamin.github.io/hwpapi/ko/design/architecture.html</loc>
+    <lastmod>2026-04-28T13:49:02.165Z</lastmod>
+  </url>
+  <url>
+    <loc>https://JunDamin.github.io/hwpapi/ko/getting-started/install.html</loc>
+    <lastmod>2026-04-28T13:09:09.387Z</lastmod>
+  </url>
+  <url>
+    <loc>https://JunDamin.github.io/hwpapi/ko/getting-started/migration-v2-to-v3.html</loc>
+    <lastmod>2026-04-29T04:34:15.592Z</lastmod>
   </url>
   <url>
     <loc>https://JunDamin.github.io/hwpapi/ko/guide/app-and-document.html</loc>

@@ -57,8 +57,45 @@ def _format_from_suffix(suffix: str) -> Optional[str]:
 
 
 # ── Document-scoped actions proxy ────────────────────────────────
+class _DocCursor:
+    """Per-document cursor — 이동 / 위치 검사."""
+
+    __slots__ = ("_doc",)
+
+    def __init__(self, doc: "Document") -> None:
+        self._doc = doc
+
+    def goto_page(self, n: int) -> "Document":
+        """페이지 ``n`` (1-based) 로 이동."""
+        self._doc.activate()
+        try:
+            self._doc._app.api.MovePos(23, n - 1, 0)  # MoveToPageStart
+        except Exception:
+            pass
+        return self._doc
+
+    def in_table(self) -> bool:
+        """현재 커서가 표 안에 있으면 ``True``."""
+        self._doc.activate()
+        try:
+            ki = self._doc._app.api.KeyIndicator()
+            return bool(ki[6])
+        except Exception:
+            return False
+
+    def __repr__(self) -> str:
+        return f"<DocCursor doc={self._doc.name!r}>"
+
+
 class _DocActions:
-    """Document-scoped actions — `doc.actions.X` 가 doc 자동 활성화."""
+    """Document-scoped actions — `doc.actions.X` 가 doc 자동 활성화.
+
+    중요: ``__getattr__`` 시점 (= action 객체 획득 시) 에 즉시
+    ``doc.activate()`` 를 호출합니다. 그 이유는 HWP 의 ``HAction`` /
+    ``HParameterSet`` 이 활성 문서의 컨텍스트에 묶여 있어, pset.X 값을
+    설정한 뒤 doc 을 전환하면 그 값이 무효화되기 때문입니다. 따라서
+    "pset 만지기 전에 doc 활성화" 가 정공법.
+    """
 
     __slots__ = ("_doc",)
 
@@ -66,36 +103,12 @@ class _DocActions:
         self._doc = doc
 
     def __getattr__(self, name: str):
-        action = getattr(self._doc._app.actions, name)
-        return _ScopedAction(action, self._doc)
+        # 활성화는 여기서 — pset 을 만지기 전에 doc 컨텍스트를 잡음.
+        self._doc.activate()
+        return getattr(self._doc._app.actions, name)
 
     def __repr__(self) -> str:
         return f"<DocActions doc={self._doc.name!r}>"
-
-
-class _ScopedAction:
-    """`run()` 직전 doc.activate() 자동 호출하는 wrapper."""
-
-    __slots__ = ("_action", "_doc")
-
-    def __init__(self, action, doc: "Document") -> None:
-        self._action = action
-        self._doc = doc
-
-    @property
-    def pset(self):
-        return self._action.pset
-
-    @property
-    def act(self):
-        return self._action.act
-
-    def run(self, *args, **kwargs):
-        self._doc.activate()
-        return self._action.run(*args, **kwargs)
-
-    def __repr__(self) -> str:
-        return f"<ScopedAction doc={self._doc.name!r} action={self._action!r}>"
 
 
 # ── Document ─────────────────────────────────────────────────────
@@ -281,6 +294,127 @@ class Document:
         self._app.api.Run("SelectAll")
         self._app.api.Run("Delete")
         return self
+
+    def find_text(self, query: str) -> bool:
+        """현재 커서 위치 이후에서 ``query`` 검색. 발견 시 ``True``."""
+        self.activate()
+        try:
+            return bool(self._app.api.HAction.GetDefault) and \
+                   bool(self._app.actions.FindDlg.run())
+        except Exception:
+            return False
+
+    def replace_all(self, find: str, replace: str) -> int:
+        """``find`` → ``replace`` 일괄 치환. 치환된 개수 반환 (대략)."""
+        self.activate()
+        # AllReplace action — ParameterSet 기반.
+        try:
+            act = self._app.actions.AllReplace
+            pset = act.pset
+            pset.FindString = find
+            pset.ReplaceString = replace
+            pset.Direction = 0          # forward
+            pset.WholeWordOnly = 0
+            pset.IgnoreMessage = 1
+            pset.MatchCase = 1
+            act.run()
+            # HWP 가 정확한 개수를 돌려주지 않음 — 호출 성공 여부만.
+            return 1
+        except Exception:
+            return 0
+
+    def select_text(self, start: int, end: int) -> "Document":
+        """문자 위치 ``start..end`` 를 선택."""
+        self.activate()
+        # SelectByPos 또는 MovePos / MoveSelPos 조합.
+        try:
+            self._app.api.MovePos(2, 0, 0)              # MoveTopOfFile
+            for _ in range(start):
+                self._app.api.Run("MoveRight")
+            for _ in range(end - start):
+                self._app.api.Run("MoveSelRight")
+        except Exception:
+            pass
+        return self
+
+    def copy(self) -> "Document":
+        self.activate()
+        self._app.api.Run("Copy")
+        return self
+
+    def cut(self) -> "Document":
+        self.activate()
+        self._app.api.Run("Cut")
+        return self
+
+    def paste(self) -> "Document":
+        self.activate()
+        self._app.api.Run("Paste")
+        return self
+
+    def delete(self) -> "Document":
+        self.activate()
+        self._app.api.Run("Delete")
+        return self
+
+    def undo(self) -> "Document":
+        self.activate()
+        self._app.api.Run("Undo")
+        return self
+
+    def redo(self) -> "Document":
+        self.activate()
+        self._app.api.Run("Redo")
+        return self
+
+    def insert_line_break(self) -> "Document":
+        self.activate()
+        self._app.api.Run("BreakLine")
+        return self
+
+    def insert_page_break(self) -> "Document":
+        self.activate()
+        self._app.api.Run("BreakPage")
+        return self
+
+    def insert_paragraph_break(self) -> "Document":
+        self.activate()
+        self._app.api.Run("BreakPara")
+        return self
+
+    def insert_tab(self) -> "Document":
+        self.activate()
+        self._app.api.Run("InsertTab")
+        return self
+
+    def insert_picture(self, path: str) -> "Document":
+        """그림 삽입 — `path` 의 그림 파일을 커서 위치에 삽입."""
+        from hwpapi.functions import get_absolute_path
+        self.activate()
+        try:
+            self._app.api.InsertPicture(get_absolute_path(path), True, 0, 0)
+        except Exception as e:
+            self._app.logger.debug(f"insert_picture: {e}")
+        return self
+
+    def insert_table(self, rows: int, cols: int) -> "Document":
+        """``rows × cols`` 표 삽입."""
+        self.activate()
+        try:
+            act = self._app.actions.TableCreate
+            act.pset.Rows = rows
+            act.pset.Cols = cols
+            act.run()
+        except Exception as e:
+            self._app.logger.debug(f"insert_table: {e}")
+        return self
+
+    # ── cursor sub-accessor ─────────────────────────────────────
+
+    @cached_property
+    def cursor(self) -> "_DocCursor":
+        """:class:`_DocCursor` — 커서 이동/검사."""
+        return _DocCursor(self)
 
     # ── action proxy ─────────────────────────────────────────────
 

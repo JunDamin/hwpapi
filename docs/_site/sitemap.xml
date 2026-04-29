@@ -85,32 +85,36 @@
     <lastmod>2026-04-28T09:15:12.253Z</lastmod>
   </url>
   <url>
-    <loc>https://JunDamin.github.io/hwpapi/getting-started/install.html</loc>
-    <lastmod>2026-04-28T09:15:12.247Z</lastmod>
-  </url>
-  <url>
-    <loc>https://JunDamin.github.io/hwpapi/design/architecture.html</loc>
-    <lastmod>2026-04-28T09:15:12.238Z</lastmod>
-  </url>
-  <url>
-    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-002-quarto-docs.html</loc>
-    <lastmod>2026-04-28T09:15:12.231Z</lastmod>
-  </url>
-  <url>
-    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-001-v2-redesign.html</loc>
-    <lastmod>2026-04-28T09:15:12.230Z</lastmod>
-  </url>
-  <url>
-    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-003-multi-document.html</loc>
-    <lastmod>2026-04-29T04:06:40.931Z</lastmod>
+    <loc>https://JunDamin.github.io/hwpapi/getting-started/migration-v1-to-v2.html</loc>
+    <lastmod>2026-04-28T09:15:12.249Z</lastmod>
   </url>
   <url>
     <loc>https://JunDamin.github.io/hwpapi/design/index.html</loc>
     <lastmod>2026-04-28T09:15:12.242Z</lastmod>
   </url>
   <url>
-    <loc>https://JunDamin.github.io/hwpapi/getting-started/migration-v1-to-v2.html</loc>
-    <lastmod>2026-04-28T09:15:12.249Z</lastmod>
+    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-003-multi-document.html</loc>
+    <lastmod>2026-04-29T04:06:40.931Z</lastmod>
+  </url>
+  <url>
+    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-001-v2-redesign.html</loc>
+    <lastmod>2026-04-28T09:15:12.230Z</lastmod>
+  </url>
+  <url>
+    <loc>https://JunDamin.github.io/hwpapi/design/adr/adr-002-quarto-docs.html</loc>
+    <lastmod>2026-04-28T09:15:12.231Z</lastmod>
+  </url>
+  <url>
+    <loc>https://JunDamin.github.io/hwpapi/design/architecture.html</loc>
+    <lastmod>2026-04-28T09:15:12.238Z</lastmod>
+  </url>
+  <url>
+    <loc>https://JunDamin.github.io/hwpapi/getting-started/install.html</loc>
+    <lastmod>2026-04-28T09:15:12.247Z</lastmod>
+  </url>
+  <url>
+    <loc>https://JunDamin.github.io/hwpapi/getting-started/migration-v2-to-v3.html</loc>
+    <lastmod>2026-04-29T04:33:14.528Z</lastmod>
   </url>
   <url>
     <loc>https://JunDamin.github.io/hwpapi/guide/app-and-document.html</loc>

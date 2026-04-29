@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>설치 – hwpapi</title>
+<title>hwpapi v2.x → v3.0 마이그레이션 – hwpapi</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -67,7 +67,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../getting-started/quickstart.html" rel="next">
+<link href="../getting-started/migration-v1-to-v2.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -344,7 +344,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="사이드바 전환" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../getting-started/install.html">설치</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../getting-started/migration-v2-to-v3.html">hwpapi v2.x → v3.0 마이그레이션</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="사이드바 전환" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -358,7 +358,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../getting-started/install.html" class="sidebar-item-text sidebar-link active">
+  <a href="../getting-started/install.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">설치</span></a>
   </div>
 </li>
@@ -376,7 +376,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../getting-started/migration-v2-to-v3.html" class="sidebar-item-text sidebar-link">
+  <a href="../getting-started/migration-v2-to-v3.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">hwpapi v2.x → v3.0 마이그레이션</span></a>
   </div>
 </li>
@@ -390,14 +390,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">목차</h2>
    
   <ul>
-  <li><a href="#요구사항" id="toc-요구사항" class="nav-link active" data-scroll-target="#요구사항">요구사항</a></li>
-  <li><a href="#pypi-에서-설치" id="toc-pypi-에서-설치" class="nav-link" data-scroll-target="#pypi-에서-설치">PyPI 에서 설치</a></li>
-  <li><a href="#소스에서-설치" id="toc-소스에서-설치" class="nav-link" data-scroll-target="#소스에서-설치">소스에서 설치</a></li>
-  <li><a href="#filepathcheckermoduleexample-dll" id="toc-filepathcheckermoduleexample-dll" class="nav-link" data-scroll-target="#filepathcheckermoduleexample-dll">FilePathCheckerModuleExample DLL</a></li>
-  <li><a href="#설치-검증" id="toc-설치-검증" class="nav-link" data-scroll-target="#설치-검증">설치 검증</a></li>
-  <li><a href="#트러블슈팅" id="toc-트러블슈팅" class="nav-link" data-scroll-target="#트러블슈팅">트러블슈팅</a></li>
+  <li><a href="#개요" id="toc-개요" class="nav-link active" data-scroll-target="#개요">개요</a></li>
+  <li><a href="#호환성-정책" id="toc-호환성-정책" class="nav-link" data-scroll-target="#호환성-정책">호환성 정책</a></li>
+  <li><a href="#새-형태-v3" id="toc-새-형태-v3" class="nav-link" data-scroll-target="#새-형태-v3">새 형태 (v3)</a></li>
+  <li><a href="#마이그레이션-표" id="toc-마이그레이션-표" class="nav-link" data-scroll-target="#마이그레이션-표">1:1 마이그레이션 표</a>
+  <ul class="collapse">
+  <li><a href="#app.docs-로-이름-변경이동" id="toc-app.docs-로-이름-변경이동" class="nav-link" data-scroll-target="#app.docs-로-이름-변경이동"><code>app.docs</code> 로 이름 변경/이동</a></li>
+  <li><a href="#document-인스턴스로-이동" id="toc-document-인스턴스로-이동" class="nav-link" data-scroll-target="#document-인스턴스로-이동"><code>Document</code> 인스턴스로 이동</a></li>
+  <li><a href="#다중-문서-워크플로우-new" id="toc-다중-문서-워크플로우-new" class="nav-link" data-scroll-target="#다중-문서-워크플로우-new">다중 문서 워크플로우 (NEW)</a></li>
+  <li><a href="#actions-binding" id="toc-actions-binding" class="nav-link" data-scroll-target="#actions-binding">actions binding</a></li>
+  </ul></li>
+  <li><a href="#예제" id="toc-예제" class="nav-link" data-scroll-target="#예제">예제</a>
+  <ul class="collapse">
+  <li><a href="#예제-1-단일-문서-열기-삽입-저장" id="toc-예제-1-단일-문서-열기-삽입-저장" class="nav-link" data-scroll-target="#예제-1-단일-문서-열기-삽입-저장">예제 1 — 단일 문서: 열기, 삽입, 저장</a></li>
+  <li><a href="#예제-2-다중-문서-두-파일-병합" id="toc-예제-2-다중-문서-두-파일-병합" class="nav-link" data-scroll-target="#예제-2-다중-문서-두-파일-병합">예제 2 — 다중 문서: 두 파일 병합</a></li>
+  <li><a href="#예제-3-일괄-변환-폴더의-hwp-pdf" id="toc-예제-3-일괄-변환-폴더의-hwp-pdf" class="nav-link" data-scroll-target="#예제-3-일괄-변환-폴더의-hwp-pdf">예제 3 — 일괄 변환: 폴더의 HWP → PDF</a></li>
+  <li><a href="#예제-4-다중-문서-전환-n개-파일-병렬-처리" id="toc-예제-4-다중-문서-전환-n개-파일-병렬-처리" class="nav-link" data-scroll-target="#예제-4-다중-문서-전환-n개-파일-병렬-처리">예제 4 — 다중 문서 전환: N개 파일 병렬 처리</a></li>
+  </ul></li>
+  <li><a href="#faq" id="toc-faq" class="nav-link" data-scroll-target="#faq">FAQ</a></li>
+  <li><a href="#참고" id="toc-참고" class="nav-link" data-scroll-target="#참고">참고</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/getting-started/install.qmd" class="toc-action"><i class="bi bi-github"></i>편집</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>이슈 보고</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/getting-started/migration-v2-to-v3.qmd" class="toc-action"><i class="bi bi-github"></i>편집</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>이슈 보고</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -405,8 +418,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">설치</h1>
-<p class="subtitle lead">Windows 환경에 hwpapi 설치하기</p>
+<h1 class="title">hwpapi v2.x → v3.0 마이그레이션</h1>
 </div>
 
 
@@ -414,6 +426,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="quarto-title-meta">
 
     
+    <div>
+    <div class="quarto-title-meta-heading">공개</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">2026년 4월 29일</p>
+    </div>
+  </div>
   
     
   </div>
@@ -423,68 +441,433 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="요구사항" class="level1">
-<h1>요구사항</h1>
-<p>hwpapi 는 한컴오피스 한글(HWP)의 Windows COM 자동화 인터페이스를 구동합니다. 따라서:</p>
+<section id="개요" class="level1">
+<h1>개요</h1>
+<p>hwpapi v3.0 은 <a href="https://docs.xlwings.org/">xlwings</a> 에서 영감을 받아 public API 를 3-tier 모델로 재구성했습니다 — HWP COM 엔진 lifecycle 만 책임지는 <code>App</code>, 열린 문서 membership 을 책임지는 <code>app.docs</code> 컬렉션, 그리고 단일 <code>.hwp</code> 파일에 속한 모든 작업을 책임지는 <code>Document</code> 인스턴스. v2 에서는 <code>App</code> 클래스가 단일 문서 facade 를 겸했습니다 — <code>app.open()</code>, <code>app.save()</code>, <code>app.close()</code>, <code>app.doc</code> 이 모두 <code>App</code> 위에 있었고, HWP 가 “활성” 으로 간주하는 문서에 대해 암묵적으로 동작했습니다. v3 는 이 모호함을 제거합니다: <code>app.docs.open(path)</code> 와 <code>app.docs.add()</code> 는 <code>Document</code> 인스턴스를 반환하고, <strong>모든 문서 단위 작업은 그 인스턴스에서 일어납니다</strong>. 다중 문서 워크플로우 (병합, 일괄 변환, A/B 비교) 가 first-class 가 됩니다 — v2 에서는 <code>app.api.XHwpDocuments</code> 를 통한 raw COM 접근 없이는 불가능했습니다.</p>
+</section>
+<section id="호환성-정책" class="level1">
+<h1>호환성 정책</h1>
+<p>hwpapi 3.0 은 <strong>clean-cut break</strong> 입니다. <strong>deprecation shim 이 없습니다</strong>.</p>
 <ul>
-<li><strong>OS</strong>: Windows 10 이상</li>
-<li><strong>HWP</strong>: 한글 2018 / 2020 / 2022 / 2024 (한컴오피스). <strong>뷰어 에디션은 지원하지 않습니다</strong> — 자동화 서버가 노출되지 않기 때문입니다.</li>
-<li><strong>Python</strong>: 3.9 이상</li>
-<li><strong>pywin32</strong>: <code>pip install hwpapi</code> 로 자동 설치됩니다.</li>
+<li>제거된 <code>App</code> 멤버 (<code>app.open</code>, <code>app.save</code>, <code>app.save_as</code>, <code>app.close</code>, <code>app.doc</code>) 를 호출하는 v2 코드는 <code>AttributeError</code> 를 던집니다.</li>
+<li>런타임 경고 없음. 호환 레이어 없음. import 시점 alias 없음.</li>
+<li>사유: v2 는 process lifecycle 과 document lifecycle 을 혼합해 <code>app.save()</code> 가 다중 문서 상황에서 모호했습니다. <code>app.save()</code> 를 <code>app.docs.active.save()</code> 로 forwarding 하는 shim 을 두면 그 모호함이 보존되고, 타입 시스템이 “App 작업” 과 “Document 작업” 을 구분할 수 없게 됩니다. clean break 가 영구적인 호환 레이어보다 비용이 적고, 마이그레이션은 거의 기계적인 find/replace 입니다 (아래 표 참고).</li>
+<li>즉시 마이그레이션이 어려운 v2.x 사용자는 <code>hwpapi==2.*</code> 로 pinning 하세요 — 해당 라인은 <code>v2.x</code> 브랜치에 동결되었고 <code>v2.0.0</code> 태그가 붙어 있습니다. 치명적 버그 수정만 backport 됩니다.</li>
 </ul>
-<p>macOS / Linux 는 지원되지 않습니다 (HWP COM 서버가 Windows 전용). 다만 hwpapi 의 단위 테스트는 Linux 에서도 실행 가능합니다 — COM 레이어를 mock 으로 stub 하기 때문입니다. 실제 HWP 인스턴스에 접근하는 코드는 반드시 Windows 에서 실행해야 합니다.</p>
 </section>
-<section id="pypi-에서-설치" class="level1">
-<h1>PyPI 에서 설치</h1>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install hwpapi</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
-<p>이 명령으로 <code>hwpapi</code> 와 <code>pywin32</code> 가 함께 설치됩니다. 설치 확인:</p>
-<div id="bee9461b" class="cell" data-execution_count="1">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> hwpapi</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(hwpapi.__version__)</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>2.0.0</code></pre>
-</div>
-</div>
+<section id="새-형태-v3" class="level1">
+<h1>새 형태 (v3)</h1>
+<pre><code>hwpapi.App                        # HWP COM 엔진 lifecycle 만
+├── visible (property)            # 창 가시성 — bool r/w
+├── version (property)            # 엔진 버전
+├── quit()                        # COM 엔진 프로세스 종료
+├── docs ─────────────────────────────── DocumentCollection
+│   ├── open(path) → Document         # .hwp / .hwpx 파일 열기
+│   ├── add()      → Document         # 빈 새 문서 생성
+│   ├── active     → Document         # 현재 활성 문서
+│   ├── [i] / ["name.hwp"]            # 인덱스 / 이름 접근
+│   ├── len(app.docs)                 # 열린 문서 개수
+│   └── for d in app.docs: ...        # 순회
+├── actions                       # raw process-level actions (escape hatch)
+├── engine                        # Engine escape hatch
+└── api                           # raw COM 핸들 escape hatch
+
+hwpapi.Document                   # 한 .hwp 파일에 속한 모든 작업
+├── name / path / saved           # 메타데이터
+├── text (r/w property)           # 전체 문서 텍스트
+├── insert_text(s)
+├── insert_picture(path) / insert_table(rows, cols)
+├── insert_line_break() / insert_page_break() / insert_paragraph_break()
+├── insert_tab()
+├── find_text(query) / replace_all(find, replace)
+├── select_all() / select_text(start, end) / get_selected_text()
+├── copy() / cut() / paste() / delete() / clear()
+├── undo() / redo()
+├── save()                        # 제자리 저장 (문서 단위)
+├── save_as(path)                 # 새 경로로 저장
+├── close(save=False)             # 이 문서만 닫기
+├── activate()                    # 이 문서를 forefront 로
+├── cursor                        # 문서별 커서 accessor
+│   ├── goto_page(n)
+│   └── in_table()
+├── actions                       # doc-scoped actions (auto-activate)
+├── fields / bookmarks / hyperlinks / images / paragraphs /
+│   styles / tables               # 캐시된 컬렉션 accessor
+└── api                           # 문서별 COM 핸들 (XHwpDocument)</code></pre>
 </section>
-<section id="소스에서-설치" class="level1">
-<h1>소스에서 설치</h1>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/JunDamin/hwpapi.git</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> hwpapi</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-e</span> .</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
-<p>이 사이트(문서)를 로컬에서 빌드하려면 <code>docs</code> extra 를 추가:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-e</span> <span class="st">".[docs]"</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 또는 명시적으로:</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install quartodoc griffe jupyter</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>docs</code> extra 는 <code>quartodoc</code> (자동 API 페이지 생성) 과 <code>griffe</code> (quartodoc 이 사용하는 Python AST 백엔드) 를 가져옵니다.</p>
+<section id="마이그레이션-표" class="level1">
+<h1>1:1 마이그레이션 표</h1>
+<p>대상 위치별로 그룹화. v3 에서 제거된 모든 <code>App</code> 멤버는 이전지가 문서화되어 있습니다.</p>
+<section id="app.docs-로-이름-변경이동" class="level2">
+<h2 class="anchored" data-anchor-id="app.docs-로-이름-변경이동"><code>app.docs</code> 로 이름 변경/이동</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>v2 호출</th>
+<th>v3 대응</th>
+<th>비고</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>app.open(path)</code></td>
+<td><code>doc = app.docs.open(path)</code></td>
+<td><code>Document</code> 인스턴스를 반환 — 변수로 잡으세요</td>
+</tr>
+<tr class="even">
+<td><code>app.new()</code></td>
+<td><code>doc = app.docs.add()</code></td>
+<td>동일한 형태; <code>add()</code> 는 xlwings 와 일치</td>
+</tr>
+<tr class="odd">
+<td><code>app.doc</code></td>
+<td><code>app.docs.active</code></td>
+<td>활성 문서 accessor</td>
+</tr>
+<tr class="even">
+<td>(v2 에 없음)</td>
+<td><code>app.docs[0]</code>, <code>app.docs["report.hwp"]</code></td>
+<td>인덱스 / 이름 접근</td>
+</tr>
+<tr class="odd">
+<td>(v2 에 없음)</td>
+<td><code>len(app.docs)</code></td>
+<td>열린 문서 개수</td>
+</tr>
+<tr class="even">
+<td>(v2 에 없음)</td>
+<td><code>for d in app.docs:</code></td>
+<td>순회</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="filepathcheckermoduleexample-dll" class="level1">
-<h1>FilePathCheckerModuleExample DLL</h1>
-<p>HWP 는 <code>FilePathCheckerModuleExample.dll</code> 이라는 작은 DLL 을 제공합니다 — <code>App.open(path)</code> 호출 시 “이 파일을 열어도 안전합니까?” 대화상자를 자동 억제해줍니다. hwpapi 는 <code>check_dll()</code> 로 자동 탐색하지만, 파일 열 때마다 OS 대화상자가 뜨면 HWP 설치 프로그램에서 해당 모듈을 설치하거나, 명시적으로 경로를 지정하세요:</p>
-<div id="81b7e1df" class="cell" data-execution_count="2">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App(dll_path<span class="op">=</span><span class="st">"C:/hwpapi/FilePathCheckerModuleExample.dll"</span>)</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
+<section id="document-인스턴스로-이동" class="level2">
+<h2 class="anchored" data-anchor-id="document-인스턴스로-이동"><code>Document</code> 인스턴스로 이동</h2>
+<p>v2 에서 <code>App</code> (또는 <code>app.doc</code>) 위에 있던 모든 문서 단위 작업이 이제 <code>app.docs.open()</code> / <code>app.docs.add()</code> 가 반환하는 <code>Document</code> 위에 있습니다.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>v2 호출</th>
+<th>v3 대응</th>
+<th>비고</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>app.save()</code></td>
+<td><code>doc.save()</code></td>
+<td>문서 단위 저장; 모호함 없음</td>
+</tr>
+<tr class="even">
+<td><code>app.save_as(path)</code></td>
+<td><code>doc.save_as(path)</code></td>
+<td>문서 단위 다른 이름으로 저장</td>
+</tr>
+<tr class="odd">
+<td><code>app.close()</code></td>
+<td><code>doc.close(save=False)</code></td>
+<td><code>save=True</code> 로 저장 후 닫기</td>
+</tr>
+<tr class="even">
+<td><code>app.doc.text</code></td>
+<td><code>doc.text</code></td>
+<td>r/w property</td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.insert_text(s)</code></td>
+<td><code>doc.insert_text(s)</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.insert_picture(p)</code></td>
+<td><code>doc.insert_picture(p)</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.insert_line_break()</code></td>
+<td><code>doc.insert_line_break()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.insert_page_break()</code></td>
+<td><code>doc.insert_page_break()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.insert_paragraph_break()</code></td>
+<td><code>doc.insert_paragraph_break()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.insert_tab()</code></td>
+<td><code>doc.insert_tab()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.find_text(q)</code></td>
+<td><code>doc.find_text(q)</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.replace_all(f, r)</code></td>
+<td><code>doc.replace_all(f, r)</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.select_all()</code></td>
+<td><code>doc.select_all()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.select_text(s, e)</code></td>
+<td><code>doc.select_text(s, e)</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.get_selected_text()</code></td>
+<td><code>doc.get_selected_text()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.copy()</code> / <code>cut()</code> / <code>paste()</code></td>
+<td><code>doc.copy()</code> / <code>cut()</code> / <code>paste()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.delete()</code> / <code>clear()</code></td>
+<td><code>doc.delete()</code> / <code>clear()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.undo()</code> / <code>redo()</code></td>
+<td><code>doc.undo()</code> / <code>redo()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.cursor.goto_page(n)</code></td>
+<td><code>doc.cursor.goto_page(n)</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.cursor.in_table()</code></td>
+<td><code>doc.cursor.in_table()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.fields</code></td>
+<td><code>doc.fields</code></td>
+<td><code>FieldCollection</code> — dict 형</td>
+</tr>
+<tr class="even">
+<td><code>app.doc.bookmarks</code></td>
+<td><code>doc.bookmarks</code></td>
+<td><code>BookmarkCollection</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.hyperlinks</code></td>
+<td><code>doc.hyperlinks</code></td>
+<td><code>HyperlinkCollection</code></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.images</code></td>
+<td><code>doc.images</code></td>
+<td><code>ImageCollection</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.paragraphs</code></td>
+<td><code>doc.paragraphs</code></td>
+<td><code>ParagraphCollection</code></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.styles</code></td>
+<td><code>doc.styles</code></td>
+<td><code>StyleCollection</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.tables</code></td>
+<td><code>doc.tables</code></td>
+<td><code>TableCollection</code></td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="설치-검증" class="level1">
-<h1>설치 검증</h1>
-<p>가장 단순한 smoke 테스트 — HWP 를 실행하고, 빈 문서를 열고, 버전을 출력한 뒤 깔끔하게 닫습니다:</p>
-<div id="aea4260a" class="cell" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    app.new()</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"HWP 버전:"</span>, app.engine.version)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"문서 텍스트:"</span>, <span class="bu">repr</span>(app.doc.text))</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>HWP 버전이 출력되고 텍스트가 <code>''</code> 로 나오면 정상 설치입니다.</p>
-<p><a href="../getting-started/quickstart.html">퀵스타트</a> 로 이동하세요.</p>
+<section id="다중-문서-워크플로우-new" class="level2">
+<h2 class="anchored" data-anchor-id="다중-문서-워크플로우-new">다중 문서 워크플로우 (NEW)</h2>
+<p>다음은 v2 에서는 raw COM 없이는 불가능했던 패턴입니다:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>패턴</th>
+<th>v3 문법</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>두 파일 동시 열기</td>
+<td><code>a = app.docs.open("a.hwp"); b = app.docs.open("b.hwp")</code></td>
+</tr>
+<tr class="even">
+<td>기존 문서 옆에 빈 문서 생성</td>
+<td><code>src = app.docs.open(p); dst = app.docs.add()</code></td>
+</tr>
+<tr class="odd">
+<td>모든 열린 문서 순회</td>
+<td><code>for d in app.docs: ...</code></td>
+</tr>
+<tr class="even">
+<td>파일명으로 조회</td>
+<td><code>app.docs["report.hwp"]</code></td>
+</tr>
+<tr class="odd">
+<td>인덱스로 조회</td>
+<td><code>app.docs[0]</code></td>
+</tr>
+<tr class="even">
+<td>활성 문서 전환</td>
+<td><code>doc.activate()</code></td>
+</tr>
+<tr class="odd">
+<td>열린 문서 개수</td>
+<td><code>len(app.docs)</code></td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="트러블슈팅" class="level1">
-<h1>트러블슈팅</h1>
-<p><strong><code>ModuleNotFoundError: No module named 'win32com'</code></strong> — pywin32 가 제대로 설치되지 않았습니다. <code>pip install --force-reinstall pywin32</code> 후 관리자 권한으로 <code>python Scripts\pywin32_postinstall.py -install</code> 를 실행하세요.</p>
-<p><strong>파일 열 때마다 보안 대화상자가 뜸</strong> — <code>FilePathCheckerModuleExample.dll</code> 이 등록되지 않은 상태입니다. 위 설명대로 <code>dll_path=</code> 를 명시하거나, hwpapi 설치 디렉터리에 DLL 을 복사하세요.</p>
-<p><strong><code>ConnectionError: can't dispatch HwpObject</code></strong> — HWP 가 설치되지 않았거나, 뷰어 에디션을 사용 중이거나, COM 등록이 손상된 상태입니다. HWP 를 재설치하고 다시 시도하세요.</p>
-<p><strong>HWP 종료 시 Ruby/Tk 에러</strong> — <code>app.quit()</code> 전에 <code>app.close()</code> 를 호출하거나, context manager (<code>with App() as app:</code>) 를 쓰세요 — 후자가 자동으로 처리합니다.</p>
+<section id="actions-binding" class="level2">
+<h2 class="anchored" data-anchor-id="actions-binding">actions binding</h2>
+<p>raw <code>HAction</code> 인터페이스는 프로세스 전역이며 항상 활성 문서를 대상으로 합니다. v3 는 이를 두 위치에서 다른 의미로 노출합니다:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>진입점</th>
+<th>활성화 책임</th>
+<th>사용처</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>app.actions.X.run()</code></td>
+<td>호출자 (<code>doc.activate()</code> 수동)</td>
+<td>단일 문서 스크립트 / escape hatch</td>
+</tr>
+<tr class="even">
+<td><code>doc.actions.X.run()</code></td>
+<td>자동 — <code>run()</code> 직전 <code>doc.activate()</code> 호출</td>
+<td>기본 — 다중 문서 안전</td>
+</tr>
+</tbody>
+</table>
+<p><code>doc.actions</code> 는 얇은 proxy 입니다. auto-activate 는 <code>run()</code> 당 COM 호출 1회 (마이크로초) 를 추가하며, 문서가 이미 활성 상태이면 no-op 입니다. 단일 문서 스크립트에서는 비용이 무시 가능하고, 다중 문서 스크립트 에서는 “잘못된 문서가 활성 상태였다” 는 종류의 버그를 한 번에 제거 합니다.</p>
+</section>
+</section>
+<section id="예제" class="level1">
+<h1>예제</h1>
+<section id="예제-1-단일-문서-열기-삽입-저장" class="level2">
+<h2 class="anchored" data-anchor-id="예제-1-단일-문서-열기-삽입-저장">예제 1 — 단일 문서: 열기, 삽입, 저장</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># v2.x</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App()</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>app.<span class="bu">open</span>(<span class="st">"report.hwp"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>app.doc.insert_text(<span class="st">"Hello, world.</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>app.save()</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>app.close()</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>app.quit()</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># v3.0</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    doc <span class="op">=</span> app.docs.<span class="bu">open</span>(<span class="st">"report.hwp"</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    doc.insert_text(<span class="st">"Hello, world.</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    doc.save()</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    doc.close()</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># 종료 시 app.quit() 자동 호출</span></span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="예제-2-다중-문서-두-파일-병합" class="level2">
+<h2 class="anchored" data-anchor-id="예제-2-다중-문서-두-파일-병합">예제 2 — 다중 문서: 두 파일 병합</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># v2.x — 직접 지원되지 않음; app.api.XHwpDocuments 필요</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># v3.0</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    src <span class="op">=</span> app.docs.<span class="bu">open</span>(<span class="st">"source.hwp"</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    dst <span class="op">=</span> app.docs.add()                      <span class="co"># 빈 문서</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> para <span class="kw">in</span> src.paragraphs:</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        dst.insert_text(para.text <span class="op">+</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    dst.save_as(<span class="st">"merged.hwp"</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    src.close(save<span class="op">=</span><span class="va">False</span>)                     <span class="co"># 원본은 그대로</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    dst.close()</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="예제-3-일괄-변환-폴더의-hwp-pdf" class="level2">
+<h2 class="anchored" data-anchor-id="예제-3-일괄-변환-폴더의-hwp-pdf">예제 3 — 일괄 변환: 폴더의 HWP → PDF</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># v3.0</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> hwp <span class="kw">in</span> Path(<span class="st">"inbox"</span>).glob(<span class="st">"*.hwp"</span>):</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        doc <span class="op">=</span> app.docs.<span class="bu">open</span>(hwp)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        doc.save_as(hwp.with_suffix(<span class="st">".pdf"</span>))  <span class="co"># 확장자가 포맷 결정</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        doc.close()                           <span class="co"># 다음 파일로 가기 전 메모리 해제</span></span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="예제-4-다중-문서-전환-n개-파일-병렬-처리" class="level2">
+<h2 class="anchored" data-anchor-id="예제-4-다중-문서-전환-n개-파일-병렬-처리">예제 4 — 다중 문서 전환: N개 파일 병렬 처리</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># v3.0</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    docs <span class="op">=</span> [app.docs.<span class="bu">open</span>(p) <span class="cf">for</span> p <span class="kw">in</span> Path(<span class="st">"inbox"</span>).glob(<span class="st">"*.hwp"</span>)]</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="bu">len</span>(app.docs)<span class="sc">}</span><span class="ss"> 개 문서 열림"</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> doc <span class="kw">in</span> app.docs:</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        doc.replace_all(<span class="st">"</span><span class="sc">{{</span><span class="st">YEAR</span><span class="sc">}}</span><span class="st">"</span>, <span class="st">"2026"</span>)   <span class="co"># 호출마다 auto-activate</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        doc.save()</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 사용자가 보도록 특정 문서를 이름으로 골라 활성화</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    app.docs[<span class="st">"summary.hwp"</span>].activate()</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="faq" class="level1">
+<h1>FAQ</h1>
+<p><strong>“<code>app.doc</code> 는 어떻게 됐나요?”</strong> 제거됐습니다. v2 의 “활성 문서” accessor 는 이제 <code>app.docs.active</code> 입니다. v2 의 암묵적 활성-문서 모델은 명시적 binding 으로 대체됐습니다: <code>app.docs.open(...)</code> / <code>app.docs.add()</code> 가 반환하는 <code>Document</code> 를 변수로 잡고 그 변수로 작업하세요.</p>
+<p><strong>“현재 활성 문서를 어떻게 얻나요?”</strong> <code>app.docs.active</code>. 단, 사용자가 HWP 의 다른 창을 클릭하면 활성 문서가 바뀔 수 있습니다 — <code>app.docs.open(...)</code> 으로 본인의 변수를 잡아두고, 확실히 해야 할 때 <code>doc.activate()</code> 를 호출하세요.</p>
+<p><strong>“열린 모든 문서를 어떻게 순회하나요?”</strong> <code>for d in app.docs:</code>. <code>len(app.docs)</code> 로 개수를, <code>app.docs[i]</code> / <code>app.docs["name.hwp"]</code> 로 위치/파일명 인덱싱이 가능합니다.</p>
+<p><strong>“<code>doc.actions.X</code> 는 <code>app.actions.X</code> 보다 비용이 더 드나요?”</strong> 실질적으로 아닙니다. <code>doc.actions.X.run()</code> 은 <code>app.actions.X.run()</code> 으로 위임하기 전에 <code>doc.activate()</code> (COM 호출 1 회, 마이크로초) 를 호출 합니다. <code>doc</code> 가 이미 활성 상태이면 활성화는 no-op 입니다. 이점은 다중 문서 안전성이며, <code>app.actions</code> 는 명시적 escape hatch 로만 사용하세요.</p>
+<p><strong>“v2 를 그대로 쓸 수 있나요?”</strong> 네 — <code>pip install "hwpapi==2.*"</code>. <code>v2.x</code> 브랜치는 <code>v2.0.0</code> 에 동결됐고 치명적 버그 수정만 받습니다.</p>
+<p><strong>“v2 는 언제부터 수정을 안 받나요?”</strong> v3.0 릴리스 시점부터 v2 는 동결됩니다. 치명적 버그 수정 (데이터 손실, 크래시, 보안) 만 backport 되며, 새 기능이나 API 추가는 없습니다.</p>
+</section>
+<section id="참고" class="level1">
+<h1>참고</h1>
+<ul>
+<li><a href="../../design/adr/adr-003-multi-document.qmd">ADR-003: Multi-document redesign</a> — v3 설계 근거</li>
+<li><a href="../getting-started/migration-v1-to-v2.html">v1 → v2 마이그레이션</a> — 이전 마이그레이션 가이드 (동일 구조)</li>
+<li><a href="../../reference/index.qmd">API 레퍼런스</a> — 렌더된 v3 surface</li>
+<li><a href="https://docs.xlwings.org/en/stable/api.html">xlwings API reference</a> — v3 tier 모델의 영감</li>
+</ul>
 
 
 </section>
@@ -910,11 +1293,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
+      <a href="../getting-started/migration-v1-to-v2.html" class="pagination-link" aria-label="hwpapi v1.x → v2.0 마이그레이션">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">hwpapi v1.x → v2.0 마이그레이션</span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../getting-started/quickstart.html" class="pagination-link" aria-label="퀵스타트">
-        <span class="nav-page-text">퀵스타트</span> <i class="bi bi-arrow-right-short"></i>
-      </a>
   </div>
 </nav>
 </div> <!-- /content -->
@@ -925,7 +1308,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/getting-started/install.qmd" class="toc-action"><i class="bi bi-github"></i>편집</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>이슈 보고</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/getting-started/migration-v2-to-v3.qmd" class="toc-action"><i class="bi bi-github"></i>편집</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>이슈 보고</a></li></ul></div></div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item">

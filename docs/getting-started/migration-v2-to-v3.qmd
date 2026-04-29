@@ -1,0 +1,276 @@
+---
+title: "Migrating from hwpapi v2.x to v3.0"
+date: 2026-04-29
+---
+
+# Overview
+
+hwpapi v3.0 reorganizes the public API around a three-tier model inspired by
+[xlwings](https://docs.xlwings.org/): an `App` that owns only the HWP COM
+engine lifecycle, an `app.docs` collection that owns open-document
+membership, and a `Document` instance that owns everything scoped to a
+single `.hwp` file. In v2 the `App` class doubled as a single-document
+facade — `app.open()`, `app.save()`, `app.close()`, and `app.doc` all lived
+on `App` and silently operated on whichever document HWP considered
+"active". v3 removes that ambiguity: `app.docs.open(path)` and
+`app.docs.add()` return a `Document` instance, and **all per-document work
+happens on that instance**. Multi-document workflows (merge, bulk convert,
+A/B comparison) become first-class — they were impossible in v2 without
+dropping to raw COM via `app.api.XHwpDocuments`.
+
+# Compatibility Policy
+
+hwpapi 3.0 is a **clean-cut break**. There is **no deprecation shim**.
+
+- v2 code that calls removed `App` members (`app.open`, `app.save`,
+  `app.save_as`, `app.close`, `app.doc`) raises `AttributeError`.
+- No runtime warnings. No compatibility layer. No import-level aliases.
+- Reason: v2 conflated process lifecycle with document lifecycle, making
+  `app.save()` ambiguous in any multi-document scenario. A shim that
+  forwarded `app.save()` to `app.docs.active.save()` would preserve that
+  ambiguity and prevent the type system from distinguishing "App
+  operation" from "Document operation". A clean break is cheaper than a
+  perpetual compat layer, and the migration is a near-mechanical
+  find/replace (see the table below).
+- v2.x users who cannot migrate immediately should pin `hwpapi==2.*` —
+  that line is frozen on the `v2.x` branch and tagged `v2.0.0`. Only
+  critical bug fixes will be backported.
+
+# The new shape (v3)
+
+```
+hwpapi.App                        # HWP COM engine lifecycle only
+├── visible (property)            # window visibility — bool r/w
+├── version (property)            # engine version
+├── quit()                        # tear down the COM engine process
+├── docs ─────────────────────────────── DocumentCollection
+│   ├── open(path) → Document         # open a .hwp / .hwpx file
+│   ├── add()      → Document         # create a new blank document
+│   ├── active     → Document         # currently active document
+│   ├── [i] / ["name.hwp"]            # index / name access
+│   ├── len(app.docs)                 # number of open documents
+│   └── for d in app.docs: ...        # iterate
+├── actions                       # raw process-level actions (escape hatch)
+├── engine                        # Engine escape hatch
+└── api                           # raw COM handle escape hatch
+
+hwpapi.Document                   # everything scoped to one .hwp file
+├── name / path / saved           # metadata
+├── text (r/w property)           # full document text
+├── insert_text(s)
+├── insert_picture(path) / insert_table(rows, cols)
+├── insert_line_break() / insert_page_break() / insert_paragraph_break()
+├── insert_tab()
+├── find_text(query) / replace_all(find, replace)
+├── select_all() / select_text(start, end) / get_selected_text()
+├── copy() / cut() / paste() / delete() / clear()
+├── undo() / redo()
+├── save()                        # save in place (per-document)
+├── save_as(path)                 # save to a new path
+├── close(save=False)             # close this document only
+├── activate()                    # bring this doc to the foreground
+├── cursor                        # per-Document cursor accessor
+│   ├── goto_page(n)
+│   └── in_table()
+├── actions                       # doc-scoped actions (auto-activates)
+├── fields / bookmarks / hyperlinks / images / paragraphs /
+│   styles / tables               # cached collection accessors
+└── api                           # per-doc COM handle (XHwpDocument)
+```
+
+# 1:1 migration table
+
+Rows are grouped by destination. Every removed `App` member in v3 has a
+documented landing point.
+
+## Renamed/moved to `app.docs`
+
+| v2 call | v3 equivalent | Notes |
+|---|---|---|
+| `app.open(path)` | `doc = app.docs.open(path)` | Returns the `Document` instance — bind it |
+| `app.new()` | `doc = app.docs.add()` | Same shape; `add()` matches xlwings |
+| `app.doc` | `app.docs.active` | Active document accessor |
+| (n/a in v2) | `app.docs[0]`, `app.docs["report.hwp"]` | Index / name access |
+| (n/a in v2) | `len(app.docs)` | Number of open documents |
+| (n/a in v2) | `for d in app.docs:` | Iteration |
+
+## Moved to `Document` instance
+
+Every per-document operation that lived on `App` (or `app.doc`) in v2 now
+lives on the `Document` returned by `app.docs.open()` / `app.docs.add()`.
+
+| v2 call | v3 equivalent | Notes |
+|---|---|---|
+| `app.save()` | `doc.save()` | Per-document save; no ambiguity |
+| `app.save_as(path)` | `doc.save_as(path)` | Per-document save-as |
+| `app.close()` | `doc.close(save=False)` | Pass `save=True` to save before close |
+| `app.doc.text` | `doc.text` | r/w property |
+| `app.doc.insert_text(s)` | `doc.insert_text(s)` | |
+| `app.doc.insert_picture(p)` | `doc.insert_picture(p)` | |
+| `app.doc.insert_line_break()` | `doc.insert_line_break()` | |
+| `app.doc.insert_page_break()` | `doc.insert_page_break()` | |
+| `app.doc.insert_paragraph_break()` | `doc.insert_paragraph_break()` | |
+| `app.doc.insert_tab()` | `doc.insert_tab()` | |
+| `app.doc.find_text(q)` | `doc.find_text(q)` | |
+| `app.doc.replace_all(f, r)` | `doc.replace_all(f, r)` | |
+| `app.doc.select_all()` | `doc.select_all()` | |
+| `app.doc.select_text(s, e)` | `doc.select_text(s, e)` | |
+| `app.doc.get_selected_text()` | `doc.get_selected_text()` | |
+| `app.doc.copy()` / `cut()` / `paste()` | `doc.copy()` / `cut()` / `paste()` | |
+| `app.doc.delete()` / `clear()` | `doc.delete()` / `clear()` | |
+| `app.doc.undo()` / `redo()` | `doc.undo()` / `redo()` | |
+| `app.doc.cursor.goto_page(n)` | `doc.cursor.goto_page(n)` | |
+| `app.doc.cursor.in_table()` | `doc.cursor.in_table()` | |
+| `app.doc.fields` | `doc.fields` | `FieldCollection` — dict-like |
+| `app.doc.bookmarks` | `doc.bookmarks` | `BookmarkCollection` |
+| `app.doc.hyperlinks` | `doc.hyperlinks` | `HyperlinkCollection` |
+| `app.doc.images` | `doc.images` | `ImageCollection` |
+| `app.doc.paragraphs` | `doc.paragraphs` | `ParagraphCollection` |
+| `app.doc.styles` | `doc.styles` | `StyleCollection` |
+| `app.doc.tables` | `doc.tables` | `TableCollection` |
+
+## Multi-document workflows (NEW)
+
+These were impossible in v2 without dropping to raw COM:
+
+| Pattern | v3 syntax |
+|---|---|
+| Open two files at once | `a = app.docs.open("a.hwp"); b = app.docs.open("b.hwp")` |
+| Create blank alongside existing | `src = app.docs.open(p); dst = app.docs.add()` |
+| Iterate every open document | `for d in app.docs: ...` |
+| Look up by filename | `app.docs["report.hwp"]` |
+| Look up by index | `app.docs[0]` |
+| Switch active document | `doc.activate()` |
+| Count open documents | `len(app.docs)` |
+
+## actions binding
+
+The raw `HAction` interface is process-global and always targets the
+active document. v3 exposes it at two levels with different semantics:
+
+| Entry point | Activation | Use when |
+|---|---|---|
+| `app.actions.X.run()` | Caller is responsible (`doc.activate()` manually) | Single-doc scripts / escape hatch |
+| `doc.actions.X.run()` | Automatic — `doc.activate()` is called immediately before `run()` | Default — multi-doc safe |
+
+`doc.actions` is a thin proxy. The auto-activate adds one COM call
+(microseconds) per `run()` and is a no-op when the doc is already active.
+For single-document scripts the cost is negligible; for multi-document
+scripts it removes a whole class of "wrong document was active" bugs.
+
+# Examples
+
+## Example 1 — Single document: open, insert, save
+
+```python
+# v2.x
+from hwpapi import App
+app = App()
+app.open("report.hwp")
+app.doc.insert_text("Hello, world.\n")
+app.save()
+app.close()
+app.quit()
+
+# v3.0
+from hwpapi import App
+with App() as app:
+    doc = app.docs.open("report.hwp")
+    doc.insert_text("Hello, world.\n")
+    doc.save()
+    doc.close()
+# app.quit() called automatically on exit
+```
+
+## Example 2 — Multi-document: merge two files
+
+```python
+# v2.x — not directly supported; required app.api.XHwpDocuments
+
+# v3.0
+from hwpapi import App
+
+with App() as app:
+    src = app.docs.open("source.hwp")
+    dst = app.docs.add()                      # blank document
+
+    for para in src.paragraphs:
+        dst.insert_text(para.text + "\n")
+
+    dst.save_as("merged.hwp")
+    src.close(save=False)                     # leave source untouched
+    dst.close()
+```
+
+## Example 3 — Bulk convert: HWP → PDF for a folder
+
+```python
+# v3.0
+from hwpapi import App
+from pathlib import Path
+
+with App() as app:
+    for hwp in Path("inbox").glob("*.hwp"):
+        doc = app.docs.open(hwp)
+        doc.save_as(hwp.with_suffix(".pdf"))  # extension drives format
+        doc.close()                           # release memory before next file
+```
+
+## Example 4 — Multi-document switching: process N files in parallel
+
+```python
+# v3.0
+from hwpapi import App
+from pathlib import Path
+
+with App() as app:
+    docs = [app.docs.open(p) for p in Path("inbox").glob("*.hwp")]
+
+    print(f"{len(app.docs)} documents open")
+
+    for doc in app.docs:
+        doc.replace_all("{{YEAR}}", "2026")   # auto-activates per call
+        doc.save()
+
+    # Pick a specific one by name and activate it for the user
+    app.docs["summary.hwp"].activate()
+```
+
+# FAQ
+
+**"What happened to `app.doc`?"**
+Removed. v2's "active document" accessor is now `app.docs.active`. The
+v2 implicit-active-doc model is replaced by explicit binding: capture
+the `Document` returned by `app.docs.open(...)` / `app.docs.add()` and
+work with that variable.
+
+**"How do I get the currently active document?"**
+`app.docs.active`. Note that the active document can change if the user
+clicks another window in HWP — bind your own variable from
+`app.docs.open(...)` and use `doc.activate()` when you need to be sure.
+
+**"How do I iterate over all open documents?"**
+`for d in app.docs:`. `len(app.docs)` returns the count, and
+`app.docs[i]` / `app.docs["name.hwp"]` index by position or filename.
+
+**"Does `doc.actions.X` cost more than `app.actions.X`?"**
+Practically no. `doc.actions.X.run()` calls `doc.activate()` (one COM
+call, microseconds) before delegating to `app.actions.X.run()`. When
+`doc` is already active, the activation is a no-op. The benefit is
+multi-document safety; use `app.actions` only as an explicit escape
+hatch.
+
+**"Can I still pin v2?"**
+Yes — `pip install "hwpapi==2.*"`. The `v2.x` branch is frozen at
+`v2.0.0` and will receive only critical bug fixes.
+
+**"When will v2 stop receiving fixes?"**
+v2 is frozen as of v3.0 release. Only critical bug fixes (data loss,
+crashes, security) are backported; no new features, no API additions.
+
+# See also
+
+- [ADR-003: Multi-document redesign](../design/adr/adr-003-multi-document.qmd) — the v3 design rationale
+- [Migrating from v1 to v2](migration-v1-to-v2.qmd) — previous migration guide (same structure)
+- [API Reference](../reference/index.qmd) — rendered v3 surface
+- [xlwings API reference](https://docs.xlwings.org/en/stable/api.html) — the inspiration for v3's tier model

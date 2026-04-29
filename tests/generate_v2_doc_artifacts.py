@@ -1,13 +1,13 @@
 """
-Generate v2 docs screenshots — REAL HWP → PDF → cropped PNG.
+Generate v3 docs screenshots — REAL HWP → PDF → cropped PNG.
 
-각 데모는 별도의 Python subprocess (= 별도 HWP 세션) 에서 실행됩니다.
-한 데모가 끝나면 그 프로세스가 종료되면서 HWP 도 깔끔히 내려가고,
-다음 데모는 새 HWP 를 띄웁니다 — 메모리/문서 누적 없이 격리.
+각 데모는 별도 Python subprocess (= 별도 HWP 세션) 에서 실행.
+v3 surface (App + app.docs + Document) 만 사용 — `doc.insert_text` 가
+이제 실제 작동하므로 헬퍼 (insert/styled/block) 도 단순해짐.
 
-각 워커는 시작 직후 SetMessageBoxMode(0x00111111) 로 모든 대화상자에
-"예" 를 자동 응답하도록 설정한 뒤 데모 실행. (이 호출이 실패하면
-명시적으로 RuntimeError 를 던져 조용한 실패를 막음.)
+워커는 시작 직후 SetMessageBoxMode(0x00111111) 로 모든 native HWP
+대화상자에 자동 Yes 응답. 문서 close 는 ``doc.close(save=False)`` —
+Close(False) 직접 호출이라 dialog 자체가 안 뜸.
 
 산출물: docs/_assets/img/v2/<demo_name>.png
 qmd 페이지에서 ![](../_assets/img/v2/<name>.png) 으로 참조.
@@ -28,27 +28,31 @@ IMG_DIR = os.path.join(ROOT, "docs", "_assets", "img", "v2")
 os.makedirs(IMG_DIR, exist_ok=True)
 
 
-# ── v2 API 데모 (각 문자열은 독립 HWP 세션에서 실행) ────────────
-# 워커가 노출하는 helper:
-#   insert(text)             - 일반 텍스트 삽입 ("\n" → BreakPara)
-#   styled(text, **fmt)      - ctx.styled_text 단축
-#   block(**fmt) as ctx_mgr  - ctx.charshape_scope 단축
-#   app, ctx, U              - hwpapi 모듈
+# ── v3 API 데모 (각 문자열은 독립 HWP 세션에서 실행) ────────────
+# 워커가 노출하는 변수:
+#   app  : hwpapi.App
+#   doc  : Document — app.docs.add() 로 막 만든 빈 문서
+#   ctx  : hwpapi.context.scopes
+#   U    : hwpapi.units
+#
+# 헬퍼:
+#   styled(text, **fmt) - ctx.styled_text(app, text, **fmt) 단축
+#   block(**fmt)        - ctx.charshape_scope(app, **fmt) 단축
 DEMOS = {}
 
 
 DEMOS["quickstart_overview"] = r"""
 with block(bold=True, height=2400):
-    insert("hwpapi v2 — 5분 둘러보기")
-insert("\n\n")
+    doc.insert_text("hwpapi v3 — 5분 둘러보기")
+doc.insert_text("\n\n")
 
-insert("v2 의 슬림한 facade 는 lifecycle 만 책임지고, 모든 문서 작업은 ")
-styled("app.doc", bold=True, text_color="#2980B9")
-insert(" 아래에 모입니다.\n\n")
+doc.insert_text("v3 의 슬림한 facade 는 lifecycle 만 책임지고, 모든 문서 작업은 ")
+styled("doc 인스턴스", bold=True, text_color="#2980B9")
+doc.insert_text(" 에서 직접 수행합니다.\n\n")
 
 with block(bold=True, height=1400, text_color="#34495E"):
-    insert("핵심 컬렉션")
-insert("\n")
+    doc.insert_text("핵심 컬렉션")
+doc.insert_text("\n")
 
 for name, desc in [
     ("fields", "누름틀 — dict 처럼 사용"),
@@ -57,18 +61,18 @@ for name, desc in [
     ("images", "삽입된 그림"),
     ("tables", "표 — Cell 단위 조작"),
 ]:
-    insert("  • ")
-    styled("app.doc." + name, bold=True, text_color="#16A085")
-    insert(" — " + desc + "\n")
+    doc.insert_text("  • ")
+    styled("doc." + name, bold=True, text_color="#16A085")
+    doc.insert_text(" — " + desc + "\n")
 """
 
 
 DEMOS["charshape_formatting"] = r"""
 with block(bold=True, height=2200):
-    insert("Character Shape Formatting")
-insert("\n\n")
+    doc.insert_text("Character Shape Formatting")
+doc.insert_text("\n\n")
 
-insert("styled_text() 와 charshape_scope() 로 깨끗한 서식 적용.\n\n")
+doc.insert_text("styled_text() 와 charshape_scope() 로 깨끗한 서식 적용.\n\n")
 
 items = [
     ("Bold",       {"bold": True}),
@@ -81,17 +85,17 @@ items = [
     ("Mono",       {"text_color": "#16A085", "bold": True}),
 ]
 for label, fmt in items:
-    insert("  " + label.ljust(11) + " │ ")
+    doc.insert_text("  " + label.ljust(11) + " │ ")
     styled("샘플 텍스트입니다", **fmt)
-    insert("\n")
+    doc.insert_text("\n")
 
-insert("\n")
+doc.insert_text("\n")
 with block(bold=True, height=1300, text_color="#34495E"):
-    insert("blockwise — charshape_scope")
-insert("\n")
+    doc.insert_text("blockwise — charshape_scope")
+doc.insert_text("\n")
 with block(bold=True, text_color="#8E44AD"):
-    insert("  이 한 단락 전체가 보라색 굵은 글씨로 적용됩니다.\n")
-insert("  종료 후엔 자동으로 원래 서식으로 복원.\n")
+    doc.insert_text("  이 한 단락 전체가 보라색 굵은 글씨로 적용됩니다.\n")
+doc.insert_text("  종료 후엔 자동으로 원래 서식으로 복원.\n")
 """
 
 
@@ -99,54 +103,54 @@ DEMOS["mail_merge_letter"] = r"""
 import datetime
 
 with block(bold=True, height=2400, text_color="#2C3E50"):
-    insert("주식회사 한컴오피스")
-insert("\n")
+    doc.insert_text("주식회사 한컴오피스")
+doc.insert_text("\n")
 with block(height=1000, text_color="#7F8C8D"):
-    insert("서울시 종로구 신문로 X-XX  │  contact@example.com")
-insert("\n\n")
+    doc.insert_text("서울시 종로구 신문로 X-XX  │  contact@example.com")
+doc.insert_text("\n\n")
 
 today = datetime.datetime.now().strftime("%Y년 %m월 %d일")
-insert(today + "\n\n")
+doc.insert_text(today + "\n\n")
 
 styled("수신: ", bold=True)
-insert("홍길동 귀하\n")
+doc.insert_text("홍길동 귀하\n")
 styled("참조: ", bold=True)
-insert("기획팀\n\n")
+doc.insert_text("기획팀\n\n")
 
 with block(bold=True, height=1600):
-    insert("제목: 2026년 1분기 정기회의 안내")
-insert("\n\n")
+    doc.insert_text("제목: 2026년 1분기 정기회의 안내")
+doc.insert_text("\n\n")
 
-insert("안녕하세요, ")
+doc.insert_text("안녕하세요, ")
 styled("홍길동", bold=True, text_color="#2980B9")
-insert(" 님.\n\n")
+doc.insert_text(" 님.\n\n")
 
-insert("귀사의 무궁한 발전을 기원합니다. 1분기 정기회의를 다음과 같이 ")
-insert("개최하오니 부디 참석하여 주시기 바랍니다.\n\n")
+doc.insert_text("귀사의 무궁한 발전을 기원합니다. 1분기 정기회의를 다음과 같이 ")
+doc.insert_text("개최하오니 부디 참석하여 주시기 바랍니다.\n\n")
 
 with block(bold=True, text_color="#34495E"):
-    insert("□ 일시")
-insert(": 2026년 4월 30일 (금) 오후 2시\n")
+    doc.insert_text("□ 일시")
+doc.insert_text(": 2026년 4월 30일 (금) 오후 2시\n")
 with block(bold=True, text_color="#34495E"):
-    insert("□ 장소")
-insert(": 본사 회의실 3층\n")
+    doc.insert_text("□ 장소")
+doc.insert_text(": 본사 회의실 3층\n")
 with block(bold=True, text_color="#34495E"):
-    insert("□ 안건")
-insert(": 1분기 실적 검토 / 2분기 계획 수립\n\n")
+    doc.insert_text("□ 안건")
+doc.insert_text(": 1분기 실적 검토 / 2분기 계획 수립\n\n")
 
-insert("감사합니다.\n\n")
+doc.insert_text("감사합니다.\n\n")
 styled("기획팀 김철수 드림", bold=True)
 """
 
 
 DEMOS["data_to_table"] = r"""
 with block(bold=True, height=2000):
-    insert("매출 보고서 — Q1 2026")
-insert("\n\n")
+    doc.insert_text("매출 보고서 — Q1 2026")
+doc.insert_text("\n\n")
 
-insert("리스트(딕셔너리) → 표 자동 변환. ")
-styled("app.actions.TableCreate", text_color="#2980B9", bold=True)
-insert(" 로 헤더와 데이터 행을 한 번에 작성.\n\n")
+doc.insert_text("리스트 → 표 자동 변환. ")
+styled("doc.insert_table(rows, cols)", text_color="#2980B9", bold=True)
+doc.insert_text(" 로 빈 표를 만든 뒤 셀별로 채웁니다.\n\n")
 
 rows = [
     ("제품",   "1월",       "2월",       "3월",       "합계"),
@@ -156,29 +160,25 @@ rows = [
     ("총계",   "25,700원", "30,900원", "31,400원", "88,000원"),
 ]
 
-action = app.actions.TableCreate
-action.pset.Rows = len(rows)
-action.pset.Cols = len(rows[0])
-action.run()
+doc.insert_table(rows=len(rows), cols=len(rows[0]))
 
 for r, row in enumerate(rows):
     for c, cell in enumerate(row):
         if r == 0 or c == 0 or r == len(rows) - 1:
             styled(cell, bold=True)
         else:
-            insert(cell)
+            doc.insert_text(cell)
         app.api.Run("TableRightCell")
 
 # 표 빠져나가기
 app.api.Run("CloseEx")
-insert("\n\n")
+doc.insert_text("\n\n")
 styled("Tip: ", bold=True, text_color="#27AE60")
-insert("실무에선 Excel/CSV 데이터를 dict 로 읽어 같은 패턴으로 일괄 삽입.\n")
+doc.insert_text("실무에선 Excel/CSV 데이터를 dict 로 읽어 같은 패턴으로 일괄 삽입.\n")
 """
 
 
 # ── 워커 (subprocess 가 데모 하나당 1회 실행) ────────────────
-# argv[1] = demo code 파일, argv[2] = 출력 PNG 경로
 WORKER = r'''
 import sys, os, tempfile, time
 import fitz  # PyMuPDF
@@ -194,35 +194,17 @@ from hwpapi.context import scopes as ctx
 app = App(is_visible=False)
 time.sleep(0.4)
 
-# CRITICAL: 모든 message box 를 자동 Yes 로 — 실패 시 즉시 raise.
-# (FileClose 의 "저장하시겠습니까?" / FileNew 의 보안 경고 등이
-#  blocking 되면 테스트가 멈춘다.)
 SILENCE_ALL_YES = 0x00111111
 try:
     rc = app.api.SetMessageBoxMode(SILENCE_ALL_YES)
     if rc is False:
         raise RuntimeError("SetMessageBoxMode returned False")
 except Exception as e:
-    raise RuntimeError(f"SetMessageBoxMode 실패 — 대화상자 자동응답 불가: {e}") from e
+    raise RuntimeError(f"SetMessageBoxMode 실패: {e}") from e
 
-# 새 빈 문서 한 개만 열린 상태.
-try:
-    app.api.Run("FileNew")
-except Exception:
-    pass
-time.sleep(0.4)
-
-
-def insert(text):
-    """일반 텍스트 — \\n 은 BreakPara 로 변환."""
-    parts = text.split("\n")
-    for i, part in enumerate(parts):
-        if part:
-            act = app.actions.InsertText
-            act.pset.Text = part
-            act.run()
-        if i < len(parts) - 1:
-            app.api.Run("BreakPara")
+# v3 API — 새 빈 문서를 명시적으로 생성, doc 인스턴스 획득
+doc = app.docs.add()
+time.sleep(0.3)
 
 
 def styled(text, **fmt):
@@ -237,31 +219,21 @@ def block(**fmt):
 exec(
     compile(demo_code, "<demo>", "exec"),
     {
-        "app": app, "ctx": ctx, "U": U,
-        "insert": insert, "styled": styled, "block": block,
+        "app": app, "doc": doc, "ctx": ctx, "U": U,
+        "styled": styled, "block": block,
         "__builtins__": __builtins__,
     },
 )
 time.sleep(0.5)
 
-# PDF 저장
+# PDF 저장 — v3: doc.save(path) 가 SaveAs 처리
 with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
     pdf_path = tmp.name
-app.save(pdf_path)
+doc.save(pdf_path)
 time.sleep(0.7)
 
-# 문서 닫기 — XHwpDocuments.Item(0).Close(False) 로 직접 호출.
-# 인자 False = "변경사항을 저장하지 않고 닫기" — dialog 자체가 안 뜸.
-# (FileClose 는 dialog 를 띄우고 message-box-mode 의 Yes 가 적용되어
-#  의도치 않게 저장하게 됨. 이것을 회피.)
-try:
-    app.api.XHwpDocuments.Item(0).Close(False)
-except Exception:
-    # 문서가 이미 닫혔거나 한 번 더 시도해야 하는 경우 fallback
-    try:
-        app.api.Run("FileClose")
-    except Exception:
-        pass
+# 문서 close — v3: doc.close(save=False) 가 dialog 없이 닫음
+doc.close(save=False)
 time.sleep(0.2)
 
 # PDF → cropped PNG
@@ -279,7 +251,7 @@ try:
 except OSError:
     pass
 
-# 빈 여백 trim
+# Auto-crop
 try:
     from PIL import Image, ImageChops
     img = Image.open(out_png)
@@ -295,12 +267,7 @@ try:
 except Exception as e:
     print(f"  crop skipped: {e}")
 
-# HWP 명시 종료는 의도적으로 생략.
-# - is_visible=False 상태에서 FileQuit 를 호출하면 HWP 내부 WPF 가
-#   "창을 닫는 중에는 ... 호출할 수 없습니다" 에러 다이얼로그를 띄우는데,
-#   이 다이얼로그는 SetMessageBoxMode 로도 안 잡힘 (.NET 레벨).
-# - 대신 subprocess 가 종료되면서 COM proxy 가 release 되고,
-#   HWP 의 child process 도 따라 정리됨.
+# HWP 명시 종료는 생략 (subprocess 종료 시 정리)
 print(f"OK {out_png}")
 '''
 
@@ -350,7 +317,7 @@ def main() -> int:
     print("\n=== Results ===")
     bad = 0
     for n, r in results.items():
-        marker = "✓" if r == "OK" else "✗"
+        marker = "OK " if r == "OK" else "FAIL"
         print(f"  {marker} {n:30s} {r}")
         if r != "OK":
             bad += 1

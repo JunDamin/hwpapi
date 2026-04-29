@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2026-04-29">
 
-<title>Install – hwpapi</title>
+<title>Migrating from hwpapi v2.x to v3.0 – hwpapi</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -67,7 +68,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
-<link href="../getting-started/quickstart.html" rel="next">
+<link href="../getting-started/migration-v1-to-v2.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
@@ -344,7 +345,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../getting-started/install.html">Install</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../getting-started/migration-v2-to-v3.html">Migrating from hwpapi v2.x to v3.0</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -358,7 +359,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../getting-started/install.html" class="sidebar-item-text sidebar-link active">
+  <a href="../getting-started/install.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Install</span></a>
   </div>
 </li>
@@ -376,7 +377,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../getting-started/migration-v2-to-v3.html" class="sidebar-item-text sidebar-link">
+  <a href="../getting-started/migration-v2-to-v3.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Migrating from hwpapi v2.x to v3.0</span></a>
   </div>
 </li>
@@ -390,14 +391,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#requirements" id="toc-requirements" class="nav-link active" data-scroll-target="#requirements">Requirements</a></li>
-  <li><a href="#install-from-pypi" id="toc-install-from-pypi" class="nav-link" data-scroll-target="#install-from-pypi">Install from PyPI</a></li>
-  <li><a href="#install-from-source" id="toc-install-from-source" class="nav-link" data-scroll-target="#install-from-source">Install from source</a></li>
-  <li><a href="#the-filepathcheckermoduleexample-dll" id="toc-the-filepathcheckermoduleexample-dll" class="nav-link" data-scroll-target="#the-filepathcheckermoduleexample-dll">The FilePathCheckerModuleExample DLL</a></li>
-  <li><a href="#verify-the-install" id="toc-verify-the-install" class="nav-link" data-scroll-target="#verify-the-install">Verify the install</a></li>
-  <li><a href="#troubleshooting" id="toc-troubleshooting" class="nav-link" data-scroll-target="#troubleshooting">Troubleshooting</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#compatibility-policy" id="toc-compatibility-policy" class="nav-link" data-scroll-target="#compatibility-policy">Compatibility Policy</a></li>
+  <li><a href="#the-new-shape-v3" id="toc-the-new-shape-v3" class="nav-link" data-scroll-target="#the-new-shape-v3">The new shape (v3)</a></li>
+  <li><a href="#migration-table" id="toc-migration-table" class="nav-link" data-scroll-target="#migration-table">1:1 migration table</a>
+  <ul class="collapse">
+  <li><a href="#renamedmoved-to-app.docs" id="toc-renamedmoved-to-app.docs" class="nav-link" data-scroll-target="#renamedmoved-to-app.docs">Renamed/moved to <code>app.docs</code></a></li>
+  <li><a href="#moved-to-document-instance" id="toc-moved-to-document-instance" class="nav-link" data-scroll-target="#moved-to-document-instance">Moved to <code>Document</code> instance</a></li>
+  <li><a href="#multi-document-workflows-new" id="toc-multi-document-workflows-new" class="nav-link" data-scroll-target="#multi-document-workflows-new">Multi-document workflows (NEW)</a></li>
+  <li><a href="#actions-binding" id="toc-actions-binding" class="nav-link" data-scroll-target="#actions-binding">actions binding</a></li>
+  </ul></li>
+  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a>
+  <ul class="collapse">
+  <li><a href="#example-1-single-document-open-insert-save" id="toc-example-1-single-document-open-insert-save" class="nav-link" data-scroll-target="#example-1-single-document-open-insert-save">Example 1 — Single document: open, insert, save</a></li>
+  <li><a href="#example-2-multi-document-merge-two-files" id="toc-example-2-multi-document-merge-two-files" class="nav-link" data-scroll-target="#example-2-multi-document-merge-two-files">Example 2 — Multi-document: merge two files</a></li>
+  <li><a href="#example-3-bulk-convert-hwp-pdf-for-a-folder" id="toc-example-3-bulk-convert-hwp-pdf-for-a-folder" class="nav-link" data-scroll-target="#example-3-bulk-convert-hwp-pdf-for-a-folder">Example 3 — Bulk convert: HWP → PDF for a folder</a></li>
+  <li><a href="#example-4-multi-document-switching-process-n-files-in-parallel" id="toc-example-4-multi-document-switching-process-n-files-in-parallel" class="nav-link" data-scroll-target="#example-4-multi-document-switching-process-n-files-in-parallel">Example 4 — Multi-document switching: process N files in parallel</a></li>
+  </ul></li>
+  <li><a href="#faq" id="toc-faq" class="nav-link" data-scroll-target="#faq">FAQ</a></li>
+  <li><a href="#see-also" id="toc-see-also" class="nav-link" data-scroll-target="#see-also">See also</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/getting-started/install.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/getting-started/migration-v2-to-v3.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -405,8 +419,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Install</h1>
-<p class="subtitle lead">Setting up hwpapi on Windows</p>
+<h1 class="title">Migrating from hwpapi v2.x to v3.0</h1>
 </div>
 
 
@@ -414,6 +427,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="quarto-title-meta">
 
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 29, 2026</p>
+    </div>
+  </div>
   
     
   </div>
@@ -423,68 +442,433 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="requirements" class="level1">
-<h1>Requirements</h1>
-<p>hwpapi drives HWP (한컴오피스 한글) over its Windows COM automation surface. That means:</p>
+<section id="overview" class="level1">
+<h1>Overview</h1>
+<p>hwpapi v3.0 reorganizes the public API around a three-tier model inspired by <a href="https://docs.xlwings.org/">xlwings</a>: an <code>App</code> that owns only the HWP COM engine lifecycle, an <code>app.docs</code> collection that owns open-document membership, and a <code>Document</code> instance that owns everything scoped to a single <code>.hwp</code> file. In v2 the <code>App</code> class doubled as a single-document facade — <code>app.open()</code>, <code>app.save()</code>, <code>app.close()</code>, and <code>app.doc</code> all lived on <code>App</code> and silently operated on whichever document HWP considered “active”. v3 removes that ambiguity: <code>app.docs.open(path)</code> and <code>app.docs.add()</code> return a <code>Document</code> instance, and <strong>all per-document work happens on that instance</strong>. Multi-document workflows (merge, bulk convert, A/B comparison) become first-class — they were impossible in v2 without dropping to raw COM via <code>app.api.XHwpDocuments</code>.</p>
+</section>
+<section id="compatibility-policy" class="level1">
+<h1>Compatibility Policy</h1>
+<p>hwpapi 3.0 is a <strong>clean-cut break</strong>. There is <strong>no deprecation shim</strong>.</p>
 <ul>
-<li><strong>OS</strong>: Windows 10 or newer.</li>
-<li><strong>HWP</strong>: 한글 2018 / 2020 / 2022 / 2024 (Hancom Office). A non-viewer installation is required — the Viewer edition does not expose the automation server.</li>
-<li><strong>Python</strong>: 3.9 or newer.</li>
-<li><strong>pywin32</strong>: installed automatically via <code>pip install hwpapi</code>.</li>
+<li>v2 code that calls removed <code>App</code> members (<code>app.open</code>, <code>app.save</code>, <code>app.save_as</code>, <code>app.close</code>, <code>app.doc</code>) raises <code>AttributeError</code>.</li>
+<li>No runtime warnings. No compatibility layer. No import-level aliases.</li>
+<li>Reason: v2 conflated process lifecycle with document lifecycle, making <code>app.save()</code> ambiguous in any multi-document scenario. A shim that forwarded <code>app.save()</code> to <code>app.docs.active.save()</code> would preserve that ambiguity and prevent the type system from distinguishing “App operation” from “Document operation”. A clean break is cheaper than a perpetual compat layer, and the migration is a near-mechanical find/replace (see the table below).</li>
+<li>v2.x users who cannot migrate immediately should pin <code>hwpapi==2.*</code> — that line is frozen on the <code>v2.x</code> branch and tagged <code>v2.0.0</code>. Only critical bug fixes will be backported.</li>
 </ul>
-<p>macOS / Linux are not supported because HWP’s COM server is Windows-only. You can still run hwpapi’s unit tests on Linux — they stub the COM layer — but anything that touches a live HWP instance must run on Windows.</p>
 </section>
-<section id="install-from-pypi" class="level1">
-<h1>Install from PyPI</h1>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install hwpapi</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>This pulls <code>hwpapi</code> plus <code>pywin32</code>. Confirm the install:</p>
-<div id="ffc1002f" class="cell" data-execution_count="1">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> hwpapi</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(hwpapi.__version__)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>2.0.0</code></pre>
-</div>
-</div>
+<section id="the-new-shape-v3" class="level1">
+<h1>The new shape (v3)</h1>
+<pre><code>hwpapi.App                        # HWP COM engine lifecycle only
+├── visible (property)            # window visibility — bool r/w
+├── version (property)            # engine version
+├── quit()                        # tear down the COM engine process
+├── docs ─────────────────────────────── DocumentCollection
+│   ├── open(path) → Document         # open a .hwp / .hwpx file
+│   ├── add()      → Document         # create a new blank document
+│   ├── active     → Document         # currently active document
+│   ├── [i] / ["name.hwp"]            # index / name access
+│   ├── len(app.docs)                 # number of open documents
+│   └── for d in app.docs: ...        # iterate
+├── actions                       # raw process-level actions (escape hatch)
+├── engine                        # Engine escape hatch
+└── api                           # raw COM handle escape hatch
+
+hwpapi.Document                   # everything scoped to one .hwp file
+├── name / path / saved           # metadata
+├── text (r/w property)           # full document text
+├── insert_text(s)
+├── insert_picture(path) / insert_table(rows, cols)
+├── insert_line_break() / insert_page_break() / insert_paragraph_break()
+├── insert_tab()
+├── find_text(query) / replace_all(find, replace)
+├── select_all() / select_text(start, end) / get_selected_text()
+├── copy() / cut() / paste() / delete() / clear()
+├── undo() / redo()
+├── save()                        # save in place (per-document)
+├── save_as(path)                 # save to a new path
+├── close(save=False)             # close this document only
+├── activate()                    # bring this doc to the foreground
+├── cursor                        # per-Document cursor accessor
+│   ├── goto_page(n)
+│   └── in_table()
+├── actions                       # doc-scoped actions (auto-activates)
+├── fields / bookmarks / hyperlinks / images / paragraphs /
+│   styles / tables               # cached collection accessors
+└── api                           # per-doc COM handle (XHwpDocument)</code></pre>
 </section>
-<section id="install-from-source" class="level1">
-<h1>Install from source</h1>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/JunDamin/hwpapi.git</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> hwpapi</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-e</span> .</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>For building the documentation site (this site) locally, add the <code>docs</code> extra:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-e</span> <span class="st">".[docs]"</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Or, explicitly:</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install quartodoc griffe jupyter</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The <code>docs</code> extra pulls in <code>quartodoc</code> (for auto-generated API pages) and <code>griffe</code> (the Python AST backend quartodoc uses).</p>
+<section id="migration-table" class="level1">
+<h1>1:1 migration table</h1>
+<p>Rows are grouped by destination. Every removed <code>App</code> member in v3 has a documented landing point.</p>
+<section id="renamedmoved-to-app.docs" class="level2">
+<h2 class="anchored" data-anchor-id="renamedmoved-to-app.docs">Renamed/moved to <code>app.docs</code></h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>v2 call</th>
+<th>v3 equivalent</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>app.open(path)</code></td>
+<td><code>doc = app.docs.open(path)</code></td>
+<td>Returns the <code>Document</code> instance — bind it</td>
+</tr>
+<tr class="even">
+<td><code>app.new()</code></td>
+<td><code>doc = app.docs.add()</code></td>
+<td>Same shape; <code>add()</code> matches xlwings</td>
+</tr>
+<tr class="odd">
+<td><code>app.doc</code></td>
+<td><code>app.docs.active</code></td>
+<td>Active document accessor</td>
+</tr>
+<tr class="even">
+<td>(n/a in v2)</td>
+<td><code>app.docs[0]</code>, <code>app.docs["report.hwp"]</code></td>
+<td>Index / name access</td>
+</tr>
+<tr class="odd">
+<td>(n/a in v2)</td>
+<td><code>len(app.docs)</code></td>
+<td>Number of open documents</td>
+</tr>
+<tr class="even">
+<td>(n/a in v2)</td>
+<td><code>for d in app.docs:</code></td>
+<td>Iteration</td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="the-filepathcheckermoduleexample-dll" class="level1">
-<h1>The FilePathCheckerModuleExample DLL</h1>
-<p>HWP ships a small DLL named <code>FilePathCheckerModuleExample.dll</code> that suppresses the “is this file safe to open?” dialog when you call <code>App.open(path)</code>. hwpapi auto-discovers it via <code>check_dll()</code> — if you’re seeing an OS dialog pop up each time you open a file, install that module from your HWP installer or point hwpapi at it explicitly:</p>
-<div id="9c1193c5" class="cell" data-execution_count="2">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App(dll_path<span class="op">=</span><span class="st">"C:/hwpapi/FilePathCheckerModuleExample.dll"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
+<section id="moved-to-document-instance" class="level2">
+<h2 class="anchored" data-anchor-id="moved-to-document-instance">Moved to <code>Document</code> instance</h2>
+<p>Every per-document operation that lived on <code>App</code> (or <code>app.doc</code>) in v2 now lives on the <code>Document</code> returned by <code>app.docs.open()</code> / <code>app.docs.add()</code>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>v2 call</th>
+<th>v3 equivalent</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>app.save()</code></td>
+<td><code>doc.save()</code></td>
+<td>Per-document save; no ambiguity</td>
+</tr>
+<tr class="even">
+<td><code>app.save_as(path)</code></td>
+<td><code>doc.save_as(path)</code></td>
+<td>Per-document save-as</td>
+</tr>
+<tr class="odd">
+<td><code>app.close()</code></td>
+<td><code>doc.close(save=False)</code></td>
+<td>Pass <code>save=True</code> to save before close</td>
+</tr>
+<tr class="even">
+<td><code>app.doc.text</code></td>
+<td><code>doc.text</code></td>
+<td>r/w property</td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.insert_text(s)</code></td>
+<td><code>doc.insert_text(s)</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.insert_picture(p)</code></td>
+<td><code>doc.insert_picture(p)</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.insert_line_break()</code></td>
+<td><code>doc.insert_line_break()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.insert_page_break()</code></td>
+<td><code>doc.insert_page_break()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.insert_paragraph_break()</code></td>
+<td><code>doc.insert_paragraph_break()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.insert_tab()</code></td>
+<td><code>doc.insert_tab()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.find_text(q)</code></td>
+<td><code>doc.find_text(q)</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.replace_all(f, r)</code></td>
+<td><code>doc.replace_all(f, r)</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.select_all()</code></td>
+<td><code>doc.select_all()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.select_text(s, e)</code></td>
+<td><code>doc.select_text(s, e)</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.get_selected_text()</code></td>
+<td><code>doc.get_selected_text()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.copy()</code> / <code>cut()</code> / <code>paste()</code></td>
+<td><code>doc.copy()</code> / <code>cut()</code> / <code>paste()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.delete()</code> / <code>clear()</code></td>
+<td><code>doc.delete()</code> / <code>clear()</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.undo()</code> / <code>redo()</code></td>
+<td><code>doc.undo()</code> / <code>redo()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.cursor.goto_page(n)</code></td>
+<td><code>doc.cursor.goto_page(n)</code></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.cursor.in_table()</code></td>
+<td><code>doc.cursor.in_table()</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.fields</code></td>
+<td><code>doc.fields</code></td>
+<td><code>FieldCollection</code> — dict-like</td>
+</tr>
+<tr class="even">
+<td><code>app.doc.bookmarks</code></td>
+<td><code>doc.bookmarks</code></td>
+<td><code>BookmarkCollection</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.hyperlinks</code></td>
+<td><code>doc.hyperlinks</code></td>
+<td><code>HyperlinkCollection</code></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.images</code></td>
+<td><code>doc.images</code></td>
+<td><code>ImageCollection</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.paragraphs</code></td>
+<td><code>doc.paragraphs</code></td>
+<td><code>ParagraphCollection</code></td>
+</tr>
+<tr class="even">
+<td><code>app.doc.styles</code></td>
+<td><code>doc.styles</code></td>
+<td><code>StyleCollection</code></td>
+</tr>
+<tr class="odd">
+<td><code>app.doc.tables</code></td>
+<td><code>doc.tables</code></td>
+<td><code>TableCollection</code></td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="verify-the-install" class="level1">
-<h1>Verify the install</h1>
-<p>The smoke test — launches HWP, opens a blank document, checks the version, and closes cleanly:</p>
-<div id="3723443b" class="cell" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    app.new()</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"HWP version:"</span>, app.engine.version)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Document text:"</span>, <span class="bu">repr</span>(app.doc.text))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<p>If this prints the HWP version and <code>''</code> for text, you are good to go.</p>
-<p>Head to the <a href="../getting-started/quickstart.html">Quickstart</a>.</p>
+<section id="multi-document-workflows-new" class="level2">
+<h2 class="anchored" data-anchor-id="multi-document-workflows-new">Multi-document workflows (NEW)</h2>
+<p>These were impossible in v2 without dropping to raw COM:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Pattern</th>
+<th>v3 syntax</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Open two files at once</td>
+<td><code>a = app.docs.open("a.hwp"); b = app.docs.open("b.hwp")</code></td>
+</tr>
+<tr class="even">
+<td>Create blank alongside existing</td>
+<td><code>src = app.docs.open(p); dst = app.docs.add()</code></td>
+</tr>
+<tr class="odd">
+<td>Iterate every open document</td>
+<td><code>for d in app.docs: ...</code></td>
+</tr>
+<tr class="even">
+<td>Look up by filename</td>
+<td><code>app.docs["report.hwp"]</code></td>
+</tr>
+<tr class="odd">
+<td>Look up by index</td>
+<td><code>app.docs[0]</code></td>
+</tr>
+<tr class="even">
+<td>Switch active document</td>
+<td><code>doc.activate()</code></td>
+</tr>
+<tr class="odd">
+<td>Count open documents</td>
+<td><code>len(app.docs)</code></td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="troubleshooting" class="level1">
-<h1>Troubleshooting</h1>
-<p><strong><code>ModuleNotFoundError: No module named 'win32com'</code></strong> — pywin32 didn’t install correctly. Run <code>pip install --force-reinstall pywin32</code> and then <code>python Scripts\pywin32_postinstall.py -install</code> (as admin).</p>
-<p><strong>HWP pops up a security dialog every time you open a file</strong> — the <code>FilePathCheckerModuleExample.dll</code> isn’t registered. Pass <code>dll_path=</code> explicitly as shown above, or copy the DLL into the hwpapi install directory.</p>
-<p><strong><code>ConnectionError: can't dispatch HwpObject</code></strong> — HWP isn’t installed, or you’re running from the Viewer edition, or COM registration is corrupted. Reinstall HWP and try again.</p>
-<p><strong>Ruby/Tk errors inside HWP on exit</strong> — call <code>app.close()</code> before <code>app.quit()</code> or use the context manager form (<code>with App() as app:</code>) which does it for you.</p>
+<section id="actions-binding" class="level2">
+<h2 class="anchored" data-anchor-id="actions-binding">actions binding</h2>
+<p>The raw <code>HAction</code> interface is process-global and always targets the active document. v3 exposes it at two levels with different semantics:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Entry point</th>
+<th>Activation</th>
+<th>Use when</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>app.actions.X.run()</code></td>
+<td>Caller is responsible (<code>doc.activate()</code> manually)</td>
+<td>Single-doc scripts / escape hatch</td>
+</tr>
+<tr class="even">
+<td><code>doc.actions.X.run()</code></td>
+<td>Automatic — <code>doc.activate()</code> is called immediately before <code>run()</code></td>
+<td>Default — multi-doc safe</td>
+</tr>
+</tbody>
+</table>
+<p><code>doc.actions</code> is a thin proxy. The auto-activate adds one COM call (microseconds) per <code>run()</code> and is a no-op when the doc is already active. For single-document scripts the cost is negligible; for multi-document scripts it removes a whole class of “wrong document was active” bugs.</p>
+</section>
+</section>
+<section id="examples" class="level1">
+<h1>Examples</h1>
+<section id="example-1-single-document-open-insert-save" class="level2">
+<h2 class="anchored" data-anchor-id="example-1-single-document-open-insert-save">Example 1 — Single document: open, insert, save</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># v2.x</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App()</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>app.<span class="bu">open</span>(<span class="st">"report.hwp"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>app.doc.insert_text(<span class="st">"Hello, world.</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>app.save()</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>app.close()</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>app.quit()</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># v3.0</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    doc <span class="op">=</span> app.docs.<span class="bu">open</span>(<span class="st">"report.hwp"</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    doc.insert_text(<span class="st">"Hello, world.</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    doc.save()</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    doc.close()</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># app.quit() called automatically on exit</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="example-2-multi-document-merge-two-files" class="level2">
+<h2 class="anchored" data-anchor-id="example-2-multi-document-merge-two-files">Example 2 — Multi-document: merge two files</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># v2.x — not directly supported; required app.api.XHwpDocuments</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># v3.0</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    src <span class="op">=</span> app.docs.<span class="bu">open</span>(<span class="st">"source.hwp"</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    dst <span class="op">=</span> app.docs.add()                      <span class="co"># blank document</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> para <span class="kw">in</span> src.paragraphs:</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        dst.insert_text(para.text <span class="op">+</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    dst.save_as(<span class="st">"merged.hwp"</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    src.close(save<span class="op">=</span><span class="va">False</span>)                     <span class="co"># leave source untouched</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    dst.close()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="example-3-bulk-convert-hwp-pdf-for-a-folder" class="level2">
+<h2 class="anchored" data-anchor-id="example-3-bulk-convert-hwp-pdf-for-a-folder">Example 3 — Bulk convert: HWP → PDF for a folder</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># v3.0</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> hwp <span class="kw">in</span> Path(<span class="st">"inbox"</span>).glob(<span class="st">"*.hwp"</span>):</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        doc <span class="op">=</span> app.docs.<span class="bu">open</span>(hwp)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        doc.save_as(hwp.with_suffix(<span class="st">".pdf"</span>))  <span class="co"># extension drives format</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        doc.close()                           <span class="co"># release memory before next file</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="example-4-multi-document-switching-process-n-files-in-parallel" class="level2">
+<h2 class="anchored" data-anchor-id="example-4-multi-document-switching-process-n-files-in-parallel">Example 4 — Multi-document switching: process N files in parallel</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># v3.0</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> hwpapi <span class="im">import</span> App</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> App() <span class="im">as</span> app:</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    docs <span class="op">=</span> [app.docs.<span class="bu">open</span>(p) <span class="cf">for</span> p <span class="kw">in</span> Path(<span class="st">"inbox"</span>).glob(<span class="st">"*.hwp"</span>)]</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="bu">len</span>(app.docs)<span class="sc">}</span><span class="ss"> documents open"</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> doc <span class="kw">in</span> app.docs:</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        doc.replace_all(<span class="st">"</span><span class="sc">{{</span><span class="st">YEAR</span><span class="sc">}}</span><span class="st">"</span>, <span class="st">"2026"</span>)   <span class="co"># auto-activates per call</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        doc.save()</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Pick a specific one by name and activate it for the user</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    app.docs[<span class="st">"summary.hwp"</span>].activate()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="faq" class="level1">
+<h1>FAQ</h1>
+<p><strong>“What happened to <code>app.doc</code>?”</strong> Removed. v2’s “active document” accessor is now <code>app.docs.active</code>. The v2 implicit-active-doc model is replaced by explicit binding: capture the <code>Document</code> returned by <code>app.docs.open(...)</code> / <code>app.docs.add()</code> and work with that variable.</p>
+<p><strong>“How do I get the currently active document?”</strong> <code>app.docs.active</code>. Note that the active document can change if the user clicks another window in HWP — bind your own variable from <code>app.docs.open(...)</code> and use <code>doc.activate()</code> when you need to be sure.</p>
+<p><strong>“How do I iterate over all open documents?”</strong> <code>for d in app.docs:</code>. <code>len(app.docs)</code> returns the count, and <code>app.docs[i]</code> / <code>app.docs["name.hwp"]</code> index by position or filename.</p>
+<p><strong>“Does <code>doc.actions.X</code> cost more than <code>app.actions.X</code>?”</strong> Practically no. <code>doc.actions.X.run()</code> calls <code>doc.activate()</code> (one COM call, microseconds) before delegating to <code>app.actions.X.run()</code>. When <code>doc</code> is already active, the activation is a no-op. The benefit is multi-document safety; use <code>app.actions</code> only as an explicit escape hatch.</p>
+<p><strong>“Can I still pin v2?”</strong> Yes — <code>pip install "hwpapi==2.*"</code>. The <code>v2.x</code> branch is frozen at <code>v2.0.0</code> and will receive only critical bug fixes.</p>
+<p><strong>“When will v2 stop receiving fixes?”</strong> v2 is frozen as of v3.0 release. Only critical bug fixes (data loss, crashes, security) are backported; no new features, no API additions.</p>
+</section>
+<section id="see-also" class="level1">
+<h1>See also</h1>
+<ul>
+<li><a href="../design/adr/adr-003-multi-document.html">ADR-003: Multi-document redesign</a> — the v3 design rationale</li>
+<li><a href="../getting-started/migration-v1-to-v2.html">Migrating from v1 to v2</a> — previous migration guide (same structure)</li>
+<li><a href="../reference/index.html">API Reference</a> — rendered v3 surface</li>
+<li><a href="https://docs.xlwings.org/en/stable/api.html">xlwings API reference</a> — the inspiration for v3’s tier model</li>
+</ul>
 
 
 </section>
@@ -910,11 +1294,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
+      <a href="../getting-started/migration-v1-to-v2.html" class="pagination-link" aria-label="Migrating from hwpapi v1.x to v2.0">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Migrating from hwpapi v1.x to v2.0</span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../getting-started/quickstart.html" class="pagination-link" aria-label="Quickstart">
-        <span class="nav-page-text">Quickstart</span> <i class="bi bi-arrow-right-short"></i>
-      </a>
   </div>
 </nav>
 </div> <!-- /content -->
@@ -925,7 +1309,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/getting-started/install.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/getting-started/migration-v2-to-v3.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item">

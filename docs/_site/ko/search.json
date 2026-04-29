@@ -881,231 +881,6 @@
     ]
   },
   {
-    "objectID": "getting-started/install.html",
-    "href": "getting-started/install.html",
-    "title": "설치",
-    "section": "",
-    "text": "요구사항\nhwpapi 는 한컴오피스 한글(HWP)의 Windows COM 자동화 인터페이스를 구동합니다. 따라서:\n\nOS: Windows 10 이상\nHWP: 한글 2018 / 2020 / 2022 / 2024 (한컴오피스). 뷰어 에디션은 지원하지 않습니다 — 자동화 서버가 노출되지 않기 때문입니다.\nPython: 3.9 이상\npywin32: pip install hwpapi 로 자동 설치됩니다.\n\nmacOS / Linux 는 지원되지 않습니다 (HWP COM 서버가 Windows 전용). 다만 hwpapi 의 단위 테스트는 Linux 에서도 실행 가능합니다 — COM 레이어를 mock 으로 stub 하기 때문입니다. 실제 HWP 인스턴스에 접근하는 코드는 반드시 Windows 에서 실행해야 합니다.\n\n\nPyPI 에서 설치\npip install hwpapi\n이 명령으로 hwpapi 와 pywin32 가 함께 설치됩니다. 설치 확인:\n\nimport hwpapi\nprint(hwpapi.__version__)\n\n2.0.0\n\n\n\n\n소스에서 설치\ngit clone https://github.com/JunDamin/hwpapi.git\ncd hwpapi\npip install -e .\n이 사이트(문서)를 로컬에서 빌드하려면 docs extra 를 추가:\npip install -e \".[docs]\"\n# 또는 명시적으로:\npip install quartodoc griffe jupyter\ndocs extra 는 quartodoc (자동 API 페이지 생성) 과 griffe (quartodoc 이 사용하는 Python AST 백엔드) 를 가져옵니다.\n\n\nFilePathCheckerModuleExample DLL\nHWP 는 FilePathCheckerModuleExample.dll 이라는 작은 DLL 을 제공합니다 — App.open(path) 호출 시 “이 파일을 열어도 안전합니까?” 대화상자를 자동 억제해줍니다. hwpapi 는 check_dll() 로 자동 탐색하지만, 파일 열 때마다 OS 대화상자가 뜨면 HWP 설치 프로그램에서 해당 모듈을 설치하거나, 명시적으로 경로를 지정하세요:\n\nfrom hwpapi import App\napp = App(dll_path=\"C:/hwpapi/FilePathCheckerModuleExample.dll\")\n\n\n\n설치 검증\n가장 단순한 smoke 테스트 — HWP 를 실행하고, 빈 문서를 열고, 버전을 출력한 뒤 깔끔하게 닫습니다:\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.new()\n    print(\"HWP 버전:\", app.engine.version)\n    print(\"문서 텍스트:\", repr(app.doc.text))\n\nHWP 버전이 출력되고 텍스트가 '' 로 나오면 정상 설치입니다.\n퀵스타트 로 이동하세요.\n\n\n트러블슈팅\nModuleNotFoundError: No module named 'win32com' — pywin32 가 제대로 설치되지 않았습니다. pip install --force-reinstall pywin32 후 관리자 권한으로 python Scripts\\pywin32_postinstall.py -install 를 실행하세요.\n파일 열 때마다 보안 대화상자가 뜸 — FilePathCheckerModuleExample.dll 이 등록되지 않은 상태입니다. 위 설명대로 dll_path= 를 명시하거나, hwpapi 설치 디렉터리에 DLL 을 복사하세요.\nConnectionError: can't dispatch HwpObject — HWP 가 설치되지 않았거나, 뷰어 에디션을 사용 중이거나, COM 등록이 손상된 상태입니다. HWP 를 재설치하고 다시 시도하세요.\nHWP 종료 시 Ruby/Tk 에러 — app.quit() 전에 app.close() 를 호출하거나, context manager (with App() as app:) 를 쓰세요 — 후자가 자동으로 처리합니다.\n\n\n\n\n 맨 위로",
-    "crumbs": [
-      "시작하기",
-      "설치"
-    ]
-  },
-  {
-    "objectID": "design/architecture.html",
-    "href": "design/architecture.html",
-    "title": "아키텍처",
-    "section": "",
-    "text": "Import tree\nhwpapi\n├── App                  # core.app.App   — 슬림 facade (공개 멤버 ≤15)\n├── Document             # document.Document — 문서별 surface (app.doc)\n├── collections/         # app.doc.* 아래의 dict 형태 집합\n│   ├── Collection       # Protocol: __getitem__, __iter__, __len__,\n│   │                    #            __contains__, names, filter\n│   ├── fields           # FieldCollection + Field\n│   ├── bookmarks        # BookmarkCollection + Bookmark\n│   ├── hyperlinks\n│   ├── images\n│   ├── paragraphs       # ParagraphCollection + Paragraph + Run\n│   ├── styles\n│   └── tables           # TableCollection + Table + Cell\n├── context/\n│   └── scopes           # charshape_scope, parashape_scope, styled_text\n├── io/\n│   ├── open             # open_file, new_document\n│   └── export           # export_pdf, export_image, export_text\n├── errors               # HwpApiError 계층 + wrap_com_error\n├── units                # mm, cm, inch, pt, parse, to_mm, ...\n├── logging              # get_logger, HWPAPI_LOG_LEVEL\n└── low/                 # 탈출구\n    ├── actions          # _Actions, _Action (900+ 액션 래퍼)\n    ├── engine           # Engine, Engines, Apps\n    └── parametersets    # ParameterSet 클래스 (CharShape, ParaShape, ...)\n\n\n두 층 모델\nhwpapi v2 는 계층화된 것이 아니라 층화된 API 입니다. 두 층 모두 1급 시민입니다.\n\nHigh layer (hwpapi.App → app.doc.*) — 기본 surface 입니다. 의견이 반영되어 있고, collection 중심이며, 각 작업을 수행하는 방법은 하나입니다.\nLow layer (hwpapi.low.*) — 원시 액션 + ParameterSet + engine primitive 입니다. 공식적으로 지원됩니다. high layer 는 low layer 위에서 구현되며, 별도로 존재하지 않습니다.\n\n자세한 사유는 ADR-001 을 참고하세요.\n\n\nCollection 프로토콜\napp.doc.* 아래의 모든 dict 형태 집합은 hwpapi.collections.Collection 을 구현합니다.\nfrom typing import Callable, Iterator, Protocol, runtime_checkable\n\n@runtime_checkable\nclass Collection(Protocol):\n    def __getitem__(self, key): ...\n    def __iter__(self) -&gt; Iterator: ...\n    def __len__(self) -&gt; int: ...\n    def __contains__(self, key) -&gt; bool: ...\n    def names(self) -&gt; list[str]: ...\n    def filter(self, predicate: Callable[..., bool]) -&gt; list: ...\n이는 명목적(nominal) 계약이 아니라 구조적(structural) 계약입니다 — collection 클래스들은 Collection 을 상속하지 않습니다. @runtime_checkable 덕분에 런타임 검사는 isinstance(coll, Collection) 으로 이루어집니다.\n변경을 지원하는 collection 은 __setitem__, __delitem__, clear() 를 추가합니다. 일부 collection 은 읽기 전용이므로(예: paragraphs — 인덱스로 문단을 삭제하면 주변에 영향이 가므로) 이 집합은 Protocol 의 일부가 아닙니다.\n\n\n요소 값-객체 패턴\ncollection 을 인덱싱하면 가벼운 요소가 반환됩니다 — (app, identifier) 를 지니고 underlying state 를 lazily 조회하는 참조 객체입니다. 요소들은:\n\n생성 비용이 저렴합니다 (COM 호출 없음)\n속성을 읽는 시점에 COM 을 호출합니다\n절대 캐시하지 않습니다 (두 번 읽으면 COM 도 두 번 호출됩니다)\n\n왜 dataclass 가 아닌가요? HWP 상태가 사용자 모르게 바뀔 수 있고(사용자 undo, 동시 스크립트), 스냅샷을 캐시하면 거짓이 되기 때문입니다. 스냅샷이 필요할 때는 명시적으로 취하세요(예: ParameterSet 의 pset.clone(), 요소 상태를 위한 일반 dict).\n\n\n소유권과 라이프사이클\nApp\n └── Engine              (app.engine 를 통해)\n      └── HwpObject      (raw COM; app.api 또는 app.engine.impl 을 통해)\n └── Document            (app.doc; cached_property)\n      └── Collections    (collection 별, cached_property)\n\nApp 이 Engine 을 소유합니다.\nDocument 는 COM 핸들을 소유하지 않습니다. 자신을 소유한 App 에 대한 참조를 가지고, 사용 시점에 app.engine.impl 을 가져옵니다.\ncollection 도 마찬가지로 호출 때마다 self._app.engine.impl 에 접근합니다 — HWP 의 살아 있는 상태에 대한 stateless 래퍼입니다.\n\n이는 곧 다음을 의미합니다. app.close() 가 실행된 뒤에는, 캐시된 Document 나 캐시된 collection 에서 읽으면 예외가 발생합니다 — app.engine.impl 을 통한 우회가 invalidation 을 드러냅니다.\n\n\nFacade 경계\nv2 facade (App + Document + collections + context + io + errors + units) 는 의도적으로 작습니다. “facade 에 무엇이 속하는가” 의 시험은 다음과 같습니다.\n\n이 심볼을 제거하면 한 화면짜리 dir(App) 보장이 깨지는가, 아니면 명료한 high-level affordance 를 low-level 호출과 맞바꾸는가?\n\n답이 “보장이 깨진다” 또는 “명료한 affordance 를 맞바꾼다” 라면 남깁니다. 그 외에는 모두 hwpapi.low 또는 형제 패키지로 이동합니다.\n\n\n관련 문서\n\nADR-001: 두 층 API\nADR-002: Quarto 단일 파이프라인 문서화\ndocs/design/app-member-audit.md — 원래의 82 개 App 멤버에 대한 분류\ndocs/design/app-public-v2.txt — 최종 dir(App) 스냅샷\n\n\n\n\n\n 맨 위로",
-    "crumbs": [
-      "디자인",
-      "아키텍처"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html",
-    "href": "design/adr/adr-001-v2-redesign.html",
-    "title": "ADR-001: 두 층 API",
-    "section": "",
-    "text": "Accepted — 2026-04-18\nv2 재설계 계획(.omc/plans/hwpapi_v2_redesign.md)의 Phase 1–5 에 걸쳐 구현되었습니다.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-001: 두 층 API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#option-a-계층적-도메인-모델-office-automation-스타일",
-    "href": "design/adr/adr-001-v2-redesign.html#option-a-계층적-도메인-모델-office-automation-스타일",
-    "title": "ADR-001: 두 층 API",
-    "section": "Option A — 계층적 도메인 모델 (Office Automation 스타일)",
-    "text": "Option A — 계층적 도메인 모델 (Office Automation 스타일)\napp.doc.paragraphs[i].runs[j].charshape.bold = True\n장점: Word/Excel 자동화 사용자에게 친숙하며, collection 일관성이 최대화됩니다.\n단점: HWP 는 내부적으로 근본적으로 위치 기반이라 — 일부 drill-down 경로(runs)는 가상화가 필요합니다. 이는 high layer 의 형태가 되었지만 전체 API 는 아닙니다.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-001: 두 층 API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#option-b-평면-동사형-api",
-    "href": "design/adr/adr-001-v2-redesign.html#option-b-평면-동사형-api",
-    "title": "ADR-001: 두 층 API",
-    "section": "Option B — 평면 동사형 API",
-    "text": "Option B — 평면 동사형 API\napp.fill_field(), app.set_charshape(), app.goto_bookmark()\n장점: 하나의 namespace, 최소한의 계층.\n단점: 새로운 이름으로 v1 의 App-as-god-object 문제를 재현합니다. 슬림 facade 목표를 무력화합니다.\n기각.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-001: 두 층 API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#option-c-두-층-low-high-선택됨",
-    "href": "design/adr/adr-001-v2-redesign.html#option-c-두-층-low-high-선택됨",
-    "title": "ADR-001: 두 층 API",
-    "section": "Option C — 두 층 (low + high) ← 선택됨",
-    "text": "Option C — 두 층 (low + high) ← 선택됨\nDjango ORM 패턴: Model.objects 가 의견이 반영된 공개 surface 이고 django.db.connection 이 탈출구이며, 두 가지가 모두 1급 API 로 공존합니다.\nv2 의 형태로 채택되었습니다. Option A 의 계층적 도메인 모델은 App.doc.* 안에 살고, Option D 의 술어 필터링은 Collection.filter(predicate) 를 통해 부분적으로 채택되었습니다.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-001: 두 층 API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#option-d-쿼리-중심-pandas-스타일",
-    "href": "design/adr/adr-001-v2-redesign.html#option-d-쿼리-중심-pandas-스타일",
-    "title": "ADR-001: 두 층 API",
-    "section": "Option D — 쿼리 중심 (pandas 스타일)",
-    "text": "Option D — 쿼리 중심 (pandas 스타일)\ndoc.paragraphs.where(style=\"제목\").set(bold=True)\n장점: 강력한 일괄 연산.\n단점: HWP 는 stream 기반입니다 — where 는 eager iteration 으로 귀결되며, 큰 문서에서 성능 절벽이 발생합니다.\n부분 채택 — collection.filter(predicate) 가 쿼리 모델의 부분집합입니다.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-001: 두 층 API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#option-e-deprecation-shim-유지",
-    "href": "design/adr/adr-001-v2-redesign.html#option-e-deprecation-shim-유지",
-    "title": "ADR-001: 두 층 API",
-    "section": "Option E — deprecation shim 유지",
-    "text": "Option E — deprecation shim 유지\n장점: v1 사용자에게 끊김 없는 마이그레이션.\n단점: 유지보수 surface 가 두 배가 되고(공개 API 두 개, 문서 경로 두 개), 슬림 facade 목표를 무력화하며, 타입 수준에서 “App 수준 vs. Document 수준” 구분이 불가능해집니다. 82 멤버 footprint 를 영원히 보존하게 됩니다.\n기각 — 사용자 동의에 따라. v2 는 깔끔한 단절이며, v1 은 v1.x 브랜치에 동결됩니다.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-001: 두 층 API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#긍정적",
-    "href": "design/adr/adr-001-v2-redesign.html#긍정적",
-    "title": "ADR-001: 두 층 API",
-    "section": "긍정적",
-    "text": "긍정적\n\n문서 IA 가 코드 구조와 1:1 로 일치 — sidebar 항목이 import tree 노드와 대응됩니다.\n새 기능은 추가되기 전에 “어느 layer 인가?” 에 답해야 하므로, v1 식 표류를 방지합니다.\nhwpapi.low 는 추출 가능합니다 — 너무 커지면 high-level API 를 깨뜨리지 않고 별도 패키지로 출시할 수 있습니다.\ndir(app) 가 한 화면에 들어갑니다.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-001: 두 층 API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#부정적",
-    "href": "design/adr/adr-001-v2-redesign.html#부정적",
-    "title": "ADR-001: 두 층 API",
-    "section": "부정적",
-    "text": "부정적\n\nv1 스크립트가 깨집니다. 완화책: 마이그레이션 가이드 가 제거된 모든 멤버에 대해 v2 후속 또는 탈출구 포인터를 한 행씩 제공합니다.\nlayer 정책에는 경계가 필요합니다. 완화책: docs/design/architecture.qmd 가 “이것이 facade 에 속하는가?” 시험을 정의하며, 공개 심볼을 추가하는 모든 PR 은 layer 선택을 정당화해야 합니다.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-001: 두 층 API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-001-v2-redesign.html#중립",
-    "href": "design/adr/adr-001-v2-redesign.html#중립",
-    "title": "ADR-001: 두 층 API",
-    "section": "중립",
-    "text": "중립\n\n이제 문서는 단일 source 입니다(docs/ Quarto). 이전의 nbs/ + examples/ + docs/*.md 분리는 통합되었습니다.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-001: 두 층 API"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-002-quarto-docs.html",
-    "href": "design/adr/adr-002-quarto-docs.html",
-    "title": "ADR-002: Quarto 단일 파이프라인 문서화",
-    "section": "",
-    "text": "Accepted — 2026-04-18\nv2 재설계 계획의 Phase 6 에서 구현되었습니다.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-002: Quarto 단일 파이프라인 문서화"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-002-quarto-docs.html#mkdocs-material",
-    "href": "design/adr/adr-002-quarto-docs.html#mkdocs-material",
-    "title": "ADR-002: Quarto 단일 파이프라인 문서화",
-    "section": "MkDocs Material",
-    "text": "MkDocs Material\n장점: Python 네이티브, 널리 보급, 훌륭한 기본 테마.\n단점: 기존 Quarto 자산(nbs/ 콘텐츠)을 잃습니다. 계산 가능한 페이지 지원이 더 약합니다(nbs/ 는 Jupyter 커널 실행을 사용했고, Quarto 는 이를 네이티브로 보존).\n자산 보존을 이유로 기각.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-002: Quarto 단일 파이프라인 문서화"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-002-quarto-docs.html#두-사이트-병행-nbs-튜토리얼-docs-레퍼런스",
-    "href": "design/adr/adr-002-quarto-docs.html#두-사이트-병행-nbs-튜토리얼-docs-레퍼런스",
-    "title": "ADR-002: Quarto 단일 파이프라인 문서화",
-    "section": "두 사이트 병행 (nbs/ → 튜토리얼, docs/ → 레퍼런스)",
-    "text": "두 사이트 병행 (nbs/ → 튜토리얼, docs/ → 레퍼런스)\n장점: 마이그레이션 노력 최소화.\n단점: “단일 진실의 원천” 원칙 위반. v1 상태에서 보았던 같은 표류를 유발합니다.\n기각.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-002: Quarto 단일 파이프라인 문서화"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-002-quarto-docs.html#sphinx-autodoc-sphinx_book_theme",
-    "href": "design/adr/adr-002-quarto-docs.html#sphinx-autodoc-sphinx_book_theme",
-    "title": "ADR-002: Quarto 단일 파이프라인 문서화",
-    "section": "Sphinx + autodoc + sphinx_book_theme",
-    "text": "Sphinx + autodoc + sphinx_book_theme\n장점: 성숙한 Python 도구체인.\n단점: myst_parser 를 통한 Markdown 우선 저작은 여전히 Quarto 에 비해 세련되지 못합니다. 어차피 Quarto 를 대체해야 합니다. 부품 수가 더 많습니다.\n레포에 이미 Quarto 가 채택되어 있다는 점을 고려해 기각.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-002: Quarto 단일 파이프라인 문서화"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-002-quarto-docs.html#긍정적",
-    "href": "design/adr/adr-002-quarto-docs.html#긍정적",
-    "title": "ADR-002: Quarto 단일 파이프라인 문서화",
-    "section": "긍정적",
-    "text": "긍정적\n\n한 번의 quarto render docs/ 가 전체 사이트를 생성합니다.\nquartodoc build 가 docstring 으로부터 레퍼런스 layer 를 재생성합니다 — 레퍼런스가 코드와 표류할 수 없습니다.\ndocs/recipes/*.qmd 는 HWP 의존 코드 블록을 실행하지 않고도(eval: false 로 표시) 가독성을 유지(Markdown 표, inline code)할 수 있습니다.\nADR 과 아키텍처 노트가 사용자 문서 옆에 살게 됩니다 — design/ 은 또 하나의 sidebar 섹션일 뿐입니다.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-002: Quarto 단일 파이프라인 문서화"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-002-quarto-docs.html#부정적",
-    "href": "design/adr/adr-002-quarto-docs.html#부정적",
-    "title": "ADR-002: Quarto 단일 파이프라인 문서화",
-    "section": "부정적",
-    "text": "부정적\n\nquarto 와 quartodoc 은 사이트를 다시 렌더링하는 누구에게나 빌드 타임 의존성입니다. 완화책: pip install -e \".[docs]\" 가 둘 다 포함합니다.\nquartodoc 은 Protocol 클래스와 cached_property 디스크립터에서 가끔 quirk 가 있습니다. 완화책: 핵심 클래스에 대해 자동 발견에 의존하는 대신 _quarto.yml 에 명시적 contents: 목록으로 모든 페이지 이름을 적습니다.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-002: Quarto 단일 파이프라인 문서화"
-    ]
-  },
-  {
-    "objectID": "design/adr/adr-002-quarto-docs.html#중립",
-    "href": "design/adr/adr-002-quarto-docs.html#중립",
-    "title": "ADR-002: Quarto 단일 파이프라인 문서화",
-    "section": "중립",
-    "text": "중립\n\n사용자는 더 이상 examples/ 아래의 예제 스크립트를 받지 못합니다 — 이제는 recipe 페이지로 존재합니다. nbs/ 튜토리얼도 마찬가지로 docs/recipes/ 로 통합됩니다. 최종 보관 이동은 Phase 7 (release) 의 책임입니다.",
-    "crumbs": [
-      "디자인",
-      "ADRs",
-      "ADR-002: Quarto 단일 파이프라인 문서화"
-    ]
-  },
-  {
-    "objectID": "design/index.html",
-    "href": "design/index.html",
-    "title": "설계",
-    "section": "",
-    "text": "이 섹션의 내용\n이 섹션은 코드 뒤의 왜 를 설명합니다. 가이드 가 hwpapi 의 사용법을 알려준다면, 설계 섹션은 지금의 형태로 다듬어진 과정을 알려줍니다.\n\n\n아키텍처\n\n아키텍처 개요 — v2 import tree, 두 층 모델, collection 프로토콜, 그리고 이들이 어떻게 맞물리는지를 다룹니다.\n\n\n\n아키텍처 결정 기록 (ADR)\n각 ADR 은 하나의 채택된 결정과 그 맥락, 대안, 결과를 기록합니다. v2 설계 선택에 대한 1차 역사 기록입니다.\n\nADR-001: 두 층 API (hwpapi.low + App.doc.*)\nADR-002: Quarto 단일 파이프라인 문서화\n\n\n\n감사 및 설계 노트 (보관용)\n다음 문서들은 v2 재설계로 이어진 v2 이전 자료입니다. 출처 보존을 위해 유지되며 — 현재 권위 있는 사양은 ADR 과 살아 있는 코드베이스입니다.\n\nbaseline-v1.0.md — v1 성능 베이스라인\npublic-api-v1.0.txt — v1 공개 심볼 덤프\napp-public-v2.txt — v2 dir(App) 스냅샷\napp-member-audit.md — 82 개 멤버의 분류 매트릭스\n\n\n\n\n\n 맨 위로",
-    "crumbs": [
-      "디자인",
-      "설계"
-    ]
-  },
-  {
     "objectID": "getting-started/migration-v1-to-v2.html",
     "href": "getting-started/migration-v1-to-v2.html",
     "title": "hwpapi v1.x → v2.0 마이그레이션",
@@ -1224,6 +999,330 @@
     "crumbs": [
       "시작하기",
       "hwpapi v1.x → v2.0 마이그레이션"
+    ]
+  },
+  {
+    "objectID": "design/index.html",
+    "href": "design/index.html",
+    "title": "설계",
+    "section": "",
+    "text": "이 섹션의 내용\n이 섹션은 코드 뒤의 왜 를 설명합니다. 가이드 가 hwpapi 의 사용법을 알려준다면, 설계 섹션은 지금의 형태로 다듬어진 과정을 알려줍니다.\n\n\n아키텍처\n\n아키텍처 개요 — v2 import tree, 두 층 모델, collection 프로토콜, 그리고 이들이 어떻게 맞물리는지를 다룹니다.\n\n\n\n아키텍처 결정 기록 (ADR)\n각 ADR 은 하나의 채택된 결정과 그 맥락, 대안, 결과를 기록합니다. v2 설계 선택에 대한 1차 역사 기록입니다.\n\nADR-001: 두 층 API (hwpapi.low + App.doc.*)\nADR-002: Quarto 단일 파이프라인 문서화\n\n\n\n감사 및 설계 노트 (보관용)\n다음 문서들은 v2 재설계로 이어진 v2 이전 자료입니다. 출처 보존을 위해 유지되며 — 현재 권위 있는 사양은 ADR 과 살아 있는 코드베이스입니다.\n\nbaseline-v1.0.md — v1 성능 베이스라인\npublic-api-v1.0.txt — v1 공개 심볼 덤프\napp-public-v2.txt — v2 dir(App) 스냅샷\napp-member-audit.md — 82 개 멤버의 분류 매트릭스\n\n\n\n\n\n 맨 위로",
+    "crumbs": [
+      "디자인",
+      "설계"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html",
+    "href": "design/adr/adr-002-quarto-docs.html",
+    "title": "ADR-002: Quarto 단일 파이프라인 문서화",
+    "section": "",
+    "text": "Accepted — 2026-04-18\nv2 재설계 계획의 Phase 6 에서 구현되었습니다.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-002: Quarto 단일 파이프라인 문서화"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#mkdocs-material",
+    "href": "design/adr/adr-002-quarto-docs.html#mkdocs-material",
+    "title": "ADR-002: Quarto 단일 파이프라인 문서화",
+    "section": "MkDocs Material",
+    "text": "MkDocs Material\n장점: Python 네이티브, 널리 보급, 훌륭한 기본 테마.\n단점: 기존 Quarto 자산(nbs/ 콘텐츠)을 잃습니다. 계산 가능한 페이지 지원이 더 약합니다(nbs/ 는 Jupyter 커널 실행을 사용했고, Quarto 는 이를 네이티브로 보존).\n자산 보존을 이유로 기각.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-002: Quarto 단일 파이프라인 문서화"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#두-사이트-병행-nbs-튜토리얼-docs-레퍼런스",
+    "href": "design/adr/adr-002-quarto-docs.html#두-사이트-병행-nbs-튜토리얼-docs-레퍼런스",
+    "title": "ADR-002: Quarto 단일 파이프라인 문서화",
+    "section": "두 사이트 병행 (nbs/ → 튜토리얼, docs/ → 레퍼런스)",
+    "text": "두 사이트 병행 (nbs/ → 튜토리얼, docs/ → 레퍼런스)\n장점: 마이그레이션 노력 최소화.\n단점: “단일 진실의 원천” 원칙 위반. v1 상태에서 보았던 같은 표류를 유발합니다.\n기각.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-002: Quarto 단일 파이프라인 문서화"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#sphinx-autodoc-sphinx_book_theme",
+    "href": "design/adr/adr-002-quarto-docs.html#sphinx-autodoc-sphinx_book_theme",
+    "title": "ADR-002: Quarto 단일 파이프라인 문서화",
+    "section": "Sphinx + autodoc + sphinx_book_theme",
+    "text": "Sphinx + autodoc + sphinx_book_theme\n장점: 성숙한 Python 도구체인.\n단점: myst_parser 를 통한 Markdown 우선 저작은 여전히 Quarto 에 비해 세련되지 못합니다. 어차피 Quarto 를 대체해야 합니다. 부품 수가 더 많습니다.\n레포에 이미 Quarto 가 채택되어 있다는 점을 고려해 기각.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-002: Quarto 단일 파이프라인 문서화"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#긍정적",
+    "href": "design/adr/adr-002-quarto-docs.html#긍정적",
+    "title": "ADR-002: Quarto 단일 파이프라인 문서화",
+    "section": "긍정적",
+    "text": "긍정적\n\n한 번의 quarto render docs/ 가 전체 사이트를 생성합니다.\nquartodoc build 가 docstring 으로부터 레퍼런스 layer 를 재생성합니다 — 레퍼런스가 코드와 표류할 수 없습니다.\ndocs/recipes/*.qmd 는 HWP 의존 코드 블록을 실행하지 않고도(eval: false 로 표시) 가독성을 유지(Markdown 표, inline code)할 수 있습니다.\nADR 과 아키텍처 노트가 사용자 문서 옆에 살게 됩니다 — design/ 은 또 하나의 sidebar 섹션일 뿐입니다.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-002: Quarto 단일 파이프라인 문서화"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#부정적",
+    "href": "design/adr/adr-002-quarto-docs.html#부정적",
+    "title": "ADR-002: Quarto 단일 파이프라인 문서화",
+    "section": "부정적",
+    "text": "부정적\n\nquarto 와 quartodoc 은 사이트를 다시 렌더링하는 누구에게나 빌드 타임 의존성입니다. 완화책: pip install -e \".[docs]\" 가 둘 다 포함합니다.\nquartodoc 은 Protocol 클래스와 cached_property 디스크립터에서 가끔 quirk 가 있습니다. 완화책: 핵심 클래스에 대해 자동 발견에 의존하는 대신 _quarto.yml 에 명시적 contents: 목록으로 모든 페이지 이름을 적습니다.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-002: Quarto 단일 파이프라인 문서화"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#중립",
+    "href": "design/adr/adr-002-quarto-docs.html#중립",
+    "title": "ADR-002: Quarto 단일 파이프라인 문서화",
+    "section": "중립",
+    "text": "중립\n\n사용자는 더 이상 examples/ 아래의 예제 스크립트를 받지 못합니다 — 이제는 recipe 페이지로 존재합니다. nbs/ 튜토리얼도 마찬가지로 docs/recipes/ 로 통합됩니다. 최종 보관 이동은 Phase 7 (release) 의 책임입니다.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-002: Quarto 단일 파이프라인 문서화"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html",
+    "href": "design/adr/adr-001-v2-redesign.html",
+    "title": "ADR-001: 두 층 API",
+    "section": "",
+    "text": "Accepted — 2026-04-18\nv2 재설계 계획(.omc/plans/hwpapi_v2_redesign.md)의 Phase 1–5 에 걸쳐 구현되었습니다.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-001: 두 층 API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-a-계층적-도메인-모델-office-automation-스타일",
+    "href": "design/adr/adr-001-v2-redesign.html#option-a-계층적-도메인-모델-office-automation-스타일",
+    "title": "ADR-001: 두 층 API",
+    "section": "Option A — 계층적 도메인 모델 (Office Automation 스타일)",
+    "text": "Option A — 계층적 도메인 모델 (Office Automation 스타일)\napp.doc.paragraphs[i].runs[j].charshape.bold = True\n장점: Word/Excel 자동화 사용자에게 친숙하며, collection 일관성이 최대화됩니다.\n단점: HWP 는 내부적으로 근본적으로 위치 기반이라 — 일부 drill-down 경로(runs)는 가상화가 필요합니다. 이는 high layer 의 형태가 되었지만 전체 API 는 아닙니다.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-001: 두 층 API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-b-평면-동사형-api",
+    "href": "design/adr/adr-001-v2-redesign.html#option-b-평면-동사형-api",
+    "title": "ADR-001: 두 층 API",
+    "section": "Option B — 평면 동사형 API",
+    "text": "Option B — 평면 동사형 API\napp.fill_field(), app.set_charshape(), app.goto_bookmark()\n장점: 하나의 namespace, 최소한의 계층.\n단점: 새로운 이름으로 v1 의 App-as-god-object 문제를 재현합니다. 슬림 facade 목표를 무력화합니다.\n기각.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-001: 두 층 API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-c-두-층-low-high-선택됨",
+    "href": "design/adr/adr-001-v2-redesign.html#option-c-두-층-low-high-선택됨",
+    "title": "ADR-001: 두 층 API",
+    "section": "Option C — 두 층 (low + high) ← 선택됨",
+    "text": "Option C — 두 층 (low + high) ← 선택됨\nDjango ORM 패턴: Model.objects 가 의견이 반영된 공개 surface 이고 django.db.connection 이 탈출구이며, 두 가지가 모두 1급 API 로 공존합니다.\nv2 의 형태로 채택되었습니다. Option A 의 계층적 도메인 모델은 App.doc.* 안에 살고, Option D 의 술어 필터링은 Collection.filter(predicate) 를 통해 부분적으로 채택되었습니다.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-001: 두 층 API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-d-쿼리-중심-pandas-스타일",
+    "href": "design/adr/adr-001-v2-redesign.html#option-d-쿼리-중심-pandas-스타일",
+    "title": "ADR-001: 두 층 API",
+    "section": "Option D — 쿼리 중심 (pandas 스타일)",
+    "text": "Option D — 쿼리 중심 (pandas 스타일)\ndoc.paragraphs.where(style=\"제목\").set(bold=True)\n장점: 강력한 일괄 연산.\n단점: HWP 는 stream 기반입니다 — where 는 eager iteration 으로 귀결되며, 큰 문서에서 성능 절벽이 발생합니다.\n부분 채택 — collection.filter(predicate) 가 쿼리 모델의 부분집합입니다.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-001: 두 층 API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#option-e-deprecation-shim-유지",
+    "href": "design/adr/adr-001-v2-redesign.html#option-e-deprecation-shim-유지",
+    "title": "ADR-001: 두 층 API",
+    "section": "Option E — deprecation shim 유지",
+    "text": "Option E — deprecation shim 유지\n장점: v1 사용자에게 끊김 없는 마이그레이션.\n단점: 유지보수 surface 가 두 배가 되고(공개 API 두 개, 문서 경로 두 개), 슬림 facade 목표를 무력화하며, 타입 수준에서 “App 수준 vs. Document 수준” 구분이 불가능해집니다. 82 멤버 footprint 를 영원히 보존하게 됩니다.\n기각 — 사용자 동의에 따라. v2 는 깔끔한 단절이며, v1 은 v1.x 브랜치에 동결됩니다.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-001: 두 층 API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#긍정적",
+    "href": "design/adr/adr-001-v2-redesign.html#긍정적",
+    "title": "ADR-001: 두 층 API",
+    "section": "긍정적",
+    "text": "긍정적\n\n문서 IA 가 코드 구조와 1:1 로 일치 — sidebar 항목이 import tree 노드와 대응됩니다.\n새 기능은 추가되기 전에 “어느 layer 인가?” 에 답해야 하므로, v1 식 표류를 방지합니다.\nhwpapi.low 는 추출 가능합니다 — 너무 커지면 high-level API 를 깨뜨리지 않고 별도 패키지로 출시할 수 있습니다.\ndir(app) 가 한 화면에 들어갑니다.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-001: 두 층 API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#부정적",
+    "href": "design/adr/adr-001-v2-redesign.html#부정적",
+    "title": "ADR-001: 두 층 API",
+    "section": "부정적",
+    "text": "부정적\n\nv1 스크립트가 깨집니다. 완화책: 마이그레이션 가이드 가 제거된 모든 멤버에 대해 v2 후속 또는 탈출구 포인터를 한 행씩 제공합니다.\nlayer 정책에는 경계가 필요합니다. 완화책: docs/design/architecture.qmd 가 “이것이 facade 에 속하는가?” 시험을 정의하며, 공개 심볼을 추가하는 모든 PR 은 layer 선택을 정당화해야 합니다.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-001: 두 층 API"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-001-v2-redesign.html#중립",
+    "href": "design/adr/adr-001-v2-redesign.html#중립",
+    "title": "ADR-001: 두 층 API",
+    "section": "중립",
+    "text": "중립\n\n이제 문서는 단일 source 입니다(docs/ Quarto). 이전의 nbs/ + examples/ + docs/*.md 분리는 통합되었습니다.",
+    "crumbs": [
+      "디자인",
+      "ADRs",
+      "ADR-001: 두 층 API"
+    ]
+  },
+  {
+    "objectID": "design/architecture.html",
+    "href": "design/architecture.html",
+    "title": "아키텍처",
+    "section": "",
+    "text": "Import tree\nhwpapi\n├── App                  # core.app.App   — 슬림 facade (공개 멤버 ≤15)\n├── Document             # document.Document — 문서별 surface (app.doc)\n├── collections/         # app.doc.* 아래의 dict 형태 집합\n│   ├── Collection       # Protocol: __getitem__, __iter__, __len__,\n│   │                    #            __contains__, names, filter\n│   ├── fields           # FieldCollection + Field\n│   ├── bookmarks        # BookmarkCollection + Bookmark\n│   ├── hyperlinks\n│   ├── images\n│   ├── paragraphs       # ParagraphCollection + Paragraph + Run\n│   ├── styles\n│   └── tables           # TableCollection + Table + Cell\n├── context/\n│   └── scopes           # charshape_scope, parashape_scope, styled_text\n├── io/\n│   ├── open             # open_file, new_document\n│   └── export           # export_pdf, export_image, export_text\n├── errors               # HwpApiError 계층 + wrap_com_error\n├── units                # mm, cm, inch, pt, parse, to_mm, ...\n├── logging              # get_logger, HWPAPI_LOG_LEVEL\n└── low/                 # 탈출구\n    ├── actions          # _Actions, _Action (900+ 액션 래퍼)\n    ├── engine           # Engine, Engines, Apps\n    └── parametersets    # ParameterSet 클래스 (CharShape, ParaShape, ...)\n\n\n두 층 모델\nhwpapi v2 는 계층화된 것이 아니라 층화된 API 입니다. 두 층 모두 1급 시민입니다.\n\nHigh layer (hwpapi.App → app.doc.*) — 기본 surface 입니다. 의견이 반영되어 있고, collection 중심이며, 각 작업을 수행하는 방법은 하나입니다.\nLow layer (hwpapi.low.*) — 원시 액션 + ParameterSet + engine primitive 입니다. 공식적으로 지원됩니다. high layer 는 low layer 위에서 구현되며, 별도로 존재하지 않습니다.\n\n자세한 사유는 ADR-001 을 참고하세요.\n\n\nCollection 프로토콜\napp.doc.* 아래의 모든 dict 형태 집합은 hwpapi.collections.Collection 을 구현합니다.\nfrom typing import Callable, Iterator, Protocol, runtime_checkable\n\n@runtime_checkable\nclass Collection(Protocol):\n    def __getitem__(self, key): ...\n    def __iter__(self) -&gt; Iterator: ...\n    def __len__(self) -&gt; int: ...\n    def __contains__(self, key) -&gt; bool: ...\n    def names(self) -&gt; list[str]: ...\n    def filter(self, predicate: Callable[..., bool]) -&gt; list: ...\n이는 명목적(nominal) 계약이 아니라 구조적(structural) 계약입니다 — collection 클래스들은 Collection 을 상속하지 않습니다. @runtime_checkable 덕분에 런타임 검사는 isinstance(coll, Collection) 으로 이루어집니다.\n변경을 지원하는 collection 은 __setitem__, __delitem__, clear() 를 추가합니다. 일부 collection 은 읽기 전용이므로(예: paragraphs — 인덱스로 문단을 삭제하면 주변에 영향이 가므로) 이 집합은 Protocol 의 일부가 아닙니다.\n\n\n요소 값-객체 패턴\ncollection 을 인덱싱하면 가벼운 요소가 반환됩니다 — (app, identifier) 를 지니고 underlying state 를 lazily 조회하는 참조 객체입니다. 요소들은:\n\n생성 비용이 저렴합니다 (COM 호출 없음)\n속성을 읽는 시점에 COM 을 호출합니다\n절대 캐시하지 않습니다 (두 번 읽으면 COM 도 두 번 호출됩니다)\n\n왜 dataclass 가 아닌가요? HWP 상태가 사용자 모르게 바뀔 수 있고(사용자 undo, 동시 스크립트), 스냅샷을 캐시하면 거짓이 되기 때문입니다. 스냅샷이 필요할 때는 명시적으로 취하세요(예: ParameterSet 의 pset.clone(), 요소 상태를 위한 일반 dict).\n\n\n소유권과 라이프사이클\nApp\n └── Engine              (app.engine 를 통해)\n      └── HwpObject      (raw COM; app.api 또는 app.engine.impl 을 통해)\n └── Document            (app.doc; cached_property)\n      └── Collections    (collection 별, cached_property)\n\nApp 이 Engine 을 소유합니다.\nDocument 는 COM 핸들을 소유하지 않습니다. 자신을 소유한 App 에 대한 참조를 가지고, 사용 시점에 app.engine.impl 을 가져옵니다.\ncollection 도 마찬가지로 호출 때마다 self._app.engine.impl 에 접근합니다 — HWP 의 살아 있는 상태에 대한 stateless 래퍼입니다.\n\n이는 곧 다음을 의미합니다. app.close() 가 실행된 뒤에는, 캐시된 Document 나 캐시된 collection 에서 읽으면 예외가 발생합니다 — app.engine.impl 을 통한 우회가 invalidation 을 드러냅니다.\n\n\nFacade 경계\nv2 facade (App + Document + collections + context + io + errors + units) 는 의도적으로 작습니다. “facade 에 무엇이 속하는가” 의 시험은 다음과 같습니다.\n\n이 심볼을 제거하면 한 화면짜리 dir(App) 보장이 깨지는가, 아니면 명료한 high-level affordance 를 low-level 호출과 맞바꾸는가?\n\n답이 “보장이 깨진다” 또는 “명료한 affordance 를 맞바꾼다” 라면 남깁니다. 그 외에는 모두 hwpapi.low 또는 형제 패키지로 이동합니다.\n\n\n관련 문서\n\nADR-001: 두 층 API\nADR-002: Quarto 단일 파이프라인 문서화\ndocs/design/app-member-audit.md — 원래의 82 개 App 멤버에 대한 분류\ndocs/design/app-public-v2.txt — 최종 dir(App) 스냅샷\n\n\n\n\n\n 맨 위로",
+    "crumbs": [
+      "디자인",
+      "아키텍처"
+    ]
+  },
+  {
+    "objectID": "getting-started/install.html",
+    "href": "getting-started/install.html",
+    "title": "설치",
+    "section": "",
+    "text": "요구사항\nhwpapi 는 한컴오피스 한글(HWP)의 Windows COM 자동화 인터페이스를 구동합니다. 따라서:\n\nOS: Windows 10 이상\nHWP: 한글 2018 / 2020 / 2022 / 2024 (한컴오피스). 뷰어 에디션은 지원하지 않습니다 — 자동화 서버가 노출되지 않기 때문입니다.\nPython: 3.9 이상\npywin32: pip install hwpapi 로 자동 설치됩니다.\n\nmacOS / Linux 는 지원되지 않습니다 (HWP COM 서버가 Windows 전용). 다만 hwpapi 의 단위 테스트는 Linux 에서도 실행 가능합니다 — COM 레이어를 mock 으로 stub 하기 때문입니다. 실제 HWP 인스턴스에 접근하는 코드는 반드시 Windows 에서 실행해야 합니다.\n\n\nPyPI 에서 설치\npip install hwpapi\n이 명령으로 hwpapi 와 pywin32 가 함께 설치됩니다. 설치 확인:\n\nimport hwpapi\nprint(hwpapi.__version__)\n\n2.0.0\n\n\n\n\n소스에서 설치\ngit clone https://github.com/JunDamin/hwpapi.git\ncd hwpapi\npip install -e .\n이 사이트(문서)를 로컬에서 빌드하려면 docs extra 를 추가:\npip install -e \".[docs]\"\n# 또는 명시적으로:\npip install quartodoc griffe jupyter\ndocs extra 는 quartodoc (자동 API 페이지 생성) 과 griffe (quartodoc 이 사용하는 Python AST 백엔드) 를 가져옵니다.\n\n\nFilePathCheckerModuleExample DLL\nHWP 는 FilePathCheckerModuleExample.dll 이라는 작은 DLL 을 제공합니다 — App.open(path) 호출 시 “이 파일을 열어도 안전합니까?” 대화상자를 자동 억제해줍니다. hwpapi 는 check_dll() 로 자동 탐색하지만, 파일 열 때마다 OS 대화상자가 뜨면 HWP 설치 프로그램에서 해당 모듈을 설치하거나, 명시적으로 경로를 지정하세요:\n\nfrom hwpapi import App\napp = App(dll_path=\"C:/hwpapi/FilePathCheckerModuleExample.dll\")\n\n\n\n설치 검증\n가장 단순한 smoke 테스트 — HWP 를 실행하고, 빈 문서를 열고, 버전을 출력한 뒤 깔끔하게 닫습니다:\n\nfrom hwpapi import App\n\nwith App() as app:\n    app.new()\n    print(\"HWP 버전:\", app.engine.version)\n    print(\"문서 텍스트:\", repr(app.doc.text))\n\nHWP 버전이 출력되고 텍스트가 '' 로 나오면 정상 설치입니다.\n퀵스타트 로 이동하세요.\n\n\n트러블슈팅\nModuleNotFoundError: No module named 'win32com' — pywin32 가 제대로 설치되지 않았습니다. pip install --force-reinstall pywin32 후 관리자 권한으로 python Scripts\\pywin32_postinstall.py -install 를 실행하세요.\n파일 열 때마다 보안 대화상자가 뜸 — FilePathCheckerModuleExample.dll 이 등록되지 않은 상태입니다. 위 설명대로 dll_path= 를 명시하거나, hwpapi 설치 디렉터리에 DLL 을 복사하세요.\nConnectionError: can't dispatch HwpObject — HWP 가 설치되지 않았거나, 뷰어 에디션을 사용 중이거나, COM 등록이 손상된 상태입니다. HWP 를 재설치하고 다시 시도하세요.\nHWP 종료 시 Ruby/Tk 에러 — app.quit() 전에 app.close() 를 호출하거나, context manager (with App() as app:) 를 쓰세요 — 후자가 자동으로 처리합니다.\n\n\n\n\n 맨 위로",
+    "crumbs": [
+      "시작하기",
+      "설치"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v2-to-v3.html",
+    "href": "getting-started/migration-v2-to-v3.html",
+    "title": "hwpapi v2.x → v3.0 마이그레이션",
+    "section": "",
+    "text": "hwpapi v3.0 은 xlwings 에서 영감을 받아 public API 를 3-tier 모델로 재구성했습니다 — HWP COM 엔진 lifecycle 만 책임지는 App, 열린 문서 membership 을 책임지는 app.docs 컬렉션, 그리고 단일 .hwp 파일에 속한 모든 작업을 책임지는 Document 인스턴스. v2 에서는 App 클래스가 단일 문서 facade 를 겸했습니다 — app.open(), app.save(), app.close(), app.doc 이 모두 App 위에 있었고, HWP 가 “활성” 으로 간주하는 문서에 대해 암묵적으로 동작했습니다. v3 는 이 모호함을 제거합니다: app.docs.open(path) 와 app.docs.add() 는 Document 인스턴스를 반환하고, 모든 문서 단위 작업은 그 인스턴스에서 일어납니다. 다중 문서 워크플로우 (병합, 일괄 변환, A/B 비교) 가 first-class 가 됩니다 — v2 에서는 app.api.XHwpDocuments 를 통한 raw COM 접근 없이는 불가능했습니다.",
+    "crumbs": [
+      "시작하기",
+      "hwpapi v2.x → v3.0 마이그레이션"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v2-to-v3.html#app.docs-로-이름-변경이동",
+    "href": "getting-started/migration-v2-to-v3.html#app.docs-로-이름-변경이동",
+    "title": "hwpapi v2.x → v3.0 마이그레이션",
+    "section": "app.docs 로 이름 변경/이동",
+    "text": "app.docs 로 이름 변경/이동\n\n\n\n\n\n\n\n\nv2 호출\nv3 대응\n비고\n\n\n\n\napp.open(path)\ndoc = app.docs.open(path)\nDocument 인스턴스를 반환 — 변수로 잡으세요\n\n\napp.new()\ndoc = app.docs.add()\n동일한 형태; add() 는 xlwings 와 일치\n\n\napp.doc\napp.docs.active\n활성 문서 accessor\n\n\n(v2 에 없음)\napp.docs[0], app.docs[\"report.hwp\"]\n인덱스 / 이름 접근\n\n\n(v2 에 없음)\nlen(app.docs)\n열린 문서 개수\n\n\n(v2 에 없음)\nfor d in app.docs:\n순회",
+    "crumbs": [
+      "시작하기",
+      "hwpapi v2.x → v3.0 마이그레이션"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v2-to-v3.html#document-인스턴스로-이동",
+    "href": "getting-started/migration-v2-to-v3.html#document-인스턴스로-이동",
+    "title": "hwpapi v2.x → v3.0 마이그레이션",
+    "section": "Document 인스턴스로 이동",
+    "text": "Document 인스턴스로 이동\nv2 에서 App (또는 app.doc) 위에 있던 모든 문서 단위 작업이 이제 app.docs.open() / app.docs.add() 가 반환하는 Document 위에 있습니다.\n\n\n\n\n\n\n\n\nv2 호출\nv3 대응\n비고\n\n\n\n\napp.save()\ndoc.save()\n문서 단위 저장; 모호함 없음\n\n\napp.save_as(path)\ndoc.save_as(path)\n문서 단위 다른 이름으로 저장\n\n\napp.close()\ndoc.close(save=False)\nsave=True 로 저장 후 닫기\n\n\napp.doc.text\ndoc.text\nr/w property\n\n\napp.doc.insert_text(s)\ndoc.insert_text(s)\n\n\n\napp.doc.insert_picture(p)\ndoc.insert_picture(p)\n\n\n\napp.doc.insert_line_break()\ndoc.insert_line_break()\n\n\n\napp.doc.insert_page_break()\ndoc.insert_page_break()\n\n\n\napp.doc.insert_paragraph_break()\ndoc.insert_paragraph_break()\n\n\n\napp.doc.insert_tab()\ndoc.insert_tab()\n\n\n\napp.doc.find_text(q)\ndoc.find_text(q)\n\n\n\napp.doc.replace_all(f, r)\ndoc.replace_all(f, r)\n\n\n\napp.doc.select_all()\ndoc.select_all()\n\n\n\napp.doc.select_text(s, e)\ndoc.select_text(s, e)\n\n\n\napp.doc.get_selected_text()\ndoc.get_selected_text()\n\n\n\napp.doc.copy() / cut() / paste()\ndoc.copy() / cut() / paste()\n\n\n\napp.doc.delete() / clear()\ndoc.delete() / clear()\n\n\n\napp.doc.undo() / redo()\ndoc.undo() / redo()\n\n\n\napp.doc.cursor.goto_page(n)\ndoc.cursor.goto_page(n)\n\n\n\napp.doc.cursor.in_table()\ndoc.cursor.in_table()\n\n\n\napp.doc.fields\ndoc.fields\nFieldCollection — dict 형\n\n\napp.doc.bookmarks\ndoc.bookmarks\nBookmarkCollection\n\n\napp.doc.hyperlinks\ndoc.hyperlinks\nHyperlinkCollection\n\n\napp.doc.images\ndoc.images\nImageCollection\n\n\napp.doc.paragraphs\ndoc.paragraphs\nParagraphCollection\n\n\napp.doc.styles\ndoc.styles\nStyleCollection\n\n\napp.doc.tables\ndoc.tables\nTableCollection",
+    "crumbs": [
+      "시작하기",
+      "hwpapi v2.x → v3.0 마이그레이션"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v2-to-v3.html#다중-문서-워크플로우-new",
+    "href": "getting-started/migration-v2-to-v3.html#다중-문서-워크플로우-new",
+    "title": "hwpapi v2.x → v3.0 마이그레이션",
+    "section": "다중 문서 워크플로우 (NEW)",
+    "text": "다중 문서 워크플로우 (NEW)\n다음은 v2 에서는 raw COM 없이는 불가능했던 패턴입니다:\n\n\n\n\n\n\n\n패턴\nv3 문법\n\n\n\n\n두 파일 동시 열기\na = app.docs.open(\"a.hwp\"); b = app.docs.open(\"b.hwp\")\n\n\n기존 문서 옆에 빈 문서 생성\nsrc = app.docs.open(p); dst = app.docs.add()\n\n\n모든 열린 문서 순회\nfor d in app.docs: ...\n\n\n파일명으로 조회\napp.docs[\"report.hwp\"]\n\n\n인덱스로 조회\napp.docs[0]\n\n\n활성 문서 전환\ndoc.activate()\n\n\n열린 문서 개수\nlen(app.docs)",
+    "crumbs": [
+      "시작하기",
+      "hwpapi v2.x → v3.0 마이그레이션"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v2-to-v3.html#actions-binding",
+    "href": "getting-started/migration-v2-to-v3.html#actions-binding",
+    "title": "hwpapi v2.x → v3.0 마이그레이션",
+    "section": "actions binding",
+    "text": "actions binding\nraw HAction 인터페이스는 프로세스 전역이며 항상 활성 문서를 대상으로 합니다. v3 는 이를 두 위치에서 다른 의미로 노출합니다:\n\n\n\n\n\n\n\n\n진입점\n활성화 책임\n사용처\n\n\n\n\napp.actions.X.run()\n호출자 (doc.activate() 수동)\n단일 문서 스크립트 / escape hatch\n\n\ndoc.actions.X.run()\n자동 — run() 직전 doc.activate() 호출\n기본 — 다중 문서 안전\n\n\n\ndoc.actions 는 얇은 proxy 입니다. auto-activate 는 run() 당 COM 호출 1회 (마이크로초) 를 추가하며, 문서가 이미 활성 상태이면 no-op 입니다. 단일 문서 스크립트에서는 비용이 무시 가능하고, 다중 문서 스크립트 에서는 “잘못된 문서가 활성 상태였다” 는 종류의 버그를 한 번에 제거 합니다.",
+    "crumbs": [
+      "시작하기",
+      "hwpapi v2.x → v3.0 마이그레이션"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v2-to-v3.html#예제-1-단일-문서-열기-삽입-저장",
+    "href": "getting-started/migration-v2-to-v3.html#예제-1-단일-문서-열기-삽입-저장",
+    "title": "hwpapi v2.x → v3.0 마이그레이션",
+    "section": "예제 1 — 단일 문서: 열기, 삽입, 저장",
+    "text": "예제 1 — 단일 문서: 열기, 삽입, 저장\n# v2.x\nfrom hwpapi import App\napp = App()\napp.open(\"report.hwp\")\napp.doc.insert_text(\"Hello, world.\\n\")\napp.save()\napp.close()\napp.quit()\n\n# v3.0\nfrom hwpapi import App\nwith App() as app:\n    doc = app.docs.open(\"report.hwp\")\n    doc.insert_text(\"Hello, world.\\n\")\n    doc.save()\n    doc.close()\n# 종료 시 app.quit() 자동 호출",
+    "crumbs": [
+      "시작하기",
+      "hwpapi v2.x → v3.0 마이그레이션"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v2-to-v3.html#예제-2-다중-문서-두-파일-병합",
+    "href": "getting-started/migration-v2-to-v3.html#예제-2-다중-문서-두-파일-병합",
+    "title": "hwpapi v2.x → v3.0 마이그레이션",
+    "section": "예제 2 — 다중 문서: 두 파일 병합",
+    "text": "예제 2 — 다중 문서: 두 파일 병합\n# v2.x — 직접 지원되지 않음; app.api.XHwpDocuments 필요\n\n# v3.0\nfrom hwpapi import App\n\nwith App() as app:\n    src = app.docs.open(\"source.hwp\")\n    dst = app.docs.add()                      # 빈 문서\n\n    for para in src.paragraphs:\n        dst.insert_text(para.text + \"\\n\")\n\n    dst.save_as(\"merged.hwp\")\n    src.close(save=False)                     # 원본은 그대로\n    dst.close()",
+    "crumbs": [
+      "시작하기",
+      "hwpapi v2.x → v3.0 마이그레이션"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v2-to-v3.html#예제-3-일괄-변환-폴더의-hwp-pdf",
+    "href": "getting-started/migration-v2-to-v3.html#예제-3-일괄-변환-폴더의-hwp-pdf",
+    "title": "hwpapi v2.x → v3.0 마이그레이션",
+    "section": "예제 3 — 일괄 변환: 폴더의 HWP → PDF",
+    "text": "예제 3 — 일괄 변환: 폴더의 HWP → PDF\n# v3.0\nfrom hwpapi import App\nfrom pathlib import Path\n\nwith App() as app:\n    for hwp in Path(\"inbox\").glob(\"*.hwp\"):\n        doc = app.docs.open(hwp)\n        doc.save_as(hwp.with_suffix(\".pdf\"))  # 확장자가 포맷 결정\n        doc.close()                           # 다음 파일로 가기 전 메모리 해제",
+    "crumbs": [
+      "시작하기",
+      "hwpapi v2.x → v3.0 마이그레이션"
+    ]
+  },
+  {
+    "objectID": "getting-started/migration-v2-to-v3.html#예제-4-다중-문서-전환-n개-파일-병렬-처리",
+    "href": "getting-started/migration-v2-to-v3.html#예제-4-다중-문서-전환-n개-파일-병렬-처리",
+    "title": "hwpapi v2.x → v3.0 마이그레이션",
+    "section": "예제 4 — 다중 문서 전환: N개 파일 병렬 처리",
+    "text": "예제 4 — 다중 문서 전환: N개 파일 병렬 처리\n# v3.0\nfrom hwpapi import App\nfrom pathlib import Path\n\nwith App() as app:\n    docs = [app.docs.open(p) for p in Path(\"inbox\").glob(\"*.hwp\")]\n\n    print(f\"{len(app.docs)} 개 문서 열림\")\n\n    for doc in app.docs:\n        doc.replace_all(\"{{YEAR}}\", \"2026\")   # 호출마다 auto-activate\n        doc.save()\n\n    # 사용자가 보도록 특정 문서를 이름으로 골라 활성화\n    app.docs[\"summary.hwp\"].activate()",
+    "crumbs": [
+      "시작하기",
+      "hwpapi v2.x → v3.0 마이그레이션"
     ]
   },
   {
