@@ -91,10 +91,10 @@ class App:
         self.visible = is_visible
         self._logger.info(f"App window visibility set to: {is_visible}")
 
-        # Lazy Document facade cache (see `.doc`).
-        self._doc_cache = None
+        # Lazy DocumentCollection cache (see `.docs`).
+        self._docs_cache = None
 
-        self._logger.info("App initialized (v2 slim facade)")
+        self._logger.info("App initialized (v3 slim facade)")
 
     @classmethod
     def new(cls, is_visible: bool = True) -> "App":
@@ -196,21 +196,6 @@ class App:
         return self.engine.impl
 
     @property
-    def doc(self):
-        """
-        Cached :class:`hwpapi.document.Document` façade bound to this App.
-
-        Same instance on every access. Primary v2 surface for per-document
-        operations (text, fields, selection, collections …).
-        """
-        if self._doc_cache is None:
-            # Lazy import breaks an otherwise-circular module cycle.
-            from hwpapi.document import Document
-
-            self._doc_cache = Document(self)
-        return self._doc_cache
-
-    @property
     def docs(self):
         """
         v3 :class:`~hwpapi.collections.documents.DocumentCollection` —
@@ -237,87 +222,9 @@ class App:
         self.api.XHwpWindows.Item(0).Visible = bool(value)
 
     # ------------------------------------------------------------------
-    # Lifecycle methods
+    # Lifecycle methods (v3: App is process-only — open/save/close
+    # moved to Document via app.docs.open(...).save()/close()).
     # ------------------------------------------------------------------
-
-    def open(self, path, format: Optional[str] = None, arg: str = "") -> str:
-        """
-        Open a document in HWP. Returns the absolute path opened.
-
-        Parameters
-        ----------
-        path : str | Path
-            File path (relative paths are resolved against cwd).
-        format, arg : str, optional
-            Forwarded to ``HwpObject.Open`` when provided (HWP's
-            extended-open signature). Omit for the default behaviour.
-        """
-        self._logger.debug(f"open({path!r})")
-        name = get_absolute_path(path)
-        if format:
-            self.api.Open(name, format, arg)
-        else:
-            self.api.Open(name)
-        self._logger.info(f"open: {name}")
-        return name
-
-    def save(self, path=None, format: Optional[str] = None, arg: str = ""):
-        """
-        Save the active document.
-
-        Without ``path`` performs an in-place save (``HwpObject.Save``).
-        With ``path`` performs a ``SaveAs`` using the file-extension-
-        derived format — ``.hwp``, ``.pdf``, ``.hwpx``, ``.hml``, ``.png``,
-        ``.txt``, ``.docx``, ``.html`` / ``.htm`` are recognised.
-        """
-        self._logger.debug(f"save({path!r})")
-        if not path:
-            self.api.Save()
-            current = self._current_filepath()
-            self._logger.info(f"save (in-place): {current}")
-            return current
-
-        name = get_absolute_path(path)
-        fmt = format or _format_from_suffix(Path(name).suffix)
-        self.api.SaveAs(name, fmt)
-        self._logger.info(f"save: {name} (format={fmt})")
-        return name
-
-    def save_as(self, path, format: Optional[str] = None, arg: str = ""):
-        """
-        v2 rename of v1 ``save_block``: save the active document
-        selection/block to ``path``.
-
-        Extension-sniffed format set matches v1: ``.hwp``, ``.pdf``,
-        ``.hwpx`` (HWPML2X), ``.png``.
-        """
-        self._logger.debug(f"save_as({path!r})")
-        name = get_absolute_path(path)
-        fmt = format or _BLOCK_FORMAT_MAP.get(Path(name).suffix)
-        action = self.actions.SaveBlockAction
-        pset = action.pset
-        pset.filename = name
-        pset.Format = fmt
-        action.run(pset)
-        return name if Path(name).exists() else None
-
-    def close(self, save: bool = False) -> bool:
-        """
-        Close the active document (``FileClose`` command).
-
-        Parameters
-        ----------
-        save : bool, optional
-            If ``True`` save before closing. HWP prompts by default; the
-            caller can set this to force the save path.
-        """
-        self._logger.debug(f"close(save={save})")
-        if save:
-            try:
-                self.api.Save()
-            except Exception as exc:
-                self._logger.warning(f"close(): pre-save failed: {exc}")
-        return bool(self.api.Run("FileClose"))
 
     def quit(self) -> None:
         """Terminate the HWP engine (``FileQuit`` command)."""
@@ -330,12 +237,12 @@ class App:
 
         Useful after DLL reinstall or when the HWP process has exited
         out from under the Python binding. Also invalidates the cached
-        :attr:`doc`.
+        :attr:`docs` collection.
         """
         self._logger.debug(f"reload(new_app={new_app})")
         self._load(new_app=new_app, dll_path=dll_path)
-        # Reset Document cache so `.doc` rebinds to the new engine.
-        self._doc_cache = None
+        # Reset DocumentCollection cache so `.docs` rebinds to the new engine.
+        self._docs_cache = None
 
     # ------------------------------------------------------------------
     # Private helpers

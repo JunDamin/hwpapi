@@ -22,10 +22,11 @@ logger = get_logger("io.export")
 
 
 def _save_as(app: "App", path: str, format: str, label: str) -> str:
-    """Shared body — :meth:`App.save_as` wrapped in a COM-error fence."""
+    """Shared body — v3: ``app.docs.active.save(path, format=...)`` (full
+    document SaveAs) wrapped in a COM-error fence."""
     com_types = _errors._iter_com_error_types()
     try:
-        result = app.save_as(path, format=format)
+        result = app.docs.active.save(path, format=format)
     except com_types as exc:
         raise FileIOError(
             f"{label}({path!r}) failed: {exc!r}"

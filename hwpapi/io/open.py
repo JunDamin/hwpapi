@@ -42,7 +42,10 @@ def open_file(app: "App", path: str, format: Optional[str] = None) -> str:
     """
     com_types = _errors._iter_com_error_types()
     try:
-        return app.open(path, format)
+        # v3: app.docs.open(path) returns a Document; for io.open_file we
+        # only return the resolved path (per existing contract).
+        doc = app.docs.open(path, format=format)
+        return doc.path or str(path)
     except com_types as exc:
         raise FileIOError(
             f"open_file({path!r}, format={format!r}) failed: {exc!r}"
