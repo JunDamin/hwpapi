@@ -101,6 +101,7 @@ website:
           contents:
             - design/adr/adr-001-v2-redesign.qmd
             - design/adr/adr-002-quarto-docs.qmd
+            - design/adr/adr-003-multi-document.qmd
   page-footer:
     left: "hwpapi v2.0 · Python COM wrapper for HWP"
     right:

@@ -890,6 +890,90 @@
     ]
   },
   {
+    "objectID": "design/adr/adr-002-quarto-docs.html",
+    "href": "design/adr/adr-002-quarto-docs.html",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "",
+    "text": "Accepted — 2026-04-18\nImplemented in Phase 6 of the v2 redesign plan.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#mkdocs-material",
+    "href": "design/adr/adr-002-quarto-docs.html#mkdocs-material",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "MkDocs Material",
+    "text": "MkDocs Material\nPro: Python-native, widely deployed, excellent default theme.\nCon: Loses existing Quarto assets (nbs/ content). Worse support for computational pages (nbs/ used Jupyter kernel execution; Quarto preserves that natively).\nRejected on asset-preservation grounds.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#two-sites-in-parallel-nbs-tutorials-docs-reference",
+    "href": "design/adr/adr-002-quarto-docs.html#two-sites-in-parallel-nbs-tutorials-docs-reference",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Two sites in parallel (nbs/ → tutorials, docs/ → reference)",
+    "text": "Two sites in parallel (nbs/ → tutorials, docs/ → reference)\nPro: Minimum migration effort.\nCon: Violates the “single source of truth” principle. Invites the same drift the v1 state showed.\nRejected.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#sphinx-autodoc-sphinx_book_theme",
+    "href": "design/adr/adr-002-quarto-docs.html#sphinx-autodoc-sphinx_book_theme",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Sphinx + autodoc + sphinx_book_theme",
+    "text": "Sphinx + autodoc + sphinx_book_theme\nPro: Mature Python toolchain.\nCon: Markdown-first authoring via myst_parser is still less polished than Quarto’s. Would require replacing Quarto anyway. More moving parts.\nRejected given Quarto’s existing adoption in the repo.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#positive",
+    "href": "design/adr/adr-002-quarto-docs.html#positive",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Positive",
+    "text": "Positive\n\nOne quarto render docs/ produces the entire site.\nquartodoc build regenerates the reference layer from docstrings — the reference cannot drift from the code.\ndocs/recipes/*.qmd can stay readable (Markdown tables, inline code) without executing HWP-dependent code blocks (marked eval: false).\nADRs and architecture notes live alongside user documentation — design/ is just another sidebar section.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#negative",
+    "href": "design/adr/adr-002-quarto-docs.html#negative",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Negative",
+    "text": "Negative\n\nquarto and quartodoc are build-time dependencies for anyone re-rendering the site. Mitigation: pip install -e \".[docs]\" captures both.\nquartodoc has occasional quirks with Protocol classes and cached_property descriptors. Mitigation: explicit contents: listings in _quarto.yml name every page, rather than relying on auto-discovery for core classes.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-002-quarto-docs.html#neutral",
+    "href": "design/adr/adr-002-quarto-docs.html#neutral",
+    "title": "ADR-002: Quarto single-pipeline documentation",
+    "section": "Neutral",
+    "text": "Neutral\n\nUsers no longer get example scripts under examples/ — those now live as recipe pages. nbs/ tutorials similarly consolidate into docs/recipes/. Phase 7 (release) is responsible for the final archival move.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-002: Quarto single-pipeline documentation"
+    ]
+  },
+  {
     "objectID": "design/adr/adr-001-v2-redesign.html",
     "href": "design/adr/adr-001-v2-redesign.html",
     "title": "ADR-001: Two-layer API",
@@ -998,87 +1082,219 @@
     ]
   },
   {
-    "objectID": "design/adr/adr-002-quarto-docs.html",
-    "href": "design/adr/adr-002-quarto-docs.html",
-    "title": "ADR-002: Quarto single-pipeline documentation",
+    "objectID": "design/adr/adr-003-multi-document.html",
+    "href": "design/adr/adr-003-multi-document.html",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
     "section": "",
-    "text": "Accepted — 2026-04-18\nImplemented in Phase 6 of the v2 redesign plan.",
+    "text": "v2.0 의 슬림 facade 는 한 번에 한 문서만 다루는 모델로 출발했습니다. App 이 lifecycle 과 단일 활성 문서 (app.doc) 를 모두 책임지고, 대부분의 작업이 app.open() / app.save() / app.close() 와 같이 App 메소드 로 노출됩니다. 이 모델은 다음과 같은 본질적 한계를 드러냈습니다:\n\n다중 문서 부재. HWP 는 한 프로세스에 여러 문서를 동시에 열 수 있지만 (XHwpDocuments), v2 surface 는 그 collection 을 노출하지 않습니다. app.documents 는 v1 에서 사용되었으나 v2 redesign 시 “Phase 3 으로 연기” 로 표시되며 제거되었습니다 (migration guide 참조). 결과적으로 사용자가 한 번에 두 파일을 비교/병합/복사 하려면 raw COM (app.api.XHwpDocuments) 으로 내려가야 합니다.\nlifecycle 책임의 잘못된 위치. app.save() 는 “어느 문서를?” 가 모호합니다 — 현재는 활성 문서를 저장하지만, 사용자가 문서 A 를 처리하다 background 에서 문서 B 가 활성화되면 의도와 다른 문서가 저장됩니다. 저장/닫기는 문서 단위 작업 이 자연스럽습 니다.\nDocument 메소드가 비어 있음. app.doc 은 7개 collection (fields/bookmarks/hyperlinks/images/paragraphs/styles/tables) 만 가지고 있고, migration 가이드가 약속하는 insert_text / text / cursor / find_text / replace_all 등은 존재하지 않습니다. 사용자가 문서대로 따라 코딩하면 즉시 AttributeError. 이는 단순 누락이 아니라 Document 의 책임 범위가 정해지지 않은 결과 입니다 — App 에서 빼긴 했지만 어디에도 두지 않음.\n테스트 격리 어려움. v2 의 App() 은 resident HWP 인스턴스 에 attach 합니다 — 문서 1개만 열리는 모델이라 테스트 사이의 문서 누적이 잘 안 보였지만, 다중 문서 워크플로우 추가 시 “어느 문서가 활성?” 의 race 가 즉시 드러날 것입니다.",
     "crumbs": [
       "Design",
       "ADRs",
-      "ADR-002: Quarto single-pipeline documentation"
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
     ]
   },
   {
-    "objectID": "design/adr/adr-002-quarto-docs.html#mkdocs-material",
-    "href": "design/adr/adr-002-quarto-docs.html#mkdocs-material",
-    "title": "ADR-002: Quarto single-pipeline documentation",
-    "section": "MkDocs Material",
-    "text": "MkDocs Material\nPro: Python-native, widely deployed, excellent default theme.\nCon: Loses existing Quarto assets (nbs/ content). Worse support for computational pages (nbs/ used Jupyter kernel execution; Quarto preserves that natively).\nRejected on asset-preservation grounds.",
+    "objectID": "design/adr/adr-003-multi-document.html#같은-자원을-두-위치에-노출",
+    "href": "design/adr/adr-003-multi-document.html#같은-자원을-두-위치에-노출",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "같은 자원을 두 위치에 노출",
+    "text": "같은 자원을 두 위치에 노출\n\n\n\n\n\n\n\n\n자원\nApp 레벨 (raw)\nDocument 레벨 (doc-scoped)\n\n\n\n\nactions\napp.actions.X\ndoc.actions.X — run() 직전 doc.activate() 자동\n\n\nparametersets\napp.engine.parametersets (raw 클래스)\ndoc.create_parameterset(...) — auto-activate\n\n\napi (COM 핸들)\napp.api — IHwpObject (process)\ndoc.api — IXHwpDocument (per-doc)\n\n\nengine\napp.engine — Engine 객체\n(그대로 — process 자원)",
     "crumbs": [
       "Design",
       "ADRs",
-      "ADR-002: Quarto single-pipeline documentation"
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
     ]
   },
   {
-    "objectID": "design/adr/adr-002-quarto-docs.html#two-sites-in-parallel-nbs-tutorials-docs-reference",
-    "href": "design/adr/adr-002-quarto-docs.html#two-sites-in-parallel-nbs-tutorials-docs-reference",
-    "title": "ADR-002: Quarto single-pipeline documentation",
-    "section": "Two sites in parallel (nbs/ → tutorials, docs/ → reference)",
-    "text": "Two sites in parallel (nbs/ → tutorials, docs/ → reference)\nPro: Minimum migration effort.\nCon: Violates the “single source of truth” principle. Invites the same drift the v1 state showed.\nRejected.",
+    "objectID": "design/adr/adr-003-multi-document.html#binding-의미",
+    "href": "design/adr/adr-003-multi-document.html#binding-의미",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "binding 의미",
+    "text": "binding 의미\n\n\n\n\n\n\n\n\n진입점\n활성화 책임\n추천 사용처\n\n\n\n\napp.actions.X\n사용자 (doc.activate() 수동)\nescape hatch / 단일 doc\n\n\ndoc.actions.X\n자동 (run 시점)\n일반 사용 / 다중 doc",
     "crumbs": [
       "Design",
       "ADRs",
-      "ADR-002: Quarto single-pipeline documentation"
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
     ]
   },
   {
-    "objectID": "design/adr/adr-002-quarto-docs.html#sphinx-autodoc-sphinx_book_theme",
-    "href": "design/adr/adr-002-quarto-docs.html#sphinx-autodoc-sphinx_book_theme",
-    "title": "ADR-002: Quarto single-pipeline documentation",
-    "section": "Sphinx + autodoc + sphinx_book_theme",
-    "text": "Sphinx + autodoc + sphinx_book_theme\nPro: Mature Python toolchain.\nCon: Markdown-first authoring via myst_parser is still less polished than Quarto’s. Would require replacing Quarto anyway. More moving parts.\nRejected given Quarto’s existing adoption in the repo.",
+    "objectID": "design/adr/adr-003-multi-document.html#구현-얇은-proxy",
+    "href": "design/adr/adr-003-multi-document.html#구현-얇은-proxy",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "구현 — 얇은 proxy",
+    "text": "구현 — 얇은 proxy\nclass _DocActions:\n    \"\"\"Document-scoped actions proxy.\"\"\"\n    def __init__(self, doc):\n        self._doc = doc\n        self._app = doc._app\n\n    def __getattr__(self, name):\n        action = getattr(self._app.actions, name)\n        return _ScopedAction(action, self._doc)\n\n\nclass _ScopedAction:\n    def __init__(self, action, doc):\n        self._action = action\n        self._doc = doc\n\n    @property\n    def pset(self):\n        return self._action.pset\n\n    def run(self, *a, **kw):\n        self._doc.activate()              # 핵심\n        return self._action.run(*a, **kw)\n\n\nclass Document:\n    @property\n    def actions(self):\n        return _DocActions(self)",
     "crumbs": [
       "Design",
       "ADRs",
-      "ADR-002: Quarto single-pipeline documentation"
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
     ]
   },
   {
-    "objectID": "design/adr/adr-002-quarto-docs.html#positive",
-    "href": "design/adr/adr-002-quarto-docs.html#positive",
-    "title": "ADR-002: Quarto single-pipeline documentation",
-    "section": "Positive",
-    "text": "Positive\n\nOne quarto render docs/ produces the entire site.\nquartodoc build regenerates the reference layer from docstrings — the reference cannot drift from the code.\ndocs/recipes/*.qmd can stay readable (Markdown tables, inline code) without executing HWP-dependent code blocks (marked eval: false).\nADRs and architecture notes live alongside user documentation — design/ is just another sidebar section.",
+    "objectID": "design/adr/adr-003-multi-document.html#사용자-멘탈-모델",
+    "href": "design/adr/adr-003-multi-document.html#사용자-멘탈-모델",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "사용자 멘탈 모델",
+    "text": "사용자 멘탈 모델\ndoc.actions.X.run()    →  \"doc 에 X 적용\" (안전)\napp.actions.X.run()    →  \"현재 활성 doc 에 X 적용 (사용자 책임)\"\nxlwings 의 book.api vs app.api 와 의미 동일.",
     "crumbs": [
       "Design",
       "ADRs",
-      "ADR-002: Quarto single-pipeline documentation"
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
     ]
   },
   {
-    "objectID": "design/adr/adr-002-quarto-docs.html#negative",
-    "href": "design/adr/adr-002-quarto-docs.html#negative",
-    "title": "ADR-002: Quarto single-pipeline documentation",
-    "section": "Negative",
-    "text": "Negative\n\nquarto and quartodoc are build-time dependencies for anyone re-rendering the site. Mitigation: pip install -e \".[docs]\" captures both.\nquartodoc has occasional quirks with Protocol classes and cached_property descriptors. Mitigation: explicit contents: listings in _quarto.yml name every page, rather than relying on auto-discovery for core classes.",
+    "objectID": "design/adr/adr-003-multi-document.html#오버헤드",
+    "href": "design/adr/adr-003-multi-document.html#오버헤드",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "오버헤드",
+    "text": "오버헤드\nDocument.activate() = COM 호출 1 회 (~µs). 단일 doc 일 땐 noop (이미 활성). 다중 doc 일 때만 실질 비용 발생, 이마저도 사용자가 연속해서 같은 doc 을 다루는 경우 캐싱으로 0 으로 축소 가능.",
     "crumbs": [
       "Design",
       "ADRs",
-      "ADR-002: Quarto single-pipeline documentation"
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
     ]
   },
   {
-    "objectID": "design/adr/adr-002-quarto-docs.html#neutral",
-    "href": "design/adr/adr-002-quarto-docs.html#neutral",
-    "title": "ADR-002: Quarto single-pipeline documentation",
-    "section": "Neutral",
-    "text": "Neutral\n\nUsers no longer get example scripts under examples/ — those now live as recipe pages. nbs/ tutorials similarly consolidate into docs/recipes/. Phase 7 (release) is responsible for the final archival move.",
+    "objectID": "design/adr/adr-003-multi-document.html#단일-문서-v2-와-거의-동일",
+    "href": "design/adr/adr-003-multi-document.html#단일-문서-v2-와-거의-동일",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "단일 문서 — v2 와 거의 동일",
+    "text": "단일 문서 — v2 와 거의 동일\nfrom hwpapi import App\n\nwith App() as app:\n    doc = app.docs.open(\"report.hwp\")\n    doc.insert_text(\"새 줄\\n\")\n    doc.save()\n    doc.close()",
     "crumbs": [
       "Design",
       "ADRs",
-      "ADR-002: Quarto single-pipeline documentation"
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#두-문서를-동시에-다루기-현재-불가능했던-것",
+    "href": "design/adr/adr-003-multi-document.html#두-문서를-동시에-다루기-현재-불가능했던-것",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "두 문서를 동시에 다루기 (현재 불가능했던 것)",
+    "text": "두 문서를 동시에 다루기 (현재 불가능했던 것)\nfrom hwpapi import App\n\nwith App() as app:\n    src = app.docs.open(\"source.hwp\")\n    dst = app.docs.add()                    # 빈 새 문서\n\n    for para in src.paragraphs:\n        dst.insert_text(para.text + \"\\n\")\n\n    dst.save_as(\"merged.hwp\")\n    src.close(save=False)                   # 원본은 그대로\n    dst.close()",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#일괄-변환-한-app-에서-n개-파일",
+    "href": "design/adr/adr-003-multi-document.html#일괄-변환-한-app-에서-n개-파일",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "일괄 변환 — 한 App 에서 N개 파일",
+    "text": "일괄 변환 — 한 App 에서 N개 파일\nfrom hwpapi import App\nfrom pathlib import Path\n\nwith App() as app:\n    for hwp in Path(\"inbox\").glob(\"*.hwp\"):\n        doc = app.docs.open(hwp)\n        doc.save_as(hwp.with_suffix(\".pdf\"))\n        doc.close()                         # 메모리 해제, 다음 파일로",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#활성-문서-전환",
+    "href": "design/adr/adr-003-multi-document.html#활성-문서-전환",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "활성 문서 전환",
+    "text": "활성 문서 전환\ndocs = app.docs                              # collection\nprint(len(docs))                             # 열린 문서 개수\nfor d in docs:\n    print(d.name)\ndocs[0].activate()                           # 첫 문서를 forefront 로",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#phase-0-명세-동결",
+    "href": "design/adr/adr-003-multi-document.html#phase-0-명세-동결",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "Phase 0 — 명세 동결",
+    "text": "Phase 0 — 명세 동결\n이 ADR 채택 후 v2.x 라인은 frozen. v2 사용자는 hwpapi==2.* pin. v3 (또는 v2.1) 은 새 minor 로 출시.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#phase-1-documents-collection-신설",
+    "href": "design/adr/adr-003-multi-document.html#phase-1-documents-collection-신설",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "Phase 1 — Documents collection 신설",
+    "text": "Phase 1 — Documents collection 신설\n\nhwpapi.collections.documents.DocumentCollection 작성\nApp 에 app.docs property 추가, app.doc 은 app.docs.active 로 내부 alias (v2.x 호환 임시).\napp.docs.open(path) 가 Document 인스턴스를 반환 (현재는 Document 가 빈 facade 라도 collection 만 일단 노출).",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#phase-2-document-에-메소드-이식",
+    "href": "design/adr/adr-003-multi-document.html#phase-2-document-에-메소드-이식",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "Phase 2 — Document 에 메소드 이식",
+    "text": "Phase 2 — Document 에 메소드 이식\n\nApp.open/save/save_as/close → Document.open/save/save_as/close 로 이동. App 메소드는 일단 deprecation shim 으로 남겨 active doc 으로 위임 (app.save() → app.docs.active.save()).\ntext I/O — insert_text, find_text, replace_all, select_all, get_selected_text, text (property), clear 를 Document 에 신설. 내부 구현은 raw actions.InsertText 등을 사용.\ncursor — Document.cursor.goto_page(...), move_to_field, in_table 등.\n7 개 collection accessor 는 그대로 (이미 Document 에 있음).",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#phase-3-app-의-lifecycle-정리",
+    "href": "design/adr/adr-003-multi-document.html#phase-3-app-의-lifecycle-정리",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "Phase 3 — App 의 lifecycle 정리",
+    "text": "Phase 3 — App 의 lifecycle 정리\n\nApp 에 남는 메소드: quit, visible, version, docs, engine, api. 그 외는 deprecated → v3.1 에서 제거.\nApp() __enter__/__exit__ 가 quit() 만 책임. 열린 문서는 자동 닫지 않음 (사용자가 명시적으로 close 또는 with-Document 사용).",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#phase-4-document-의-context-manager",
+    "href": "design/adr/adr-003-multi-document.html#phase-4-document-의-context-manager",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "Phase 4 — Document 의 context manager",
+    "text": "Phase 4 — Document 의 context manager\nwith app.docs.open(\"a.hwp\") as doc:\n    doc.insert_text(\"...\")\n    # exit 시 자동 close (저장 여부는 docs.open(..., save_on_close=) 로 제어)",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#phase-5-호환-shim-제거",
+    "href": "design/adr/adr-003-multi-document.html#phase-5-호환-shim-제거",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "Phase 5 — 호환 shim 제거",
+    "text": "Phase 5 — 호환 shim 제거\napp.open/save/close/doc 등 v2 호환 alias 를 제거하고 v3.0 stable release. v2 사용자는 migration 가이드 (이 ADR 의 부록) 따라 마이그레 이션.",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#긍정",
+    "href": "design/adr/adr-003-multi-document.html#긍정",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "긍정",
+    "text": "긍정\n\n다중 문서 워크플로우 가능 — 일괄 변환, 병합, 비교 등\n저장/닫기 의도 명확 — doc.save() 는 “이 문서” 가 명확\nDocument 책임 범위 명확 — 7 collection + text I/O + cursor + save/close. App 은 process lifecycle 만.\nxlwings 사용자 친숙 — Python 데이터 분석가에게 mental model 동일\n테스트 격리 깔끔 — 각 테스트가 자기 Document 를 명시적으로 소유, race 없음",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
+    ]
+  },
+  {
+    "objectID": "design/adr/adr-003-multi-document.html#부정-위험",
+    "href": "design/adr/adr-003-multi-document.html#부정-위험",
+    "title": "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document",
+    "section": "부정 / 위험",
+    "text": "부정 / 위험\n\nAPI 표면이 커짐 — Document 가 v2 의 거의 모든 App 메소드를 흡수. 슬림 facade 정신은 일부 후퇴 (다만 슬림한 것은 App 만).\nwin32com 의 active doc 추적과의 충돌 가능성 — HWP COM 은 명시적인 doc 핸들 전달이 일관되지 않음 (HAction.Run 은 항상 활성 문서 대상). 이 부분은 Document.activate() 를 모든 doc-scoped 메소 드 시작 시 자동 호출하는 방식으로 우회 (xlwings 도 동일 패턴).\n마이그레이션 비용 — v2 사용자에게 두 번째 breaking change (v1→v2→v3). 이 비용을 줄이려고 v3.0 에 deprecation shim 포함.\nHWP 의 다중 문서 지원이 완전하지 않을 수 있음 — XHwpDocuments 자체는 있지만 일부 action 은 활성 문서에만 적용됨. Document.api 를 통한 per-doc COM 호출이 가능한지 검증 필요 (Phase 1 spike).",
+    "crumbs": [
+      "Design",
+      "ADRs",
+      "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
     ]
   },
   {
