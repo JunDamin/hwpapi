@@ -21,6 +21,8 @@ pip install hwpapi
 ```
 :::
 
+![샘플 출력 — `tests/generate_v2_doc_artifacts.py` 가 실제 HWP 를 구동해 생성](../_assets/img/v2/quickstart_overview.png){fig-align="center" width="70%"}
+
 ## 5분 둘러보기
 
 ```{python}
