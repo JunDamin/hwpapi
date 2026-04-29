@@ -211,6 +211,20 @@ class App:
         return self._doc_cache
 
     @property
+    def docs(self):
+        """
+        v3 :class:`~hwpapi.collections.documents.DocumentCollection` —
+        다중 문서 surface. ``app.docs.open(path)`` / ``add()`` / ``active`` /
+        index/name 접근을 제공.
+
+        ADR-003 의 xlwings 모델 — App 은 lifecycle, 문서 작업은 Document.
+        """
+        if not hasattr(self, "_docs_cache") or self._docs_cache is None:
+            from hwpapi.collections.documents import DocumentCollection
+            self._docs_cache = DocumentCollection(self)
+        return self._docs_cache
+
+    @property
     def visible(self) -> bool:
         """HWP main-window visibility — read/write."""
         try:
