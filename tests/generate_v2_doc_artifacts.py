@@ -1,8 +1,13 @@
 """
 Generate v2 docs screenshots — REAL HWP → PDF → cropped PNG.
 
-각 데모는 v2 API (App + context.scopes + actions) 만 사용.
-모든 데모를 단일 HWP 세션에서 실행 (FileClose + FileNew 사이로 분리).
+각 데모는 별도의 Python subprocess (= 별도 HWP 세션) 에서 실행됩니다.
+한 데모가 끝나면 그 프로세스가 종료되면서 HWP 도 깔끔히 내려가고,
+다음 데모는 새 HWP 를 띄웁니다 — 메모리/문서 누적 없이 격리.
+
+각 워커는 시작 직후 SetMessageBoxMode(0x00111111) 로 모든 대화상자에
+"예" 를 자동 응답하도록 설정한 뒤 데모 실행. (이 호출이 실패하면
+명시적으로 RuntimeError 를 던져 조용한 실패를 막음.)
 
 산출물: docs/_assets/img/v2/<demo_name>.png
 qmd 페이지에서 ![](../_assets/img/v2/<name>.png) 으로 참조.
@@ -23,8 +28,8 @@ IMG_DIR = os.path.join(ROOT, "docs", "_assets", "img", "v2")
 os.makedirs(IMG_DIR, exist_ok=True)
 
 
-# ── v2 API 데모 (각 문자열은 별도 HWP 문서에서 실행) ────────────
-# 사용 가능한 helper:
+# ── v2 API 데모 (각 문자열은 독립 HWP 세션에서 실행) ────────────
+# 워커가 노출하는 helper:
 #   insert(text)             - 일반 텍스트 삽입 ("\n" → BreakPara)
 #   styled(text, **fmt)      - ctx.styled_text 단축
 #   block(**fmt) as ctx_mgr  - ctx.charshape_scope 단축
@@ -172,30 +177,44 @@ insert("실무에선 Excel/CSV 데이터를 dict 로 읽어 같은 패턴으로 
 """
 
 
-# ── 워커 (subprocess 가 실행할 코드) ────────────────────────
+# ── 워커 (subprocess 가 데모 하나당 1회 실행) ────────────────
+# argv[1] = demo code 파일, argv[2] = 출력 PNG 경로
 WORKER = r'''
-import sys, json, os, tempfile, time
+import sys, os, tempfile, time
 import fitz  # PyMuPDF
-from contextlib import contextmanager
+
+demo_code_path = sys.argv[1]
+out_png = sys.argv[2]
+with open(demo_code_path, "r", encoding="utf-8") as f:
+    demo_code = f.read()
+
 from hwpapi import App, units as U
 from hwpapi.context import scopes as ctx
 
-with open(sys.argv[1], "r", encoding="utf-8") as f:
-    demos = json.load(f)
-out_dir = sys.argv[2]
-
 app = App(is_visible=False)
-time.sleep(0.5)
+time.sleep(0.4)
 
-# Silence dialogs (Save? prompts)
+# CRITICAL: 모든 message box 를 자동 Yes 로 — 실패 시 즉시 raise.
+# (FileClose 의 "저장하시겠습니까?" / FileNew 의 보안 경고 등이
+#  blocking 되면 테스트가 멈춘다.)
+SILENCE_ALL_YES = 0x00111111
 try:
-    app.engine.api.SetMessageBoxMode(0x00111111)
+    rc = app.api.SetMessageBoxMode(SILENCE_ALL_YES)
+    if rc is False:
+        raise RuntimeError("SetMessageBoxMode returned False")
+except Exception as e:
+    raise RuntimeError(f"SetMessageBoxMode 실패 — 대화상자 자동응답 불가: {e}") from e
+
+# 새 빈 문서 한 개만 열린 상태.
+try:
+    app.api.Run("FileNew")
 except Exception:
     pass
+time.sleep(0.4)
 
 
 def insert(text):
-    """일반 텍스트 삽입 — \\n 은 BreakPara 로 변환."""
+    """일반 텍스트 — \\n 은 BreakPara 로 변환."""
     parts = text.split("\n")
     for i, part in enumerate(parts):
         if part:
@@ -207,119 +226,131 @@ def insert(text):
 
 
 def styled(text, **fmt):
-    """ctx.styled_text 단축 — \\n 분리는 사용하지 않음."""
     ctx.styled_text(app, text, **fmt)
 
 
 def block(**fmt):
-    """ctx.charshape_scope 단축."""
     return ctx.charshape_scope(app, **fmt)
 
 
-results = {}
-for name, code in demos.items():
-    print(f"[{name}] running...")
-    try:
-        # Fresh document
-        try:
-            app.api.Run("FileClose")
-        except Exception:
-            pass
-        try:
-            app.api.Run("FileNew")
-        except Exception:
-            pass
-        time.sleep(0.4)
+# 데모 실행
+exec(
+    compile(demo_code, "<demo>", "exec"),
+    {
+        "app": app, "ctx": ctx, "U": U,
+        "insert": insert, "styled": styled, "block": block,
+        "__builtins__": __builtins__,
+    },
+)
+time.sleep(0.5)
 
-        exec(
-            compile(code, "<" + name + ">", "exec"),
-            {
-                "app": app, "ctx": ctx, "U": U,
-                "insert": insert, "styled": styled, "block": block,
-                "__builtins__": __builtins__,
-            },
-        )
-        time.sleep(0.5)
+# PDF 저장
+with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+    pdf_path = tmp.name
+app.save(pdf_path)
+time.sleep(0.7)
 
-        # Save as PDF — use app.save(path) which is full-document SaveAs;
-        # app.save_as is the v1 save_block (selection only).
-        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-            pdf_path = tmp.name
-        app.save(pdf_path)
-        time.sleep(0.7)
+# 문서 닫기 — v2 facade 의 close() 사용. SetMessageBoxMode 로
+# "저장하시겠습니까?" 등 native HWP 다이얼로그는 자동 Yes 응답.
+try:
+    app.close()
+except Exception:
+    pass
+time.sleep(0.2)
 
-        if os.path.isfile(pdf_path) and os.path.getsize(pdf_path) > 500:
-            out_png = os.path.join(out_dir, name + ".png")
-            with fitz.open(pdf_path) as pdf:
-                page = pdf[0]
-                pix = page.get_pixmap(matrix=fitz.Matrix(2.0, 2.0), alpha=False)
-                pix.save(out_png)
-            try: os.remove(pdf_path)
-            except Exception: pass
+# PDF → cropped PNG
+size = os.path.getsize(pdf_path) if os.path.isfile(pdf_path) else 0
+if size <= 500:
+    print(f"FAIL pdf size={size}")
+    sys.exit(2)
 
-            # Auto-crop trailing whitespace
-            try:
-                from PIL import Image, ImageChops
-                img = Image.open(out_png)
-                bg = Image.new(img.mode, img.size, (255, 255, 255))
-                diff = ImageChops.difference(img, bg)
-                bbox = diff.getbbox()
-                if bbox:
-                    L, T, R, B = bbox
-                    pad = 40
-                    L = max(0, L - pad); T = max(0, T - pad)
-                    R = min(img.width, R + pad); B = min(img.height, B + pad)
-                    img.crop((L, T, R, B)).save(out_png)
-            except Exception as e:
-                print(f"  crop skipped: {e}")
-            results[name] = "OK"
-            print(f"  -> {out_png}")
-        else:
-            results[name] = "PDF empty"
-    except Exception as e:
-        results[name] = f"ERR {type(e).__name__}: {e}"
-        print(f"  ERROR: {e}")
+with fitz.open(pdf_path) as pdf:
+    page = pdf[0]
+    pix = page.get_pixmap(matrix=fitz.Matrix(2.0, 2.0), alpha=False)
+    pix.save(out_png)
+try:
+    os.remove(pdf_path)
+except OSError:
+    pass
 
-# Cleanup — try multiple paths since v2 surface is slim
-for cmd in ("FileClose", "FileQuit"):
-    try:
-        app.api.Run(cmd)
-    except Exception:
-        pass
+# 빈 여백 trim
+try:
+    from PIL import Image, ImageChops
+    img = Image.open(out_png)
+    bg = Image.new(img.mode, img.size, (255, 255, 255))
+    diff = ImageChops.difference(img, bg)
+    bbox = diff.getbbox()
+    if bbox:
+        L, T, R, B = bbox
+        pad = 40
+        L = max(0, L - pad); T = max(0, T - pad)
+        R = min(img.width, R + pad); B = min(img.height, B + pad)
+        img.crop((L, T, R, B)).save(out_png)
+except Exception as e:
+    print(f"  crop skipped: {e}")
 
-print("\n=== Results ===")
-for n, r in results.items():
-    print(f"  {n:30s} {r}")
+# HWP 명시 종료는 의도적으로 생략.
+# - is_visible=False 상태에서 FileQuit 를 호출하면 HWP 내부 WPF 가
+#   "창을 닫는 중에는 ... 호출할 수 없습니다" 에러 다이얼로그를 띄우는데,
+#   이 다이얼로그는 SetMessageBoxMode 로도 안 잡힘 (.NET 레벨).
+# - 대신 subprocess 가 종료되면서 COM proxy 가 release 되고,
+#   HWP 의 child process 도 따라 정리됨.
+print(f"OK {out_png}")
 '''
 
 
 def main() -> int:
-    print(f"Output dir: {IMG_DIR}\n")
-    with tempfile.NamedTemporaryFile(
-        suffix=".json", delete=False, mode="w", encoding="utf-8"
-    ) as f:
-        json.dump(DEMOS, f, ensure_ascii=False)
-        demos_path = f.name
+    print(f"Output dir: {IMG_DIR}")
+    print(f"Total demos: {len(DEMOS)}\n")
+
     with tempfile.NamedTemporaryFile(
         suffix=".py", delete=False, mode="w", encoding="utf-8"
     ) as f:
         f.write(WORKER)
         worker_path = f.name
 
+    results = {}
     try:
-        rc = subprocess.call(
-            [sys.executable, worker_path, demos_path, IMG_DIR],
-            cwd=ROOT,
-        )
-    finally:
-        for p in (demos_path, worker_path):
+        for i, (name, code) in enumerate(DEMOS.items(), 1):
+            print(f"[{i}/{len(DEMOS)}] {name} — fresh HWP session")
+            with tempfile.NamedTemporaryFile(
+                suffix=".py", delete=False, mode="w", encoding="utf-8"
+            ) as f:
+                f.write(code)
+                code_path = f.name
+            out_png = os.path.join(IMG_DIR, name + ".png")
             try:
-                os.remove(p)
-            except OSError:
-                pass
+                rc = subprocess.call(
+                    [sys.executable, worker_path, code_path, out_png],
+                    cwd=ROOT,
+                    timeout=120,
+                )
+                results[name] = "OK" if rc == 0 else f"exit={rc}"
+            except subprocess.TimeoutExpired:
+                results[name] = "TIMEOUT"
+            except Exception as e:
+                results[name] = f"ERR {type(e).__name__}: {e}"
+            finally:
+                try:
+                    os.remove(code_path)
+                except OSError:
+                    pass
+    finally:
+        try:
+            os.remove(worker_path)
+        except OSError:
+            pass
 
-    print(f"\nImages: {IMG_DIR}")
-    return rc
+    print("\n=== Results ===")
+    bad = 0
+    for n, r in results.items():
+        marker = "✓" if r == "OK" else "✗"
+        print(f"  {marker} {n:30s} {r}")
+        if r != "OK":
+            bad += 1
+    print(f"\n{len(results) - bad}/{len(results)} OK")
+    print(f"Images: {IMG_DIR}")
+    return 0 if bad == 0 else 1
 
 
 if __name__ == "__main__":
