@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2026-04-29">
 
-<title>ADR-002: Quarto single-pipeline documentation – hwpapi</title>
+<title>ADR-004: Element-level API — Run / Paragraph / Cell / Section – hwpapi</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -23,6 +24,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -32,8 +68,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
-<link href="../../design/adr/adr-003-multi-document.html" rel="next">
-<link href="../../design/adr/adr-001-v2-redesign.html" rel="prev">
+<link href="../../design/adr/adr-003-multi-document.html" rel="prev">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
@@ -310,7 +345,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../design/adr/adr-001-v2-redesign.html">ADRs</a></li><li class="breadcrumb-item"><a href="../../design/adr/adr-002-quarto-docs.html">ADR-002: Quarto single-pipeline documentation</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../design/adr/adr-001-v2-redesign.html">ADRs</a></li><li class="breadcrumb-item"><a href="../../design/adr/adr-004-element-api.html">ADR-004: Element-level API — Run / Paragraph / Cell / Section</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -351,7 +386,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../design/adr/adr-002-quarto-docs.html" class="sidebar-item-text sidebar-link active">
+  <a href="../../design/adr/adr-002-quarto-docs.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">ADR-002: Quarto single-pipeline documentation</span></a>
   </div>
 </li>
@@ -363,7 +398,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../design/adr/adr-004-element-api.html" class="sidebar-item-text sidebar-link">
+  <a href="../../design/adr/adr-004-element-api.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">ADR-004: Element-level API — Run / Paragraph / Cell / Section</span></a>
   </div>
 </li>
@@ -379,36 +414,45 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#status" id="toc-status" class="nav-link active" data-scroll-target="#status">Status</a></li>
-  <li><a href="#context" id="toc-context" class="nav-link" data-scroll-target="#context">Context</a></li>
-  <li><a href="#decision" id="toc-decision" class="nav-link" data-scroll-target="#decision">Decision</a></li>
-  <li><a href="#decision-drivers" id="toc-decision-drivers" class="nav-link" data-scroll-target="#decision-drivers">Decision drivers</a></li>
-  <li><a href="#alternatives-considered" id="toc-alternatives-considered" class="nav-link" data-scroll-target="#alternatives-considered">Alternatives considered</a>
+  <li><a href="#맥락-context" id="toc-맥락-context" class="nav-link active" data-scroll-target="#맥락-context">맥락 (Context)</a></li>
+  <li><a href="#결정-decision" id="toc-결정-decision" class="nav-link" data-scroll-target="#결정-decision">결정 (Decision)</a>
   <ul class="collapse">
-  <li><a href="#mkdocs-material" id="toc-mkdocs-material" class="nav-link" data-scroll-target="#mkdocs-material">MkDocs Material</a></li>
-  <li><a href="#two-sites-in-parallel-nbs-tutorials-docs-reference" id="toc-two-sites-in-parallel-nbs-tutorials-docs-reference" class="nav-link" data-scroll-target="#two-sites-in-parallel-nbs-tutorials-docs-reference">Two sites in parallel (nbs/ → tutorials, docs/ → reference)</a></li>
-  <li><a href="#sphinx-autodoc-sphinx_book_theme" id="toc-sphinx-autodoc-sphinx_book_theme" class="nav-link" data-scroll-target="#sphinx-autodoc-sphinx_book_theme">Sphinx + autodoc + sphinx_book_theme</a></li>
+  <li><a href="#element-매트릭스" id="toc-element-매트릭스" class="nav-link" data-scroll-target="#element-매트릭스">Element 매트릭스</a></li>
+  <li><a href="#표면-각-element-의-핵심-surface" id="toc-표면-각-element-의-핵심-surface" class="nav-link" data-scroll-target="#표면-각-element-의-핵심-surface">표면 (각 element 의 핵심 surface)</a></li>
+  <li><a href="#doc-activate-패턴-적용" id="toc-doc-activate-패턴-적용" class="nav-link" data-scroll-target="#doc-activate-패턴-적용">doc-activate 패턴 적용</a></li>
+  <li><a href="#charshape-parashape-기존-parameterset-재사용" id="toc-charshape-parashape-기존-parameterset-재사용" class="nav-link" data-scroll-target="#charshape-parashape-기존-parameterset-재사용">CharShape / ParaShape — 기존 ParameterSet 재사용</a></li>
+  <li><a href="#사용자-멘탈-모델" id="toc-사용자-멘탈-모델" class="nav-link" data-scroll-target="#사용자-멘탈-모델">사용자 멘탈 모델</a></li>
   </ul></li>
-  <li><a href="#consequences" id="toc-consequences" class="nav-link" data-scroll-target="#consequences">Consequences</a>
+  <li><a href="#마이그레이션-phases" id="toc-마이그레이션-phases" class="nav-link" data-scroll-target="#마이그레이션-phases">마이그레이션 (Phases)</a>
   <ul class="collapse">
-  <li><a href="#positive" id="toc-positive" class="nav-link" data-scroll-target="#positive">Positive</a></li>
-  <li><a href="#negative" id="toc-negative" class="nav-link" data-scroll-target="#negative">Negative</a></li>
-  <li><a href="#neutral" id="toc-neutral" class="nav-link" data-scroll-target="#neutral">Neutral</a></li>
+  <li><a href="#phase-1-paragraph-run" id="toc-phase-1-paragraph-run" class="nav-link" data-scroll-target="#phase-1-paragraph-run">Phase 1 — Paragraph + Run</a></li>
+  <li><a href="#phase-2-table-cell" id="toc-phase-2-table-cell" class="nav-link" data-scroll-target="#phase-2-table-cell">Phase 2 — Table + Cell</a></li>
+  <li><a href="#phase-3-runcollection-iter_cells" id="toc-phase-3-runcollection-iter_cells" class="nav-link" data-scroll-target="#phase-3-runcollection-iter_cells">Phase 3 — RunCollection + iter_cells</a></li>
+  <li><a href="#phase-4-section-보류" id="toc-phase-4-section-보류" class="nav-link" data-scroll-target="#phase-4-section-보류">Phase 4 — Section (보류)</a></li>
   </ul></li>
-  <li><a href="#implementation-notes" id="toc-implementation-notes" class="nav-link" data-scroll-target="#implementation-notes">Implementation notes</a></li>
-  <li><a href="#follow-ups" id="toc-follow-ups" class="nav-link" data-scroll-target="#follow-ups">Follow-ups</a></li>
-  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  <li><a href="#사용-예" id="toc-사용-예" class="nav-link" data-scroll-target="#사용-예">사용 예</a>
+  <ul class="collapse">
+  <li><a href="#단락-run" id="toc-단락-run" class="nav-link" data-scroll-target="#단락-run">단락 / Run</a></li>
+  <li><a href="#table-cell" id="toc-table-cell" class="nav-link" data-scroll-target="#table-cell">Table / Cell</a></li>
+  <li><a href="#다중-문서-element" id="toc-다중-문서-element" class="nav-link" data-scroll-target="#다중-문서-element">다중 문서 + element</a></li>
+  </ul></li>
+  <li><a href="#결과-consequences" id="toc-결과-consequences" class="nav-link" data-scroll-target="#결과-consequences">결과 (Consequences)</a>
+  <ul class="collapse">
+  <li><a href="#긍정" id="toc-긍정" class="nav-link" data-scroll-target="#긍정">긍정</a></li>
+  <li><a href="#부정-위험" id="toc-부정-위험" class="nav-link" data-scroll-target="#부정-위험">부정 / 위험</a></li>
+  </ul></li>
+  <li><a href="#미해결-질문-open-questions" id="toc-미해결-질문-open-questions" class="nav-link" data-scroll-target="#미해결-질문-open-questions">미해결 질문 (Open questions)</a></li>
+  <li><a href="#참고" id="toc-참고" class="nav-link" data-scroll-target="#참고">참고</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/design/adr/adr-002-quarto-docs.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/design/adr/adr-004-element-api.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../design/adr/adr-001-v2-redesign.html">ADRs</a></li><li class="breadcrumb-item"><a href="../../design/adr/adr-002-quarto-docs.html">ADR-002: Quarto single-pipeline documentation</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../design/adr/adr-001-v2-redesign.html">ADRs</a></li><li class="breadcrumb-item"><a href="../../design/adr/adr-004-element-api.html">ADR-004: Element-level API — Run / Paragraph / Cell / Section</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">ADR-002: Quarto single-pipeline documentation</h1>
-<p class="subtitle lead">docs/ is the one source of truth</p>
+<h1 class="title">ADR-004: Element-level API — Run / Paragraph / Cell / Section</h1>
 </div>
 
 
@@ -416,6 +460,12 @@ ul.task-list li input[type="checkbox"] {
 <div class="quarto-title-meta">
 
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 29, 2026</p>
+    </div>
+  </div>
   
     
   </div>
@@ -425,125 +475,292 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="status" class="level1">
-<h1>Status</h1>
-<p><strong>Accepted</strong> — 2026-04-18</p>
-<p>Implemented in Phase 6 of the v2 redesign plan.</p>
+<section id="맥락-context" class="level1">
+<h1>맥락 (Context)</h1>
+<p>v3 의 <a href="../../design/adr/adr-003-multi-document.html">ADR-003</a> 으로 다중 문서가 깔끔히 정착했고, 각 <code>Document</code> 에 7개 컬렉션 (<code>fields</code>, <code>bookmarks</code>, <code>hyperlinks</code>, <code>images</code>, <code>paragraphs</code>, <code>styles</code>, <code>tables</code>) 이 자리잡았 습니다. 그러나 컬렉션이 반환하는 <strong>개별 element</strong> 들은 여전히 빈약합니다:</p>
+<ul>
+<li><code>doc.paragraphs[0]</code> → <code>Paragraph</code> — 현재 <code>text</code>, <code>index</code> 정도만</li>
+<li><code>doc.tables[0]</code> → <code>Table</code> — <code>cell(r, c)</code> 정도만</li>
+<li><code>doc.tables[0].cell(1, 1)</code> → <code>Cell</code> — <code>text</code>, <code>border</code>, <code>fill</code> setter 가 약속만 있음 (migration v1→v2 가이드 참조)</li>
+<li><code>Run</code> (글자 단위 형식 단위) 클래스 자체가 없음</li>
+</ul>
+<p>결과적으로 사용자가 “이 단락의 정렬을 바꾸고 글자 색만 바꾸고 싶다” 같은 작업을 할 때 여전히 <code>doc.actions.X.run()</code> raw 로 내려가야 합니다. v3 의 <code>doc.X</code> 일관성이 element 레벨에서 깨지는 셈입니다.</p>
+<p>xlwings 와 비교:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># xlwings — element 까지 풀 API</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>sheet.<span class="bu">range</span>(<span class="st">"A1:B5"</span>).value <span class="op">=</span> [[<span class="dv">1</span>,<span class="dv">2</span>],[<span class="dv">3</span>,<span class="dv">4</span>]]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>sheet.<span class="bu">range</span>(<span class="st">"A1"</span>).color <span class="op">=</span> (<span class="dv">255</span>, <span class="dv">200</span>, <span class="dv">200</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>sheet.<span class="bu">range</span>(<span class="st">"A1"</span>).font.bold <span class="op">=</span> <span class="va">True</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>hwpapi 가 도달해야 할 비슷한 수준:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 목표 (v3.x — 이 ADR)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>para <span class="op">=</span> doc.paragraphs[<span class="dv">0</span>]</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>para.text <span class="op">=</span> <span class="st">"새 본문"</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>para.parashape.align <span class="op">=</span> <span class="st">"center"</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> run <span class="kw">in</span> para.runs:</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    run.charshape.bold <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>cell <span class="op">=</span> doc.tables[<span class="dv">0</span>].cell(<span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>cell.text <span class="op">=</span> <span class="st">"Q1"</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>cell.fill <span class="op">=</span> <span class="st">"#FFE0E0"</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>cell.border <span class="op">=</span> {<span class="st">"top"</span>: <span class="st">"double"</span>, <span class="st">"bottom"</span>: <span class="st">"solid"</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="context" class="level1">
-<h1>Context</h1>
-<p>v1 of hwpapi produced documentation from three parallel sources:</p>
+<section id="결정-decision" class="level1">
+<h1>결정 (Decision)</h1>
+<p><strong>4 종 element 클래스를 정식 정의</strong> + <strong>각자 자기 책임 범위 명확화</strong>. 모든 element 는 ADR-003 의 doc-activate 패턴을 그대로 따름 — element 의 메소드 진입 시 owning doc 자동 활성화.</p>
+<section id="element-매트릭스" class="level2">
+<h2 class="anchored" data-anchor-id="element-매트릭스">Element 매트릭스</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Element</th>
+<th>컬렉션 진입</th>
+<th>책임</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Paragraph</code></td>
+<td><code>doc.paragraphs[i]</code></td>
+<td>단락 텍스트, ParaShape, runs 컬렉션</td>
+</tr>
+<tr class="even">
+<td><code>Run</code></td>
+<td><code>paragraph.runs[i]</code></td>
+<td>한 글자형식 구간의 text, CharShape</td>
+</tr>
+<tr class="odd">
+<td><code>Table</code></td>
+<td><code>doc.tables[i]</code></td>
+<td>rows/cols, cell(r,c), 표 단위 BorderFill</td>
+</tr>
+<tr class="even">
+<td><code>Cell</code></td>
+<td><code>table.cell(r, c)</code></td>
+<td>text, fill, border, charshape, parashape</td>
+</tr>
+<tr class="odd">
+<td><code>Section</code> (보류)</td>
+<td><code>doc.sections[i]</code></td>
+<td>페이지 설정, 머리말/꼬리말 (v3.1)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="표면-각-element-의-핵심-surface" class="level2">
+<h2 class="anchored" data-anchor-id="표면-각-element-의-핵심-surface">표면 (각 element 의 핵심 surface)</h2>
+<pre><code>class Paragraph:
+    index           # 단락 번호 (0-based)
+    text            # r/w property
+    parashape       # ParaShape (r/w)
+    charshape       # 단락 시작 글자의 CharShape (r/w convenience)
+    runs            # RunCollection
+    insert_text(s)  # 이 단락 끝에 추가
+    delete()        # 이 단락 제거
+    activate()      # 커서를 이 단락으로
+
+class Run:
+    paragraph       # owning Paragraph
+    text            # r/w
+    charshape       # CharShape (r/w)
+    start, end      # 단락 안의 글자 위치 범위
+
+class Table:
+    index, rows, cols
+    cell(r, c) → Cell
+    iter_cells()    # row-major
+    delete()
+    border_fill     # 표 전체 BorderFill
+    activate()
+
+class Cell:
+    table           # owning Table
+    row, col, address (e.g. "B2")
+    text            # r/w
+    charshape / parashape   # r/w
+    fill            # str | Color | None — 셀 배경
+    border          # dict 형 setter ({"top": "solid", ...})
+    width / height  # r/w (HWPUNIT)
+    activate()      # 이 셀로 커서 이동</code></pre>
+</section>
+<section id="doc-activate-패턴-적용" class="level2">
+<h2 class="anchored" data-anchor-id="doc-activate-패턴-적용">doc-activate 패턴 적용</h2>
+<p>모든 element 는 owning doc 의 reference 를 갖고, 자기 메소드/setter 진입 시 doc.activate() 를 호출합니다 (ADR-003 의 _DocActions 와 동일 패턴):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Paragraph:</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, doc, index):</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._doc <span class="op">=</span> doc</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._index <span class="op">=</span> index</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">@property</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> text(<span class="va">self</span>):</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._doc.activate()</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ... GetTextFile + 범위 추출</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> ...</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">@text.setter</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> text(<span class="va">self</span>, value):</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._doc.activate()</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ... select range + insert_text</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>다중 문서 환경에서 <code>for p in doc1.paragraphs: p.text</code> 와 <code>for p in doc2.paragraphs: p.text</code> 가 자동 doc-switching 되면서 안전하게 동작.</p>
+</section>
+<section id="charshape-parashape-기존-parameterset-재사용" class="level2">
+<h2 class="anchored" data-anchor-id="charshape-parashape-기존-parameterset-재사용">CharShape / ParaShape — 기존 ParameterSet 재사용</h2>
+<p>v2 에서 이미 <code>hwpapi.low.parametersets.CharShape</code> / <code>ParaShape</code> 가 있음. element 의 <code>.charshape</code> / <code>.parashape</code> 는 이들의 인스턴스를 반환/할당. 사용자는 익숙한 dict-like 접근:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>cs <span class="op">=</span> run.charshape      <span class="co"># CharShape 인스턴스</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>cs.bold <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>cs.height <span class="op">=</span> <span class="dv">1400</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>run.charshape <span class="op">=</span> cs      <span class="co"># setter — 적용</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># 또는 dict 한방</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>run.charshape <span class="op">=</span> {<span class="st">"bold"</span>: <span class="va">True</span>, <span class="st">"height"</span>: <span class="dv">1400</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="사용자-멘탈-모델" class="level2">
+<h2 class="anchored" data-anchor-id="사용자-멘탈-모델">사용자 멘탈 모델</h2>
+<pre><code>App (process)
+└── Document (per-doc)
+    ├── 컬렉션 (fields, bookmarks, ...)
+    ├── paragraphs : Collection[Paragraph]
+    │   └── runs   : Collection[Run]
+    └── tables : Collection[Table]
+        └── cell(r, c) : Cell</code></pre>
+<p>각 레이어는 자기 책임만 — App 은 lifecycle, Document 는 doc-scoped ops, Element 는 element-scoped ops.</p>
+</section>
+</section>
+<section id="마이그레이션-phases" class="level1">
+<h1>마이그레이션 (Phases)</h1>
+<section id="phase-1-paragraph-run" class="level2">
+<h2 class="anchored" data-anchor-id="phase-1-paragraph-run">Phase 1 — Paragraph + Run</h2>
+<ul>
+<li><code>Paragraph.text</code> getter/setter</li>
+<li><code>Paragraph.parashape</code> getter/setter</li>
+<li><code>Paragraph.runs</code> (RunCollection)</li>
+<li><code>Run.text</code>, <code>Run.charshape</code> getter/setter</li>
+<li>테스트: <code>tests/test_paragraph.py</code>, <code>tests/test_run.py</code></li>
+</ul>
+</section>
+<section id="phase-2-table-cell" class="level2">
+<h2 class="anchored" data-anchor-id="phase-2-table-cell">Phase 2 — Table + Cell</h2>
+<ul>
+<li><code>Table.cell(r, c)</code> 가 <code>Cell</code> 반환</li>
+<li><code>Cell.text</code>, <code>Cell.fill</code>, <code>Cell.border</code> (border dict 형)</li>
+<li><code>Cell.charshape</code>, <code>Cell.parashape</code></li>
+<li><code>Cell.activate()</code> 가 커서를 셀로</li>
+<li>테스트: <code>tests/test_table.py</code>, <code>tests/test_cell.py</code></li>
+</ul>
+</section>
+<section id="phase-3-runcollection-iter_cells" class="level2">
+<h2 class="anchored" data-anchor-id="phase-3-runcollection-iter_cells">Phase 3 — RunCollection + iter_cells</h2>
+<ul>
+<li><code>paragraph.runs</code> 의 iteration / 인덱싱</li>
+<li><code>Table.iter_cells()</code> row-major + filter</li>
+<li>테스트 추가</li>
+</ul>
+</section>
+<section id="phase-4-section-보류" class="level2">
+<h2 class="anchored" data-anchor-id="phase-4-section-보류">Phase 4 — Section (보류)</h2>
+<ul>
+<li>페이지 설정, 머리말/꼬리말 — v3.1 또는 별도 ADR</li>
+</ul>
+</section>
+</section>
+<section id="사용-예" class="level1">
+<h1>사용 예</h1>
+<section id="단락-run" class="level2">
+<h2 class="anchored" data-anchor-id="단락-run">단락 / Run</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>doc <span class="op">=</span> app.docs.<span class="bu">open</span>(<span class="st">"report.hwp"</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 1단락 텍스트와 정렬</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>para <span class="op">=</span> doc.paragraphs[<span class="dv">0</span>]</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>para.text <span class="op">=</span> <span class="st">"1분기 보고"</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>para.parashape <span class="op">=</span> {<span class="st">"align"</span>: <span class="st">"center"</span>, <span class="st">"line_spacing"</span>: <span class="dv">180</span>}</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 안에 있는 모든 run 을 굵게</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> run <span class="kw">in</span> para.runs:</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    run.charshape <span class="op">=</span> {<span class="st">"bold"</span>: <span class="va">True</span>}</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co"># 또는 한 단락 안의 일부만</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>para.runs[<span class="dv">0</span>].charshape <span class="op">=</span> {<span class="st">"text_color"</span>: <span class="st">"#E74C3C"</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="table-cell" class="level2">
+<h2 class="anchored" data-anchor-id="table-cell">Table / Cell</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>doc.insert_table(rows<span class="op">=</span><span class="dv">4</span>, cols<span class="op">=</span><span class="dv">4</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>table <span class="op">=</span> doc.tables[<span class="op">-</span><span class="dv">1</span>]                  <span class="co"># 방금 만든 표</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>table.cell(<span class="dv">0</span>, <span class="dv">0</span>).text <span class="op">=</span> <span class="st">"제품"</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>table.cell(<span class="dv">0</span>, <span class="dv">1</span>).text <span class="op">=</span> <span class="st">"Q1"</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>table.cell(<span class="dv">0</span>, <span class="dv">2</span>).text <span class="op">=</span> <span class="st">"Q2"</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>table.cell(<span class="dv">0</span>, <span class="dv">3</span>).text <span class="op">=</span> <span class="st">"Q3"</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co"># 헤더 셀 일괄 서식</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> c <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">4</span>):</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    cell <span class="op">=</span> table.cell(<span class="dv">0</span>, c)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    cell.fill <span class="op">=</span> <span class="st">"#34495E"</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    cell.charshape <span class="op">=</span> {<span class="st">"bold"</span>: <span class="va">True</span>, <span class="st">"text_color"</span>: <span class="st">"#FFFFFF"</span>}</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 첫 열만 굵은 테두리</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> r <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">4</span>):</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    table.cell(r, <span class="dv">0</span>).border <span class="op">=</span> {<span class="st">"right"</span>: <span class="st">"double"</span>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="다중-문서-element" class="level2">
+<h2 class="anchored" data-anchor-id="다중-문서-element">다중 문서 + element</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>src <span class="op">=</span> app.docs.<span class="bu">open</span>(<span class="st">"source.hwp"</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>dst <span class="op">=</span> app.docs.add()</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># doc-activate 자동 — element 가 owning doc 으로 자동 전환</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> para <span class="kw">in</span> src.paragraphs:</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> para.text.startswith(<span class="st">"□"</span>):</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 이 시점엔 src 활성, src.paragraphs[i].text 는 정상</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">pass</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co"># dst 작업 — 자동 전환</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> [[<span class="st">"A"</span>, <span class="st">"B"</span>], [<span class="st">"C"</span>, <span class="st">"D"</span>]]:</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    dst.insert_table(rows<span class="op">=</span><span class="dv">1</span>, cols<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c, val <span class="kw">in</span> <span class="bu">enumerate</span>(row):</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        dst.tables[<span class="op">-</span><span class="dv">1</span>].cell(<span class="dv">0</span>, c).text <span class="op">=</span> val</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="결과-consequences" class="level1">
+<h1>결과 (Consequences)</h1>
+<section id="긍정" class="level2">
+<h2 class="anchored" data-anchor-id="긍정">긍정</h2>
+<ul>
+<li><strong>API 일관성</strong> — <code>doc.X</code>, <code>paragraph.X</code>, <code>cell.X</code> 모두 같은 패턴</li>
+<li><strong>다중 문서 안전</strong> — element 도 doc-activate 자동</li>
+<li><strong><code>raw action</code> 의존도 감소</strong> — Cell 서식 등 일상 작업이 element 메소드로 가능</li>
+<li><strong>xlwings/openpyxl 사용자 친숙</strong> — sheet.range, cell.font 등과 동형</li>
+<li><strong>테스트 가능</strong> — Mock 으로 element 단위 검증</li>
+</ul>
+</section>
+<section id="부정-위험" class="level2">
+<h2 class="anchored" data-anchor-id="부정-위험">부정 / 위험</h2>
+<ul>
+<li><strong>클래스 수 증가</strong> — Paragraph/Run/Table/Cell 4개 신규. 컬렉션 포함 8개 (RunCollection, CellCollection 도) 이미 늘어남.</li>
+<li><strong>HWP 의 element 인덱싱 불안정</strong> — 문서 편집 중 paragraph index 가 밀릴 수 있음. cell 도 표 행/열 추가 시 변동. 안정적 식별자가 필요한 경우 사용자가 reload 해야 함 (xlwings 도 동일).</li>
+<li><strong>CharShape/ParaShape 의 process-wide pset 문제</strong> — element 마다 자기 pset 을 보유하지 않고 process 레벨 공유. doc-activate 와 결합해 안전하나, 동시성은 여전히 보장 안 됨 (Python GIL 가정).</li>
+<li><strong>Phase 1/2 구현 비용</strong> — 각 element 에 대해 텍스트 범위 추적, selection 관리, charshape 적용/읽기 인프라 필요. 약 600~1000 LOC 추정.</li>
+</ul>
+</section>
+</section>
+<section id="미해결-질문-open-questions" class="level1">
+<h1>미해결 질문 (Open questions)</h1>
 <ol type="1">
-<li><code>nbs/</code> — Quarto + nbdev.yml (legacy, 13 tutorial notebooks + 5 API notebooks)</li>
-<li><code>examples/</code> — seven hand-written <code>.py</code> scripts</li>
-<li><code>docs/</code> — eleven Markdown planning/audit documents</li>
-</ol>
-<p>README linked to bits and pieces of each. There was no rendered API reference — users reading code had to grep through <code>__init__.py</code> wildcards.</p>
-<p>This fragmented authoring model had two costs:</p>
-<ol type="1">
-<li><strong>No single source of truth.</strong> A user searching for “how to fill a field” got one answer from a nbs/ notebook, another from examples/, a third from an inline README snippet, and none of them were linked.</li>
-<li><strong>Maintenance divergence.</strong> When the API moved, some sources updated and others drifted.</li>
+<li><strong>Run 의 경계 정의</strong> — HWP 에서 “동일 charshape 의 연속 글자” 가 run 의 자연스러운 정의이지만, 단락 안에서 이를 효율적으로 순회하는 API 가 있는지 검증 필요. 없으면 <code>paragraph.text</code> 를 캐릭터 단위로 스캔하며 charshape 비교로 구간 결정 (느림).</li>
+<li><strong>Cell.border 의 dict 형 설계</strong> — <code>{"top": "solid"}</code> 가 단일 변, <code>{"all": "solid"}</code> 가 4변 일괄, <code>{"outer": "solid", "inner": "dot"}</code> 같은 alias 까지 지원할지.</li>
+<li><strong>Element 의 동일성 (<code>==</code>)</strong> — 같은 표의 같은 셀을 두 번 가져온 <code>Cell</code> 두 개가 <code>==</code> 인가? row/col 비교? raw COM 핸들 비교?</li>
+<li><strong>Section / Header / Footer</strong> — 이번 ADR 범위에 포함 여부. 분리 (v3.1) 권장.</li>
+<li><strong>iter 방식의 안정성</strong> — <code>for p in doc.paragraphs:</code> 중에 단락이 추가/삭제되면? generator-based 으로 lazy 하게 갈지, snapshot 으로 고정할지.</li>
 </ol>
 </section>
-<section id="decision" class="level1">
-<h1>Decision</h1>
-<p>Adopt a single <code>docs/</code> Quarto website as the canonical documentation source:</p>
+<section id="참고" class="level1">
+<h1>참고</h1>
 <ul>
-<li><code>docs/_quarto.yml</code> — site configuration with navbar sections matching the import tree 1:1 (Home / Getting Started / Guide / Recipes / Reference / Design).</li>
-<li><code>docs/index.qmd</code> — hero page + 5-minute tour.</li>
-<li><code>docs/getting-started/</code> — install, quickstart, migration v1→v2.</li>
-<li><code>docs/guide/</code> — six conceptual pages (app-and-document, collections, elements, context-scopes, units, low-level-escape-hatch).</li>
-<li><code>docs/recipes/</code> — task-first snippets ported from nbs/ and examples/.</li>
-<li><code>docs/reference/</code> — <strong>auto-generated</strong> by quartodoc from the <code>hwpapi</code> package’s docstrings. Tree mirrors import tree.</li>
-<li><code>docs/design/</code> — architecture notes and ADRs (including this one).</li>
-</ul>
-<p>Archive and delete pre-v2 documentation:</p>
-<ul>
-<li><code>docs/*.md</code> — moved to <code>docs/archive/</code>.</li>
-<li><code>nbs/</code> and <code>examples/</code> — archived in Phase 7 release work (not this ADR’s scope).</li>
-<li><code>nbs/nbdev.yml</code> — deleted.</li>
-</ul>
-</section>
-<section id="decision-drivers" class="level1">
-<h1>Decision drivers</h1>
-<ol type="1">
-<li><strong>API-reference-centric site</strong> — direct user request. Without a rendered reference, users can’t browse the surface.</li>
-<li><strong>IA ↔︎ code structure 1:1</strong> — documentation sidebar items should correspond to import tree nodes. Supports the v2 design principle “documentation is the shape of the code”.</li>
-<li><strong>Single maintenance burden</strong> — one source of truth reduces the “which doc is canonical?” question to zero.</li>
-</ol>
-</section>
-<section id="alternatives-considered" class="level1">
-<h1>Alternatives considered</h1>
-<section id="mkdocs-material" class="level2">
-<h2 class="anchored" data-anchor-id="mkdocs-material">MkDocs Material</h2>
-<p>Pro: Python-native, widely deployed, excellent default theme.</p>
-<p>Con: Loses existing Quarto assets (nbs/ content). Worse support for computational pages (nbs/ used Jupyter kernel execution; Quarto preserves that natively).</p>
-<p><strong>Rejected</strong> on asset-preservation grounds.</p>
-</section>
-<section id="two-sites-in-parallel-nbs-tutorials-docs-reference" class="level2">
-<h2 class="anchored" data-anchor-id="two-sites-in-parallel-nbs-tutorials-docs-reference">Two sites in parallel (nbs/ → tutorials, docs/ → reference)</h2>
-<p>Pro: Minimum migration effort.</p>
-<p>Con: Violates the “single source of truth” principle. Invites the same drift the v1 state showed.</p>
-<p><strong>Rejected.</strong></p>
-</section>
-<section id="sphinx-autodoc-sphinx_book_theme" class="level2">
-<h2 class="anchored" data-anchor-id="sphinx-autodoc-sphinx_book_theme">Sphinx + autodoc + sphinx_book_theme</h2>
-<p>Pro: Mature Python toolchain.</p>
-<p>Con: Markdown-first authoring via <code>myst_parser</code> is still less polished than Quarto’s. Would require replacing Quarto anyway. More moving parts.</p>
-<p><strong>Rejected</strong> given Quarto’s existing adoption in the repo.</p>
-</section>
-</section>
-<section id="consequences" class="level1">
-<h1>Consequences</h1>
-<section id="positive" class="level2">
-<h2 class="anchored" data-anchor-id="positive">Positive</h2>
-<ul>
-<li>One <code>quarto render docs/</code> produces the entire site.</li>
-<li><code>quartodoc build</code> regenerates the reference layer from docstrings — the reference cannot drift from the code.</li>
-<li><code>docs/recipes/*.qmd</code> can stay readable (Markdown tables, inline code) without executing HWP-dependent code blocks (marked <code>eval: false</code>).</li>
-<li>ADRs and architecture notes live alongside user documentation — <code>design/</code> is just another sidebar section.</li>
-</ul>
-</section>
-<section id="negative" class="level2">
-<h2 class="anchored" data-anchor-id="negative">Negative</h2>
-<ul>
-<li><code>quarto</code> and <code>quartodoc</code> are build-time dependencies for anyone re-rendering the site. Mitigation: <code>pip install -e ".[docs]"</code> captures both.</li>
-<li><code>quartodoc</code> has occasional quirks with Protocol classes and <code>cached_property</code> descriptors. Mitigation: explicit <code>contents:</code> listings in <code>_quarto.yml</code> name every page, rather than relying on auto-discovery for core classes.</li>
-</ul>
-</section>
-<section id="neutral" class="level2">
-<h2 class="anchored" data-anchor-id="neutral">Neutral</h2>
-<ul>
-<li>Users no longer get example scripts under <code>examples/</code> — those now live as recipe pages. <code>nbs/</code> tutorials similarly consolidate into <code>docs/recipes/</code>. Phase 7 (release) is responsible for the final archival move.</li>
-</ul>
-</section>
-</section>
-<section id="implementation-notes" class="level1">
-<h1>Implementation notes</h1>
-<ul>
-<li><strong>Theme</strong>: cosmo light / darkly dark, via Quarto’s built-in Bootstrap Bootswatch set.</li>
-<li><strong>Navbar</strong>: pinned top bar with six top-level items matching the sidebar sections.</li>
-<li><strong>Sidebar</strong>: per-section docked sidebar; <code>reference/</code> uses <code>auto: "reference"</code> so new quartodoc-generated pages appear automatically.</li>
-<li><strong>Search</strong>: Quarto’s built-in Lunr search, overlay mode.</li>
-<li><strong>Build</strong>: <code>quartodoc build --config docs/_quarto.yml</code> writes the reference pages; <code>quarto render docs/</code> compiles the full site.</li>
-<li><strong>Execute policy</strong>: <code>freeze: auto</code> at the site level. HWP-dependent code blocks use <code>eval: false</code> explicitly — they are documentation snippets, not runnable cells.</li>
-</ul>
-</section>
-<section id="follow-ups" class="level1">
-<h1>Follow-ups</h1>
-<ul>
-<li>Algolia-based search if Lunr is insufficient.</li>
-<li>Automatic deployment via GitHub Actions (<code>deploy-docs.yaml</code>).</li>
-<li>Cross-page interlinks — enable <code>render_interlinks: true</code> in quartodoc once the reference is stable.</li>
-</ul>
-</section>
-<section id="references" class="level1">
-<h1>References</h1>
-<ul>
-<li><code>.omc/plans/hwpapi_v2_redesign.md</code> — Phase 6 “Quarto 문서 사이트 신규”</li>
-<li><a href="https://quarto.org">Quarto docs</a></li>
-<li><a href="https://machow.github.io/quartodoc/">quartodoc docs</a></li>
-<li>ADR-001 — the two-layer API whose shape this documentation mirrors</li>
+<li><a href="../../design/adr/adr-003-multi-document.html">ADR-003: Multi-document redesign</a> — 이 ADR 의 토대 (doc-activate 패턴, _DocActions proxy)</li>
+<li><a href="../../getting-started/migration-v2-to-v3.html">v2→v3 migration 가이드</a></li>
+<li><a href="https://docs.xlwings.org/en/stable/api.html#range">xlwings Range/Cell API</a></li>
+<li><a href="https://openpyxl.readthedocs.io/en/stable/api/openpyxl.cell.cell.html">openpyxl Cell API</a></li>
 </ul>
 
 
@@ -970,14 +1187,11 @@ ul.task-list li input[type="checkbox"] {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../../design/adr/adr-001-v2-redesign.html" class="pagination-link" aria-label="ADR-001: Two-layer API">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">ADR-001: Two-layer API</span>
+      <a href="../../design/adr/adr-003-multi-document.html" class="pagination-link" aria-label="ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="../../design/adr/adr-003-multi-document.html" class="pagination-link" aria-label="ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document">
-        <span class="nav-page-text">ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document</span> <i class="bi bi-arrow-right-short"></i>
-      </a>
   </div>
 </nav>
 </div> <!-- /content -->
@@ -988,7 +1202,7 @@ ul.task-list li input[type="checkbox"] {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/design/adr/adr-002-quarto-docs.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/design/adr/adr-004-element-api.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item">

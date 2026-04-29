@@ -1,8 +1,18 @@
 ---
 title: "ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document"
 date: 2026-04-29
-status: proposed
+status: accepted
 ---
+
+::: {.callout-tip}
+## 채택 (2026-04-29)
+
+이 ADR 은 **채택** 되어 v3.0 으로 구현됨.
+- 버전: **v3.0** (semver 정직, clean break)
+- `Document.activate()`: 모든 doc-scoped 메소드 시작 시 **자동 호출**
+- v2 호환 shim: **없음** — App.open/save/save_as/close/doc 즉시 제거
+- 사용자 마이그레이션: [v2→v3 가이드](../../getting-started/migration-v2-to-v3.qmd)
+:::
 
 # 맥락 (Context)
 
@@ -329,20 +339,17 @@ v2 → v3 마이그레이션은 v1 → v2 보다 **훨씬 작음** — 주로 `a
   자체는 있지만 일부 action 은 활성 문서에만 적용됨. `Document.api`
   를 통한 per-doc COM 호출이 가능한지 검증 필요 (Phase 1 spike).
 
-# 미해결 질문 (Open questions)
+# 결정 (이전 미해결 질문)
 
-1. **버전 — v3 새 major vs v2.1 minor?** breaking change 라 semver 에선
-   v3. 다만 v2.0 release 가 한 달 만이라 v3 가 너무 빠를 수도. 후보:
-   - v3.0 (semver 정직)
-   - v2.1 + clean break = v3.0 6개월 후
-   - v2.5 (intermediate, deprecation shim 포함)
-2. **`Document.activate()` 의 자동 호출 정책** — 모든 메소드 진입 시
-   호출할지, 사용자가 명시적으로 부를지. xlwings 는 메소드 진입 시
-   `book.activate()` 자동 호출 — 안전하나 약간의 overhead.
-3. **`app.docs.add()` 가 빈 문서를 active 로 만드는가?** xlwings
-   기본은 yes, hwpapi 도 동일.
-4. **기존 `app.doc` shim 제거 시점** — v3.0 에 포함 (deprecation
-   warning) → v3.1 에 제거가 일반적 패턴.
+1. ✅ **버전 — v3.0** (semver 정직, clean break)
+2. ✅ **`Document.activate()` 자동 호출** — 모든 doc-scoped 메소드
+   진입 시 자동 (`_DocActions.__getattr__` 시점에도 자동). xlwings 와
+   동일 패턴. COM 호출 1회/메소드 — 단일 doc 일 땐 noop 비용.
+3. ✅ **`app.docs.add()`** — 새 빈 문서를 만들고 active 로 설정 후
+   해당 `Document` 반환.
+4. ✅ **`app.doc` shim 제거 시점** — **즉시 (v3.0)**. 사용자 명시
+   결정 — 무엇이 doc 객체로 가는지 명확하므로 deprecation 사이클
+   불필요.
 
 # 참고
 

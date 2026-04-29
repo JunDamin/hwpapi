@@ -68,6 +68,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../../site_libs/quarto-search/fuse.min.js"></script>
 <script src="../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../">
+<link href="../../design/adr/adr-004-element-api.html" rel="next">
 <link href="../../design/adr/adr-002-quarto-docs.html" rel="prev">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -396,6 +397,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">ADR-003: Multi-document redesign — xlwings-inspired App/Docs/Document</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../design/adr/adr-004-element-api.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ADR-004: Element-level API — Run / Paragraph / Cell / Section</span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -442,7 +449,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#긍정" id="toc-긍정" class="nav-link" data-scroll-target="#긍정">긍정</a></li>
   <li><a href="#부정-위험" id="toc-부정-위험" class="nav-link" data-scroll-target="#부정-위험">부정 / 위험</a></li>
   </ul></li>
-  <li><a href="#미해결-질문-open-questions" id="toc-미해결-질문-open-questions" class="nav-link" data-scroll-target="#미해결-질문-open-questions">미해결 질문 (Open questions)</a></li>
+  <li><a href="#결정-이전-미해결-질문" id="toc-결정-이전-미해결-질문" class="nav-link" data-scroll-target="#결정-이전-미해결-질문">결정 (이전 미해결 질문)</a></li>
   <li><a href="#참고" id="toc-참고" class="nav-link" data-scroll-target="#참고">참고</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/design/adr/adr-003-multi-document.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -476,6 +483,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>채택 (2026-04-29)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>이 ADR 은 <strong>채택</strong> 되어 v3.0 으로 구현됨. - 버전: <strong>v3.0</strong> (semver 정직, clean break) - <code>Document.activate()</code>: 모든 doc-scoped 메소드 시작 시 <strong>자동 호출</strong> - v2 호환 shim: <strong>없음</strong> — App.open/save/save_as/close/doc 즉시 제거 - 사용자 마이그레이션: <a href="../../getting-started/migration-v2-to-v3.html">v2→v3 가이드</a></p>
+</div>
+</div>
 <section id="맥락-context" class="level1">
 <h1>맥락 (Context)</h1>
 <p>v2.0 의 슬림 facade 는 한 번에 한 문서만 다루는 모델로 출발했습니다. <code>App</code> 이 lifecycle 과 단일 활성 문서 (<code>app.doc</code>) 를 모두 책임지고, 대부분의 작업이 <code>app.open()</code> / <code>app.save()</code> / <code>app.close()</code> 와 같이 <strong>App 메소드</strong> 로 노출됩니다. 이 모델은 다음과 같은 본질적 한계를 드러냈습니다:</p>
@@ -822,18 +842,13 @@ app.actions.X.run()    →  "현재 활성 doc 에 X 적용 (사용자 책임)"<
 </ul>
 </section>
 </section>
-<section id="미해결-질문-open-questions" class="level1">
-<h1>미해결 질문 (Open questions)</h1>
+<section id="결정-이전-미해결-질문" class="level1">
+<h1>결정 (이전 미해결 질문)</h1>
 <ol type="1">
-<li><strong>버전 — v3 새 major vs v2.1 minor?</strong> breaking change 라 semver 에선 v3. 다만 v2.0 release 가 한 달 만이라 v3 가 너무 빠를 수도. 후보:
-<ul>
-<li>v3.0 (semver 정직)</li>
-<li>v2.1 + clean break = v3.0 6개월 후</li>
-<li>v2.5 (intermediate, deprecation shim 포함)</li>
-</ul></li>
-<li><strong><code>Document.activate()</code> 의 자동 호출 정책</strong> — 모든 메소드 진입 시 호출할지, 사용자가 명시적으로 부를지. xlwings 는 메소드 진입 시 <code>book.activate()</code> 자동 호출 — 안전하나 약간의 overhead.</li>
-<li><strong><code>app.docs.add()</code> 가 빈 문서를 active 로 만드는가?</strong> xlwings 기본은 yes, hwpapi 도 동일.</li>
-<li><strong>기존 <code>app.doc</code> shim 제거 시점</strong> — v3.0 에 포함 (deprecation warning) → v3.1 에 제거가 일반적 패턴.</li>
+<li>✅ <strong>버전 — v3.0</strong> (semver 정직, clean break)</li>
+<li>✅ <strong><code>Document.activate()</code> 자동 호출</strong> — 모든 doc-scoped 메소드 진입 시 자동 (<code>_DocActions.__getattr__</code> 시점에도 자동). xlwings 와 동일 패턴. COM 호출 1회/메소드 — 단일 doc 일 땐 noop 비용.</li>
+<li>✅ <strong><code>app.docs.add()</code></strong> — 새 빈 문서를 만들고 active 로 설정 후 해당 <code>Document</code> 반환.</li>
+<li>✅ <strong><code>app.doc</code> shim 제거 시점</strong> — <strong>즉시 (v3.0)</strong>. 사용자 명시 결정 — 무엇이 doc 객체로 가는지 명확하므로 deprecation 사이클 불필요.</li>
 </ol>
 </section>
 <section id="참고" class="level1">
@@ -1275,6 +1290,9 @@ app.actions.X.run()    →  "현재 활성 doc 에 X 적용 (사용자 책임)"<
       </a>          
   </div>
   <div class="nav-page nav-page-next">
+      <a href="../../design/adr/adr-004-element-api.html" class="pagination-link" aria-label="ADR-004: Element-level API — Run / Paragraph / Cell / Section">
+        <span class="nav-page-text">ADR-004: Element-level API — Run / Paragraph / Cell / Section</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
   </div>
 </nav>
 </div> <!-- /content -->
