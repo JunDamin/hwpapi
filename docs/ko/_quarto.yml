@@ -95,8 +95,12 @@ website:
           contents:
             - design/adr/adr-001-v2-redesign.qmd
             - design/adr/adr-002-quarto-docs.qmd
+            - design/adr/adr-003-multi-document.qmd
+            - design/adr/adr-004-element-api.qmd
+            - design/adr/adr-005-api-ergonomics.qmd
+            - design/adr/adr-006-python-docx-patterns.qmd
   page-footer:
-    left: "hwpapi v2.0 · HWP COM 자동화 Python 라이브러리"
+    left: "hwpapi v3.0 · HWP COM 자동화 Python 라이브러리"
     right:
       - text: "GitHub"
         href: https://github.com/JunDamin/hwpapi

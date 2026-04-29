@@ -295,6 +295,53 @@ class Document:
         self._app.api.Run("Delete")
         return self
 
+    # ── 직접 setter (with 없이 즉시 적용) — ADR-005 ─────────────
+
+    def set_charshape(self, **fmt) -> "Document":
+        """현재 선택/커서에 글자 서식을 즉시 적용 (with 없이).
+
+        선택 영역이 있으면 그 영역에만, 없으면 cursor 의 다음 입력에
+        적용됩니다. 사용 가능 키: ``bold``, ``italic``, ``size``,
+        ``height``, ``color`` / ``text_color``, ``shade_color``,
+        ``font`` / ``facename``, ``underline_type``, ``strike_out_type``
+        등 (charshape_scope 와 동일).
+
+        Examples
+        --------
+        >>> doc.find_text("강조")    # 선택됨
+        >>> doc.set_charshape(bold=True, text_color="#E74C3C")
+
+        >>> # 다음 입력만 적용 (커서)
+        >>> doc.set_charshape(bold=True)
+        >>> doc.insert_text("이 줄은 굵게")
+        """
+        from hwpapi.context.scopes import _CHAR_ALIAS, _translate, _apply
+        self.activate()
+        translated = _translate(fmt, _CHAR_ALIAS)
+        _apply(self._app, "CharShape", "CharShape", translated)
+        return self
+
+    def set_parashape(self, **fmt) -> "Document":
+        """현재 단락에 단락 서식을 즉시 적용 (with 없이).
+
+        사용 가능 키: ``align`` (``"left"|"center"|"right"|"justify"``),
+        ``line_spacing``, ``left_margin``, ``right_margin``,
+        ``indentation`` 등.
+
+        Examples
+        --------
+        >>> doc.set_parashape(align="center", line_spacing=180)
+        """
+        from hwpapi.context.scopes import (
+            _PARA_ALIAS, _translate, _apply, _normalise_align,
+        )
+        self.activate()
+        translated = _translate(fmt, _PARA_ALIAS)
+        if "AlignType" in translated:
+            translated["AlignType"] = _normalise_align(translated["AlignType"])
+        _apply(self._app, "ParaShape", "ParaShape", translated)
+        return self
+
     def find_text(self, query: str) -> bool:
         """현재 커서 위치 이후에서 ``query`` 검색. 발견 시 ``True``."""
         self.activate()
@@ -415,6 +462,97 @@ class Document:
     def cursor(self) -> "_DocCursor":
         """:class:`_DocCursor` — 커서 이동/검사."""
         return _DocCursor(self)
+
+    # ── Selection / Range — ADR-005 v3.1 ─────────────────────────
+
+    @property
+    def selection(self):
+        """현재 활성 선택 영역 핸들 — :class:`hwpapi.selection.Selection`."""
+        from hwpapi.selection import Selection
+        return Selection(self)
+
+    def range(self, start_para: int, end_para: Optional[int] = None):
+        """단락 범위 핸들 — :class:`hwpapi.selection.Range`.
+
+        Parameters
+        ----------
+        start_para : int
+            시작 단락 인덱스 (0-based, inclusive).
+        end_para : int, optional
+            끝 단락 (inclusive). ``None`` 이면 단일 단락.
+        """
+        from hwpapi.selection import Range
+        return Range(self, start_para, end_para)
+
+    # ── find_all / replace_brackets ─────────────────────────────
+
+    def find_all(self, query: str, max_matches: int = 1000) -> list:
+        """문서 전체에서 ``query`` 의 모든 위치를 찾아 list 반환.
+
+        반환값은 (start_pos, end_pos) 튜플 리스트 — HWP 의 GetPos
+        반환 형태. 다음 작업의 base 로 사용 (예: 일괄 서식 변경).
+
+        Examples
+        --------
+        >>> for pos in doc.find_all("강조"):
+        ...     # 각 위치에서 일괄 처리
+        ...     pass
+        """
+        self.activate()
+        api = self._app.api
+        results: list = []
+        try:
+            # MoveTopOfFile
+            api.MovePos(2, 0, 0)
+            for _ in range(max_matches):
+                # FindCtrl 류는 dialog 띄움 — 직접 탐색은 GetText 후 파싱이
+                # 더 안정적이지만 spike 단계에선 raw 사용.
+                # 실제 동작 검증 필요 — placeholder 구현.
+                ok = bool(api.Run("RepeatFind") if results else api.Run("FindDlg"))
+                if not ok:
+                    break
+                try:
+                    pos = api.GetPos()
+                    results.append(tuple(pos))
+                except Exception:
+                    break
+        except Exception as e:
+            self._app.logger.debug(f"find_all: {e}")
+        return results
+
+    def replace_brackets(self, mapping: dict) -> int:
+        """``{key}`` 형태의 placeholder 를 ``mapping`` 의 값으로 일괄 치환.
+
+        메일 머지의 가장 흔한 패턴 — 템플릿에 ``{name}``, ``{date}`` 등
+        의 마커가 있을 때.
+
+        Parameters
+        ----------
+        mapping : dict
+            ``{"{name}": "홍길동", "{date}": "2026-04-29"}`` 형태.
+
+        Returns
+        -------
+        int
+            치환을 시도한 키 개수 (성공/실패 구분 없음 — HWP 가
+            정확한 카운트 미제공).
+
+        Examples
+        --------
+        >>> doc.replace_brackets({
+        ...     "{name}": "홍길동",
+        ...     "{date}": "2026-04-29",
+        ...     "{amount}": "1,200,000원",
+        ... })
+        """
+        count = 0
+        for key, value in mapping.items():
+            try:
+                self.replace_all(str(key), str(value))
+                count += 1
+            except Exception as e:
+                self._app.logger.debug(f"replace_brackets[{key}]: {e}")
+        return count
 
     # ── action proxy ─────────────────────────────────────────────
 

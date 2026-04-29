@@ -6,6 +6,66 @@
 
 ## [Unreleased]
 
+## [3.0.0] — 2026-04-29 — 🎯 Multi-document redesign (xlwings 모델)
+
+ADR-003 의 결정 — `App` 은 process lifecycle 만, 모든 doc 단위 작업은
+`app.docs.open(path)` / `add()` 가 반환하는 `Document` 인스턴스에서
+직접 수행. xlwings 의 `app.books[i]` 와 동형.
+
+### 🎯 핵심 변경 (BREAKING)
+
+- **`App.open / save / save_as / close / doc` 제거** — 호출 시 `AttributeError`
+  - 마이그레이션: [v2→v3 가이드](docs/getting-started/migration-v2-to-v3.qmd)
+  - `app.open(p)` → `doc = app.docs.open(p)`; `app.save()` → `doc.save()`
+- **`app.docs` 신설** — `DocumentCollection`
+  - `open(path)` / `add()` / `active` / `[i]` / `["name"]` / `len` / `iter` / `__contains__`
+  - 다중 문서 동시 처리 가능 (이전엔 raw `XHwpDocuments` 필요)
+- **`Document` 풀 surface 신설** — v2 의 빈 facade 약속을 실제로 이행
+  - text I/O: `text` / `insert_text` / `find_text` / `replace_all` /
+    `select_all` / `get_selected_text` / `clear` / `copy` / `cut` /
+    `paste` / `delete` / `undo` / `redo`
+  - lifecycle: `activate` / `save` / `save_as` / `close(save=False)`
+  - text break: `insert_line_break` / `insert_page_break` /
+    `insert_paragraph_break` / `insert_tab`
+  - 삽입: `insert_picture(path)` / `insert_table(rows, cols)`
+  - meta: `name` / `path` / `saved` / `index` / `raw`
+  - cursor: `doc.cursor.goto_page(n)` / `in_table()`
+  - 7 컬렉션 (v2 와 동일): `fields / bookmarks / hyperlinks / images /
+    paragraphs / styles / tables`
+- **`doc.actions.X` 신설** — `_DocActions` proxy
+  - 모든 attribute 접근 시 `doc.activate()` 자동 → 다중 문서 안전
+  - 기존 `app.actions.X` (raw escape) 와 공존
+
+### ➕ v3.1 ergonomics (이번 릴리스 포함)
+
+- **`doc.set_charshape(**fmt)`** / **`doc.set_parashape(**fmt)`** —
+  `with` 없이 즉시 적용 (현재 선택/커서 기준)
+- **`doc.selection`** — `Selection` 핸들 (`text` / `exists` /
+  `set_charshape` / `delete` / `copy` / `cut` / `cancel`)
+- **`doc.range(start_para, end_para)`** — `Range` 핸들
+- **`doc.find_all(query)`** — 모든 일치 위치 list
+- **`doc.replace_brackets({"{name}": "...", ...})`** — 메일 머지 helper
+
+### 📚 문서 / ADR
+
+- **ADR-003** (accepted) — Multi-document redesign 결정 기록
+- **ADR-004** (proposed) — Element-level API (Run/Paragraph/Cell/Section)
+- **ADR-005** (proposed) — API ergonomics (xlwings 차용)
+- **ADR-006** (proposed) — python-docx 패턴 비교
+- **migration v2→v3 가이드** — 영문 + 한국어
+- **양언어 사이트** — 47 + 47 페이지 (en + ko)
+
+### 🧪 테스트
+
+- 1,341 mock-based passes (windows-latest × Python 3.9~3.12)
+- `test_documents_collection.py` (24) + `test_v3_setters_selection.py` (12)
+
+### 💔 BREAKING
+
+- `App.open(path)` / `App.save(path)` / `App.save_as(path)` /
+  `App.close(save)` / `App.doc` 모두 제거
+- v2 사용자는 `pip install hwpapi==2.*` 로 동결
+
 ## [2.0.0] — 2026-04-28 — 🚀 Major redesign (dual-layer API + Quarto docs)
 
 v1.0 이후 약 4일간 진행한 **전면 재설계**. public API break 을 허용한 클린컷

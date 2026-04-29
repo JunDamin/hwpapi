@@ -1,0 +1,361 @@
+---
+title: "ADR-003: 다중 문서 재설계 — xlwings 영감의 App/Docs/Document"
+date: 2026-04-29
+status: accepted
+---
+
+::: {.callout-tip}
+## 채택 (2026-04-29)
+
+이 ADR 은 **채택** 되어 v3.0 으로 구현됨.
+- 버전: **v3.0** (semver 정직, clean break)
+- `Document.activate()`: 모든 doc-scoped 메소드 시작 시 **자동 호출**
+- v2 호환 shim: **없음** — App.open/save/save_as/close/doc 즉시 제거
+- 사용자 마이그레이션: [v2→v3 가이드](../../getting-started/migration-v2-to-v3.qmd)
+:::
+
+# 맥락
+
+v2.0 의 슬림 facade 는 한 번에 한 문서만 다루는 모델로 출발했습니다.
+`App` 이 lifecycle 과 단일 활성 문서 (`app.doc`) 를 모두 책임지고,
+대부분의 작업이 `app.open()` / `app.save()` / `app.close()` 와 같이
+**App 메소드** 로 노출됩니다. 이 모델은 다음과 같은 본질적 한계를
+드러냈습니다:
+
+1. **다중 문서 부재**. HWP 는 한 프로세스에 여러 문서를 동시에 열 수
+   있지만 (`XHwpDocuments`), v2 surface 는 그 collection 을 노출하지
+   않습니다. `app.documents` 는 v1 에서 사용되었으나 v2 redesign 시
+   "Phase 3 으로 연기" 로 표시되며 제거되었습니다 (migration guide
+   참조). 결과적으로 사용자가 한 번에 두 파일을 비교/병합/복사
+   하려면 raw COM (`app.api.XHwpDocuments`) 으로 내려가야 합니다.
+
+2. **lifecycle 책임의 잘못된 위치**. `app.save()` 는 "어느 문서를?"
+   가 모호합니다 — 현재는 활성 문서를 저장하지만, 사용자가 문서 A
+   를 처리하다 background 에서 문서 B 가 활성화되면 의도와 다른
+   문서가 저장됩니다. **저장/닫기는 문서 단위 작업** 이 자연스럽습
+   니다.
+
+3. **Document 메소드가 비어 있음**. `app.doc` 은 7개 collection
+   (`fields/bookmarks/hyperlinks/images/paragraphs/styles/tables`) 만
+   가지고 있고, migration 가이드가 약속하는 `insert_text` / `text` /
+   `cursor` / `find_text` / `replace_all` 등은 **존재하지 않습니다**.
+   사용자가 문서대로 따라 코딩하면 즉시 `AttributeError`. 이는 단순
+   누락이 아니라 **Document 의 책임 범위가 정해지지 않은** 결과
+   입니다 — App 에서 빼긴 했지만 어디에도 두지 않음.
+
+4. **테스트 격리 어려움**. v2 의 `App() ` 은 resident HWP 인스턴스
+   에 attach 합니다 — 문서 1개만 열리는 모델이라 테스트 사이의
+   문서 누적이 잘 안 보였지만, 다중 문서 워크플로우 추가 시
+   "어느 문서가 활성?" 의 race 가 즉시 드러날 것입니다.
+
+# 영감 — xlwings
+
+[xlwings](https://docs.xlwings.org/) 는 Excel 자동화에 동일한 deep
+COM 자동화 문제를 풀었고, 다음과 같은 3-tier 구조를 정착시켰습니다:
+
+```
+xw.App                       # Excel application instance
+├── books                    # Books collection (workbook 들)
+│   ├── open(path) → Book    # 파일 열기 → Book 반환
+│   ├── add() → Book         # 새 빈 workbook
+│   ├── active → Book        # 현재 활성 workbook
+│   ├── [i] / [name]         # index 또는 이름 접근
+│   └── for wb in books      # 순회 가능
+├── apps                     # 사이블링 — 다른 Excel 프로세스
+└── quit()                   # Excel 자체 종료
+
+Book (= 개별 workbook 인스턴스)
+├── name / fullname / path
+├── sheets                   # Sheet collection (per-Book)
+├── save() / save_as(path)   # 문서 단위 저장
+├── close(save=False)        # 문서 단위 닫기
+├── activate()               # 이 workbook 을 활성화
+└── selection                # 현재 선택
+```
+
+**핵심 원칙**:
+
+- `App` = 프로세스 lifecycle 만 (start, quit). 문서 자체에 대한
+  메소드 없음.
+- `App.books` = workbook collection. 이 collection 의 메소드 (`open`,
+  `add`) 가 **Book 인스턴스를 반환** 하고, 사용자는 그 인스턴스를
+  변수로 잡아서 작업합니다.
+- `Book` = 한 workbook 의 모든 책임 (저장, 닫기, sheet 접근, 셀 조작).
+  같은 App 안에 여러 Book 이 동시에 있을 수 있고 서로 독립적.
+
+# 결정
+
+**hwpapi v3 (또는 v2.1) 은 xlwings 의 3-tier 구조를 차용합니다.**
+
+```
+hwpapi.App                   # HWP COM 엔진 lifecycle 만
+├── docs                     # Documents collection
+│   ├── open(path) → Document
+│   ├── add() → Document         # 새 빈 문서
+│   ├── active → Document        # 현재 활성 문서
+│   ├── [i] / [name]
+│   └── for d in docs
+├── visible (property)
+├── version (property)
+├── engine                   # raw escape hatch
+└── quit()                   # HWP 프로세스 종료
+
+hwpapi.Document              # 한 .hwp 파일에 대한 모든 책임
+├── name / path / saved      # 메타 (수정 여부 포함)
+├── text (r/w property)
+├── insert_text(...)
+├── insert_picture(...) / insert_table(...) / ...
+├── find_text(...) / replace_all(...)
+├── select_all() / get_selected_text()
+├── fields / bookmarks / hyperlinks / images /
+│   paragraphs / styles / tables / controls
+├── cursor                   # per-Document 커서
+├── page                     # per-Document 페이지 설정
+├── save() / save_as(path)   # 문서 단위 저장
+├── close(save=False)        # 문서 단위 닫기 — App 영향 없음
+├── activate()               # 이 문서를 HWP 창에서 활성화
+└── api / engine             # per-doc 의 COM 핸들 (XHwpDocument)
+```
+
+# 프로세스 수준 자원 binding 정책 (Actions / ParameterSets / API)
+
+HWP 의 raw `HAction`, `HParameterSet`, `XHwpDocuments` 같은 자원은
+**프로세스 전역** 이고 **항상 활성 문서** 에 작동합니다. 다중 문서
+상황에서 어느 doc 에 명령이 갈지 모호해지므로, 다음 정책을 정합니다:
+
+## 같은 자원을 두 위치에 노출
+
+| 자원 | App 레벨 (raw) | Document 레벨 (doc-scoped) |
+|---|---|---|
+| `actions` | `app.actions.X` | `doc.actions.X` — `run()` 직전 `doc.activate()` 자동 |
+| `parametersets` | `app.engine.parametersets` (raw 클래스) | `doc.create_parameterset(...)` — auto-activate |
+| `api` (COM 핸들) | `app.api` — IHwpObject (process) | `doc.api` — IXHwpDocument (per-doc) |
+| `engine` | `app.engine` — Engine 객체 | (그대로 — process 자원) |
+
+## binding 의미
+
+| 진입점 | 활성화 책임 | 추천 사용처 |
+|---|---|---|
+| `app.actions.X` | 사용자 (`doc.activate()` 수동) | escape hatch / 단일 doc |
+| `doc.actions.X` | 자동 (run 시점) | 일반 사용 / 다중 doc |
+
+## 구현 — 얇은 proxy
+
+```python
+class _DocActions:
+    """Document-scoped actions proxy."""
+    def __init__(self, doc):
+        self._doc = doc
+        self._app = doc._app
+
+    def __getattr__(self, name):
+        action = getattr(self._app.actions, name)
+        return _ScopedAction(action, self._doc)
+
+
+class _ScopedAction:
+    def __init__(self, action, doc):
+        self._action = action
+        self._doc = doc
+
+    @property
+    def pset(self):
+        return self._action.pset
+
+    def run(self, *a, **kw):
+        self._doc.activate()              # 핵심
+        return self._action.run(*a, **kw)
+
+
+class Document:
+    @property
+    def actions(self):
+        return _DocActions(self)
+```
+
+## 사용자 멘탈 모델
+
+```
+doc.actions.X.run()    →  "doc 에 X 적용" (안전)
+app.actions.X.run()    →  "현재 활성 doc 에 X 적용 (사용자 책임)"
+```
+
+xlwings 의 `book.api` vs `app.api` 와 의미 동일.
+
+## 오버헤드
+
+`Document.activate()` = COM 호출 1 회 (~µs). 단일 doc 일 땐 noop
+(이미 활성). 다중 doc 일 때만 실질 비용 발생, 이마저도 사용자가
+연속해서 같은 doc 을 다루는 경우 캐싱으로 0 으로 축소 가능.
+
+# 사용 예
+
+## 단일 문서 — v2 와 거의 동일
+
+```python
+from hwpapi import App
+
+with App() as app:
+    doc = app.docs.open("report.hwp")
+    doc.insert_text("새 줄\n")
+    doc.save()
+    doc.close()
+```
+
+## 두 문서를 동시에 다루기 (현재 불가능했던 것)
+
+```python
+from hwpapi import App
+
+with App() as app:
+    src = app.docs.open("source.hwp")
+    dst = app.docs.add()                    # 빈 새 문서
+
+    for para in src.paragraphs:
+        dst.insert_text(para.text + "\n")
+
+    dst.save_as("merged.hwp")
+    src.close(save=False)                   # 원본은 그대로
+    dst.close()
+```
+
+## 일괄 변환 — 한 App 에서 N개 파일
+
+```python
+from hwpapi import App
+from pathlib import Path
+
+with App() as app:
+    for hwp in Path("inbox").glob("*.hwp"):
+        doc = app.docs.open(hwp)
+        doc.save_as(hwp.with_suffix(".pdf"))
+        doc.close()                         # 메모리 해제, 다음 파일로
+```
+
+## 활성 문서 전환
+
+```python
+docs = app.docs                              # collection
+print(len(docs))                             # 열린 문서 개수
+for d in docs:
+    print(d.name)
+docs[0].activate()                           # 첫 문서를 forefront 로
+```
+
+# 마이그레이션 단계
+
+## Phase 0 — 명세 동결
+
+이 ADR 채택 후 **v2.x 라인은 frozen**. v2 사용자는 `hwpapi==2.*` pin.
+v3 (또는 v2.1) 은 새 minor 로 출시.
+
+## Phase 1 — `Documents` collection 신설
+
+- `hwpapi.collections.documents.DocumentCollection` 작성
+- App 에 `app.docs` property 추가, `app.doc` 은 `app.docs.active` 로
+  내부 alias (v2.x 호환 임시).
+- `app.docs.open(path)` 가 `Document` 인스턴스를 반환 (현재는 Document
+  가 빈 facade 라도 collection 만 일단 노출).
+
+## Phase 2 — `Document` 에 메소드 이식
+
+- `App.open/save/save_as/close` → `Document.open/save/save_as/close`
+  로 이동. App 메소드는 일단 **deprecation shim** 으로 남겨 active doc
+  으로 위임 (`app.save()` → `app.docs.active.save()`).
+- text I/O — `insert_text`, `find_text`, `replace_all`, `select_all`,
+  `get_selected_text`, `text` (property), `clear` 를 Document 에 신설.
+  내부 구현은 raw `actions.InsertText` 등을 사용.
+- cursor — `Document.cursor.goto_page(...)`, `move_to_field`,
+  `in_table` 등.
+- 7 개 collection accessor 는 그대로 (이미 Document 에 있음).
+
+## Phase 3 — App 의 lifecycle 정리
+
+- App 에 남는 메소드: `quit`, `visible`, `version`, `docs`, `engine`,
+  `api`. 그 외는 deprecated → v3.1 에서 제거.
+- `App() __enter__/__exit__` 가 `quit()` 만 책임. 열린 문서는 자동
+  닫지 않음 (사용자가 명시적으로 close 또는 with-Document 사용).
+
+## Phase 4 — Document 의 context manager
+
+```python
+with app.docs.open("a.hwp") as doc:
+    doc.insert_text("...")
+    # exit 시 자동 close (저장 여부는 docs.open(..., save_on_close=) 로 제어)
+```
+
+## Phase 5 — 호환 shim 제거
+
+`app.open/save/close/doc` 등 v2 호환 alias 를 제거하고 v3.0 stable
+release. v2 사용자는 migration 가이드 (이 ADR 의 부록) 따라 마이그레
+이션.
+
+# v2 → v3 변환 표 (요약)
+
+| v2 | v3 |
+|---|---|
+| `app.open(path)` | `doc = app.docs.open(path)` |
+| `app.new()` | `doc = app.docs.add()` |
+| `app.save()` | `doc.save()` |
+| `app.save_as(path)` | `doc.save_as(path)` |
+| `app.close()` | `doc.close()` |
+| `app.doc` | `app.docs.active` |
+| (없음 — multi-doc) | `for d in app.docs:` |
+| (없음 — 다중 문서간 비교) | `app.docs["a.hwp"]`, `app.docs[0]` |
+
+# 호환성 정책
+
+- v2.x: 동결 (bug fix 만)
+- v3.0: deprecation shim 포함, v2 코드 대부분 작동
+- v3.1: shim 제거, clean cut
+
+v2 → v3 마이그레이션은 v1 → v2 보다 **훨씬 작음** — 주로 `app.X` 를
+`doc = app.docs.open(...)` + `doc.X` 로 바꾸는 것. find/replace 가능한
+패턴.
+
+# 결과
+
+## 긍정
+
+- **다중 문서 워크플로우 가능** — 일괄 변환, 병합, 비교 등
+- **저장/닫기 의도 명확** — `doc.save()` 는 "이 문서" 가 명확
+- **Document 책임 범위 명확** — 7 collection + text I/O + cursor +
+  save/close. App 은 process lifecycle 만.
+- **xlwings 사용자 친숙** — Python 데이터 분석가에게 mental model 동일
+- **테스트 격리 깔끔** — 각 테스트가 자기 Document 를 명시적으로
+  소유, race 없음
+
+## 부정 / 위험
+
+- **API 표면이 커짐** — Document 가 v2 의 거의 모든 App 메소드를
+  흡수. 슬림 facade 정신은 일부 후퇴 (다만 슬림한 것은 App 만).
+- **win32com 의 active doc 추적과의 충돌 가능성** — HWP COM 은
+  명시적인 doc 핸들 전달이 일관되지 않음 (`HAction.Run` 은 항상 활성
+  문서 대상). 이 부분은 `Document.activate()` 를 모든 doc-scoped 메소
+  드 시작 시 자동 호출하는 방식으로 우회 (xlwings 도 동일 패턴).
+- **마이그레이션 비용** — v2 사용자에게 두 번째 breaking change
+  (v1→v2→v3). 이 비용을 줄이려고 v3.0 에 deprecation shim 포함.
+- **HWP 의 다중 문서 지원이 완전하지 않을 수 있음** — XHwpDocuments
+  자체는 있지만 일부 action 은 활성 문서에만 적용됨. `Document.api`
+  를 통한 per-doc COM 호출이 가능한지 검증 필요 (Phase 1 spike).
+
+# 결정 (이전 미해결 질문)
+
+1. ✅ **버전 — v3.0** (semver 정직, clean break)
+2. ✅ **`Document.activate()` 자동 호출** — 모든 doc-scoped 메소드
+   진입 시 자동 (`_DocActions.__getattr__` 시점에도 자동). xlwings 와
+   동일 패턴. COM 호출 1회/메소드 — 단일 doc 일 땐 noop 비용.
+3. ✅ **`app.docs.add()`** — 새 빈 문서를 만들고 active 로 설정 후
+   해당 `Document` 반환.
+4. ✅ **`app.doc` shim 제거 시점** — **즉시 (v3.0)**. 사용자 명시
+   결정 — 무엇이 doc 객체로 가는지 명확하므로 deprecation 사이클
+   불필요.
+
+# 참고
+
+- [xlwings API reference](https://docs.xlwings.org/en/stable/api.html)
+- [HWP XHwpDocuments COM 인터페이스](https://www.hancom.com/board/devforumList.do)
+- [ADR-001: v2 두 층 API 결정](adr-001-v2-redesign.qmd) — 이 ADR
+  의 토대가 된 단일-doc 모델
+- v2 migration 가이드: [v1 에서 v2 로 마이그레이션](../../getting-started/migration-v1-to-v2.qmd)
+- (예정) v3 migration 가이드: `getting-started/migration-v2-to-v3.qmd`

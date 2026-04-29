@@ -1,0 +1,397 @@
+---
+title: "ADR-005: API 사용성 — 리팩토링 + 직접 setter + 신규 메소드"
+date: 2026-04-29
+status: proposed
+---
+
+# 맥락
+
+ADR-003 / ADR-004 로 v3 의 큰 골격 (App / Documents / Document /
+Element) 이 정해졌습니다. 다음 단계는 **API 의 "쓰기 편함"** 입니다.
+세 갈래로 정리:
+
+1. **xlwings 비교 기반 refactoring 후보** — 비슷한 영역에서 xlwings
+   가 어떻게 풀었는지를 mining 하여 hwpapi 의 어색한 부분 재설계
+2. **`with` 없이 한 줄 setter** — `set_charshape(bold=True)` 처럼
+   현재 선택/커서에 즉시 적용하는 명령형 API (현재는 `with
+   charshape_scope(...)` 만 있음)
+3. **신규 유용 메소드** — 사용자 워크플로우에서 반복적으로 등장
+   하는 작업을 네이티브 API 로 격상
+
+# 1. xlwings 비교 기반 리팩토링 후보
+
+## 1.1 Range / 범위 선택 객체
+
+xlwings:
+```python
+sheet.range("A1:C5").value = [[1,2,3], ...]
+sheet.range("A1").color = (255, 200, 200)
+sheet["A1:B2"].font.bold = True
+```
+
+hwpapi 현재: 범위 선택은 `app.api.Run("MoveSelRight")` 같은 raw 가
+유일.
+
+**제안**: `Range` 객체 신설
+```python
+r = doc.range(start_para=2, start_char=0, end_para=2, end_char=10)
+r.text                      # 그 범위의 텍스트
+r.text = "교체"             # 그 범위 교체
+r.charshape = {"bold": True}
+r.delete()
+r.copy()
+```
+구현은 내부적으로 select_text + 적용 + cancel 이지만 사용자에게는
+selection state 가 숨겨짐.
+
+## 1.2 `Selection` 객체 (현재 `app.sel` 폐기 후 다시)
+
+xlwings:
+```python
+xw.apps.active.selection.value
+xw.apps.active.selection.font.bold = True
+```
+
+hwpapi 현재: 선택 상태 접근은 `app.api.GetSelectedText()` 등 raw.
+v1 의 `app.sel` 은 v2 에서 제거됐으나 위 워크플로우는 흔함.
+
+**제안**: `doc.selection` 객체 (Range 의 특수 인스턴스)
+```python
+doc.selection.text                       # 현재 선택된 텍스트
+doc.selection.charshape = {"bold": True} # 선택 영역에 굵게
+doc.selection.delete()
+doc.selection.exists                     # bool — 선택 영역 있는지
+```
+
+## 1.3 컬렉션 `add` / `[]` 의 일관성
+
+xlwings 의 모든 컬렉션 (`books`, `sheets`, `pictures`, `charts`) 은
+동일 패턴:
+
+```python
+sheets.add(name=..., before=..., after=...)
+sheets[0]   # int
+sheets["Sheet1"]   # str
+for s in sheets: ...
+```
+
+hwpapi 의 7 컬렉션 검토 — 일관성 점검 필요:
+
+| 컬렉션 | `add` | `[i]` | `["name"]` | `for` | `in` | `remove` |
+|---|---|---|---|---|---|---|
+| fields | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| bookmarks | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| hyperlinks | ✅ | ? | ? | ✅ | ? | ? |
+| images | (없음) | ✅ | ? | ✅ | ? | ✅ |
+| paragraphs | (불가) | ✅ | (의미 없음) | ✅ | ? | ? |
+| styles | ✅ | ✅ | ✅ | ✅ | ✅ | ? |
+| tables | ? | ✅ | (의미 없음) | ✅ | ? | ? |
+
+**제안 — Phase A**: 누락된 메소드 일괄 보완 (특히 `__contains__`,
+`remove`, `add` 시그니처 통일).
+
+## 1.4 `App.preferences` / 프로세스 단위 설정
+
+xlwings:
+```python
+app.calculation = "manual"
+app.screen_updating = False
+app.display_alerts = False
+app.cut_copy_mode = False
+```
+
+hwpapi 현재: `silenced` / `batch_mode` context 만 있음. 일회성
+property setter 가 없음.
+
+**제안**: `App.preferences` 또는 직접 property
+```python
+app.screen_updating = False    # 화면 갱신 끄기 (대량 작업 가속)
+app.display_alerts = False     # 모든 native dialog 자동 응답
+app.cut_copy_mode = False      # 깜박이는 marquee 끄기
+app.recent_files               # 최근 파일 list
+app.default_save_format = "HWPX"
+```
+
+## 1.5 `view` / 빠른 미리보기 (Jupyter 등)
+
+xlwings 의 `xw.view(df)` 는 DataFrame 을 즉석에서 새 workbook 으로
+열어 보여줌. hwpapi 의 비슷한 use case:
+
+```python
+hwpapi.view("이 텍스트를 HWP 로 보여줘")
+hwpapi.view(my_dataframe)         # → 표로 자동 변환
+```
+디버깅 / 데이터 확인에 강력.
+
+## 1.6 `app.macro(name)` — HWP 매크로 호출
+
+xlwings:
+```python
+my_macro = app.macro("MyVBAModule.MyMacro")
+my_macro(arg1, arg2)
+```
+
+HWP 의 매크로 상응:
+```python
+result = app.macro("MyHwpScript")()           # 등록된 스크립트 호출
+result = doc.macro("InternalMacroName")(...)  # 문서 내 매크로
+```
+
+HWP 가 .hwt 매크로 / 스크립트 / 모듈을 어느 정도까지 노출하는지 확인
+필요.
+
+## 1.7 `Conversions` / 데이터 → HWP 자동 변환
+
+xlwings 의 `Range.options(pd.DataFrame)` 는 기본 데이터 형변환을
+처리. hwpapi 에 적용:
+
+```python
+doc.insert_table.from_dataframe(df, format_dates="%Y-%m-%d")
+doc.insert_table.from_csv("data.csv")
+doc.insert_table.from_dict_list([{...}, {...}])
+cell.value = pd.Timestamp.now()  # 자동 포맷
+```
+
+# 2. `with` 없는 직접 setter — 명령형 API
+
+현재 `charshape_scope` / `parashape_scope` 는 context manager 만
+지원. v1 시절의 `app.set_charshape(bold=True)` 같은 명령형 호출이
+편한 use case 가 많음 (예: 현재 선택 영역에 일회성 적용).
+
+**제안 — Document 와 element 모두에 `set_*` 메소드 추가**:
+
+```python
+# 현재 선택/커서에 일회성 적용 (활성 doc 기준 == doc 자동 활성)
+doc.set_charshape(bold=True, height=1400, text_color="#E74C3C")
+doc.set_parashape(align="center", line_spacing=180)
+
+# Range / Selection 도 동일
+doc.selection.set_charshape(bold=True)
+doc.range(p1, p2).set_charshape(italic=True)
+
+# Element 의 설정도 동일 — Cell, Run, Paragraph
+cell.set_fill("#FFE0E0")
+cell.set_border(top="solid", bottom="double")
+run.set_charshape(bold=True)
+paragraph.set_parashape(align="center")
+```
+
+규칙:
+- `set_X(**kwargs)` 는 **현재 상태에 즉시 적용** (선택/커서 기반)
+- `with X_scope(**kwargs)` 는 **블록 내부만 적용 후 자동 복원**
+- `obj.X = {...}` (property setter) 는 **객체 자체에 적용**
+
+3가지가 각각 다른 의도 — 사용자가 적절한 것 선택.
+
+**구현 시 주의**:
+- `set_charshape` 는 활성 선택이 없으면 cursor 의 향후 입력에만
+  적용 (HWP 기본 동작). 사용자가 의도하지 않은 bleed 방지를 위해
+  docstring 명시.
+- 선택이 있으면 그 영역에만 적용 후 선택 유지 (사용자가 다음 작업
+  이어갈 수 있게).
+
+# 3. 신규로 있으면 유용한 메소드
+
+사용자 워크플로우에서 반복 등장하는 작업들. 카테고리별로:
+
+## 3.1 문서 메타데이터
+
+```python
+doc.metadata.title             # r/w
+doc.metadata.author
+doc.metadata.subject
+doc.metadata.keywords
+doc.metadata.created           # datetime
+doc.metadata.modified
+doc.statistics.page_count      # = doc.page_count (alias)
+doc.statistics.character_count
+doc.statistics.word_count
+doc.statistics.paragraph_count
+doc.statistics.table_count
+doc.fonts.list_used()          # 문서에 사용된 모든 폰트
+```
+
+## 3.2 페이지 / 인쇄
+
+```python
+doc.zoom = 150                 # 화면 확대 비율
+doc.print()                    # 인쇄 다이얼로그
+doc.print_silent(printer="HP LaserJet", copies=2)  # 다이얼로그 없이
+doc.print_preview()
+doc.page_setup(width="210mm", height="297mm", margins={"top": "25mm", ...})
+```
+
+## 3.3 outline / 목차
+
+```python
+doc.headings                   # 모든 heading list
+for h in doc.headings:
+    print(f"{'  ' * h.level}{h.text}")
+
+doc.outline.toc.update()       # 목차 갱신
+doc.outline.add("새 장", level=1)
+```
+
+## 3.4 표 데이터 변환
+
+```python
+doc.tables[0].to_dataframe()   # → pandas DataFrame
+doc.tables[0].to_dict()        # → list[dict]
+doc.tables[0].to_csv("out.csv")
+
+doc.insert_table.from_dataframe(df)
+doc.insert_table.from_csv("data.csv")
+```
+
+## 3.5 검색 / 일괄 처리
+
+```python
+matches = doc.find_all("핵심")     # list of Range
+for m in matches:
+    m.set_charshape(bold=True, text_color="#E74C3C")
+
+doc.replace_brackets({                 # 메일 머지 helper
+    "{name}": "홍길동",
+    "{date}": "2026-04-29",
+    "{amount}": "1,200,000원",
+})
+```
+
+## 3.6 비교 / diff
+
+```python
+diff = doc.compare("previous_version.hwp")
+for change in diff.insertions:
+    print(f"+ p{change.paragraph}: {change.text}")
+for change in diff.deletions:
+    print(f"- p{change.paragraph}: {change.text}")
+```
+
+## 3.7 보호 / 암호
+
+```python
+doc.password = "secret"           # 저장 시 암호화
+doc.protect(read_only=True, password="...")
+doc.unprotect("...")
+doc.is_protected                  # bool
+```
+
+## 3.8 Window / View
+
+```python
+doc.window.activate()             # 이 doc 의 창을 forefront
+doc.window.minimize() / maximize()
+doc.window.position = (100, 100)
+doc.window.size = (1200, 800)
+
+doc.view.mode = "page"            # "page" | "outline" | "draft"
+doc.view.show_paragraph_marks = True
+doc.view.show_ruler = False
+```
+
+## 3.9 일괄 모드 (성능)
+
+```python
+with app.batch():                 # screen_updating off + dialogs off
+    for path in many_files:
+        doc = app.docs.open(path)
+        # ... 빠른 일괄 처리
+        doc.close()
+
+with doc.batch():                 # 한 doc 내 빠른 입력
+    for line in many_lines:
+        doc.insert_text(line + "\n")
+```
+
+## 3.10 실험적 / 편의
+
+```python
+doc.toc()                         # 화면에 outline 출력 (디버깅)
+doc.preview()                     # PDF 변환 후 OS viewer 로 표시
+doc.snapshot("checkpoint")        # 현재 상태 임시 저장 (in-memory)
+doc.restore("checkpoint")         # 위 snapshot 복원 (undo 와 별개)
+```
+
+# 우선순위 / 단계 (로드맵)
+
+## v3.1 — 핵심 ergonomics
+
+- `doc.set_charshape(...)` / `doc.set_parashape(...)` (직접 setter)
+- `doc.selection` 객체 + `set_charshape` / `delete` / `text`
+- `app.screen_updating` / `app.display_alerts` (property)
+- `doc.find_all(query)` → list[Range]
+- `Range` 객체 (`doc.range(start_para, end_para)`)
+
+## v3.2 — 데이터 / 표
+
+- `doc.tables[i].to_dataframe()` / `to_dict()` / `to_csv()`
+- `doc.insert_table.from_dataframe(df)` / `from_csv()`
+- `doc.replace_brackets({...})` (메일 머지 helper)
+- Element API (ADR-004) 의 Phase 1+2 (`Paragraph.text`, `Cell.fill` 등)
+
+## v3.3 — 메타 / 페이지
+
+- `doc.metadata.{title,author,...}` (HWP DocumentInfo 매핑)
+- `doc.statistics.{page_count,character_count,...}`
+- `doc.zoom` property
+- `doc.print()` / `doc.print_silent(...)`
+- `doc.window.{activate,minimize,...}`
+
+## v3.4 — outline / 고급
+
+- `doc.headings` (Heading 객체 list)
+- `doc.outline.toc.update()`
+- `doc.compare(other)` (diff)
+- `doc.protect()` / `password`
+
+## v3.5 — 실험적
+
+- `doc.snapshot()` / `restore()`
+- `doc.preview()` (PDF + open)
+- `hwpapi.view(...)` (모듈 레벨 quick-view)
+
+# 결과
+
+## 긍정
+
+- **사용자 워크플로우 1:1 매핑** — 반복 작업이 짧은 코드로
+- **3가지 적용 패턴 명확화** — context (`with`) / 명령형 (`set_X`)
+  / 객체 (property setter)
+- **xlwings 사용자 진입 장벽 낮음** — 거의 동일 멘탈 모델
+- **데이터 분석가 친화** — pandas / csv 양방향 자동
+- **다중 문서 안전** — Range / Selection 도 doc-activate 자동
+
+## 부정 / 위험
+
+- **API 표면 폭발** — Document 의 메소드가 v3 의 18개에서 ~50+ 로
+  증가. 슬림 facade 정신 후퇴 위험. 완화: 카테고리별 sub-accessor
+  (`doc.statistics`, `doc.metadata`, `doc.window`) 로 그룹화.
+- **3가지 패턴 중 어느 걸 쓸지 혼동 가능** — 가이드/recipe 에서
+  "block 을 묶어 적용 = `with`, 한 번만 = `set_X`, 객체 변경 =
+  `obj.X = ...`" 식 명확한 룰 노출 필요.
+- **HWP COM 의 한계** — 일부 기능 (예: `print_silent`, 진짜
+  metadata r/w) 은 HWP COM 이 직접 노출하지 않을 수 있음. spike
+  단계에서 검증.
+- **테스트 부담** — 50+ 메소드 → 200+ 테스트.
+
+# 미해결 질문
+
+1. **`set_X` vs `set_charshape` 시그니처 통일** — `set_charshape`
+   은 keyword-only? `**kwargs` 로 받을지, `CharShape` 객체로 받을지,
+   둘 다 받을지.
+2. **Range 의 시그니처** — 단락 단위? 글자 단위? 둘 다? xlwings 는
+   "A1:B5" string 도 받음 — hwpapi 도 "p2:p5" 같은 약식 string 지원?
+3. **`doc.batch()` vs `app.batch()` 의 책임 분리** — 실제 어느
+   레벨에서 효과가 있는지 spike 필요.
+4. **`hwpapi.view(...)` 가 새 App 을 띄우는가, 기존 App 에 doc 추가
+   인가?** xlwings 는 후자.
+5. **`metadata.author` 의 r/w 가능성** — HWP COM 이 DocumentInfo 를
+   set 하는 표준 방법 미확인.
+
+# 참고
+
+- [ADR-003: 다중 문서 재설계](adr-003-multi-document.qmd)
+- [ADR-004: 요소 단위 API](adr-004-element-api.qmd)
+- [xlwings full API](https://docs.xlwings.org/en/stable/api.html)
+- [xlwings App preferences](https://docs.xlwings.org/en/stable/api.html#app)
+- [xlwings Range.options](https://docs.xlwings.org/en/stable/converters.html)

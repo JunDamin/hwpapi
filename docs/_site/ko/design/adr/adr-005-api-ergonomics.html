@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ko" xml:lang="ko"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>ADR-005: API 사용성 — 리팩토링 + 직접 setter + 신규 메소드 – hwpapi</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../design/adr/adr-006-python-docx-patterns.html" rel="next">
+<link href="../../design/adr/adr-004-element-api.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-dark-dbc92dda8186f57fa2e333fbb71d6a9d.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-a06763021a52c43c40a351ac8b799b8f.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-521d016db09673342a232bde0428f48f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-dark-ea9b9fa81ac2322170bca8b828f21f7b.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../site_libs/bootstrap/bootstrap-521d016db09673342a232bde0428f48f.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "일치 없음",
+    "search-matching-documents-text": "일치된 문서",
+    "search-copy-link-title": "검색 링크 복사",
+    "search-hide-matches-text": "추가 검색 결과 숨기기",
+    "search-more-match-text": "추가 검색결과",
+    "search-more-matches-text": "추가 검색결과",
+    "search-clear-button-title": "제거",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "취소",
+    "search-submit-button-title": "검색",
+    "search-label": "검색"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+
+<link rel="stylesheet" href="../../../_assets/styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../../_assets/logo.png" alt="" class="navbar-logo light-content">
+    <img src="../../../_assets/logo.png" alt="" class="navbar-logo dark-content">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">hwpapi</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="검색"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="탐색 전환" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../index.html"> 
+<span class="menu-text">홈</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../getting-started/install.html"> 
+<span class="menu-text">시작하기</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../guide/app-and-document.html"> 
+<span class="menu-text">가이드</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../recipes/index.html"> 
+<span class="menu-text">레시피</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../reference/index.html"> 
+<span class="menu-text">레퍼런스</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../../design/index.html" aria-current="page"> 
+<span class="menu-text">디자인</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../index.html"> 
+<span class="menu-text">🇬🇧 English</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/JunDamin/hwpapi"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="다크 모드 전환"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="사이드바 전환" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../design/adr/adr-001-v2-redesign.html">ADRs</a></li><li class="breadcrumb-item"><a href="../../design/adr/adr-005-api-ergonomics.html">ADR-005: API 사용성 — 리팩토링 + 직접 setter + 신규 메소드</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="사이드바 전환" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../design/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">설계</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../design/architecture.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">아키텍처</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">ADRs</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="토글 섹션">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../design/adr/adr-001-v2-redesign.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ADR-001: 두 층 API</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../design/adr/adr-002-quarto-docs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ADR-002: Quarto 단일 파이프라인 문서화</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../design/adr/adr-003-multi-document.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ADR-003: 다중 문서 재설계 — xlwings 영감의 App/Docs/Document</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../design/adr/adr-004-element-api.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ADR-004: 요소 단위 API — Run / Paragraph / Cell / Section</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../design/adr/adr-005-api-ergonomics.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">ADR-005: API 사용성 — 리팩토링 + 직접 setter + 신규 메소드</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../design/adr/adr-006-python-docx-patterns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ADR-006: python-docx 패턴 — 차용/배제 후보</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">목차</h2>
+   
+  <ul>
+  <li><a href="#맥락" id="toc-맥락" class="nav-link active" data-scroll-target="#맥락">맥락</a></li>
+  <li><a href="#xlwings-비교-기반-리팩토링-후보" id="toc-xlwings-비교-기반-리팩토링-후보" class="nav-link" data-scroll-target="#xlwings-비교-기반-리팩토링-후보">1. xlwings 비교 기반 리팩토링 후보</a>
+  <ul class="collapse">
+  <li><a href="#range-범위-선택-객체" id="toc-range-범위-선택-객체" class="nav-link" data-scroll-target="#range-범위-선택-객체">1.1 Range / 범위 선택 객체</a></li>
+  <li><a href="#selection-객체-현재-app.sel-폐기-후-다시" id="toc-selection-객체-현재-app.sel-폐기-후-다시" class="nav-link" data-scroll-target="#selection-객체-현재-app.sel-폐기-후-다시">1.2 <code>Selection</code> 객체 (현재 <code>app.sel</code> 폐기 후 다시)</a></li>
+  <li><a href="#컬렉션-add-의-일관성" id="toc-컬렉션-add-의-일관성" class="nav-link" data-scroll-target="#컬렉션-add-의-일관성">1.3 컬렉션 <code>add</code> / <code>[]</code> 의 일관성</a></li>
+  <li><a href="#app.preferences-프로세스-단위-설정" id="toc-app.preferences-프로세스-단위-설정" class="nav-link" data-scroll-target="#app.preferences-프로세스-단위-설정">1.4 <code>App.preferences</code> / 프로세스 단위 설정</a></li>
+  <li><a href="#view-빠른-미리보기-jupyter-등" id="toc-view-빠른-미리보기-jupyter-등" class="nav-link" data-scroll-target="#view-빠른-미리보기-jupyter-등">1.5 <code>view</code> / 빠른 미리보기 (Jupyter 등)</a></li>
+  <li><a href="#app.macroname-hwp-매크로-호출" id="toc-app.macroname-hwp-매크로-호출" class="nav-link" data-scroll-target="#app.macroname-hwp-매크로-호출">1.6 <code>app.macro(name)</code> — HWP 매크로 호출</a></li>
+  <li><a href="#conversions-데이터-hwp-자동-변환" id="toc-conversions-데이터-hwp-자동-변환" class="nav-link" data-scroll-target="#conversions-데이터-hwp-자동-변환">1.7 <code>Conversions</code> / 데이터 → HWP 자동 변환</a></li>
+  </ul></li>
+  <li><a href="#with-없는-직접-setter-명령형-api" id="toc-with-없는-직접-setter-명령형-api" class="nav-link" data-scroll-target="#with-없는-직접-setter-명령형-api">2. <code>with</code> 없는 직접 setter — 명령형 API</a></li>
+  <li><a href="#신규로-있으면-유용한-메소드" id="toc-신규로-있으면-유용한-메소드" class="nav-link" data-scroll-target="#신규로-있으면-유용한-메소드">3. 신규로 있으면 유용한 메소드</a>
+  <ul class="collapse">
+  <li><a href="#문서-메타데이터" id="toc-문서-메타데이터" class="nav-link" data-scroll-target="#문서-메타데이터">3.1 문서 메타데이터</a></li>
+  <li><a href="#페이지-인쇄" id="toc-페이지-인쇄" class="nav-link" data-scroll-target="#페이지-인쇄">3.2 페이지 / 인쇄</a></li>
+  <li><a href="#outline-목차" id="toc-outline-목차" class="nav-link" data-scroll-target="#outline-목차">3.3 outline / 목차</a></li>
+  <li><a href="#표-데이터-변환" id="toc-표-데이터-변환" class="nav-link" data-scroll-target="#표-데이터-변환">3.4 표 데이터 변환</a></li>
+  <li><a href="#검색-일괄-처리" id="toc-검색-일괄-처리" class="nav-link" data-scroll-target="#검색-일괄-처리">3.5 검색 / 일괄 처리</a></li>
+  <li><a href="#비교-diff" id="toc-비교-diff" class="nav-link" data-scroll-target="#비교-diff">3.6 비교 / diff</a></li>
+  <li><a href="#보호-암호" id="toc-보호-암호" class="nav-link" data-scroll-target="#보호-암호">3.7 보호 / 암호</a></li>
+  <li><a href="#window-view" id="toc-window-view" class="nav-link" data-scroll-target="#window-view">3.8 Window / View</a></li>
+  <li><a href="#일괄-모드-성능" id="toc-일괄-모드-성능" class="nav-link" data-scroll-target="#일괄-모드-성능">3.9 일괄 모드 (성능)</a></li>
+  <li><a href="#실험적-편의" id="toc-실험적-편의" class="nav-link" data-scroll-target="#실험적-편의">3.10 실험적 / 편의</a></li>
+  </ul></li>
+  <li><a href="#우선순위-단계-로드맵" id="toc-우선순위-단계-로드맵" class="nav-link" data-scroll-target="#우선순위-단계-로드맵">우선순위 / 단계 (로드맵)</a>
+  <ul class="collapse">
+  <li><a href="#v3.1-핵심-ergonomics" id="toc-v3.1-핵심-ergonomics" class="nav-link" data-scroll-target="#v3.1-핵심-ergonomics">v3.1 — 핵심 ergonomics</a></li>
+  <li><a href="#v3.2-데이터-표" id="toc-v3.2-데이터-표" class="nav-link" data-scroll-target="#v3.2-데이터-표">v3.2 — 데이터 / 표</a></li>
+  <li><a href="#v3.3-메타-페이지" id="toc-v3.3-메타-페이지" class="nav-link" data-scroll-target="#v3.3-메타-페이지">v3.3 — 메타 / 페이지</a></li>
+  <li><a href="#v3.4-outline-고급" id="toc-v3.4-outline-고급" class="nav-link" data-scroll-target="#v3.4-outline-고급">v3.4 — outline / 고급</a></li>
+  <li><a href="#v3.5-실험적" id="toc-v3.5-실험적" class="nav-link" data-scroll-target="#v3.5-실험적">v3.5 — 실험적</a></li>
+  </ul></li>
+  <li><a href="#결과" id="toc-결과" class="nav-link" data-scroll-target="#결과">결과</a>
+  <ul class="collapse">
+  <li><a href="#긍정" id="toc-긍정" class="nav-link" data-scroll-target="#긍정">긍정</a></li>
+  <li><a href="#부정-위험" id="toc-부정-위험" class="nav-link" data-scroll-target="#부정-위험">부정 / 위험</a></li>
+  </ul></li>
+  <li><a href="#미해결-질문" id="toc-미해결-질문" class="nav-link" data-scroll-target="#미해결-질문">미해결 질문</a></li>
+  <li><a href="#참고" id="toc-참고" class="nav-link" data-scroll-target="#참고">참고</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/design/adr/adr-005-api-ergonomics.qmd" class="toc-action"><i class="bi bi-github"></i>편집</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>이슈 보고</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../design/adr/adr-001-v2-redesign.html">ADRs</a></li><li class="breadcrumb-item"><a href="../../design/adr/adr-005-api-ergonomics.html">ADR-005: API 사용성 — 리팩토링 + 직접 setter + 신규 메소드</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">ADR-005: API 사용성 — 리팩토링 + 직접 setter + 신규 메소드</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">공개</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">2026년 4월 29일</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="맥락" class="level1">
+<h1>맥락</h1>
+<p>ADR-003 / ADR-004 로 v3 의 큰 골격 (App / Documents / Document / Element) 이 정해졌습니다. 다음 단계는 <strong>API 의 “쓰기 편함”</strong> 입니다. 세 갈래로 정리:</p>
+<ol type="1">
+<li><strong>xlwings 비교 기반 refactoring 후보</strong> — 비슷한 영역에서 xlwings 가 어떻게 풀었는지를 mining 하여 hwpapi 의 어색한 부분 재설계</li>
+<li><strong><code>with</code> 없이 한 줄 setter</strong> — <code>set_charshape(bold=True)</code> 처럼 현재 선택/커서에 즉시 적용하는 명령형 API (현재는 <code>with charshape_scope(...)</code> 만 있음)</li>
+<li><strong>신규 유용 메소드</strong> — 사용자 워크플로우에서 반복적으로 등장 하는 작업을 네이티브 API 로 격상</li>
+</ol>
+</section>
+<section id="xlwings-비교-기반-리팩토링-후보" class="level1">
+<h1>1. xlwings 비교 기반 리팩토링 후보</h1>
+<section id="range-범위-선택-객체" class="level2">
+<h2 class="anchored" data-anchor-id="range-범위-선택-객체">1.1 Range / 범위 선택 객체</h2>
+<p>xlwings:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>sheet.<span class="bu">range</span>(<span class="st">"A1:C5"</span>).value <span class="op">=</span> [[<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>], ...]</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>sheet.<span class="bu">range</span>(<span class="st">"A1"</span>).color <span class="op">=</span> (<span class="dv">255</span>, <span class="dv">200</span>, <span class="dv">200</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>sheet[<span class="st">"A1:B2"</span>].font.bold <span class="op">=</span> <span class="va">True</span></span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+<p>hwpapi 현재: 범위 선택은 <code>app.api.Run("MoveSelRight")</code> 같은 raw 가 유일.</p>
+<p><strong>제안</strong>: <code>Range</code> 객체 신설</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> doc.<span class="bu">range</span>(start_para<span class="op">=</span><span class="dv">2</span>, start_char<span class="op">=</span><span class="dv">0</span>, end_para<span class="op">=</span><span class="dv">2</span>, end_char<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>r.text                      <span class="co"># 그 범위의 텍스트</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>r.text <span class="op">=</span> <span class="st">"교체"</span>             <span class="co"># 그 범위 교체</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>r.charshape <span class="op">=</span> {<span class="st">"bold"</span>: <span class="va">True</span>}</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>r.delete()</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>r.copy()</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+<p>구현은 내부적으로 select_text + 적용 + cancel 이지만 사용자에게는 selection state 가 숨겨짐.</p>
+</section>
+<section id="selection-객체-현재-app.sel-폐기-후-다시" class="level2">
+<h2 class="anchored" data-anchor-id="selection-객체-현재-app.sel-폐기-후-다시">1.2 <code>Selection</code> 객체 (현재 <code>app.sel</code> 폐기 후 다시)</h2>
+<p>xlwings:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>xw.apps.active.selection.value</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>xw.apps.active.selection.font.bold <span class="op">=</span> <span class="va">True</span></span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+<p>hwpapi 현재: 선택 상태 접근은 <code>app.api.GetSelectedText()</code> 등 raw. v1 의 <code>app.sel</code> 은 v2 에서 제거됐으나 위 워크플로우는 흔함.</p>
+<p><strong>제안</strong>: <code>doc.selection</code> 객체 (Range 의 특수 인스턴스)</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>doc.selection.text                       <span class="co"># 현재 선택된 텍스트</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>doc.selection.charshape <span class="op">=</span> {<span class="st">"bold"</span>: <span class="va">True</span>} <span class="co"># 선택 영역에 굵게</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>doc.selection.delete()</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>doc.selection.exists                     <span class="co"># bool — 선택 영역 있는지</span></span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="컬렉션-add-의-일관성" class="level2">
+<h2 class="anchored" data-anchor-id="컬렉션-add-의-일관성">1.3 컬렉션 <code>add</code> / <code>[]</code> 의 일관성</h2>
+<p>xlwings 의 모든 컬렉션 (<code>books</code>, <code>sheets</code>, <code>pictures</code>, <code>charts</code>) 은 동일 패턴:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>sheets.add(name<span class="op">=</span>..., before<span class="op">=</span>..., after<span class="op">=</span>...)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>sheets[<span class="dv">0</span>]   <span class="co"># int</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>sheets[<span class="st">"Sheet1"</span>]   <span class="co"># str</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> s <span class="kw">in</span> sheets: ...</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+<p>hwpapi 의 7 컬렉션 검토 — 일관성 점검 필요:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>컬렉션</th>
+<th><code>add</code></th>
+<th><code>[i]</code></th>
+<th><code>["name"]</code></th>
+<th><code>for</code></th>
+<th><code>in</code></th>
+<th><code>remove</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>fields</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr class="even">
+<td>bookmarks</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>hyperlinks</td>
+<td>✅</td>
+<td>?</td>
+<td>?</td>
+<td>✅</td>
+<td>?</td>
+<td>?</td>
+</tr>
+<tr class="even">
+<td>images</td>
+<td>(없음)</td>
+<td>✅</td>
+<td>?</td>
+<td>✅</td>
+<td>?</td>
+<td>✅</td>
+</tr>
+<tr class="odd">
+<td>paragraphs</td>
+<td>(불가)</td>
+<td>✅</td>
+<td>(의미 없음)</td>
+<td>✅</td>
+<td>?</td>
+<td>?</td>
+</tr>
+<tr class="even">
+<td>styles</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+<td>?</td>
+</tr>
+<tr class="odd">
+<td>tables</td>
+<td>?</td>
+<td>✅</td>
+<td>(의미 없음)</td>
+<td>✅</td>
+<td>?</td>
+<td>?</td>
+</tr>
+</tbody>
+</table>
+<p><strong>제안 — Phase A</strong>: 누락된 메소드 일괄 보완 (특히 <code>__contains__</code>, <code>remove</code>, <code>add</code> 시그니처 통일).</p>
+</section>
+<section id="app.preferences-프로세스-단위-설정" class="level2">
+<h2 class="anchored" data-anchor-id="app.preferences-프로세스-단위-설정">1.4 <code>App.preferences</code> / 프로세스 단위 설정</h2>
+<p>xlwings:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>app.calculation <span class="op">=</span> <span class="st">"manual"</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>app.screen_updating <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>app.display_alerts <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>app.cut_copy_mode <span class="op">=</span> <span class="va">False</span></span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+<p>hwpapi 현재: <code>silenced</code> / <code>batch_mode</code> context 만 있음. 일회성 property setter 가 없음.</p>
+<p><strong>제안</strong>: <code>App.preferences</code> 또는 직접 property</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>app.screen_updating <span class="op">=</span> <span class="va">False</span>    <span class="co"># 화면 갱신 끄기 (대량 작업 가속)</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>app.display_alerts <span class="op">=</span> <span class="va">False</span>     <span class="co"># 모든 native dialog 자동 응답</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>app.cut_copy_mode <span class="op">=</span> <span class="va">False</span>      <span class="co"># 깜박이는 marquee 끄기</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>app.recent_files               <span class="co"># 최근 파일 list</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>app.default_save_format <span class="op">=</span> <span class="st">"HWPX"</span></span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="view-빠른-미리보기-jupyter-등" class="level2">
+<h2 class="anchored" data-anchor-id="view-빠른-미리보기-jupyter-등">1.5 <code>view</code> / 빠른 미리보기 (Jupyter 등)</h2>
+<p>xlwings 의 <code>xw.view(df)</code> 는 DataFrame 을 즉석에서 새 workbook 으로 열어 보여줌. hwpapi 의 비슷한 use case:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>hwpapi.view(<span class="st">"이 텍스트를 HWP 로 보여줘"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>hwpapi.view(my_dataframe)         <span class="co"># → 표로 자동 변환</span></span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+<p>디버깅 / 데이터 확인에 강력.</p>
+</section>
+<section id="app.macroname-hwp-매크로-호출" class="level2">
+<h2 class="anchored" data-anchor-id="app.macroname-hwp-매크로-호출">1.6 <code>app.macro(name)</code> — HWP 매크로 호출</h2>
+<p>xlwings:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>my_macro <span class="op">=</span> app.macro(<span class="st">"MyVBAModule.MyMacro"</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>my_macro(arg1, arg2)</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+<p>HWP 의 매크로 상응:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> app.macro(<span class="st">"MyHwpScript"</span>)()           <span class="co"># 등록된 스크립트 호출</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> doc.macro(<span class="st">"InternalMacroName"</span>)(...)  <span class="co"># 문서 내 매크로</span></span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+<p>HWP 가 .hwt 매크로 / 스크립트 / 모듈을 어느 정도까지 노출하는지 확인 필요.</p>
+</section>
+<section id="conversions-데이터-hwp-자동-변환" class="level2">
+<h2 class="anchored" data-anchor-id="conversions-데이터-hwp-자동-변환">1.7 <code>Conversions</code> / 데이터 → HWP 자동 변환</h2>
+<p>xlwings 의 <code>Range.options(pd.DataFrame)</code> 는 기본 데이터 형변환을 처리. hwpapi 에 적용:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>doc.insert_table.from_dataframe(df, format_dates<span class="op">=</span><span class="st">"%Y-%m-</span><span class="sc">%d</span><span class="st">"</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>doc.insert_table.from_csv(<span class="st">"data.csv"</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>doc.insert_table.from_dict_list([{...}, {...}])</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>cell.value <span class="op">=</span> pd.Timestamp.now()  <span class="co"># 자동 포맷</span></span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="with-없는-직접-setter-명령형-api" class="level1">
+<h1>2. <code>with</code> 없는 직접 setter — 명령형 API</h1>
+<p>현재 <code>charshape_scope</code> / <code>parashape_scope</code> 는 context manager 만 지원. v1 시절의 <code>app.set_charshape(bold=True)</code> 같은 명령형 호출이 편한 use case 가 많음 (예: 현재 선택 영역에 일회성 적용).</p>
+<p><strong>제안 — Document 와 element 모두에 <code>set_*</code> 메소드 추가</strong>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 현재 선택/커서에 일회성 적용 (활성 doc 기준 == doc 자동 활성)</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>doc.set_charshape(bold<span class="op">=</span><span class="va">True</span>, height<span class="op">=</span><span class="dv">1400</span>, text_color<span class="op">=</span><span class="st">"#E74C3C"</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>doc.set_parashape(align<span class="op">=</span><span class="st">"center"</span>, line_spacing<span class="op">=</span><span class="dv">180</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Range / Selection 도 동일</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>doc.selection.set_charshape(bold<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>doc.<span class="bu">range</span>(p1, p2).set_charshape(italic<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Element 의 설정도 동일 — Cell, Run, Paragraph</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>cell.set_fill(<span class="st">"#FFE0E0"</span>)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>cell.set_border(top<span class="op">=</span><span class="st">"solid"</span>, bottom<span class="op">=</span><span class="st">"double"</span>)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>run.set_charshape(bold<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>paragraph.set_parashape(align<span class="op">=</span><span class="st">"center"</span>)</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+<p>규칙: - <code>set_X(**kwargs)</code> 는 <strong>현재 상태에 즉시 적용</strong> (선택/커서 기반) - <code>with X_scope(**kwargs)</code> 는 <strong>블록 내부만 적용 후 자동 복원</strong> - <code>obj.X = {...}</code> (property setter) 는 <strong>객체 자체에 적용</strong></p>
+<p>3가지가 각각 다른 의도 — 사용자가 적절한 것 선택.</p>
+<p><strong>구현 시 주의</strong>: - <code>set_charshape</code> 는 활성 선택이 없으면 cursor 의 향후 입력에만 적용 (HWP 기본 동작). 사용자가 의도하지 않은 bleed 방지를 위해 docstring 명시. - 선택이 있으면 그 영역에만 적용 후 선택 유지 (사용자가 다음 작업 이어갈 수 있게).</p>
+</section>
+<section id="신규로-있으면-유용한-메소드" class="level1">
+<h1>3. 신규로 있으면 유용한 메소드</h1>
+<p>사용자 워크플로우에서 반복 등장하는 작업들. 카테고리별로:</p>
+<section id="문서-메타데이터" class="level2">
+<h2 class="anchored" data-anchor-id="문서-메타데이터">3.1 문서 메타데이터</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>doc.metadata.title             <span class="co"># r/w</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>doc.metadata.author</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>doc.metadata.subject</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>doc.metadata.keywords</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>doc.metadata.created           <span class="co"># datetime</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>doc.metadata.modified</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>doc.statistics.page_count      <span class="co"># = doc.page_count (alias)</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>doc.statistics.character_count</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>doc.statistics.word_count</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>doc.statistics.paragraph_count</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>doc.statistics.table_count</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>doc.fonts.list_used()          <span class="co"># 문서에 사용된 모든 폰트</span></span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="페이지-인쇄" class="level2">
+<h2 class="anchored" data-anchor-id="페이지-인쇄">3.2 페이지 / 인쇄</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>doc.zoom <span class="op">=</span> <span class="dv">150</span>                 <span class="co"># 화면 확대 비율</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>doc.<span class="bu">print</span>()                    <span class="co"># 인쇄 다이얼로그</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>doc.print_silent(printer<span class="op">=</span><span class="st">"HP LaserJet"</span>, copies<span class="op">=</span><span class="dv">2</span>)  <span class="co"># 다이얼로그 없이</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>doc.print_preview()</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>doc.page_setup(width<span class="op">=</span><span class="st">"210mm"</span>, height<span class="op">=</span><span class="st">"297mm"</span>, margins<span class="op">=</span>{<span class="st">"top"</span>: <span class="st">"25mm"</span>, ...})</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="outline-목차" class="level2">
+<h2 class="anchored" data-anchor-id="outline-목차">3.3 outline / 목차</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>doc.headings                   <span class="co"># 모든 heading list</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> h <span class="kw">in</span> doc.headings:</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="st">'  '</span> <span class="op">*</span> h<span class="sc">.</span>level<span class="sc">}{</span>h<span class="sc">.</span>text<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>doc.outline.toc.update()       <span class="co"># 목차 갱신</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>doc.outline.add(<span class="st">"새 장"</span>, level<span class="op">=</span><span class="dv">1</span>)</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="표-데이터-변환" class="level2">
+<h2 class="anchored" data-anchor-id="표-데이터-변환">3.4 표 데이터 변환</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>doc.tables[<span class="dv">0</span>].to_dataframe()   <span class="co"># → pandas DataFrame</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>doc.tables[<span class="dv">0</span>].to_dict()        <span class="co"># → list[dict]</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>doc.tables[<span class="dv">0</span>].to_csv(<span class="st">"out.csv"</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>doc.insert_table.from_dataframe(df)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>doc.insert_table.from_csv(<span class="st">"data.csv"</span>)</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="검색-일괄-처리" class="level2">
+<h2 class="anchored" data-anchor-id="검색-일괄-처리">3.5 검색 / 일괄 처리</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>matches <span class="op">=</span> doc.find_all(<span class="st">"핵심"</span>)     <span class="co"># list of Range</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> matches:</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    m.set_charshape(bold<span class="op">=</span><span class="va">True</span>, text_color<span class="op">=</span><span class="st">"#E74C3C"</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>doc.replace_brackets({                 <span class="co"># 메일 머지 helper</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">{name}</span><span class="st">"</span>: <span class="st">"홍길동"</span>,</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">{date}</span><span class="st">"</span>: <span class="st">"2026-04-29"</span>,</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span><span class="sc">{amount}</span><span class="st">"</span>: <span class="st">"1,200,000원"</span>,</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="비교-diff" class="level2">
+<h2 class="anchored" data-anchor-id="비교-diff">3.6 비교 / diff</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>diff <span class="op">=</span> doc.compare(<span class="st">"previous_version.hwp"</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> change <span class="kw">in</span> diff.insertions:</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"+ p</span><span class="sc">{</span>change<span class="sc">.</span>paragraph<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>change<span class="sc">.</span>text<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> change <span class="kw">in</span> diff.deletions:</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"- p</span><span class="sc">{</span>change<span class="sc">.</span>paragraph<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>change<span class="sc">.</span>text<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="보호-암호" class="level2">
+<h2 class="anchored" data-anchor-id="보호-암호">3.7 보호 / 암호</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>doc.password <span class="op">=</span> <span class="st">"secret"</span>           <span class="co"># 저장 시 암호화</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>doc.protect(read_only<span class="op">=</span><span class="va">True</span>, password<span class="op">=</span><span class="st">"..."</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>doc.unprotect(<span class="st">"..."</span>)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>doc.is_protected                  <span class="co"># bool</span></span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="window-view" class="level2">
+<h2 class="anchored" data-anchor-id="window-view">3.8 Window / View</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>doc.window.activate()             <span class="co"># 이 doc 의 창을 forefront</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>doc.window.minimize() <span class="op">/</span> maximize()</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>doc.window.position <span class="op">=</span> (<span class="dv">100</span>, <span class="dv">100</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>doc.window.size <span class="op">=</span> (<span class="dv">1200</span>, <span class="dv">800</span>)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>doc.view.mode <span class="op">=</span> <span class="st">"page"</span>            <span class="co"># "page" | "outline" | "draft"</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>doc.view.show_paragraph_marks <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>doc.view.show_ruler <span class="op">=</span> <span class="va">False</span></span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="일괄-모드-성능" class="level2">
+<h2 class="anchored" data-anchor-id="일괄-모드-성능">3.9 일괄 모드 (성능)</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> app.batch():                 <span class="co"># screen_updating off + dialogs off</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> path <span class="kw">in</span> many_files:</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>        doc <span class="op">=</span> app.docs.<span class="bu">open</span>(path)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ... 빠른 일괄 처리</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>        doc.close()</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> doc.batch():                 <span class="co"># 한 doc 내 빠른 입력</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> line <span class="kw">in</span> many_lines:</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>        doc.insert_text(line <span class="op">+</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="실험적-편의" class="level2">
+<h2 class="anchored" data-anchor-id="실험적-편의">3.10 실험적 / 편의</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>doc.toc()                         <span class="co"># 화면에 outline 출력 (디버깅)</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>doc.preview()                     <span class="co"># PDF 변환 후 OS viewer 로 표시</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>doc.snapshot(<span class="st">"checkpoint"</span>)        <span class="co"># 현재 상태 임시 저장 (in-memory)</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>doc.restore(<span class="st">"checkpoint"</span>)         <span class="co"># 위 snapshot 복원 (undo 와 별개)</span></span></code></pre></div><button title="클립보드 복사" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="우선순위-단계-로드맵" class="level1">
+<h1>우선순위 / 단계 (로드맵)</h1>
+<section id="v3.1-핵심-ergonomics" class="level2">
+<h2 class="anchored" data-anchor-id="v3.1-핵심-ergonomics">v3.1 — 핵심 ergonomics</h2>
+<ul>
+<li><code>doc.set_charshape(...)</code> / <code>doc.set_parashape(...)</code> (직접 setter)</li>
+<li><code>doc.selection</code> 객체 + <code>set_charshape</code> / <code>delete</code> / <code>text</code></li>
+<li><code>app.screen_updating</code> / <code>app.display_alerts</code> (property)</li>
+<li><code>doc.find_all(query)</code> → list[Range]</li>
+<li><code>Range</code> 객체 (<code>doc.range(start_para, end_para)</code>)</li>
+</ul>
+</section>
+<section id="v3.2-데이터-표" class="level2">
+<h2 class="anchored" data-anchor-id="v3.2-데이터-표">v3.2 — 데이터 / 표</h2>
+<ul>
+<li><code>doc.tables[i].to_dataframe()</code> / <code>to_dict()</code> / <code>to_csv()</code></li>
+<li><code>doc.insert_table.from_dataframe(df)</code> / <code>from_csv()</code></li>
+<li><code>doc.replace_brackets({...})</code> (메일 머지 helper)</li>
+<li>Element API (ADR-004) 의 Phase 1+2 (<code>Paragraph.text</code>, <code>Cell.fill</code> 등)</li>
+</ul>
+</section>
+<section id="v3.3-메타-페이지" class="level2">
+<h2 class="anchored" data-anchor-id="v3.3-메타-페이지">v3.3 — 메타 / 페이지</h2>
+<ul>
+<li><code>doc.metadata.{title,author,...}</code> (HWP DocumentInfo 매핑)</li>
+<li><code>doc.statistics.{page_count,character_count,...}</code></li>
+<li><code>doc.zoom</code> property</li>
+<li><code>doc.print()</code> / <code>doc.print_silent(...)</code></li>
+<li><code>doc.window.{activate,minimize,...}</code></li>
+</ul>
+</section>
+<section id="v3.4-outline-고급" class="level2">
+<h2 class="anchored" data-anchor-id="v3.4-outline-고급">v3.4 — outline / 고급</h2>
+<ul>
+<li><code>doc.headings</code> (Heading 객체 list)</li>
+<li><code>doc.outline.toc.update()</code></li>
+<li><code>doc.compare(other)</code> (diff)</li>
+<li><code>doc.protect()</code> / <code>password</code></li>
+</ul>
+</section>
+<section id="v3.5-실험적" class="level2">
+<h2 class="anchored" data-anchor-id="v3.5-실험적">v3.5 — 실험적</h2>
+<ul>
+<li><code>doc.snapshot()</code> / <code>restore()</code></li>
+<li><code>doc.preview()</code> (PDF + open)</li>
+<li><code>hwpapi.view(...)</code> (모듈 레벨 quick-view)</li>
+</ul>
+</section>
+</section>
+<section id="결과" class="level1">
+<h1>결과</h1>
+<section id="긍정" class="level2">
+<h2 class="anchored" data-anchor-id="긍정">긍정</h2>
+<ul>
+<li><strong>사용자 워크플로우 1:1 매핑</strong> — 반복 작업이 짧은 코드로</li>
+<li><strong>3가지 적용 패턴 명확화</strong> — context (<code>with</code>) / 명령형 (<code>set_X</code>) / 객체 (property setter)</li>
+<li><strong>xlwings 사용자 진입 장벽 낮음</strong> — 거의 동일 멘탈 모델</li>
+<li><strong>데이터 분석가 친화</strong> — pandas / csv 양방향 자동</li>
+<li><strong>다중 문서 안전</strong> — Range / Selection 도 doc-activate 자동</li>
+</ul>
+</section>
+<section id="부정-위험" class="level2">
+<h2 class="anchored" data-anchor-id="부정-위험">부정 / 위험</h2>
+<ul>
+<li><strong>API 표면 폭발</strong> — Document 의 메소드가 v3 의 18개에서 ~50+ 로 증가. 슬림 facade 정신 후퇴 위험. 완화: 카테고리별 sub-accessor (<code>doc.statistics</code>, <code>doc.metadata</code>, <code>doc.window</code>) 로 그룹화.</li>
+<li><strong>3가지 패턴 중 어느 걸 쓸지 혼동 가능</strong> — 가이드/recipe 에서 “block 을 묶어 적용 = <code>with</code>, 한 번만 = <code>set_X</code>, 객체 변경 = <code>obj.X = ...</code>” 식 명확한 룰 노출 필요.</li>
+<li><strong>HWP COM 의 한계</strong> — 일부 기능 (예: <code>print_silent</code>, 진짜 metadata r/w) 은 HWP COM 이 직접 노출하지 않을 수 있음. spike 단계에서 검증.</li>
+<li><strong>테스트 부담</strong> — 50+ 메소드 → 200+ 테스트.</li>
+</ul>
+</section>
+</section>
+<section id="미해결-질문" class="level1">
+<h1>미해결 질문</h1>
+<ol type="1">
+<li><strong><code>set_X</code> vs <code>set_charshape</code> 시그니처 통일</strong> — <code>set_charshape</code> 은 keyword-only? <code>**kwargs</code> 로 받을지, <code>CharShape</code> 객체로 받을지, 둘 다 받을지.</li>
+<li><strong>Range 의 시그니처</strong> — 단락 단위? 글자 단위? 둘 다? xlwings 는 “A1:B5” string 도 받음 — hwpapi 도 “p2:p5” 같은 약식 string 지원?</li>
+<li><strong><code>doc.batch()</code> vs <code>app.batch()</code> 의 책임 분리</strong> — 실제 어느 레벨에서 효과가 있는지 spike 필요.</li>
+<li><strong><code>hwpapi.view(...)</code> 가 새 App 을 띄우는가, 기존 App 에 doc 추가 인가?</strong> xlwings 는 후자.</li>
+<li><strong><code>metadata.author</code> 의 r/w 가능성</strong> — HWP COM 이 DocumentInfo 를 set 하는 표준 방법 미확인.</li>
+</ol>
+</section>
+<section id="참고" class="level1">
+<h1>참고</h1>
+<ul>
+<li><a href="../../design/adr/adr-003-multi-document.html">ADR-003: 다중 문서 재설계</a></li>
+<li><a href="../../design/adr/adr-004-element-api.html">ADR-004: 요소 단위 API</a></li>
+<li><a href="https://docs.xlwings.org/en/stable/api.html">xlwings full API</a></li>
+<li><a href="https://docs.xlwings.org/en/stable/api.html#app">xlwings App preferences</a></li>
+<li><a href="https://docs.xlwings.org/en/stable/converters.html">xlwings Range.options</a></li>
+</ul>
+
+
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> 맨 위로</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "복사완료!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "복사완료!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/JunDamin\.github\.io\/hwpapi\/ko");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+            // target, if specified
+            link.setAttribute("target", "_blank");
+            if (link.getAttribute("rel") === null) {
+              link.setAttribute("rel", "noopener");
+            }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../design/adr/adr-004-element-api.html" class="pagination-link" aria-label="ADR-004: 요소 단위 API — Run / Paragraph / Cell / Section">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">ADR-004: 요소 단위 API — Run / Paragraph / Cell / Section</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../design/adr/adr-006-python-docx-patterns.html" class="pagination-link" aria-label="ADR-006: python-docx 패턴 — 차용/배제 후보">
+        <span class="nav-page-text">ADR-006: python-docx 패턴 — 차용/배제 후보</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>hwpapi v3.0 · HWP COM 자동화 Python 라이브러리</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/JunDamin/hwpapi/edit/main/design/adr/adr-005-api-ergonomics.qmd" class="toc-action"><i class="bi bi-github"></i>편집</a></li><li><a href="https://github.com/JunDamin/hwpapi/issues/new" class="toc-action"><i class="bi empty"></i>이슈 보고</a></li></ul></div></div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://github.com/JunDamin/hwpapi">
+<p>GitHub</p>
+</a>
+  </li>  
+    <li class="nav-item">
+    <a class="nav-link" href="https://pypi.org/project/hwpapi/">
+<p>PyPI</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+<script src="../../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
