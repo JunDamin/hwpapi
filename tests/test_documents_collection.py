@@ -3,6 +3,8 @@ Tests for v3 Documents collection + Document v3 surface (Mock-based).
 
 Live-HWP smoke 는 별도 — 여기는 Mock 으로 빠르게 구조 검증만.
 """
+from __future__ import annotations
+
 from unittest.mock import MagicMock, PropertyMock
 
 import pytest
